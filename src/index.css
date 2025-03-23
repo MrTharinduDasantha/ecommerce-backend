@@ -23,11 +23,14 @@ a:hover {
 }
 
 body {
+  font-family: 'Arial', sans-serif;
+  background-color: #FFFFFF;
   margin: 0;
+  padding: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  justify-content: center; /* Centers the content horizontally */
+  align-items: center; /* Centers the content vertically */
+  height: 100vh; /* Full viewport height */
 }
 
 h1 {
