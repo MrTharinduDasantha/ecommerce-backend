@@ -1,68 +1,108 @@
-const Customer = require('../../models/customer.model');
+const User = require('../../models/user.model');
+const bcrypt = require('bcryptjs');
 
-// Admin User Management Controller
-class UserController {
-  // Get all users with pagination
-  async getAllUsers(req, res) {
-    try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const offset = (page - 1) * limit;
-      
-      const users = await Customer.findAll(limit, offset);
-      const totalUsers = await Customer.count();
-      
-      res.json({
-        users,
-        pagination: {
-          page,
-          limit,
-          totalUsers,
-          totalPages: Math.ceil(totalUsers / limit)
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch users', error: error.message });
-    }
+// Get all users
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
   }
+};
 
-  // Update user status
-  async updateUserStatus(req, res) {
-    try {
-      const { status } = req.body;
-      
-      if (!['active', 'inactive', 'blocked'].includes(status)) {
-        return res.status(400).json({ message: 'Invalid status' });
-      }
-      
-      const affectedRows = await Customer.updateStatus(req.params.id, status);
-      
-      if (affectedRows === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      
-      res.json({ message: 'User status updated successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to update user status', error: error.message });
-    }
+// Get a single user
+const getUser = async (req, res) => {
+  try {
+    const user = await User.getUserById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
   }
+};
 
-  // Get roles (placeholder for future implementation)
-  async getRoles(req, res) {
-    try {
-      // For now, just return predefined roles
-      // In a real application, this would come from a database
-      const roles = [
-        { id: 1, name: 'Super Admin', permissions: ['all'] },
-        { id: 2, name: 'Manager', permissions: ['read', 'write'] },
-        { id: 3, name: 'Staff', permissions: ['read'] }
-      ];
-      
-      res.json({ roles });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch roles', error: error.message });
+// Add a new user
+// In the createUser controller, send the response:
+const createUser = async (req, res) => {
+  try {
+    const { full_name, email, password, phone_no, status } = req.body;
+
+    if (!full_name || !email || !password || !phone_no) {
+      return res.status(400).json({ error: 'All fields are required' });
     }
-  }
-}
 
-module.exports = new UserController(); 
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = await User.addUser(full_name, email, hashedPassword, phone_no, status || 'Active');
+
+    // Send response with the new user's ID
+    res.status(201).json({ id: userId, message: 'User added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Database error', details: error.message });
+  }
+};
+
+// Update user
+const updateUser = async (req, res) => {
+  try {
+    const { full_name, email, phone_no, status } = req.body;
+    await User.updateUser(req.params.id, full_name, email, phone_no, status);
+    res.json({ message: 'User updated successfully' });
+  } catch (error) {
+    console.error('Update error:', error);  // More specific error message
+    res.status(500).json({ error: 'Database error', details: error.message });
+  }
+};
+
+
+// Delete user
+const deleteUser = async (req, res) => {
+  try {
+    await User.deleteUser(req.params.id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+// Login user
+
+const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Please provide both email and password.' });
+    }
+
+    // Fetch user by email
+    const user = await User.getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Compare the password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.Password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    // Respond with a success message and user data
+    res.json({
+      message: 'Login successful',
+      userId: user.idUser,
+      fullName: user.Full_Name,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+module.exports = {
+  getUsers,
+  getUser,
+  createUser,
+  updateUser,
+  loginUser,
+  deleteUser
+};

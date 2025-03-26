@@ -1,8 +1,13 @@
 const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
 const adminRoutes = require('./admin');
 const customerRoutes = require('./customer');
 
 const router = express.Router();
+
+
 
 // Main API Routes
 router.use('/admin', adminRoutes);

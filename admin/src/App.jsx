@@ -5,6 +5,9 @@ import PrivateRoute from "./components/PrivateRoute";
 import ProductForm from "./components/ProductForm";
 import ProductCategorySubCategoryForm from "./components/ProductCategorySubCategoryForm";
 import ProductList from "./components/ProductList";
+import UsersManagedForm from "./components/UsersManagedForm";
+import CustomerManagedForm from "./components/CustomerManagedForm";
+
 
 const App = () => {
   return (
@@ -24,6 +27,8 @@ const App = () => {
           element={<ProductCategorySubCategoryForm />}
         />
         <Route path="products/edit-product" element={<ProductList />} />
+        <Route path="users_managed-form" element={<UsersManagedForm />} /> 
+        <Route path="customer-managed-form" element={<CustomerManagedForm />} /> 
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
