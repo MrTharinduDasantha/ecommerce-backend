@@ -12,14 +12,14 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     setIsDropdownOpen(!isDropdownOpen);
   };
   return (
-    <nav className="fixed top-0 z-50 w-full bg-[#2d2d2d] border-b border-white">
+    <nav className="fixed top-0 z-50 w-full bg-[#1D372E] border-b border-white">
       <div className="px-3 py-3 lg:px-5 lg:pl-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center justify-start">
             <button
               onClick={toggleSidebar}
               type="button"
-              className="inline-flex items-center p-1 text-sm rounded-lg border-2 sm:hidden hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out"
+              className="inline-flex items-center p-1 text-sm rounded-lg border-2 sm:hidden hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out"
             >
               {isSidebarOpen ? (
                 <RiSidebarFoldFill className="w-6 h-6" />
@@ -55,7 +55,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               {/* User dropdown */}
               {isDropdownOpen && (
                 <div
-                  className="z-50 absolute right-0 mt-[22rem] w-48 text-base list-none bg-[#2d2d2d] divide-y divide-white rounded-sm shadow-sm"
+                  className="z-50 absolute right-0 mt-[22rem] w-48 text-base list-none bg-[#1D372E] divide-y divide-white rounded-sm shadow-sm"
                   id="dropdown-user"
                 >
                   <div className="px-4 py-3" role="none">
@@ -70,7 +70,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d]  transition-colors duration-300 ease-in-out group"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
                         Dashboard
@@ -79,7 +79,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d]  transition-colors duration-300 ease-in-out group"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
                         Manage Products
@@ -88,7 +88,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d]  transition-colors duration-300 ease-in-out group"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
                         Manage Orders
@@ -97,7 +97,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d]  transition-colors duration-300 ease-in-out group"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
                         Notifications
@@ -106,7 +106,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d]  transition-colors duration-300 ease-in-out group"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
                         Manage Users
@@ -115,7 +115,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d]  transition-colors duration-300 ease-in-out group"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
                         Logout

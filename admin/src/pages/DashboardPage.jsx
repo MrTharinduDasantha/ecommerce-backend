@@ -34,7 +34,7 @@ const DashboardPage = () => {
     <div>
       <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar isSidebarOpen={isSidebarOpen} />
-      <div className="p-4 sm:ml-64 mt-13 bg-[#2d2d2d] min-h-screen">
+      <div className="p-4 sm:ml-64 mt-13 bg-[#1D372E] min-h-screen">
         <Outlet />
       </div>
     </div>
