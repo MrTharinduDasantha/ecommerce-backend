@@ -1,38 +1,49 @@
-const pool = require('../config/database');
+const pool = require('../config/database'); // Import MySQL connection pool
 
-class User {
-  static async findByEmail(email) {
-    const [rows] = await pool.query('SELECT * FROM User WHERE Email = ?', [email]);
-    return rows.length ? rows[0] : null;
-  }
+// Get all users
+const getAllUsers = async () => {
+  const [rows] = await pool.query('SELECT * FROM users');
+  return rows;
+};
 
-  static async authenticate(email, password) {
-    const [rows] = await pool.query(
-      'SELECT * FROM User WHERE Email = ? AND Password = ? AND Status = "active"', 
-      [email, password]
-    );
-    
-    if (rows.length === 0) {
-      return null;
-    }
-    
-    const user = rows[0];
-    return {
-      id: user.idUser,
-      name: user.Full_Name,
-      email: user.Email,
-      role: 'admin', // This is a placeholder. In production, use proper role management
-    };
-  }
+// Get user by ID
+const getUserById = async (id) => {
+  const [rows] = await pool.query('SELECT * FROM users WHERE idUser = ?', [id]);
+  return rows[0];
+};
 
-  static async create(userData) {
-    const { full_name, email, password, phone_no } = userData;
-    const [result] = await pool.query(
-      'INSERT INTO User (Full_Name, Email, Password, Phone_No, Status) VALUES (?, ?, ?, ?, ?)',
-      [full_name, email, password, phone_no, 'active']
-    );
-    return result.insertId;
-  }
-}
+// Add user
+const addUser = async (full_name, email, password, phone_no, status) => {
+  const [result] = await pool.query(
+    'INSERT INTO users (Full_Name, Email, Password, Phone_No, Status) VALUES (?, ?, ?, ?, ?)',
+    [full_name, email, password, phone_no, status]
+  );
+  return result.insertId; // Returning the ID after inserting
+};
+// Update user
+const updateUser = async (id, full_name, email, phone_no, status) => {
+  await pool.query(
+    'UPDATE users SET Full_Name = ?, Email = ?, Phone_No = ?, Status = ? WHERE idUser = ?',
+    [full_name, email, phone_no, status, id]
+  );
+};
 
-module.exports = User; 
+// Delete user
+const deleteUser = async (id) => {
+  await pool.query('DELETE FROM users WHERE idUser = ?', [id]);
+};
+
+// Get user by email
+const getUserByEmail = async (email) => {
+  const [rows] = await pool.query('SELECT * FROM users WHERE Email = ?', [email]);
+  return rows[0]; // Return the user record
+};
+
+module.exports = {
+  getAllUsers,
+  getUserById,
+  addUser,
+  updateUser,
+  getUserByEmail,
+  deleteUser
+};

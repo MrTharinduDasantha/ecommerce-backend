@@ -4,8 +4,10 @@ const userController = require('../../controllers/admin/user.controller');
 const router = express.Router();
 
 // Admin User Routes
-router.get('/', userController.getAllUsers);
-router.put('/:id/status', userController.updateUserStatus);
-router.get('/roles', userController.getRoles);
+router.get('/', userController.getUsers);
+router.post('/', userController.createUser);
+router.put('/:id', userController.updateUser);
+router.delete('/:id', userController.deleteUser);
+router.post('/login', userController.loginUser);
 
-module.exports = router; 
+module.exports = router;
