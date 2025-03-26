@@ -39,7 +39,7 @@ const ProductList = () => {
   return (
     <div className="max-w-5xl mx-auto my-5 p-10 overflow-x-auto bg-white text-[#2d2d2d] rounded-md shadow-md">
       <h2 className="text-2xl font-bold mb-4">Product List</h2>
-      <table className="table w-full border-collapse border border-gray-300">
+      <table className="table w-full border-collapse border border-[#2d2d2d]">
         {/* Head */}
         <thead className="bg-[#a3fe00] text-[#2d2d2d]">
           <tr>

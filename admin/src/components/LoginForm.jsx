@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../api/auth";
+import { AuthContext } from "../context/AuthContext";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,8 +20,7 @@ const LoginForm = () => {
       await login(email, password);
       navigate("/dashboard");
     } catch (error) {
-      console.error(error);
-      setError("Invalid credentials");
+      setError("Invalid credentials", error);
     }
   };
 
