@@ -1,10 +1,10 @@
-// src/components/Users.js
+
 import React, { useState, useEffect } from 'react';
 import { FaUserPlus, FaSearch, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import * as api from '../api/auth';
 
-const Users = () => {
+const UsersManagedForm = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
 
@@ -219,4 +219,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default UsersManagedForm;

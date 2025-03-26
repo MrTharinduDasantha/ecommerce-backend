@@ -4,9 +4,10 @@ import DashboardPage from "./pages/DashboardPage";
 import PrivateRoute from "./components/PrivateRoute";
 import ProductForm from "./components/ProductForm";
 import ProductList from "./components/ProductList";
-import Users from "./pages/Users";
-import Orders from "./pages/Orders";
-import Customers from "./pages/Customers";
+import UsersManagedForm from "./components/UsersManagedForm";
+import CustomerManagedForm from "./components/CustomerManagedForm";
+
+
 const App = () => {
   return (
     <Routes>
@@ -21,9 +22,8 @@ const App = () => {
       >
         <Route path="products/add" element={<ProductForm />} />
         <Route path="products/edit" element={<ProductList />} />
-        <Route path="users" element={<Users />} /> 
-        <Route path="orders" element={<Orders />} /> 
-        <Route path="customers" element={<Customers />} /> 
+        <Route path="users_managed-form" element={<UsersManagedForm />} /> 
+        <Route path="customer-managed-form" element={<CustomerManagedForm />} /> 
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

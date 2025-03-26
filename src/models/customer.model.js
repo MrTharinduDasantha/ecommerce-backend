@@ -1,45 +1,50 @@
-const pool = require('../config/database');
+const pool = require('../config/database'); // Import MySQL connection pool
 
-class Customer {
-  static async findAll(limit, offset) {
-    const [rows] = await pool.query(
-      'SELECT * FROM Customer ORDER BY idCustomer DESC LIMIT ? OFFSET ?',
-      [limit, offset]
-    );
-    return rows;
-  }
+// Get all customers
+const getAllCustomers = async () => {
+  const [rows] = await pool.query('SELECT * FROM Customer');
+  return rows;
+};
 
-  static async findByEmail(email) {
-    const [rows] = await pool.query('SELECT * FROM Customer WHERE Email = ?', [email]);
-    return rows;
-  }
+// Get customer by ID
+const getCustomerById = async (id) => {
+  const [rows] = await pool.query('SELECT * FROM Customer WHERE idCustomer = ?', [id]);
+  return rows[0];
+};
 
-  static async findById(id) {
-    const [rows] = await pool.query('SELECT * FROM Customer WHERE idCustomer = ?', [id]);
-    return rows.length ? rows[0] : null;
-  }
+// Add a new customer
+const addCustomer = async (first_name, full_name, address, city, country, mobile_no, status, email, password) => {
+  const [result] = await pool.query(
+    'INSERT INTO Customer (First_Name, Full_Name, Address, City, Country, Mobile_No, Status, Email, Password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [first_name, full_name, address, city, country, mobile_no, status, email, password]
+  );
+  return result.insertId; // Returning the ID after inserting
+};
 
-  static async create(customerData) {
-    const { first_name, full_name, email, password, mobile_no, status } = customerData;
-    const [result] = await pool.query(
-      'INSERT INTO Customer (First_Name, Full_Name, Email, Password, Mobile_No, Status) VALUES (?, ?, ?, ?, ?, ?)',
-      [first_name, full_name, email, password, mobile_no, status || 'active']
-    );
-    return result.insertId;
-  }
+// Update customer
+const updateCustomer = async (id, first_name, full_name, address, city, country, mobile_no, status, email, password) => {
+  await pool.query(
+    'UPDATE Customer SET First_Name = ?, Full_Name = ?, Address = ?, City = ?, Country = ?, Mobile_No = ?, Status = ?, Email = ?, Password = ? WHERE idCustomer = ?',
+    [first_name, full_name, address, city, country, mobile_no, status, email, password, id]
+  );
+};
 
-  static async updateStatus(id, status) {
-    const [result] = await pool.query(
-      'UPDATE Customer SET Status = ? WHERE idCustomer = ?',
-      [status, id]
-    );
-    return result.affectedRows;
-  }
+// Delete customer
+const deleteCustomer = async (id) => {
+  await pool.query('DELETE FROM Customer WHERE idCustomer = ?', [id]);
+};
 
-  static async count() {
-    const [result] = await pool.query('SELECT COUNT(*) as count FROM Customer');
-    return result[0].count;
-  }
-}
+// Get customer by email
+const getCustomerByEmail = async (email) => {
+  const [rows] = await pool.query('SELECT * FROM Customer WHERE Email = ?', [email]);
+  return rows[0]; // Return the customer record
+};
 
-module.exports = Customer; 
+module.exports = {
+  getAllCustomers,
+  getCustomerById,
+  addCustomer,
+  updateCustomer,
+  getCustomerByEmail,
+  deleteCustomer
+};
