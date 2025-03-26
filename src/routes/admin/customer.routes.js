@@ -1,11 +1,12 @@
 const express = require('express');
-const userController = require('../../controllers/admin/customer.controller');
+const customerController = require('../../controllers/admin/customer.controller');
 
 const router = express.Router();
 
-// Admin User Routes
-router.get('/', userController.getAllUsers);
-router.put('/:id/status', userController.updateUserStatus);
-router.get('/roles', userController.getRoles);
+// Admin Customer Routes
+router.get('/', customerController.getCustomers);
+router.post('/', customerController.createCustomer);
+router.put('/:id', customerController.updateCustomer);
+router.delete('/:id', customerController.deleteCustomer);
 
-module.exports = router; 
+module.exports = router;

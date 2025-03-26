@@ -1,4 +1,4 @@
-// src/utils/api.js
+// src/api/auth.js
 import axios from "axios";
 
 const API_URL = "http://localhost:9000"; // Your API base URL
@@ -57,6 +57,41 @@ export const addUser = async (newUser) => {
 export const loginUser = async (email, password) => {
   try {
     const response = await api.post("/api/users/login", { email, password });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+export const fetchCustomers = async () => {
+  try {
+    const response = await api.get("/api/customers");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const deleteCustomer = async (customerId) => {
+  try {
+    const response = await api.delete(`/api/customers/${customerId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const updateCustomer = async (customerId, updatedCustomer) => {
+  try {
+    const response = await api.put(`/api/customers/${customerId}`, updatedCustomer);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const addCustomer = async (newCustomer) => {
+  try {
+    const response = await api.post("/api/customers", newCustomer);
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;

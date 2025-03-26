@@ -117,7 +117,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           </li>
           <li>
           <NavLink
-  to="/dashboard/users"
+  to="/dashboard/users_managed-form"
   className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
 >
   <FaUsers className="w-5 h-5" />
@@ -127,7 +127,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           </li>
           <li>
           <NavLink
-  to="/dashboard/customers"
+  to="/dashboard/customer-managed-form"
   className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
 >
   <FaUsers className="w-5 h-5" />
