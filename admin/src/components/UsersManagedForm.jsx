@@ -182,6 +182,8 @@ const UsersManagedForm = () => {
               <th className="p-3 text-left">Email</th>
               <th className="p-3 text-left">Phone</th>
               <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">Created At</th> {/* New Column */}
+              <th className="p-3 text-left">Updated At</th> 
               <th className="p-3 text-left">Actions</th>
             </tr>
           </thead>
@@ -196,6 +198,8 @@ const UsersManagedForm = () => {
                   <td className="p-3">{user.Email}</td>
                   <td className="p-3">{user.Phone_No}</td>
                   <td className="p-3">{user.Status}</td>
+                  <td className="p-3">{new Date(user.created_at).toLocaleString()}</td> {/* Display Created At */}
+                  <td className="p-3">{new Date(user.updated_at).toLocaleString()}</td> {/* Display Updated At */}
                   <td className="p-3 space-x-2">
                     <button
                       onClick={() => handleEdit(user.idUser)}
