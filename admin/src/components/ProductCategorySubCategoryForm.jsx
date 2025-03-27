@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FaCheckSquare, FaRegCheckSquare } from "react-icons/fa";
+import toast from "react-hot-toast";
+import {
+  getCategories,
+  createCategory,
+  updateCategory,
+  toggleCategoryStatus,
+  createSubCategory,
+  deleteSubCategory,
+} from "../api/product";
 
 const ProductCategorySubCategoryForm = () => {
   const [categoryDescription, setCategoryDescription] = useState("");
@@ -11,6 +20,23 @@ const ProductCategorySubCategoryForm = () => {
   const [showSubCategoryPopup, setShowSubCategoryPopup] = useState(false);
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(null);
   const [subCategoryDescription, setSubCategoryDescription] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+
+  // Load categories on component mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data.categories);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch categories");
+    }
+  };
 
   // Hide scrollbar when popup is open, restore when closed
   useEffect(() => {
@@ -36,30 +62,60 @@ const ProductCategorySubCategoryForm = () => {
     setCategoryImagePreview(null);
   };
 
-  // Add a new category row to the categories table
-  const handleAddCategory = () => {
-    if (!categoryDescription.trim()) return;
+  // Handle adding or updating a category
+  const handleCategoryFormSubmit = async () => {
+    if (!categoryDescription.trim()) {
+      toast.error("Please enter category description");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("description", categoryDescription);
+    if (categoryImage) {
+      formData.append("image", categoryImage);
+    }
 
-    const newCategory = {
-      description: categoryDescription,
-      image: categoryImage,
-      imagePreview: categoryImagePreview,
-      active: true,
-      subCategories: [],
-    };
-
-    setCategories([...categories, newCategory]);
-    // Reset the form
-    setCategoryDescription("");
-    setCategoryImage(null);
-    setCategoryImagePreview(null);
+    try {
+      if (isEditing && editingCategoryId) {
+        await updateCategory(editingCategoryId, formData);
+        toast.success("Category updated successfully");
+      } else {
+        await createCategory(formData);
+        toast.success("Category added successfully");
+      }
+      // Reset the form and fetch categories
+      setCategoryDescription("");
+      setCategoryImage(null);
+      setCategoryImagePreview(null);
+      setIsEditing(false);
+      setEditingCategoryId(null);
+      fetchCategories();
+    } catch (error) {
+      toast.error(error.message || "Failed to add category");
+    }
   };
 
-  // Toggle the active status of a category
-  const toggleCategoryStatus = (index) => {
-    const updatedCategories = [...categories];
-    updatedCategories[index].active = !updatedCategories[index].active;
-    setCategories(updatedCategories);
+  // Load category into form for editing
+  const handleEditCategory = (category) => {
+    setIsEditing(true);
+    setEditingCategoryId(category.idProduct_Category);
+    setCategoryDescription(category.Description);
+    if (category.Image_Icon_Url) {
+      setCategoryImagePreview(category.Image_Icon_Url);
+    } else {
+      setCategoryImagePreview(null);
+    }
+  };
+
+  // Toggle the active/inactive status of a category
+  const handleToggleStatus = async (category) => {
+    try {
+      const newStatus = category.Status === "active" ? "inactive" : "active";
+      await toggleCategoryStatus(category.idProduct_Category, newStatus);
+      toast.success("Category status updated");
+      fetchCategories();
+    } catch (error) {
+      toast.error(error.message || "Failed to update status");
+    }
   };
 
   // Open subcategory popup
@@ -75,28 +131,41 @@ const ProductCategorySubCategoryForm = () => {
     setSubCategoryDescription("");
   };
 
-  // Add a subcategory to the selected category
-  const handleAddSubCategory = () => {
-    if (!subCategoryDescription.trim()) return;
-    const updatedCategories = [...categories];
-    updatedCategories[selectedCategoryIndex].subCategories.push({
-      name: subCategoryDescription,
-    });
-    setCategories(updatedCategories);
-    setSubCategoryDescription("");
+  // Handle adding a subcategory
+  const handleAddSubCategory = async () => {
+    if (!subCategoryDescription.trim()) {
+      toast.error("Please enter a subcategory description");
+      return;
+    }
+    try {
+      const categoryId = categories[selectedCategoryIndex].idProduct_Category;
+      await createSubCategory(categoryId, subCategoryDescription);
+      toast.success("Subcategory added successfully");
+      fetchCategories();
+      setSubCategoryDescription("");
+    } catch (error) {
+      toast.error(error.message || "Failed to add subcategory");
+    }
   };
 
-  // Remove a subcategory
-  const removeSubCategory = (catgoryIndex, subCategoryIndex) => {
-    const updatedCategories = [...categories];
-    updatedCategories[catgoryIndex].subCategories.splice(subCategoryIndex, 1);
-    setCategories(updatedCategories);
+  // Handle removing a subcategory
+  const handleRemoveSubCategory = async (categoryIndex, subCategory) => {
+    try {
+      await deleteSubCategory(
+        categories[categoryIndex].idProduct_Category,
+        subCategory.idSub_Category
+      );
+      toast.success("Subcategory removed successfully");
+      fetchCategories();
+    } catch (error) {
+      toast.error(error.message || "Failed to remove subcategory");
+    }
   };
   return (
     <div className="max-w-5xl mx-auto my-5 p-10 bg-white rounded-md shadow-md">
       {/* Heading */}
       <h2 className="text-2xl font-bold text-[#1D372E] mb-4">
-        Add Category and Sub Category
+        {isEditing ? "Edit Category" : "Add Category and Sub Category"}
       </h2>
 
       {/* Category Form */}
@@ -139,10 +208,10 @@ const ProductCategorySubCategoryForm = () => {
 
         <div className="mt-[30px]">
           <button
-            onClick={handleAddCategory}
+            onClick={handleCategoryFormSubmit}
             className="btn btn-primary bg-[#5CAF90] border-none"
           >
-            Add Category
+            {isEditing ? "Edit Category" : "Add Category"}
           </button>
         </div>
       </div>
@@ -163,12 +232,12 @@ const ProductCategorySubCategoryForm = () => {
             <tbody className="text-[#1D372E]">
               {categories.map((cat, index) => (
                 <tr key={index}>
-                  <td className="border-2 p-2">{cat.description}</td>
+                  <td className="border-2 p-2">{cat.Description}</td>
                   <td className="border-2 p-2">
                     <div className="flex justify-center items-center">
-                      {cat.imagePreview ? (
+                      {cat.Image_Icon_Url ? (
                         <img
-                          src={cat.imagePreview}
+                          src={cat.Image_Icon_Url}
                           alt="Category"
                           className="w-16 h-16 object-cover"
                         />
@@ -178,9 +247,9 @@ const ProductCategorySubCategoryForm = () => {
                     </div>
                   </td>
                   <td className="border-2 p-2">
-                    {cat.subCategories.length > 0 ? (
-                      cat.subCategories.map((sub, subIndex) => (
-                        <div key={subIndex}>{sub.name}</div>
+                    {cat.subcategories.length > 0 ? (
+                      cat.subcategories.map((sub, subIndex) => (
+                        <div key={subIndex}>{sub.Description}</div>
                       ))
                     ) : (
                       <span>No Sub Category</span>
@@ -188,20 +257,23 @@ const ProductCategorySubCategoryForm = () => {
                   </td>
                   <td className="border-2 p-2">
                     <span className="mr-2 cursor-pointer">Active</span>
-                    {cat.active ? (
+                    {cat.Status === "active" ? (
                       <FaCheckSquare
-                        className="inline-block cursor-pointe"
-                        onClick={() => toggleCategoryStatus(index)}
+                        className="inline-block cursor-pointer"
+                        onClick={() => handleToggleStatus(cat)}
                       />
                     ) : (
                       <FaRegCheckSquare
                         className="inline-block cursor-pointer"
-                        onClick={() => toggleCategoryStatus(index)}
+                        onClick={() => handleToggleStatus(cat)}
                       />
                     )}
                   </td>
-                  <td className="border-2 p-2 max-w-[11rem]">
-                    <button className="btn btn-sm mr-2 bg-[#1D372E] text-white border-none">
+                  <td className="border-2 p-2 max-w-[12rem]">
+                    <button
+                      onClick={() => handleEditCategory(cat)}
+                      className="btn btn-sm mr-2 bg-[#1D372E] text-white border-none"
+                    >
                       Edit Category
                     </button>
                     <button
@@ -242,7 +314,7 @@ const ProductCategorySubCategoryForm = () => {
                         onChange={(e) =>
                           setSubCategoryDescription(e.target.value)
                         }
-                        placeholder="Enter sub category"
+                        placeholder="Enter sub category description"
                         className="input input-bordered w-full bg-white border-2 border-[#1D372E]"
                       />
                     </div>
@@ -257,7 +329,7 @@ const ProductCategorySubCategoryForm = () => {
 
                     {/* Sub Category Table */}
                     {selectedCategoryIndex !== null &&
-                      categories[selectedCategoryIndex].subCategories.length >
+                      categories[selectedCategoryIndex].subcategories.length >
                         0 && (
                         <div className="overflow-x-auto mt-8">
                           <table className="table-auto w-full border-collapse border border-[#1D372E]">
@@ -270,15 +342,17 @@ const ProductCategorySubCategoryForm = () => {
                             <tbody>
                               {categories[
                                 selectedCategoryIndex
-                              ].subCategories.map((sub, subIndex) => (
+                              ].subcategories.map((sub, subIndex) => (
                                 <tr key={subIndex}>
-                                  <td className="border-2 p-2">{sub.name}</td>
+                                  <td className="border-2 p-2">
+                                    {sub.Description}
+                                  </td>
                                   <td className="border-2 p-2 max-w-[3rem]">
                                     <button
                                       onClick={() =>
-                                        removeSubCategory(
+                                        handleRemoveSubCategory(
                                           selectedCategoryIndex,
-                                          subIndex
+                                          sub
                                         )
                                       }
                                       className="btn btn-sm bg-[#1D372E] text-white border-none"

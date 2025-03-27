@@ -1,145 +1,123 @@
-const Product = require('../../models/product.model');
-const pool = require('../../config/database');
+const Product = require("../../models/product.model");
 
-// Admin Products Controller
-class ProductController {
-  // Get all products with pagination
-  async getAllProducts(req, res) {
-    try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const offset = (page - 1) * limit;
-      
-      const products = await Product.findAll(limit, offset);
-      const totalProducts = await Product.count();
-      
-      res.json({
-        products,
-        pagination: {
-          page,
-          limit,
-          totalProducts,
-          totalPages: Math.ceil(totalProducts / limit)
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch products', error: error.message });
-    }
-  }
-
-  // Create a new product
-  async createProduct(req, res) {
-    try {
-      const { 
-        description, 
-        product_brand_id, 
-        market_price, 
-        selling_price, 
-        main_image_url, 
-        long_description, 
-        sku 
-      } = req.body;
-      
-      const productId = await Product.create({
-        description, 
-        product_brand_id, 
-        market_price, 
-        selling_price, 
-        main_image_url, 
-        long_description, 
-        sku
-      });
-      
-      res.status(201).json({ 
-        id: productId, 
-        message: 'Product created successfully' 
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to create product', error: error.message });
-    }
-  }
-
-  // Update an existing product
-  async updateProduct(req, res) {
-    try {
-      const { 
-        description, 
-        product_brand_id, 
-        market_price, 
-        selling_price, 
-        main_image_url, 
-        long_description, 
-        sku 
-      } = req.body;
-      
-      const affectedRows = await Product.update(req.params.id, {
-        description, 
-        product_brand_id, 
-        market_price, 
-        selling_price, 
-        main_image_url, 
-        long_description, 
-        sku
-      });
-      
-      if (affectedRows === 0) {
-        return res.status(404).json({ message: 'Product not found' });
-      }
-      
-      res.json({ message: 'Product updated successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to update product', error: error.message });
-    }
-  }
-
-  // Delete a product
-  async deleteProduct(req, res) {
-    try {
-      const affectedRows = await Product.delete(req.params.id);
-      
-      if (affectedRows === 0) {
-        return res.status(404).json({ message: 'Product not found' });
-      }
-      
-      res.json({ message: 'Product deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to delete product', error: error.message });
-    }
-  }
-
-  // Get product categories
-  async getCategories(req, res) {
-    try {
-      const [categories] = await pool.query('SELECT * FROM Product_Category');
-      const [subCategories] = await pool.query('SELECT * FROM Sub_Category');
-      
-      res.json({
-        categories,
-        subCategories
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch categories', error: error.message });
-    }
-  }
-
-  // Create product category
-  async createCategory(req, res) {
-    try {
-      const { image_icon_url } = req.body;
-      
-      const [result] = await pool.query(
-        'INSERT INTO Product_Category (Image_Icon_Url) VALUES (?)',
-        [image_icon_url]
-      );
-      
-      res.status(201).json({
-        id: result.insertId,
-        message: 'Category created successfully'
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to create category', error: error.message });
-    }
+// Fetch all categories with subcategories
+async function getAllCategories(req, res) {
+  try {
+    const categories = await Product.getAllCategories();
+    res
+      .status(200)
+      .json({ message: "Categories fetched successfully", categories });
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    res.status(500).json({ message: "Failed to fetch categories" });
   }
 }
 
-module.exports = new ProductController(); 
+// Create a new category
+async function createCategory(req, res) {
+  try {
+    const { description } = req.body;
+    if (!description) {
+      return res.status(400).json({ message: "Description is required" });
+    }
+
+    // Build the ful URL for the uploaded image
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        req.file.filename
+      }`;
+    }
+    const result = await Product.createCategory(description, imageUrl);
+
+    res.status(201).json({
+      message: "Category created successfully",
+      insertId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error creating category:", error);
+    res.status(500).json({ message: "Failed to create category" });
+  }
+}
+
+// Update a category
+async function updateCategory(req, res) {
+  try {
+    const { id } = req.params;
+    const { description } = req.body;
+    if (!description) {
+      return res.status(400).json({ message: "Description is required" });
+    }
+
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        req.file.filename
+      }`;
+    }
+    await Product.updateCategory(id, description, imageUrl);
+    res.status(200).json({ message: "Category updated successfully" });
+  } catch (error) {
+    console.error("Error updating category:", error);
+    res.status(500).json({ message: "Failed to update category" });
+  }
+}
+
+// Toggle the status of a category (active/inactive)
+async function toggleCategoryStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
+
+    await Product.toggleCategoryStatus(id, status);
+    res.status(200).json({ message: "Category status updated successfully" });
+  } catch (error) {
+    console.error("Error toggling category status:", error);
+    res.status(500).json({ message: "Failed to toggle category status" });
+  }
+}
+
+// Create a new subcategory under a specific category
+async function createSubCategory(req, res) {
+  try {
+    const { id } = req.params;
+    const { description } = req.body;
+    if (!description) {
+      return res.status(400).json({ message: "Description is required" });
+    }
+
+    const result = await Product.createSubCategory(id, description);
+    res.status(201).json({
+      message: "Subcategory created successfully",
+      insertId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error creating subcategory:", error);
+    res.status(500).json({ message: "Failed to create subcategory", error });
+  }
+}
+
+// Delete a subcategory (also remove from Product_has_Sub_Category)
+async function deleteSubCategory(req, res) {
+  try {
+    const { subId } = req.params; // id - category, subId - sub category
+
+    await Product.deleteSubCategory(subId);
+    res.status(200).json({ message: "Subcategory deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting subcategory:", error);
+    res.status(500).json({ message: "Failed to delete subcategory" });
+  }
+}
+
+module.exports = {
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  toggleCategoryStatus,
+  createSubCategory,
+  deleteSubCategory,
+};

@@ -1,16 +1,44 @@
-const express = require('express');
-const productController = require('../../controllers/admin/product.controller');
+const express = require("express");
+const multer = require("multer");
+const productController = require("../../controllers/admin/product.controller");
 
 const router = express.Router();
 
-// Admin Product Routes
-router.get('/', productController.getAllProducts);
-router.post('/', productController.createProduct);
-router.put('/:id', productController.updateProduct);
-router.delete('/:id', productController.deleteProduct);
+// Configure Multer Storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "src/uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
-// Admin Category Routes
-router.get('/categories', productController.getCategories);
-router.post('/categories', productController.createCategory);
+// Create an Instance of Multer
+const upload = multer({ storage });
 
-module.exports = router; 
+// Category Routes
+router.get("/categories", productController.getAllCategories);
+router.post(
+  "/categories",
+  upload.single("image"),
+  productController.createCategory
+);
+router.put(
+  "/categories/:id",
+  upload.single("image"),
+  productController.updateCategory
+);
+router.patch("/categories/:id/status", productController.toggleCategoryStatus);
+
+// Sub-Category Routes
+router.post(
+  "/categories/:id/sub-categories",
+  productController.createSubCategory
+);
+router.delete(
+  "/categories/:id/sub-categories/:subId",
+  productController.deleteSubCategory
+);
+
+module.exports = router;

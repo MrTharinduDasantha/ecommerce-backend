@@ -116,8 +116,6 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* Manage Orders */}
           <li>
             <NavLink
-              to="#"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
               to="/dashboard/orders"
               className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
             >
@@ -145,13 +143,6 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* Manage Users */}
           <li>
             <NavLink
-              to="#"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
-            >
-              <FaUsers className="w-5 h-5" />
-              <span className="ms-3">Manage Users</span>
-            </NavLink>
-            <NavLink
               to="/dashboard/users_managed-form"
               className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
             >
@@ -159,11 +150,13 @@ const Sidebar = ({ isSidebarOpen }) => {
               <span className="ms-3">Manage Users</span>
             </NavLink>
           </li>
+
+          {/* Manage Customers */}
           <li>
             <NavLink
               to="/dashboard/customer-managed-form"
               className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-             >
+            >
               <FaUsers className="w-5 h-5" />
               <span className="ms-3">Manage Customers</span>
             </NavLink>
