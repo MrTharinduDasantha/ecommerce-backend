@@ -132,42 +132,47 @@ const CustomerManagedForm = () => {
         </div>
 
         <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className="p-3 text-left">Customer ID</th>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Email</th>
-              <th className="p-3 text-left">Phone</th>
-              <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCustomers.map((customer) => (
-              <tr key={customer.idCustomer} className="border-b">
-                <td className="p-3">{customer.idCustomer}</td>
-                <td className="p-3">{customer.Full_Name}</td>
-                <td className="p-3">{customer.Email}</td>
-                <td className="p-3">{customer.Mobile_No}</td>
-                <td className="p-3">{customer.Status}</td>
-                <td className="p-3 space-x-2">
-                  <button
-                    onClick={() => handleEdit(customer.idCustomer)}
-                    className="text-yellow-500"
-                  >
-                    <FaEdit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(customer.idCustomer)}
-                    className="text-red-500"
-                  >
-                    <FaTrashAlt className="w-5 h-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  <thead>
+    <tr>
+      <th className="p-3 text-left">Customer ID</th>
+      <th className="p-3 text-left">Name</th>
+      <th className="p-3 text-left">Email</th>
+      <th className="p-3 text-left">Phone</th>
+      <th className="p-3 text-left">Status</th>
+      <th className="p-3 text-left">Created At</th> {/* New Column */}
+      <th className="p-3 text-left">Updated At</th> {/* New Column */}
+      <th className="p-3 text-left">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filteredCustomers.map((customer) => (
+      <tr key={customer.idCustomer} className="border-b">
+        <td className="p-3">{customer.idCustomer}</td>
+        <td className="p-3">{customer.Full_Name}</td>
+        <td className="p-3">{customer.Email}</td>
+        <td className="p-3">{customer.Mobile_No}</td>
+        <td className="p-3">{customer.Status}</td>
+        <td className="p-3">{new Date(customer.created_at).toLocaleString()}</td> {/* Display Created At */}
+        <td className="p-3">{new Date(customer.updated_at).toLocaleString()}</td> {/* Display Updated At */}
+        <td className="p-3 space-x-2">
+          <button
+            onClick={() => handleEdit(customer.idCustomer)}
+            className="text-yellow-500"
+          >
+            <FaEdit className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => handleDelete(customer.idCustomer)}
+            className="text-red-500"
+          >
+            <FaTrashAlt className="w-5 h-5" />
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
       </div>
     </div>
   );

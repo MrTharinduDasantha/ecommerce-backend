@@ -2,7 +2,7 @@ const pool = require('../config/database'); // Import MySQL connection pool
 
 // Get all users
 const getAllUsers = async () => {
-  const [rows] = await pool.query('SELECT * FROM users');
+  const [rows] = await pool.query('SELECT idUser,Full_Name, Email, Password, Phone_No, Status,created_at, updated_at FROM users');
   return rows;
 };
 
