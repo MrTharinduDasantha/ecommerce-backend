@@ -1,10 +1,7 @@
 const User = require("../../models/user.model");
 const bcrypt = require("bcryptjs");
-const User = require('../../models/user.model');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // Importing JWT
-const sendConfirmationEmail = require('../../utils/mailer');
-
+const jwt = require("jsonwebtoken"); // Importing JWT
+const sendConfirmationEmail = require("../../utils/mailer");
 // Get all users
 const getUsers = async (req, res) => {
   try {
@@ -18,7 +15,7 @@ const getUsers = async (req, res) => {
 // Get a single user
 const getUser = async (req, res) => {
   try {
-    console.log('Fetching user with ID:', req.params.id); // Log the ID
+    console.log("Fetching user with ID:", req.params.id); // Log the ID
     const user = await User.getUserById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
@@ -26,7 +23,6 @@ const getUser = async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 };
-
 
 // Add a new user
 const createUser = async (req, res) => {
@@ -46,14 +42,9 @@ const createUser = async (req, res) => {
       status || "Active"
     );
 
-    // Send response with the new user's ID
     res.status(201).json({ id: userId, message: "User added successfully" });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Database error", details: error.message });
-    res.status(201).json({ id: userId, message: 'User added successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Database error', details: error.message });
   }
 };
 
@@ -63,24 +54,18 @@ const updateUser = async (req, res) => {
 
     // Validate email format if necessary
     if (!validateEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
+      return res.status(400).json({ error: "Invalid email format" });
     }
 
     // Update user in the database
     await User.updateUser(req.params.id, full_name, email, phone_no, status);
-    res.json({ message: "User updated successfully" });
-  } catch (error) {
-    console.error("Update error:", error); // More specific error message
-    res.status(500).json({ error: "Database error", details: error.message });
-  }
-};
 
     // Send confirmation email after the update
     sendConfirmationEmail(email); // Send email confirmation
 
-    res.json({ message: 'User updated successfully' });
+    res.json({ message: "User updated successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Database error', details: error.message });
+    res.status(500).json({ error: "Database error", details: error.message });
   }
 };
 
@@ -99,15 +84,10 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Login user
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log('Received login attempt for:', email); // Add logging for email
+    console.log("Received login attempt for:", email); // Add logging for email
 
     if (!email || !password) {
       return res
@@ -117,7 +97,7 @@ const loginUser = async (req, res) => {
 
     // Fetch user by email
     const user = await User.getUserByEmail(email);
-    console.log('User fetched from DB:', user); // Log user from DB
+    console.log("User fetched from DB:", user); // Log user from DB
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -130,11 +110,9 @@ const loginUser = async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.idUser }, 
-      'your-secret-key', 
-      { expiresIn: '1h' }
-    );
+    const token = jwt.sign({ userId: user.idUser }, "your-secret-key", {
+      expiresIn: "1h",
+    });
 
     // Send the response with the token
     res.json({
@@ -144,27 +122,23 @@ const loginUser = async (req, res) => {
       email: user.Email,
       phoneNo: user.Phone_No,
       status: user.Status,
-      token: token
+      token: token,
     });
   } catch (error) {
+    console.error("Error during login:", error); // Log any unexpected errors
     res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-    console.error('Error during login:', error); // Log any unexpected errors
-    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 const getProfile = async (req, res) => {
   try {
-    console.log('User info from JWT:', req.user); // This should print user info like { userId: 2 }
+    console.log("User info from JWT:", req.user); // This should print user info like { userId: 2 }
     const user = await User.getUserById(req.user.userId); // Fetch user based on decoded userId
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
-    console.error('Error fetching profile:', error); // Log the error
-    res.status(500).json({ error: 'Database error' });
+    console.error("Error fetching profile:", error); // Log the error
+    res.status(500).json({ error: "Database error" });
   }
 };
 
@@ -176,15 +150,15 @@ const updateProfile = async (req, res) => {
 
     // Validate the input data
     if (!full_name || !email || !phone_no) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: "All fields are required" });
     }
 
     // Update user profile in database
     await User.updateUser(userId, full_name, email, phone_no, status);
 
-    res.json({ message: 'Profile updated successfully' });
+    res.json({ message: "Profile updated successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Database error', details: error.message });
+    res.status(500).json({ error: "Database error", details: error.message });
   }
 };
 
@@ -195,7 +169,6 @@ module.exports = {
   updateUser,
   loginUser,
   deleteUser,
-};
   getProfile,
-  updateProfile
+  updateProfile,
 };
