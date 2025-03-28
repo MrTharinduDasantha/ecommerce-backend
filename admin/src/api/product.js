@@ -11,6 +11,48 @@ const api = axios.create({
   },
 });
 
+// ---------------------------
+// Product Related Api Calls
+// ---------------------------
+
+// Create a new product
+export const createProduct = async (formData) => {
+  try {
+    const response = await api.post("/api/products", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Create a new brand
+export const createBrand = async (formData) => {
+  try {
+    const response = await api.post("/api/products/brands", formData, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Get all brands
+export const getBrands = async () => {
+  try {
+    const response = await api.get("/api/products/brands");
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// --------------------------------------------
+// Category and Sub-Category Related Api Calls
+// --------------------------------------------
+
 // Get all categories
 export const getCategories = async () => {
   try {

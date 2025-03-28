@@ -14,10 +14,23 @@ const storage = multer.diskStorage({
   },
 });
 
-// Create an Instance of Multer
+// Configure Multer to accept one main image and multiple sub images
 const upload = multer({ storage });
+const cpUpload = upload.fields([
+  { name: "mainImage", maxCount: 1 },
+  { name: "subImages", maxCount: 10 },
+]);
 
-// Category Routes
+// ---------------
+// Product Routes
+// ---------------
+router.post("/", cpUpload, productController.createProduct);
+router.post("/brands", productController.createBrand);
+router.get("/brands", productController.getBrands);
+
+// ---------------------------------
+// Category and Sub-Category Routes
+// ---------------------------------
 router.get("/categories", productController.getAllCategories);
 router.post(
   "/categories",

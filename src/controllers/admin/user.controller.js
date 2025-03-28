@@ -1,14 +1,17 @@
+const User = require("../../models/user.model");
+const bcrypt = require("bcryptjs");
 const User = require('../../models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Importing JWT
 const sendConfirmationEmail = require('../../utils/mailer');
+
 // Get all users
 const getUsers = async (req, res) => {
   try {
     const users = await User.getAllUsers();
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: "Database error" });
   }
 };
 
@@ -17,10 +20,10 @@ const getUser = async (req, res) => {
   try {
     console.log('Fetching user with ID:', req.params.id); // Log the ID
     const user = await User.getUserById(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: "Database error" });
   }
 };
 
@@ -31,12 +34,23 @@ const createUser = async (req, res) => {
     const { full_name, email, password, phone_no, status } = req.body;
 
     if (!full_name || !email || !password || !phone_no) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: "All fields are required" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userId = await User.addUser(full_name, email, hashedPassword, phone_no, status || 'Active');
+    const userId = await User.addUser(
+      full_name,
+      email,
+      hashedPassword,
+      phone_no,
+      status || "Active"
+    );
 
+    // Send response with the new user's ID
+    res.status(201).json({ id: userId, message: "User added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Database error", details: error.message });
     res.status(201).json({ id: userId, message: 'User added successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Database error', details: error.message });
@@ -54,6 +68,12 @@ const updateUser = async (req, res) => {
 
     // Update user in the database
     await User.updateUser(req.params.id, full_name, email, phone_no, status);
+    res.json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error("Update error:", error); // More specific error message
+    res.status(500).json({ error: "Database error", details: error.message });
+  }
+};
 
     // Send confirmation email after the update
     sendConfirmationEmail(email); // Send email confirmation
@@ -73,11 +93,16 @@ const validateEmail = (email) => {
 const deleteUser = async (req, res) => {
   try {
     await User.deleteUser(req.params.id);
-    res.json({ message: 'User deleted successfully' });
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: "Database error" });
   }
 };
+
+// Login user
+const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
 const loginUser = async (req, res) => {
   try {
@@ -85,7 +110,9 @@ const loginUser = async (req, res) => {
     console.log('Received login attempt for:', email); // Add logging for email
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Please provide both email and password.' });
+      return res
+        .status(400)
+        .json({ error: "Please provide both email and password." });
     }
 
     // Fetch user by email
@@ -93,13 +120,13 @@ const loginUser = async (req, res) => {
     console.log('User fetched from DB:', user); // Log user from DB
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     // Compare the password with the stored hashed password
     const isMatch = await bcrypt.compare(password, user.Password);
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(400).json({ error: "Invalid credentials" });
     }
 
     // Generate JWT token
@@ -111,7 +138,7 @@ const loginUser = async (req, res) => {
 
     // Send the response with the token
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       userId: user.idUser,
       fullName: user.Full_Name,
       email: user.Email,
@@ -120,6 +147,10 @@ const loginUser = async (req, res) => {
       token: token
     });
   } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
     console.error('Error during login:', error); // Log any unexpected errors
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -157,7 +188,6 @@ const updateProfile = async (req, res) => {
   }
 };
 
-
 module.exports = {
   getUsers,
   getUser,
@@ -165,6 +195,7 @@ module.exports = {
   updateUser,
   loginUser,
   deleteUser,
+};
   getProfile,
   updateProfile
 };

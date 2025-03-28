@@ -1,15 +1,13 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import * as api from "../api/auth";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  const { login } = useContext(AuthContext); 
-
-  const { login } = useContext(AuthContext);
+  const { login } = useContext(AuthContext); // Assumes login method updates context
 
   const navigate = useNavigate();
 
@@ -20,7 +18,13 @@ const LoginForm = () => {
       setError("Please fill in all fields");
       return;
     }
+
     try {
+      const data = await api.loginUser(email, password); // Fixed reference to loginUser
+
+      if (data.message === "Login successful") {
+        login(data.userId, data.fullName);
+        localStorage.setItem("token", data.token); // Store token for future requests
 
       const data = await api.loginUser(email, password); 
       
@@ -34,9 +38,9 @@ const LoginForm = () => {
 
       await login(email, password);
       navigate("/dashboard");
-
     } catch (error) {
-      setError("Invalid credentials", error);
+      setError(error || "Invalid credentials");
+      console.error("Login error:", error);
     }
   };
 
@@ -44,7 +48,7 @@ const LoginForm = () => {
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <div className="alert alert-error">{error}</div>}
       <div className="space-y-1 text-[#2d2d2d]">
-        <label className="block text-lg font-medium ">Email</label>
+        <label className="block text-lg font-medium">Email</label>
         <input
           type="email"
           value={email}

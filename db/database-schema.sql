@@ -8,7 +8,9 @@ CREATE TABLE User (
     Email VARCHAR(45),
     Password VARCHAR(45),
     Phone_No VARCHAR(45),
-    Status VARCHAR(45)
+    Status VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Customer Table
@@ -50,15 +52,19 @@ CREATE TABLE Product_Brand (
     Brand_Name VARCHAR(45),
     ShortDescription TEXT,
     User_idUser INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (User_idUser) REFERENCES User(idUser)
 );
 
 -- Product_Category Table
 CREATE TABLE Product_Category (
     idProduct_Category INT AUTO_INCREMENT PRIMARY KEY,
-    Image_Icon_Url VARCHAR(45),
+    Image_Icon_Url VARCHAR(255),
     Description VARCHAR(45),
-    Status VARCHAR(45) DEFAULT 'active'
+    Status VARCHAR(45) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Sub_Category Table
@@ -66,6 +72,8 @@ CREATE TABLE Sub_Category (
     idSub_Category INT AUTO_INCREMENT PRIMARY KEY,
     Description VARCHAR(45),
     Product_Category_idProduct_Category INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_Category_idProduct_Category) REFERENCES Product_Category(idProduct_Category)
 );
 
@@ -81,6 +89,8 @@ CREATE TABLE Product (
     SKU VARCHAR(45),
     Sold_Qty INT,
     Latest_Rating DECIMAL(3,1),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_Brand_idProduct_Brand) REFERENCES Product_Brand(idProduct_Brand)
 );
 
@@ -88,7 +98,9 @@ CREATE TABLE Product (
 CREATE TABLE Product_Images (
     idProduct_Images INT AUTO_INCREMENT PRIMARY KEY,
     Product_idProduct INT,
-    Image_Url VARCHAR(45),
+    Image_Url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
 
@@ -96,6 +108,8 @@ CREATE TABLE Product_Images (
 CREATE TABLE Product_has_Sub_Category (
     Product_idProduct INT,
     Sub_Category_idSub_Category INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (Product_idProduct, Sub_Category_idSub_Category),
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct),
     FOREIGN KEY (Sub_Category_idSub_Category) REFERENCES Sub_Category(idSub_Category)
@@ -118,6 +132,8 @@ CREATE TABLE Product_Variations (
     Size VARCHAR(45),
     Rate DECIMAL(10,2),
     SKU VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
 
@@ -206,5 +222,7 @@ CREATE TABLE FAQ (
     Question TEXT,
     Answer TEXT,
     Product_idProduct INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
-); 
+);
