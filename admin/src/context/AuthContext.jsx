@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from "react";
 
 // Create AuthContext
 export const AuthContext = createContext();
@@ -7,16 +7,25 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   // Login function to set user details in context and localStorage
-  const login = (userId, fullName) => {
-    setUser({ userId, fullName });
-    localStorage.setItem('user', JSON.stringify({ userId, fullName }));
+  const login = (userId, fullName, email, phoneNo, status) => {
+    const userData = { userId, fullName, email, phoneNo, status };
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   // Logout function to remove user details from context and localStorage
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
   };
 
   return (

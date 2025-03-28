@@ -7,7 +7,7 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useContext(AuthContext); // Assumes login method updates context
+  const { login } = useContext(AuthContext); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,11 +19,11 @@ const LoginForm = () => {
     }
 
     try {
-      const data = await api.loginUser(email, password); // Fixed reference to loginUser
+      const data = await api.loginUser(email, password); 
       
       if (data.message === "Login successful") {
         login(data.userId, data.fullName);
-        localStorage.setItem("token", data.token); // Store token for future requests
+        localStorage.setItem("token", data.token); 
         navigate("/dashboard");
       } else {
         setError("Invalid credentials");

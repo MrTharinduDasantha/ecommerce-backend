@@ -6,7 +6,7 @@ import ProductForm from "./components/ProductForm";
 import ProductList from "./components/ProductList";
 import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
-
+import ProfilePage from "./pages/ProfilePage";
 
 const App = () => {
   return (
@@ -25,6 +25,7 @@ const App = () => {
         <Route path="users_managed-form" element={<UsersManagedForm />} /> 
         <Route path="customer-managed-form" element={<CustomerManagedForm />} /> 
       </Route>
+      <Route path="/ProfilePage" element={<ProfilePage />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
