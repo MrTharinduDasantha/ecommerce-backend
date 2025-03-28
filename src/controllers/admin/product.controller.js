@@ -24,7 +24,6 @@ async function createProduct(req, res) {
       !Market_Price ||
       !Selling_Price ||
       !Long_Description ||
-      !SKU ||
       !variations ||
       !faqs ||
       !subCategoryIds
@@ -94,7 +93,7 @@ async function createProduct(req, res) {
 // Create a new brand
 async function createBrand(req, res) {
   try {
-    const { brandName, shortDescription } = req.body;
+    const { brandName, shortDescription, userId } = req.body;
     if (!brandName) {
       return res.status(400).json({ message: "Brand name is required" });
     }
@@ -102,7 +101,7 @@ async function createBrand(req, res) {
     const result = await Product.createBrand(
       brandName,
       shortDescription,
-      req.body.userId
+      userId
     );
     res.status(201).json({
       message: "Brand created successfully",

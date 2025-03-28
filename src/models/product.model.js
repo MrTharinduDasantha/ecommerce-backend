@@ -8,7 +8,7 @@ const pool = require("../config/database");
 async function createProduct(productData) {
   const query = `
     INSERT INTO Product 
-      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SKU)
+      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description)
       VALUES (?,?,?,?,?,?,?,?,?)
   `;
 
