@@ -140,6 +140,55 @@ const Sidebar = ({ isSidebarOpen }) => {
             </NavLink>
           </li>
 
+          <li>
+            <button
+              type="button"
+              onClick={toggleProductSubMenu}
+              className={parentClasses}
+              aria-controls="dropdown-product"
+            >
+              <FaUsers className="w-5 h-5" />
+              <span className="flex-1 ms-3 text-left whitespace-nowrap">
+              Manage Users
+              </span>
+              <IoMdArrowDropdownCircle className="w-5 h-5 ml-2" />
+            </button>
+            {isProductSubMenuOpen && (
+              <ul id="dropdown-product" className="py-2 space-y-2">
+                <li>
+                  <NavLink
+                    to="/dashboard/users_managed-form"
+                    className={({ isActive }) =>
+                      `flex items-center w-full p-2 rounded-lg pl-11 transition-colors duration-300 ease-in-out group ${
+                        isActive
+                          ? "text-[#a3fe00]"
+                          : "hover:bg-gray-100 hover:text-[#2d2d2d]"
+                      }`
+                    }
+                  >
+                    Admin
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/dashboard/customer-managed-form"
+                    className={({ isActive }) =>
+                      `flex items-center w-full p-2 rounded-lg pl-11 transition-colors duration-300 ease-in-out group ${
+                        isActive
+                          ? "text-[#a3fe00]"
+                          : "hover:bg-gray-100 hover:text-[#2d2d2d]"
+                      }`
+                    }
+                  >
+                    Customer
+                  </NavLink>
+                </li>
+              </ul>
+            )}
+          </li>
+
+
+
           {/* Manage Users */}
           <li>
             <NavLink
@@ -163,6 +212,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           </li>
 
           {/* Logout */}
+
           <li>
             <NavLink
               to="#"
