@@ -11,6 +11,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+
   return (
     <nav className="fixed top-0 z-50 w-full bg-[#1D372E] border-b border-white">
       <div className="px-3 py-3 lg:px-5 lg:pl-3">
@@ -69,8 +70,22 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                   <ul className="py-1" role="none">
                     <li>
                       <Link
+
+                        to="/ProfilePage"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+                        role="menuitem"
+                      >
+                        User Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/dashboard"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+
                         to="#"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
+
                         role="menuitem"
                       >
                         Dashboard
@@ -79,7 +94,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
+
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
+
                         role="menuitem"
                       >
                         Manage Products
@@ -88,7 +107,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
+
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
+
                         role="menuitem"
                       >
                         Manage Orders
@@ -97,7 +120,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
+
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
+
                         role="menuitem"
                       >
                         Notifications
@@ -106,7 +133,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
+
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
+
                         role="menuitem"
                       >
                         Manage Users
@@ -114,8 +145,13 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     </li>
                     <li>
                       <Link
+
+                        to="/logout"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+
                         to="#"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
+
                         role="menuitem"
                       >
                         Logout

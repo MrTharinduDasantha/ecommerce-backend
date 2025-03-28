@@ -101,3 +101,12 @@ export const addCustomer = async (newCustomer) => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
+export const getProfile = async () => {
+  try {
+    const response = await api.get("/api/admin/users/profile");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
