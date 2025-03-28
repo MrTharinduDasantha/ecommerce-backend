@@ -1,12 +1,15 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import * as api from "../api/auth";
+import toast from "react-hot-toast";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -14,7 +17,7 @@ const LoginForm = () => {
     e.preventDefault();
 
     if (!email || !password) {
-      setError("Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
 
@@ -22,22 +25,29 @@ const LoginForm = () => {
       const data = await api.loginUser(email, password);
 
       if (data.message === "Login successful") {
-        login(data.userId, data.fullName);
+        // Pass additional details if available
+        login(
+          data.userId,
+          data.fullName,
+          data.email,
+          data.phoneNo,
+          data.status
+        );
         localStorage.setItem("token", data.token);
+        toast.success("Login successful");
         navigate("/dashboard");
       } else {
-        setError("Invalid credentials");
+        toast.error("Invalid credentials");
       }
     } catch (error) {
-      setError(error || "Invalid credentials");
+      toast.error(error.message || "Invalid credentials");
       console.error("Login error:", error);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="alert alert-error">{error}</div>}
-      <div className="space-y-1 text-[#2d2d2d]">
+      <div className="space-y-1 text-[#1D372E]">
         <label className="block text-lg font-medium">Email</label>
         <input
           type="email"
@@ -47,20 +57,26 @@ const LoginForm = () => {
           placeholder="Enter your email"
         />
       </div>
-      <div className="space-y-1 text-[#2d2d2d]">
+      <div className="space-y-1 text-[#1D372E] relative">
         <label className="block text-lg font-medium">Password</label>
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="input bg-white border-2 border-[#2d2d2d] w-full"
+          className="input bg-white border-2 border-[#1D372E] w-full pr-10"
           placeholder="Enter your password"
         />
+        <span
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute bottom-3.5 right-3 cursor-pointer text-xl text-[#1D372E]"
+        >
+          {showPassword ? <IoMdEyeOff /> : <IoMdEye />}
+        </span>
       </div>
       <div>
         <button
           type="submit"
-          className="mt-2 btn btn-primary bg-[#a3fe00] hover:bg-[#77c900] border-none text-[#2d2d2d] transition-colors duration-300 ease-in-out w-full"
+          className="mt-2 btn btn-primary bg-[#5CAF90] border-none text-white w-full"
         >
           Login
         </button>

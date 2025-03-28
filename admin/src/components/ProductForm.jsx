@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill, RiDeleteBack2Fill } from "react-icons/ri";
 import { FaRegCheckSquare, FaCheckSquare } from "react-icons/fa";
@@ -11,18 +12,17 @@ import {
 import toast from "react-hot-toast";
 
 const ProductForm = () => {
+  const { user } = useContext(AuthContext);
   // Product Fields
   const [description, setDescription] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
   const [marketPrice, setMarketPrice] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
   const [subDescription, setSubDescription] = useState("");
-  const [sku, setSku] = useState("");
 
   // Subcategories
   const [availableSubCategories, setAvailableSubCategories] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
-  console.log(selectedSubCategories);
 
   // Single main image
   const [mainImage, setMainImage] = useState(null);
@@ -110,6 +110,7 @@ const ProductForm = () => {
       const brandData = {
         brandName: newBrandName,
         shortDescription: newBrandDescription,
+        userId: user.userId,
       };
       await createBrand(brandData);
       toast.success("Brand added successfully");
@@ -231,7 +232,6 @@ const ProductForm = () => {
     formData.append("Market_Price", marketPrice);
     formData.append("Selling_Price", sellingPrice);
     formData.append("Long_Description", subDescription);
-    formData.append("SKU", sku);
     if (mainImage) {
       formData.append("mainImage", mainImage);
     }
@@ -254,7 +254,6 @@ const ProductForm = () => {
       setMarketPrice("");
       setSellingPrice("");
       setSubDescription("");
-      setSku("");
       setMainImage(null);
       setMainImagePreview(null);
       setSubImages([]);
@@ -335,7 +334,9 @@ const ProductForm = () => {
                 onChange={(e) => setSelectedBrand(e.target.value)}
                 className="select select-bordered w-full bg-white border-2 border-[#1D372E]"
               >
-                <option value="">Select Brand</option>
+                <option value="" className="font-bold">
+                  Select Brand
+                </option>
                 {brands.map((brand, index) => (
                   <option key={index} value={brand.idProduct_Brand}>
                     {brand.Brand_Name}
