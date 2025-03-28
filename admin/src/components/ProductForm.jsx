@@ -2,23 +2,27 @@ import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill, RiDeleteBack2Fill } from "react-icons/ri";
 import { FaRegCheckSquare, FaCheckSquare } from "react-icons/fa";
+import {
+  createProduct,
+  createBrand,
+  getBrands,
+  getCategories,
+} from "../api/product";
+import toast from "react-hot-toast";
 
 const ProductForm = () => {
-  // Main form states
-  // eslint-disable-next-line no-unused-vars
-  const [productName, setProductName] = useState("");
+  // Product Fields
   const [description, setDescription] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
-  const [subDescription, setSubDescription] = useState("");
   const [marketPrice, setMarketPrice] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
+  const [subDescription, setSubDescription] = useState("");
+  const [sku, setSku] = useState("");
 
   // Subcategories
-  const categoryData = [
-    { category: "Electronics", subCategories: ["Mobile", "Laptop"] },
-    { category: "Clothing", subCategories: ["Men's Wear", "Women's Wear"] },
-  ];
-  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+  const [availableSubCategories, setAvailableSubCategories] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+  console.log(selectedSubCategories);
 
   // Single main image
   const [mainImage, setMainImage] = useState(null);
@@ -29,23 +33,17 @@ const ProductForm = () => {
   const [subImagesPreview, setSubImagesPreview] = useState([]);
 
   // Brands
-  const [brands, setBrands] = useState([
-    { name: "Apple" },
-    { name: "Samsung" },
-    { name: "Nike" },
-    { name: "Adidas" },
-  ]);
+  const [brands, setBrands] = useState([]);
   const [brandPopupVisible, setBrandPopupVisible] = useState(false);
   const [newBrandName, setNewBrandName] = useState("");
+  const [newBrandDescription, setNewBrandDescription] = useState("");
 
-  // Color/Size/Quantity states
+  // Variations (Color/Size/Quantity)
   const [colorName, setColorName] = useState("");
   const [colorPickerValue, setColorPickerValue] = useState("#ffffff");
   const [isColorLocked, setIsColorLocked] = useState(false);
   const [size, setSize] = useState("");
   const [colorQuantity, setColorQuantity] = useState("");
-
-  // Table for color/size/quantity
   const [variations, setVariations] = useState([]);
 
   // FAQ states
@@ -82,18 +80,6 @@ const ProductForm = () => {
     setSubImagesPreview((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Handlers for subcategory multi-select
-  const handleSubcategorySelect = (e) => {
-    const selectedValue = e.target.value;
-    if (selectedValue && !selectedSubcategories.includes(selectedValue)) {
-      setSelectedSubcategories((prev) => [...prev, selectedValue]);
-    }
-  };
-
-  const removeSubcategory = (subcat) => {
-    setSelectedSubcategories((prev) => prev.filter((sc) => sc !== subcat));
-  };
-
   // Brand popup handlers
   const openBrandPopup = () => {
     setBrandPopupVisible(true);
@@ -102,6 +88,7 @@ const ProductForm = () => {
   const closeBrandPopup = () => {
     setBrandPopupVisible(false);
     setNewBrandName("");
+    setNewBrandDescription("");
   };
 
   // Hide scrollbar when popup is open, restore when closed
@@ -113,84 +100,57 @@ const ProductForm = () => {
     }
   }, [brandPopupVisible]);
 
-  const handleAddBrand = () => {
-    if (newBrandName.trim() !== "") {
-      setBrands((prev) => [...prev, { name: newBrandName }]);
+  const handleAddBrand = async () => {
+    if (newBrandName.trim() === "") {
+      toast.error("Brand name is required");
+      return;
     }
-    closeBrandPopup();
+
+    try {
+      const brandData = {
+        brandName: newBrandName,
+        shortDescription: newBrandDescription,
+      };
+      await createBrand(brandData);
+      toast.success("Brand added successfully");
+      loadBrands();
+      closeBrandPopup();
+    } catch (error) {
+      toast.error(error.message || "Failed to add brand");
+    }
   };
 
-  // Helper mapping for color names to hex
-  const colorNameMap = {
-    black: "#000000",
-    white: "#ffffff",
-    red: "#ff0000",
-    green: "#00ff00",
-    blue: "#0000ff",
+  const loadBrands = async () => {
+    try {
+      const data = await getBrands();
+      setBrands(data.brands);
+    } catch (error) {
+      toast.error(error.message || "Failed to load brands");
+    }
   };
 
-  // A helper to decide how the input should be styled based on current color
-  const getInputStyle = () => {
-    // If locked, always use colorPickerValue as background
-    let bg = isColorLocked ? colorPickerValue : "#ffffff";
-    let txt = "#ffffff";
-
-    // If not locked, but user typed a recognized color or a valid hex,
-    // we show that in the input’s background. Otherwise, keep it white.
-    if (!isColorLocked && colorName.trim()) {
-      const typed = colorName.trim().toLowerCase();
-      const recognizedHex = colorNameMap[typed];
-      const isHex =
-        typed.startsWith("#") && (typed.length === 4 || typed.length === 7);
-
-      if (recognizedHex) {
-        bg = recognizedHex;
-      } else if (isHex) {
-        bg = typed;
-      } else {
-        // Unrecognized => keep default white background
-        bg = "#ffffff";
-        txt = "#000000";
-      }
+  const loadSubCategories = async () => {
+    try {
+      const data = await getCategories();
+      setAvailableSubCategories(data.categories);
+    } catch (error) {
+      toast.error(error.message || "Failed to load subcategories");
     }
-
-    // Now decide text color:
-    // If the final background is white, use black text so it's visible
-    if (bg.toLowerCase() === "#ffffff") {
-      txt = "#000000";
-    } else {
-      // Otherwise, use white text
-      txt = "#ffffff";
-    }
-
-    return {
-      backgroundColor: bg,
-      color: txt,
-    };
   };
 
   const toggleColorLock = () => {
     if (!isColorLocked) {
-      const typedColor = colorName.trim().toLowerCase();
-      const recognizedHex = colorNameMap[typedColor];
-      const isHex =
-        typedColor.startsWith("#") &&
-        (typedColor.length === 4 || typedColor.length === 7);
-
-      if (recognizedHex) {
-        // Lock to recognized color
-        setColorPickerValue(recognizedHex);
-        setIsColorLocked(true);
-      } else if (isHex) {
-        // Lock to typed hex
-        setColorPickerValue(typedColor);
+      // Validate the colorName: if it's a valid hex (e.g. "#abc" or "#aabbcc") or a recognized color name.
+      const hexRegex = /^#([0-9A-F]{3}|[0-9A-F]{6})$/i;
+      if (colorName.trim() && hexRegex.test(colorName.trim())) {
+        setColorPickerValue(colorName.trim().toLowerCase());
         setIsColorLocked(true);
       } else {
-        // Not recognized => clear the input
-        setColorName("");
+        // If no valid value was typed, show an error.
+        toast.error("Please enter a valid hex color");
+        return;
       }
     } else {
-      // Already locked => unlock, reset everything
       setIsColorLocked(false);
       setColorName("");
       setColorPickerValue("#ffffff");
@@ -200,35 +160,32 @@ const ProductForm = () => {
   const handleColorPickerChange = (e) => {
     const newHex = e.target.value.toLowerCase();
     setColorPickerValue(newHex);
+    setColorName(newHex);
+  };
 
-    // If it matches a known name, show that name in the input
-    const foundName = Object.keys(colorNameMap).find(
-      (cName) => colorNameMap[cName] === newHex
-    );
-    if (foundName) {
-      // E.g. "white" => "White"
-      setColorName(foundName.charAt(0).toUpperCase() + foundName.slice(1));
-    } else {
-      // Just store the hex code in the input
-      setColorName(newHex);
-    }
+  // Variation Handlers
+  const getInputStyle = () => {
+    let bg = isColorLocked ? colorPickerValue : "#ffffff";
+    let txt = bg === "#ffffff" ? "#000000" : "#ffffff";
+    return { backgroundColor: bg, color: txt };
   };
 
   // Add variation (color/size/quantity) to table
   const handleAddVariation = () => {
-    // Only add if color is locked and size & quantity are filled
-    if (isColorLocked && size.trim() !== "" && colorQuantity.trim() !== "") {
+    if (isColorLocked && size.trim() && colorQuantity.trim()) {
       const newVar = {
         colorCode: colorPickerValue,
         size: size,
         quantity: colorQuantity,
       };
       setVariations((prev) => [...prev, newVar]);
-      // Reset size & quantity fields
       setSize("");
       setColorQuantity("");
-      // Optionally keep color locked or unlock, depending on your preference
-      // We'll keep it locked so user can keep adding with the same color if desired
+      setColorPickerValue("#ffffff");
+      setIsColorLocked(false);
+      setColorName("");
+    } else {
+      toast.error("Color, size and quantity are required");
     }
   };
 
@@ -239,15 +196,16 @@ const ProductForm = () => {
 
   // Add FAQ to table
   const handleAddFaq = () => {
-    if (faqQuestion.trim() !== "" && faqAnswer.trim() !== "") {
+    if (faqQuestion.trim() && faqAnswer.trim()) {
       const newFaq = {
         question: faqQuestion,
         answer: faqAnswer,
       };
       setFaqs((prev) => [...prev, newFaq]);
-      // Reset inputs
       setFaqQuestion("");
       setFaqAnswer("");
+    } else {
+      toast.error("Question and answer are required");
     }
   };
 
@@ -257,25 +215,97 @@ const ProductForm = () => {
   };
 
   // Form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement API call to save product in DB
-    // Here you would collect all form data and send to server
-    console.log({
-      productName,
-      description,
-      selectedBrand,
-      selectedSubcategories,
-      marketPrice,
-      sellingPrice,
-      mainImage,
-      subImages,
-      subDescription,
-      variations,
-      faqs,
+
+    // Validate required fields
+    if (!description.trim() || !selectedBrand.trim()) {
+      toast.error("Description and brand are required");
+      return;
+    }
+
+    // Build FormData
+    const formData = new FormData();
+    formData.append("Description", description);
+    formData.append("Product_Brand_idProduct_Brand", selectedBrand);
+    formData.append("Market_Price", marketPrice);
+    formData.append("Selling_Price", sellingPrice);
+    formData.append("Long_Description", subDescription);
+    formData.append("SKU", sku);
+    if (mainImage) {
+      formData.append("mainImage", mainImage);
+    }
+    // For multiple sub images
+    subImages.forEach((file) => {
+      formData.append("subImages", file);
     });
+    // Append JSON stringified arrays
+    formData.append("variations", JSON.stringify(variations));
+    formData.append("faqs", JSON.stringify(faqs));
+    formData.append("subCategoryIds", JSON.stringify(selectedSubCategories));
+
+    try {
+      await createProduct(formData);
+      toast.success("Product added successfully");
+
+      // Clear all fields
+      setDescription("");
+      setSelectedBrand("");
+      setMarketPrice("");
+      setSellingPrice("");
+      setSubDescription("");
+      setSku("");
+      setMainImage(null);
+      setMainImagePreview(null);
+      setSubImages([]);
+      setSubImagesPreview([]);
+      setVariations([]);
+      setFaqs([]);
+      setSelectedSubCategories([]);
+      setColorName("");
+      setColorPickerValue("#ffffff");
+      setIsColorLocked(false);
+      setSize("");
+      setColorQuantity("");
+    } catch (error) {
+      toast.error(error.message || "Failed to add product");
+    }
   };
 
+  // Load brands and available subcategories on mount
+  useEffect(() => {
+    loadBrands();
+    loadSubCategories();
+  }, []);
+
+  // Handler for subcategory select
+  const handleSubcategorySelect = (e) => {
+    const subId = e.target.value;
+    if (subId) {
+      // Find the subcategory object from availableSubCategories
+      let selectedSubcat = null;
+      availableSubCategories.forEach((category) => {
+        if (category.subcategories) {
+          const found = category.subcategories.find(
+            (sub) => String(sub.idSub_Category) === subId
+          );
+          if (found) {
+            selectedSubcat = found;
+          }
+        }
+      });
+
+      // Only add if not already added (using id)
+      if (
+        selectedSubcat &&
+        !selectedSubCategories.some(
+          (sc) => sc.idSub_Category === selectedSubcat.idSub_Category
+        )
+      ) {
+        setSelectedSubCategories((prev) => [...prev, selectedSubcat]);
+      }
+    }
+  };
   return (
     <div className="max-w-5xl mx-auto my-5 p-10 bg-white rounded-md shadow-md">
       {/* Heading */}
@@ -307,8 +337,8 @@ const ProductForm = () => {
               >
                 <option value="">Select Brand</option>
                 {brands.map((brand, index) => (
-                  <option key={index} value={brand.name}>
-                    {brand.name}
+                  <option key={index} value={brand.idProduct_Brand}>
+                    {brand.Brand_Name}
                   </option>
                 ))}
               </select>
@@ -346,29 +376,40 @@ const ProductForm = () => {
               className="w-full select select-bordered bg-white border-2 border-[#1D372E]"
               onChange={handleSubcategorySelect}
             >
-              <option value="">Select Sub Category</option>
-              {categoryData.map((cat, cIndex) => (
-                <optgroup key={cIndex} label={cat.category}>
-                  {cat.subCategories.map((subcat, sIndex) => (
-                    <option key={sIndex} value={subcat}>
-                      {subcat}
-                    </option>
-                  ))}
+              <option value="" className="font-bold">
+                Select Sub Category
+              </option>
+              {availableSubCategories.map((cat, cIndex) => (
+                <optgroup key={cIndex} label={cat.Description}>
+                  {" "}
+                  {/* Category name */}
+                  {cat.subcategories &&
+                    cat.subcategories.map((subcat, sIndex) => (
+                      <option key={sIndex} value={subcat.idSub_Category}>
+                        {subcat.Description}
+                      </option>
+                    ))}
                 </optgroup>
               ))}
             </select>
 
             {/* Display selected subcategories below the input */}
             <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
-              {selectedSubcategories.map((subcat, index) => (
+              {selectedSubCategories.map((subcat, index) => (
                 <div
                   key={index}
                   className="inline-flex items-center bg-[#5CAF90] text-white px-3 py-2 rounded flex-shrink-0"
                 >
-                  <span className="mr-2">{subcat}</span>
+                  <span className="mr-2">{subcat.Description}</span>
                   <RiDeleteBack2Fill
                     className="cursor-pointer"
-                    onClick={() => removeSubcategory(subcat)}
+                    onClick={() =>
+                      setSelectedSubCategories((prev) =>
+                        prev.filter(
+                          (sc) => sc.idSub_Category !== subcat.idSub_Category
+                        )
+                      )
+                    }
                   />
                 </div>
               ))}
@@ -478,10 +519,10 @@ const ProductForm = () => {
                 type="text"
                 value={colorName}
                 onChange={(e) => setColorName(e.target.value)}
-                placeholder="Enter color name or hex"
+                placeholder="Enter color hex value"
                 className="input input-bordered w-full bg-white border-2 border-[#1D372E] placeholder:text-gray-400"
                 disabled={isColorLocked}
-                style={getInputStyle()} // <-- Use dynamic style
+                style={getInputStyle()}
               />
 
               {/* Color Display Box */}
@@ -489,11 +530,7 @@ const ProductForm = () => {
                 <div
                   className="w-10 h-10 border-2 border-[#1D372E] rounded cursor-pointer"
                   style={{ backgroundColor: colorPickerValue }}
-                  onClick={() => {
-                    // Programmatically open the hidden color input
-                    const picker = document.getElementById("colorPicker");
-                    if (picker) picker.click();
-                  }}
+                  onClick={() => document.getElementById("colorPicker").click()}
                 />
                 <input
                   id="colorPicker"
@@ -600,7 +637,7 @@ const ProductForm = () => {
           </div>
         )}
 
-        {/* --- Frequently Ask Question Section --- */}
+        {/* Frequently Ask Question Section */}
         <div className="flex flex-wrap gap-5 mt-6">
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
             <label className="block text-lg font-medium mb-1">
@@ -685,7 +722,7 @@ const ProductForm = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
           <div className="bg-white rounded-md p-8 w-[90%] max-w-lg relative">
             {/* Popup Header */}
-            <div className="flex justify-between items-center text-[#1D372E] mb-6">
+            <div className="flex justify-between items-center text-[#1D372E] mb-5">
               <h3 className="text-xl font-bold">Add Brand</h3>
               <button onClick={closeBrandPopup} className="cursor-pointer">
                 <IoClose size={24} />
@@ -693,8 +730,8 @@ const ProductForm = () => {
             </div>
 
             {/* Add Brand Form */}
-            <div className="flex items-center text-[#1D372E] mb-5">
-              <label className="block text-lg font-medium min-w-[125px]">
+            <div className="text-[#1D372E] mb-4">
+              <label className="block text-lg font-medium mb-2">
                 Brand Name
               </label>
               <input
@@ -704,6 +741,18 @@ const ProductForm = () => {
                 placeholder="Enter brand name"
                 className="input input-bordered w-full bg-white border-2 border-[#1D372E]"
               />
+            </div>
+            <div className="text-[#1D372E] mb-8">
+              <label className="block text-lg font-medium mb-2">
+                Brand Description
+              </label>
+              <textarea
+                value={newBrandDescription}
+                onChange={(e) => setNewBrandDescription(e.target.value)}
+                placeholder="Enter brand description"
+                className="textarea w-full bg-white border-2 border-[#1D372E]"
+                rows={3}
+              ></textarea>
             </div>
 
             <div className="flex justify-end">

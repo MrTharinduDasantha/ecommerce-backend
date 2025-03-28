@@ -1,5 +1,134 @@
 const Product = require("../../models/product.model");
 
+// --------------------------
+// Product Related Functions
+// --------------------------
+
+// Create a new product
+async function createProduct(req, res) {
+  try {
+    const {
+      Description,
+      Product_Brand_idProduct_Brand,
+      Market_Price,
+      Selling_Price,
+      Long_Description,
+      SKU,
+      variations, // (array of variation objects)
+      faqs, // (array of faq objects)
+      subCategoryIds, // (array of subcategory ids)
+    } = req.body;
+    if (
+      !Description ||
+      !Product_Brand_idProduct_Brand ||
+      !Market_Price ||
+      !Selling_Price ||
+      !Long_Description ||
+      !SKU ||
+      !variations ||
+      !faqs ||
+      !subCategoryIds
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Build the ful URL for the uploaded main image
+    let mainImageUrl = null;
+    if (req.file) {
+      mainImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        req.file.filename
+      }`;
+    }
+
+    const productData = {
+      Description,
+      Product_Brand_idProduct_Brand,
+      Market_Price,
+      Selling_Price,
+      Main_Image_Url: mainImageUrl,
+      Long_Description,
+      SKU,
+    };
+    const result = await Product.createProduct(productData);
+    const productId = result.insertId;
+
+    if (req.files && req.files.subImages) {
+      for (const file of req.files.subImages) {
+        const imageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+          file.filename
+        }`;
+        await Product.createProductImages(productId, imageUrl);
+      }
+    }
+
+    if (variations) {
+      const variationData = JSON.parse(variations);
+      for (const variation of variationData) {
+        await Product.createProductVariant(productId, variation);
+      }
+    }
+
+    if (faqs) {
+      const faqData = JSON.parse(faqs);
+      for (const faq of faqData) {
+        await Product.createProductFaq(productId, faq);
+      }
+    }
+
+    if (subCategoryIds) {
+      const subCategoryData = JSON.parse(subCategoryIds);
+      for (const subCategoryId of subCategoryData) {
+        await Product.createProductSubCategory(productId, subCategoryId);
+      }
+    }
+
+    res
+      .status(201)
+      .json({ message: "Product created successfully", productId });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ message: "Failed to create product" });
+  }
+}
+
+// Create a new brand
+async function createBrand(req, res) {
+  try {
+    const { brandName, shortDescription } = req.body;
+    if (!brandName) {
+      return res.status(400).json({ message: "Brand name is required" });
+    }
+
+    const result = await Product.createBrand(
+      brandName,
+      shortDescription,
+      req.body.userId
+    );
+    res.status(201).json({
+      message: "Brand created successfully",
+      insertId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error creating brand:", error);
+    res.status(500).json({ message: "Failed to create brand" });
+  }
+}
+
+// Fetch all brands
+async function getBrands(req, res) {
+  try {
+    const brands = await Product.getBrands();
+    res.status(200).json({ message: "Brands fetched successfully", brands });
+  } catch (error) {
+    console.error("Error fetching brands:", error);
+    res.status(500).json({ message: "Failed to fetch brands" });
+  }
+}
+
+// --------------------------------------------
+// Category and Subcategory Related Functions
+// --------------------------------------------
+
 // Fetch all categories with subcategories
 async function getAllCategories(req, res) {
   try {
@@ -114,6 +243,9 @@ async function deleteSubCategory(req, res) {
 }
 
 module.exports = {
+  createProduct,
+  createBrand,
+  getBrands,
   getAllCategories,
   createCategory,
   updateCategory,
