@@ -56,7 +56,9 @@ CREATE TABLE Product_Brand (
 -- Product_Category Table
 CREATE TABLE Product_Category (
     idProduct_Category INT AUTO_INCREMENT PRIMARY KEY,
-    Image_Icon_Url VARCHAR(45)
+    Image_Icon_Url VARCHAR(45),
+    Description VARCHAR(45),
+    Status VARCHAR(45) DEFAULT 'active'
 );
 
 -- Sub_Category Table
@@ -72,13 +74,13 @@ CREATE TABLE Product (
     idProduct INT AUTO_INCREMENT PRIMARY KEY,
     Description VARCHAR(45),
     Product_Brand_idProduct_Brand INT,
-    Market_Price VARCHAR(45),
-    Selling_Price VARCHAR(45),
+    Market_Price DECIMAL(10,2),
+    Selling_Price DECIMAL(10,2),
     Main_Image_Url TEXT,
     Long_Description TEXT,
     SKU VARCHAR(45),
-    Sold_Qty VARCHAR(45),
-    Latest_Rating VARCHAR(45),
+    Sold_Qty INT,
+    Latest_Rating DECIMAL(3,1),
     FOREIGN KEY (Product_Brand_idProduct_Brand) REFERENCES Product_Brand(idProduct_Brand)
 );
 
@@ -103,8 +105,8 @@ CREATE TABLE Product_has_Sub_Category (
 CREATE TABLE Cart (
     idCart INT AUTO_INCREMENT PRIMARY KEY,
     Customer_idCustomer INT,
-    Total_Items VARCHAR(45),
-    Total_Amount VARCHAR(45),
+    Total_Items INT,
+    Total_Amount DECIMAL(10,2),
     FOREIGN KEY (Customer_idCustomer) REFERENCES Customer(idCustomer)
 );
 
@@ -114,7 +116,7 @@ CREATE TABLE Product_Variations (
     Product_idProduct INT,
     Colour VARCHAR(45),
     Size VARCHAR(45),
-    Rate VARCHAR(45),
+    Rate DECIMAL(10,2),
     SKU VARCHAR(45),
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
@@ -123,12 +125,12 @@ CREATE TABLE Product_Variations (
 CREATE TABLE Cart_has_Product (
     Cart_idCart INT,
     Product_Variations_idProduct_Variations INT,
-    Rate VARCHAR(45),
-    Qty VARCHAR(45),
-    Total_Amount VARCHAR(45),
-    Discount_Percentage VARCHAR(45),
-    Discount_Amount VARCHAR(45),
-    NetAmount VARCHAR(45),
+    Rate DECIMAL(10,2),
+    Qty INT,
+    Total_Amount DECIMAL(10,2),
+    Discount_Percentage DECIMAL(5,2),
+    Discount_Amount DECIMAL(10,2),
+    NetAmount DECIMAL(10,2),
     Note TEXT,
     Discounts_idDiscounts INT,
     PRIMARY KEY (Cart_idCart, Product_Variations_idProduct_Variations),
@@ -142,7 +144,7 @@ CREATE TABLE Discounts (
     Product_idProduct INT,
     Description VARCHAR(45),
     Dicaunt_Type VARCHAR(45),
-    Discount_Value VARCHAR(45),
+    Discount_Value DECIMAL(10,2),
     Start_Date VARCHAR(45),
     End_Date VARCHAR(45),
     Status VARCHAR(45),
@@ -154,10 +156,10 @@ CREATE TABLE `Order` (
     idOrder INT AUTO_INCREMENT PRIMARY KEY,
     Date_Time VARCHAR(45),
     Delivery_Address_idDelivery_Address INT,
-    Total_Amount VARCHAR(45),
+    Total_Amount DECIMAL(10,2),
     Delivery_Type VARCHAR(45),
-    Delivery_Charges VARCHAR(45),
-    Net_Amount VARCHAR(45),
+    Delivery_Charges DECIMAL(10,2),
+    Net_Amount DECIMAL(10,2),
     Payment_Type VARCHAR(45),
     Payment_Stats VARCHAR(45),
     Delivery_Status VARCHAR(45),
@@ -171,12 +173,12 @@ CREATE TABLE `Order` (
 CREATE TABLE Order_has_Product_Variations (
     Order_idOrder INT,
     Product_Variations_idProduct_Variations INT,
-    Rate VARCHAR(45),
-    Qty VARCHAR(45),
-    Total VARCHAR(45),
-    Discount_Percentage VARCHAR(45),
-    Discount_Amount VARCHAR(45),
-    Total_Amount VARCHAR(45),
+    Rate DECIMAL(10,2),
+    Qty INT,
+    Total DECIMAL(10,2),
+    Discount_Percentage DECIMAL(5,2),
+    Discount_Amount DECIMAL(10,2),
+    Total_Amount DECIMAL(10,2),
     Note TEXT,
     Discounts_idDiscounts INT,
     PRIMARY KEY (Order_idOrder, Product_Variations_idProduct_Variations),
@@ -190,7 +192,7 @@ CREATE TABLE Review (
     idReview INT AUTO_INCREMENT PRIMARY KEY,
     Customer_idCustomer INT,
     Product_idProduct INT,
-    Rating_5 VARCHAR(45),
+    Rating_5 DECIMAL(2,1),
     Comment VARCHAR(45),
     Date_Time VARCHAR(45),
     Status VARCHAR(45),
