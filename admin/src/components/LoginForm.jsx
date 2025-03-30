@@ -48,22 +48,22 @@ const LoginForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1 text-[#1D372E]">
-        <label className="block text-lg font-medium">Email</label>
+        <label className="block font-medium">Email</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="input bg-white border-2 border-[#2d2d2d] w-full"
+          className="input bg-white border-2 border-[#2d2d2d] w-full rounded-2xl"
           placeholder="Enter your email"
         />
       </div>
       <div className="space-y-1 text-[#1D372E] relative">
-        <label className="block text-lg font-medium">Password</label>
+        <label className="block font-medium">Password</label>
         <input
           type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="input bg-white border-2 border-[#1D372E] w-full pr-10"
+          className="input bg-white border-2 border-[#1D372E] rounded-2xl w-full pr-10"
           placeholder="Enter your password"
         />
         <span
@@ -76,7 +76,7 @@ const LoginForm = () => {
       <div>
         <button
           type="submit"
-          className="mt-2 btn btn-primary bg-[#5CAF90] border-none text-white w-full"
+          className="mt-2 btn btn-primary bg-[#5CAF90] border-none text-white w-full rounded-2xl"
         >
           Login
         </button>

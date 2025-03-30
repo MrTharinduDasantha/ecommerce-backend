@@ -15,7 +15,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#1D372E]">
       <div className="w-full max-w-96 p-8 space-y-6 bg-[#ffffff] rounded-lg shadow-lg">
-        <h2 className="text-center text-3xl font-bold text-[#1D372E]">
+        <h2 className="text-center text-2xl font-bold text-[#1D372E]">
           Admin Login
         </h2>
         <LoginForm />

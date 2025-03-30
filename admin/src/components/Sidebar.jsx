@@ -120,7 +120,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                       }`
                     }
                   >
-                    Cat & Sub
+                    Add Category
                   </NavLink>
                 </li>
                 <li>
@@ -141,34 +141,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             )}
           </li>
 
-          {/* Manage Orders */}
-          <li>
-            <NavLink
-              to="/dashboard/orders"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-            >
-              <MdDeliveryDining className="w-5 h-5" />
-              <span className="ms-3">Manage Orders</span>
-            </NavLink>
-          </li>
-
-          {/* Notifications */}
-          <li>
-            <NavLink
-              to="#"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
-            >
-              <IoNotifications className="w-5 h-5" />
-              <span className="flex-1 ms-3 whitespace-nowrap">
-                Notifications
-              </span>
-              <span className="inline-flex items-center justify-center w-3 h-3 p-2.5 ms-3 text-sm font-medium bg-white text-[#1D372E] rounded-full">
-                3
-              </span>
-            </NavLink>
-          </li>
-
-          {/* Manage Users Submenu */}
+          {/* Manage Users */}
           <li>
             <button
               type="button"
@@ -216,12 +189,39 @@ const Sidebar = ({ isSidebarOpen }) => {
             )}
           </li>
 
+          {/* Manage Orders */}
+          <li>
+            <NavLink
+              to="/dashboard/orders"
+              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
+            >
+              <MdDeliveryDining className="w-5 h-5" />
+              <span className="ms-3">Manage Orders</span>
+            </NavLink>
+          </li>
+
+          {/* Notifications */}
+          <li>
+            <NavLink
+              to="#"
+              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
+            >
+              <IoNotifications className="w-5 h-5" />
+              <span className="flex-1 ms-3 whitespace-nowrap">
+                Notifications
+              </span>
+              <span className="inline-flex items-center justify-center w-3 h-3 p-2.5 ms-3 text-sm font-medium bg-white text-[#1D372E] rounded-full">
+                3
+              </span>
+            </NavLink>
+          </li>
+
           {/* Logout */}
           <li>
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
+              className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group cursor-pointer"
             >
               <FaSignOutAlt className="w-5 h-5" />
               <span className="ms-3">Logout</span>

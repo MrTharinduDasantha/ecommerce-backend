@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill } from "react-icons/ri";
-import { FaCheckSquare, FaRegCheckSquare } from "react-icons/fa";
+import { FaCheckSquare, FaRegCheckSquare, FaEdit } from "react-icons/fa";
+import { MdAddBox } from "react-icons/md";
 import toast from "react-hot-toast";
 import {
   getCategories,
@@ -15,6 +16,7 @@ import {
 const ProductCategorySubCategoryForm = () => {
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImage, setCategoryImage] = useState(null);
+  const categoryImageRef = useRef(null);
   const [categoryImagePreview, setCategoryImagePreview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [showSubCategoryPopup, setShowSubCategoryPopup] = useState(false);
@@ -65,7 +67,7 @@ const ProductCategorySubCategoryForm = () => {
   // Handle adding or updating a category
   const handleCategoryFormSubmit = async () => {
     if (!categoryDescription.trim()) {
-      toast.error("Please enter category description");
+      toast.error("Category description is required");
       return;
     }
     const formData = new FormData();
@@ -85,6 +87,7 @@ const ProductCategorySubCategoryForm = () => {
       // Reset the form and fetch categories
       setCategoryDescription("");
       setCategoryImage(null);
+      if (categoryImageRef.current) categoryImageRef.current.value = "";
       setCategoryImagePreview(null);
       setIsEditing(false);
       setEditingCategoryId(null);
@@ -134,7 +137,7 @@ const ProductCategorySubCategoryForm = () => {
   // Handle adding a subcategory
   const handleAddSubCategory = async () => {
     if (!subCategoryDescription.trim()) {
-      toast.error("Please enter a subcategory description");
+      toast.error("Subcategory description is required");
       return;
     }
     try {
@@ -171,34 +174,35 @@ const ProductCategorySubCategoryForm = () => {
       {/* Category Form */}
       <div className="flex flex-wrap gap-5 mb-8">
         <div className="flex-1 min-w-[250px] text-[#1D372E]">
-          <label className="block text-lg font-medium mb-1">Description</label>
+          <label className="block font-medium mb-1">Description</label>
           <input
             type="text"
             value={categoryDescription}
             onChange={(e) => setCategoryDescription(e.target.value)}
             placeholder="Enter category description"
-            className="input input-bordered w-full bg-white border-2 border-[#1D372E]"
+            className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
           />
         </div>
 
         <div className="flex-1 min-w-[250px] text-[#1D372E]">
-          <label className="block text-lg font-medium mb-1">Image</label>
+          <label className="block font-medium mb-1">Image</label>
           <input
             type="file"
             onChange={handleCategoryImageChange}
-            className="file-input file-input-bordered w-full bg-white border-2 border-[#1D372E]"
+            ref={categoryImageRef}
+            className="file-input file-input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
           />
           {categoryImagePreview && (
-            <div className="relative mt-4 w-32 h-32 border border-gray-300 rounded">
+            <div className="relative mt-4 w-32 h-32">
               <img
                 src={categoryImagePreview}
                 alt="Category Preview"
-                className="object-cover w-full h-full"
+                className="object-cover w-full h-full rounded-2xl"
               />
               <button
                 type="button"
                 onClick={removeCategoryImage}
-                className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer"
+                className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer rounded-2xl"
               >
                 <RiDeleteBin5Fill size={18} />
               </button>
@@ -206,10 +210,10 @@ const ProductCategorySubCategoryForm = () => {
           )}
         </div>
 
-        <div className="mt-[30px]">
+        <div className="mt-[27px]">
           <button
             onClick={handleCategoryFormSubmit}
-            className="btn btn-primary bg-[#5CAF90] border-none"
+            className="btn btn-primary bg-[#5CAF90] border-none rounded-2xl"
           >
             {isEditing ? "Edit Category" : "Add Category"}
           </button>
@@ -269,18 +273,20 @@ const ProductCategorySubCategoryForm = () => {
                       />
                     )}
                   </td>
-                  <td className="border-2 p-2 max-w-[12rem]">
+                  <td className="border-2 p-2 max-w-[1rem]">
                     <button
                       onClick={() => handleEditCategory(cat)}
-                      className="btn btn-sm mr-2 bg-[#1D372E] text-white border-none"
+                      className="bg-[#5CAF90] p-1.5 cursor-pointer"
+                      title="Edit Category"
                     >
-                      Edit Category
+                      <FaEdit className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => openSubCategoryPopup(index)}
-                      className="btn btn-sm bg-[#1D372E] text-white border-none"
+                      className="bg-[#5CAF90] p-1.5 cursor-pointer ml-3"
+                      title="Add Sub Category"
                     >
-                      Add Sub Category
+                      <MdAddBox className="w-5 h-5" />
                     </button>
                   </td>
                 </tr>
@@ -305,7 +311,7 @@ const ProductCategorySubCategoryForm = () => {
 
                     {/* Sub Category Form */}
                     <div className="flex items-center gap-4 mb-5">
-                      <label className="block text-lg font-medium min-w-[100px]">
+                      <label className="block font-medium min-w-[100px]">
                         Description
                       </label>
                       <input
@@ -315,13 +321,13 @@ const ProductCategorySubCategoryForm = () => {
                           setSubCategoryDescription(e.target.value)
                         }
                         placeholder="Enter sub category description"
-                        className="input input-bordered w-full bg-white border-2 border-[#1D372E]"
+                        className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
                       />
                     </div>
                     <div className="flex justify-end">
                       <button
                         onClick={handleAddSubCategory}
-                        className="btn bg-[#5CAF90] border-none font-medium"
+                        className="btn bg-[#5CAF90] border-none font-medium rounded-2xl"
                       >
                         Add Sub Category
                       </button>
@@ -347,7 +353,7 @@ const ProductCategorySubCategoryForm = () => {
                                   <td className="border-2 p-2">
                                     {sub.Description}
                                   </td>
-                                  <td className="border-2 p-2 max-w-[3rem]">
+                                  <td className="border-2 p-2 max-w-[1rem]">
                                     <button
                                       onClick={() =>
                                         handleRemoveSubCategory(
@@ -355,9 +361,10 @@ const ProductCategorySubCategoryForm = () => {
                                           sub
                                         )
                                       }
-                                      className="btn btn-sm bg-[#1D372E] text-white border-none"
+                                      className="bg-[#5CAF90] p-1.5 cursor-pointer ml-3"
+                                      title="Delete Sub Category"
                                     >
-                                      Remove
+                                      <RiDeleteBin5Fill className="w-5 h-5" />
                                     </button>
                                   </td>
                                 </tr>

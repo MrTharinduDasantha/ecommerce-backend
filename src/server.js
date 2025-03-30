@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/admin/user.routes");
-const customerRoutes = require("./routes/admin/customer.routes"); // Import customer routes
+const customerRoutes = require("./routes/admin/customer.routes");
 const productRoutes = require("./routes/admin/product.routes");
 
 require("dotenv").config(); // Load environment variables from .env file
