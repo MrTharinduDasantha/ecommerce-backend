@@ -32,4 +32,7 @@ build
 
 # Archive files
 *.rar
-*.zip 
+*.zip
+
+# Test files
+test_medusa_api.py 
