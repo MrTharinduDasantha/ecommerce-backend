@@ -10,6 +10,8 @@ import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./pages/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
+import OrderList from "./components/OrderList";
+import OrderDetails from "./components/OrderDetails";
 
 // Import necessary chart.js components
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -57,11 +59,14 @@ const App = () => {
             path="dashboard-private"
             element={<DashboardPrivate />}
           />
-       
+               <Route path="orders" element={<OrderList />} />
+               <Route path="orders/:orderId" element={<OrderDetails />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
+
+
   );
 };
 
