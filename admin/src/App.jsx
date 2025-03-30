@@ -16,7 +16,6 @@ const App = () => {
       <Toaster
         position="top-center"
         toastOptions={{
-          duration: 5000,
           style: {
             background: "#5CAF90",
             color: "#fff",
@@ -39,6 +38,7 @@ const App = () => {
             element={<ProductCategorySubCategoryForm />}
           />
           <Route path="products/edit-product" element={<ProductList />} />
+          <Route path="products/edit-product/:id" element={<ProductForm />} />
           <Route path="users_managed-form" element={<UsersManagedForm />} />
           <Route
             path="customer-managed-form"
