@@ -36,6 +36,14 @@ class Customer {
     return result.affectedRows;
   }
 
+  static async updatePassword(id, newPassword) {
+    const [result] = await pool.query(
+      'UPDATE Customer SET Password = ? WHERE idCustomer = ?',
+      [newPassword, id]
+    );
+    return result.affectedRows;
+  }
+
   static async count() {
     const [result] = await pool.query('SELECT COUNT(*) as count FROM Customer');
     return result[0].count;
