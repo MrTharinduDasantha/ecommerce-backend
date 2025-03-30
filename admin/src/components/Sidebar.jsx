@@ -197,25 +197,21 @@ const Sidebar = ({ isSidebarOpen }) => {
 
           {/* Manage Orders */}
           <li>
-            <NavLink
+  <NavLink
+    to="/dashboard/orders"
+    className={({ isActive }) =>
+      `flex items-center p-2 rounded-lg transition-colors duration-300 ease-in-out group ${
+        isActive || isManageOrdersActive
+          ? "bg-gray-100 text-[#2d2d2d]"
+          : "hover:bg-gray-100 hover:text-[#2d2d2d]"
+      }`
+    }
+  >
+    <MdDeliveryDining className="w-5 h-5" />
+    <span className="ms-3">Manage Orders</span>
+  </NavLink>
+</li>
 
-              to="/dashboard/orders"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
-              to="orders"
-              className={({ isActive }) =>
-                `flex items-center p-2 rounded-lg transition-colors duration-300 ease-in-out group ${
-                  isActive || isManageOrdersActive
-                    ? "bg-gray-100 text-[#2d2d2d]"
-                    : "hover:bg-gray-100 hover:text-[#2d2d2d]"
-                }`
-              }
-
-            >
-              <MdDeliveryDining className="w-5 h-5" />
-              <span className="ms-3">Manage Orders</span>
-            </NavLink>
-          </li>
 
           {/* Notifications */}
           <li>
