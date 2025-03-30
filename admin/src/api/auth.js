@@ -110,3 +110,22 @@ export const getProfile = async () => {
     throw error.response ? error.response.data : error.message;
   }
 };
+// For status update
+export const updateUserStatus = async (userId, status) => {
+  try {
+    const response = await api.put(`/api/users/${userId}/status`, { status });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const updateUserPassword = async (userId, newPassword) => {
+  try {
+    const response = await api.put(`/api/users/${userId}/password`, { newPassword });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+

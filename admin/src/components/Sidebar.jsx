@@ -71,7 +71,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* Dashboard */}
           <li>
             <NavLink
-              to="/dashboard"
+              to="/dashboard-private"
               className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
             >
               <TbDashboardFilled className="w-5 h-5" />
