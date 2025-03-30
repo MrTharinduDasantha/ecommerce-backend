@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import Navbar from "../components/Navbar";
 import * as api from "../api/auth";
 import Swal from "sweetalert2";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
+  const navigate = useNavigate(); // Initialize the navigate function
+
+  const handleBackClick = () => {
+    navigate("/dashboard-private"); // Navigate to the dashboard-private page
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -26,22 +33,12 @@ const ProfilePage = () => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Profile",
       html: `
-        <input id="full_name" class="swal2-input" placeholder="Full Name" value="${
-          user.Full_Name
-        }">
-        <input id="email" class="swal2-input" placeholder="Email" value="${
-          user.Email
-        }">
-        <input id="phone_no" class="swal2-input" placeholder="Phone Number" value="${
-          user.Phone_No
-        }">
+        <input id="full_name" class="swal2-input" placeholder="Full Name" value="${user.Full_Name}">
+        <input id="email" class="swal2-input" placeholder="Email" value="${user.Email}">
+        <input id="phone_no" class="swal2-input" placeholder="Phone Number" value="${user.Phone_No}">
         <select id="status" class="swal2-input">
-          <option value="Active" ${
-            user.Status === "Active" ? "selected" : ""
-          }>Active</option>
-          <option value="Inactive" ${
-            user.Status === "Inactive" ? "selected" : ""
-          }>Inactive</option>
+          <option value="Active" ${user.Status === "Active" ? "selected" : ""}>Active</option>
+          <option value="Inactive" ${user.Status === "Inactive" ? "selected" : ""}>Inactive</option>
         </select>
       `,
       preConfirm: () => {
@@ -82,36 +79,125 @@ const ProfilePage = () => {
       }
     }
   };
+
+  const handleChangePassword = async () => {
+    // Show SweetAlert to enter new password
+    const { value: formValues } = await Swal.fire({
+      title: "Change Password",
+      html: `
+        <input id="new_password" type="password" class="swal2-input" placeholder="New Password">
+        <input id="confirm_password" type="password" class="swal2-input" placeholder="Confirm New Password">
+      `,
+      preConfirm: () => {
+        return {
+          newPassword: document.getElementById("new_password").value,
+          confirmPassword: document.getElementById("confirm_password").value,
+        };
+      },
+      showCancelButton: true,
+      cancelButtonText: "Cancel",
+      confirmButtonText: "Change Password",
+      focusConfirm: false,
+    });
+
+    if (formValues) {
+      if (formValues.newPassword !== formValues.confirmPassword) {
+        Swal.fire("Error", "Passwords do not match", "error");
+        return;
+      }
+
+      try {
+        await api.updateUserPassword(user.idUser, formValues.newPassword);
+        Swal.fire("Updated!", "Your password has been updated.", "success");
+      } catch (error) {
+        Swal.fire("Error", "There was an error updating your password.", error);
+      }
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Once deleted, you won't be able to recover your account!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete Account",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.deleteUser(user.idUser); // Delete the user account
+        Swal.fire("Deleted!", "Your account has been deleted.", "success");
+        // Redirect to the homepage or logout the user
+        window.location.href = "/"; // Example: Redirect to home page
+      } catch (error) {
+        Swal.fire("Error", "There was an error deleting your account.", "error");
+      }
+    }
+  };
+
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold">Profile Details</h2>
-      {user ? (
-        <div className="mt-4">
-          <p>
-            <strong>Name:</strong> {user.Full_Name}
-          </p>
-          <p>
-            <strong>Email:</strong> {user.Email}
-          </p>
-          <p>
-            <strong>Phone:</strong> {user.Phone_No}
-          </p>
-          <p>
-            <strong>Status:</strong> {user.Status}
-          </p>
-          <button
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-            onClick={handleEditProfile}
-          >
-            Edit Profile
-          </button>
+    <section>
+      <Navbar />
+      <div className="mt-[100px] ml-[50px]">
+            <button
+              className="px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300"
+              onClick={handleBackClick}
+            >
+              Back
+            </button>
+          </div>
+      <div className="container mx-auto p-8 mt-[100px]" style={{ backgroundColor: "#F4F4F4" }}>
+        <div className="bg-white p-8 rounded-lg shadow-lg">
+          {/* Back Button */}
+          
+
+          {/* Profile Information */}
+          <div className="flex items-center mb-8">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsyA44JdhHChP6kGqx36BolQq4Hn7z2yGekw&s" // Hardcoded profile image URL
+              alt="Profile"
+              className="w-32 h-32 rounded-full mr-8 shadow-md"
+            />
+            <div>
+              <h2 className="text-3xl font-semibold text-black">{user ? user.Full_Name : "Loading..."}</h2>
+              <p className="text-lg text-gray-600">{user ? user.Email : "Loading..."}</p>
+              <p className="text-md text-gray-500">{user ? user.Phone_No : "Loading..."}</p>
+              <p className="text-sm text-gray-400">{user ? user.Status : "Loading..."}</p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between">
+            <button
+              className="px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300"
+              onClick={handleEditProfile}
+            >
+              Edit Profile
+            </button>
+            <button
+              className="px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300"
+              onClick={handleChangePassword}
+            >
+              Change Password
+            </button>
+          </div>
+
+          {/* Delete Account Button */}
+          <div className="mt-4 ml-[955px]">
+            <button
+              className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300"
+              onClick={handleDeleteAccount}
+            >
+              Delete Your Account
+            </button>
+          </div>
         </div>
-      ) : (
-        <p>Loading profile...</p>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 

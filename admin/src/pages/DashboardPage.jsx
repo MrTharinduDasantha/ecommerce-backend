@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
+
 const DashboardPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -34,7 +35,8 @@ const DashboardPage = () => {
     <div>
       <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar isSidebarOpen={isSidebarOpen} />
-      <div className="p-4 sm:ml-64 mt-13 bg-[#1D372E] min-h-screen">
+
+      <div className="p-4 sm:ml-64 mt-13 bg-[#F4F4F4] min-h-screen">
         <Outlet />
       </div>
     </div>

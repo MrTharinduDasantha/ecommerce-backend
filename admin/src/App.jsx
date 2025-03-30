@@ -9,6 +9,14 @@ import ProductList from "./components/ProductList";
 import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./pages/ProfilePage";
+import DashboardPrivate from "./components/DashboardPrivate";
+
+// Import necessary chart.js components
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import './utills/chartConfig';
+
+// Register components with ChartJS
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const App = () => {
   return (
@@ -45,6 +53,11 @@ const App = () => {
             element={<CustomerManagedForm />}
           />
         </Route>
+        <Route
+            path="dashboard-private"
+            element={<DashboardPrivate />}
+          />
+       
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

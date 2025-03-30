@@ -71,7 +71,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
 
-                        to="/ProfilePage"
+                        to="/profile"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
@@ -82,9 +82,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                       <Link
                         to="/dashboard"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
-                        to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
 
                         role="menuitem"
                       >
@@ -97,7 +94,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
 
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
 
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
 
                         role="menuitem"
                       >
@@ -110,8 +106,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
 
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
 
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
-
                         role="menuitem"
                       >
                         Manage Orders
@@ -122,8 +116,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                         to="#"
 
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
 
                         role="menuitem"
                       >
@@ -136,8 +128,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
 
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
 
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
-
                         role="menuitem"
                       >
                         Manage Users
@@ -149,8 +139,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                         to="/logout"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
 
-                        to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#1D372E]  transition-colors duration-300 ease-in-out group"
 
                         role="menuitem"
                       >
@@ -166,7 +154,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
         </div>
       </div>
     </nav>
-  );
+  ); 
 };
 
 export default Navbar;

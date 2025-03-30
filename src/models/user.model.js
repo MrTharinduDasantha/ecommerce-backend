@@ -3,7 +3,7 @@ const pool = require("../config/database"); // Import MySQL connection pool
 // Get all users
 const getAllUsers = async () => {
   const [rows] = await pool.query(
-    "SELECT idUser, Full_Name, Email, Password, Phone_No, Status, created_at, updated_at FROM users"
+    "SELECT idUser, Full_Name, Email, Password, Phone_No, Status, created_at, updated_at FROM User"
   );
   return rows;
 };
@@ -47,6 +47,8 @@ const getUserByEmail = async (email) => {
   return rows[0]; // Return the user record
 };
 
+
+
 module.exports = {
   getAllUsers,
   getUserById,
@@ -54,4 +56,5 @@ module.exports = {
   updateUser,
   getUserByEmail,
   deleteUser,
+ 
 };

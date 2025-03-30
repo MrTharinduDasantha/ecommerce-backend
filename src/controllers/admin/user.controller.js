@@ -2,6 +2,8 @@ const User = require("../../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Importing JWT
 const sendConfirmationEmail = require("../../utils/mailer");
+const pool = require("../../config/database");
+
 // Get all users
 const getUsers = async (req, res) => {
   try {
@@ -142,23 +144,48 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Update profile
-const updateProfile = async (req, res) => {
-  try {
-    const { full_name, email, phone_no, status } = req.body;
-    const userId = req.user.userId; // Extract userId from JWT payload
 
-    // Validate the input data
-    if (!full_name || !email || !phone_no) {
-      return res.status(400).json({ error: "All fields are required" });
+const updateUserStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const userId = req.params.id;
+
+    if (!['Active', 'Inactive'].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
     }
 
-    // Update user profile in database
-    await User.updateUser(userId, full_name, email, phone_no, status);
+    const query = "UPDATE User SET status = ? WHERE idUser = ?";
+    const values = [status, userId];
+    const [result] = await pool.query(query, values);
 
-    res.json({ message: "Profile updated successfully" });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User status updated successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Database error", details: error.message });
+    res.status(500).json({ error: "Error updating status" });
+  }
+};
+// Update user password
+const updateUserPassword = async (req, res) => {
+  const { id } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    return res.status(400).json({ message: "New password is required" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // Hash the new password
+    await pool.query(
+      "UPDATE User SET Password = ? WHERE idUser = ?",
+      [hashedPassword, id]
+    );
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ message: "Error updating password" });
   }
 };
 
@@ -170,5 +197,7 @@ module.exports = {
   loginUser,
   deleteUser,
   getProfile,
-  updateProfile,
+  updateUserStatus, 
+  updateUserPassword
+
 };
