@@ -77,8 +77,14 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* Dashboard */}
           <li>
             <NavLink
-              to="/dashboard-private"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
+              to="dashboard-private"
+              className={({ isActive }) =>
+                `flex items-center p-2 rounded-lg transition-colors duration-300 ease-in-out group ${
+                  isActive
+                    ? "bg-gray-100 text-[#1D372E]"
+                    : "hover:bg-gray-100 hover:text-[#1D372E]"
+                }`
+              }
             >
               <TbDashboardFilled className="w-5 h-5" />
               <span className="ms-3">Dashboard</span>
