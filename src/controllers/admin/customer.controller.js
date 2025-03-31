@@ -1,5 +1,6 @@
 const Customer = require('../../models/customer.model');
 const bcrypt = require('bcryptjs');
+const pool = require('../../config/database');
 
 // Get all customers
 const getCustomers = async (req, res) => {
@@ -61,10 +62,38 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
+// Get customer history
+const getCustomerHistory = async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    console.log('Fetching history for customer ID:', customerId); // Debugging the customer ID
+
+    // Fetch orders related to the customer
+    const [orders] = await pool.query(
+      'SELECT * FROM `Order` WHERE Delivery_Address_idDelivery_Address IN (SELECT idDelivery_Address FROM Delivery_Address WHERE Customer_idCustomer = ?)',
+      [customerId]
+    );
+    console.log('Orders:', orders); // Debugging the result of orders query
+
+    // Fetch delivery addresses for the customer
+    const [deliveryAddresses] = await pool.query(
+      'SELECT * FROM Delivery_Address WHERE Customer_idCustomer = ?',
+      [customerId]
+    );
+    console.log('Delivery Addresses:', deliveryAddresses); // Debugging the result of deliveryAddresses query
+
+    res.json({ orders, deliveryAddresses });
+  } catch (error) {
+    console.error('Database query error:', error.message); // Log the error message
+    res.status(500).json({ error: 'Database error', details: error.message });
+  }
+};
+
 module.exports = {
   getCustomers,
   getCustomer,
   createCustomer,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  getCustomerHistory
 };

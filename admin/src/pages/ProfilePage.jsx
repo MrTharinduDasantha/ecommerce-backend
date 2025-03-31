@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import * as api from "../api/auth";
 import Swal from "sweetalert2";
@@ -7,21 +7,21 @@ import Swal from "sweetalert2";
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate("/dashboard-private"); // Navigate to the dashboard-private page
+    navigate("/dashboard-private");
   };
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await api.getProfile(); // Fetch profile data
-        console.log(data); // Log the response data
-        setUser(data); // Set the user state with the fetched data
+        const data = await api.getProfile();
+        console.log(data);
+        setUser(data);
       } catch (error) {
         console.error("Error fetching profile:", error);
-        setError("Failed to fetch profile"); // Show error if API call fails
+        setError("Failed to fetch profile");
       }
     };
 
@@ -29,7 +29,6 @@ const ProfilePage = () => {
   }, []);
 
   const handleEditProfile = async () => {
-    // Show SweetAlert to edit profile
     const { value: formValues } = await Swal.fire({
       title: "Edit Profile",
       html: `
@@ -57,10 +56,8 @@ const ProfilePage = () => {
 
     if (formValues) {
       try {
-        await api.updateUser(user.idUser, formValues); // Update user data
+        await api.updateUser(user.idUser, formValues);
         Swal.fire("Updated!", "Your profile has been updated.", "success");
-
-        // Check if the email has changed
         if (formValues.email !== user.Email) {
           Swal.fire({
             title: "Email Updated",
@@ -69,19 +66,17 @@ const ProfilePage = () => {
             confirmButtonText: "OK",
           });
         }
-
         setUser((prevUser) => ({
           ...prevUser,
           ...formValues,
         }));
       } catch (error) {
-        Swal.fire("Error", "There was an error updating the profile.", error);
+        Swal.fire("Error", "There was an error updating the profile.", "error");
       }
     }
   };
 
   const handleChangePassword = async () => {
-    // Show SweetAlert to enter new password
     const { value: formValues } = await Swal.fire({
       title: "Change Password",
       html: `
@@ -105,34 +100,11 @@ const ProfilePage = () => {
         Swal.fire("Error", "Passwords do not match", "error");
         return;
       }
-
       try {
         await api.updateUserPassword(user.idUser, formValues.newPassword);
         Swal.fire("Updated!", "Your password has been updated.", "success");
       } catch (error) {
-        Swal.fire("Error", "There was an error updating your password.", error);
-      }
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Once deleted, you won't be able to recover your account!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Delete Account",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await api.deleteUser(user.idUser); // Delete the user account
-        Swal.fire("Deleted!", "Your account has been deleted.", "success");
-        // Redirect to the homepage or logout the user
-        window.location.href = "/"; // Example: Redirect to home page
-      } catch (error) {
-        Swal.fire("Error", "There was an error deleting your account.", "error");
+        Swal.fire("Error", "There was an error updating your password.", "error");
       }
     }
   };
@@ -143,22 +115,18 @@ const ProfilePage = () => {
     <section>
       <Navbar />
       <div className="mt-[100px] ml-[50px]">
-            <button
-              className="px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300"
-              onClick={handleBackClick}
-            >
-              Back
-            </button>
-          </div>
+        <button
+          className="px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300"
+          onClick={handleBackClick}
+        >
+          Back
+        </button>
+      </div>
       <div className="container mx-auto p-8 mt-[100px]" style={{ backgroundColor: "#F4F4F4" }}>
         <div className="bg-white p-8 rounded-lg shadow-lg">
-          {/* Back Button */}
-          
-
-          {/* Profile Information */}
           <div className="flex items-center mb-8">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsyA44JdhHChP6kGqx36BolQq4Hn7z2yGekw&s" // Hardcoded profile image URL
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsyA44JdhHChP6kGqx36BolQq4Hn7z2yGekw&s"
               alt="Profile"
               className="w-32 h-32 rounded-full mr-8 shadow-md"
             />
@@ -169,8 +137,6 @@ const ProfilePage = () => {
               <p className="text-sm text-gray-400">{user ? user.Status : "Loading..."}</p>
             </div>
           </div>
-
-          {/* Action Buttons */}
           <div className="flex justify-between">
             <button
               className="px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300"
@@ -183,16 +149,6 @@ const ProfilePage = () => {
               onClick={handleChangePassword}
             >
               Change Password
-            </button>
-          </div>
-
-          {/* Delete Account Button */}
-          <div className="mt-4 ml-[955px]">
-            <button
-              className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300"
-              onClick={handleDeleteAccount}
-            >
-              Delete Your Account
             </button>
           </div>
         </div>
