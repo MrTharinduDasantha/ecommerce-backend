@@ -24,12 +24,18 @@ const Sidebar = ({ isSidebarOpen }) => {
     location.pathname.includes("products/add-category-subcategory") ||
     location.pathname.includes("products/edit-product");
 
+
   // Determine if one of the Manage Users routes is active
   const isManageUsersActive =
     location.pathname.includes("users_managed-form") ||
     location.pathname.includes("customer-managed-form");
 
   // Toggle functions
+
+  // Determine if one of the Manage Orders routes is active
+  const isManageOrdersActive = location.pathname.includes("orders");
+
+
   const toggleProductSubMenu = () => {
     setIsProductSubMenuOpen(!isProductSubMenuOpen);
   };
@@ -197,14 +203,21 @@ const Sidebar = ({ isSidebarOpen }) => {
 
           {/* Manage Orders */}
           <li>
-            <NavLink
-              to="/dashboard/orders"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-            >
-              <MdDeliveryDining className="w-5 h-5" />
-              <span className="ms-3">Manage Orders</span>
-            </NavLink>
-          </li>
+  <NavLink
+    to="/dashboard/orders"
+    className={({ isActive }) =>
+      `flex items-center p-2 rounded-lg transition-colors duration-300 ease-in-out group ${
+        isActive || isManageOrdersActive
+          ? "bg-gray-100 text-[#2d2d2d]"
+          : "hover:bg-gray-100 hover:text-[#2d2d2d]"
+      }`
+    }
+  >
+    <MdDeliveryDining className="w-5 h-5" />
+    <span className="ms-3">Manage Orders</span>
+  </NavLink>
+</li>
+
 
           {/* Notifications */}
           <li>

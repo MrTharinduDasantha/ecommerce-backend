@@ -144,6 +144,21 @@ curl -X POST "http://localhost:9000/api/auth/login" \
     "email": "test@example.com",
     "password": "test123"
   }'
+
+# Request Password Reset
+curl -X POST "http://localhost:9000/api/auth/request-password-reset" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com"
+  }'
+
+# Reset Password
+curl -X POST "http://localhost:9000/api/auth/reset-password" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "CUSTOMER_ID",
+    "new_password": "newpassword123"
+  }'
 ```
 
 ### Product Endpoints
