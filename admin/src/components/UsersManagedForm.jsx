@@ -23,38 +23,7 @@ const UsersManagedForm = () => {
     fetchUsers();
   }, []);
 
-  const handleStatusChange = (userId, currentStatus) => {
-    Swal.fire({
-      title: 'Change User Status',
-      text: `Current status is ${currentStatus}. Select a new status.`,
-      input: 'select',
-      inputOptions: {
-        Active: 'Active',
-        Inactive: 'Inactive'
-      },
-      inputValue: currentStatus,
-      showCancelButton: true,
-      confirmButtonText: 'Update',
-      cancelButtonText: 'Cancel',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const updatedStatus = result.value;
-        
-        api.updateUserStatus(userId, updatedStatus)
-        .then(() => {
-          setUsers(users.map((user) => 
-            user.idUser === userId ? { ...user, Status: updatedStatus } : user
-          ));
-          Swal.fire('Updated!', 'The user status has been updated.', 'success');
-        })
-        .catch((error) => {
-          console.error('Error updating user status:', error);
-          Swal.fire('Error!', 'There was an issue updating the user status.', 'error');
-        });
-      
-      }
-    });
-  };
+ 
 
   const handleAddUser = () => {
     Swal.fire({
