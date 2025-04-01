@@ -9,7 +9,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      navigate("/dashboard/dashboard-private");
     }
   }, [user, navigate]);
   return (

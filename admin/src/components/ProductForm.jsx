@@ -164,6 +164,7 @@ const ProductForm = () => {
   const removeMainImage = () => {
     setMainImage(null);
     setMainImagePreview(null);
+    if (mainImageRef.current) mainImageRef.current.value = "";
   };
 
   // Handlers for sub images
@@ -173,12 +174,17 @@ const ProductForm = () => {
       setSubImages((prev) => [...prev, ...files]);
       const newPreviews = files.map((file) => URL.createObjectURL(file));
       setSubImagesPreview((prev) => [...prev, ...newPreviews]);
+      // Reset the input to allow re-uploading the same files
+      if (subImagesRef.current) {
+        subImagesRef.current.value = "";
+      }
     }
   };
 
   const removeSubImage = (index) => {
     setSubImages((prev) => prev.filter((_, i) => i !== index));
     setSubImagesPreview((prev) => prev.filter((_, i) => i !== index));
+    if (subImagesRef.current) subImagesRef.current.value = "";
   };
 
   // Brand popup handlers
@@ -871,6 +877,8 @@ const ProductForm = () => {
                       onClick={() => {
                         setNewBrandImage(null);
                         setNewBrandImagePreview(null);
+                        if (newBrandImageRef.current)
+                          newBrandImageRef.current.value = "";
                       }}
                       className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer rounded-2xl"
                     >

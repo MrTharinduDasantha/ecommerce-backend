@@ -1,21 +1,16 @@
 // AuthContext.jsx
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState } from "react";
 
 // Create AuthContext
 export const AuthContext = createContext();
 
 // AuthProvider to wrap the app and provide authentication context
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  // Load user from localStorage on mount if token exists
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+    return storedUser && storedToken ? JSON.parse(storedUser) : null;
+  });
 
   // Login function to set user details in context and localStorage
   const login = (userId, fullName, email, phoneNo, status) => {

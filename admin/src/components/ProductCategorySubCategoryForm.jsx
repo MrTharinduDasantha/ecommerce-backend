@@ -62,6 +62,7 @@ const ProductCategorySubCategoryForm = () => {
   const removeCategoryImage = () => {
     setCategoryImage(null);
     setCategoryImagePreview(null);
+    if (categoryImageRef.current) categoryImageRef.current.value = "";
   };
 
   // Handle adding or updating a category
