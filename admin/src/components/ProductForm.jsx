@@ -3,7 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill, RiDeleteBack2Fill } from "react-icons/ri";
-import { FaRegCheckSquare, FaCheckSquare } from "react-icons/fa";
+import {
+  FaRegCheckSquare,
+  FaCheckSquare,
+  FaQuestionCircle,
+} from "react-icons/fa";
 import {
   createProduct,
   updateProduct,
@@ -49,6 +53,11 @@ const ProductForm = () => {
   const [newBrandName, setNewBrandName] = useState("");
   const [newBrandDescription, setNewBrandDescription] = useState("");
 
+  // Brand image
+  const [newBrandImage, setNewBrandImage] = useState(null);
+  const [newBrandImagePreview, setNewBrandImagePreview] = useState(null);
+  const newBrandImageRef = useRef(null);
+
   // Variations (Color/Size/Quantity)
   const [colorName, setColorName] = useState("");
   const [colorPickerValue, setColorPickerValue] = useState("#ffffff");
@@ -61,6 +70,15 @@ const ProductForm = () => {
   const [faqQuestion, setFaqQuestion] = useState("");
   const [faqAnswer, setFaqAnswer] = useState("");
   const [faqs, setFaqs] = useState([]);
+
+  // Update the brand image preview whenever the new brand image changes
+  useEffect(() => {
+    if (newBrandImage) {
+      setNewBrandImagePreview(URL.createObjectURL(newBrandImage));
+    } else {
+      setNewBrandImagePreview(null);
+    }
+  }, [newBrandImage]);
 
   // Load brands and available subcategories on mount
   useEffect(() => {
@@ -192,13 +210,21 @@ const ProductForm = () => {
     try {
       const brandData = {
         brandName: newBrandName,
+        brandImage: newBrandImage,
         shortDescription: newBrandDescription,
         userId: user.userId,
       };
       await createBrand(brandData);
       toast.success("Brand added successfully");
+
+      // Clear all fields
+      setNewBrandName("");
+      setNewBrandDescription("");
+      setNewBrandImage(null);
+
+      if (newBrandImageRef.current) newBrandImageRef.current.value = "";
+
       loadBrands();
-      closeBrandPopup();
     } catch (error) {
       toast.error(error.message || "Failed to add brand");
     }
@@ -238,9 +264,9 @@ const ProductForm = () => {
 
   // Add variation (color/size/quantity) to table
   const handleAddVariation = () => {
-    if (isColorLocked && size.trim() && colorQuantity.trim()) {
+    if (size.trim() && colorQuantity.trim()) {
       const newVar = {
-        colorCode: colorPickerValue,
+        colorCode: isColorLocked ? colorPickerValue : "No color selected",
         size: size,
         quantity: colorQuantity,
       };
@@ -251,7 +277,7 @@ const ProductForm = () => {
       setIsColorLocked(false);
       setColorName("");
     } else {
-      toast.error("Color, size and quantity are required");
+      toast.error("Size and quantity are required");
     }
   };
 
@@ -674,12 +700,12 @@ const ProductForm = () => {
                     <tr key={index}>
                       <td className="border-2 p-2">
                         <div className="inline-flex items-center gap-2">
-                          {/* Small color box */}
-                          <div
-                            className="w-6 h-6 border border-gray-300"
-                            style={{ backgroundColor: item.colorCode }}
-                          />
-                          {/* Hex value text */}
+                          {item.colorCode !== "No color selected" && (
+                            <div
+                              className="w-6 h-6 border border-[#1D372E]"
+                              style={{ backgroundColor: item.colorCode }}
+                            />
+                          )}
                           <span>{item.colorCode}</span>
                         </div>
                       </td>
@@ -711,22 +737,22 @@ const ProductForm = () => {
           <div className="flex flex-wrap gap-5 p-5 border-2 border-[#1D372E] rounded-b-2xl">
             <div className="flex-1 min-w-[250px] text-[#1D372E]">
               <label className="block font-medium mb-1">Question</label>
-              <input
-                type="text"
+              <textarea
                 value={faqQuestion}
                 onChange={(e) => setFaqQuestion(e.target.value)}
                 placeholder="Enter question"
-                className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                className="w-full textarea textarea-bordered bg-white border-2 border-[#1D372E] rounded-2xl"
+                rows={5}
               />
             </div>
             <div className="flex-1 min-w-[250px] text-[#1D372E]">
               <label className="block font-medium mb-1">Answer</label>
-              <input
-                type="text"
+              <textarea
                 value={faqAnswer}
                 onChange={(e) => setFaqAnswer(e.target.value)}
                 placeholder="Enter answer"
-                className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                className="w-full textarea textarea-bordered bg-white border-2 border-[#1D372E] rounded-2xl"
+                rows={5}
               />
             </div>
             <div className="mt-7">
@@ -740,36 +766,37 @@ const ProductForm = () => {
             </div>
           </div>
 
-          {/* FAQ Table */}
+          {/* Show FAQs */}
           {faqs.length > 0 && (
-            <div className="overflow-x-auto mt-4">
-              <table className="table-auto w-full text-center border border-[#1D372E]">
-                <thead className="bg-[#5CAF90] text-[#1D372E]">
-                  <tr>
-                    <th className="border-2 p-2">Frequently Ask Question</th>
-                    <th className="border-2 p-2">Answer</th>
-                    <th className="border-2 p-2">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="text-[#1D372E]">
-                  {faqs.map((faq, index) => (
-                    <tr key={index}>
-                      <td className="border-2 p-2">{faq.question}</td>
-                      <td className="border-2 p-2">{faq.answer}</td>
-                      <td className="border-2 p-2">
-                        <button
-                          type="button"
-                          onClick={() => removeFaq(index)}
-                          className="bg-[#5CAF90] p-1.5 cursor-pointer ml-3"
-                          title="Remove FAQ"
-                        >
-                          <RiDeleteBin5Fill className="w-5 h-5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-4 space-y-4">
+              {faqs.map((faq, index) => (
+                <div
+                  key={index}
+                  className="border-2 border-[#1D372E] rounded-2xl p-4"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3">
+                      <FaQuestionCircle className="text-[#5CAF90] mt-0.5 text-xl" />
+                      <div className="flex-1">
+                        <h4 className="font-medium text-[#1D372E]">
+                          {faq.question}
+                        </h4>
+                        <div className="mt-2">
+                          <p className="text-[#1D372E]">{faq.answer}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFaq(index)}
+                      className="bg-[#5CAF90] text-[#1D372E] p-1.5 cursor-pointer rounded-2xl"
+                      title="Remove FAQ"
+                    >
+                      <RiDeleteBin5Fill className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -788,7 +815,7 @@ const ProductForm = () => {
       {/* Brand Popup */}
       {brandPopupVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-          <div className="bg-white rounded-md p-8 w-[90%] max-w-lg relative">
+          <div className="bg-white rounded-md p-8 w-[90%] max-w-lg max-h-[90vh] overflow-y-auto relative">
             {/* Popup Header */}
             <div className="flex justify-between items-center text-[#1D372E] mb-5">
               <h3 className="text-xl font-bold">Add Brand</h3>
@@ -796,31 +823,75 @@ const ProductForm = () => {
                 <IoClose size={24} />
               </button>
             </div>
-
             {/* Add Brand Form */}
-            <div className="text-[#1D372E] mb-4">
-              <label className="block font-medium mb-2">Brand Name</label>
-              <input
-                type="text"
-                value={newBrandName}
-                onChange={(e) => setNewBrandName(e.target.value)}
-                placeholder="Enter brand name"
-                className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
-              />
+            <div className="flex flex-col gap-5 text-[#1D372E] mb-5">
+              <div className="flex items-center gap-4">
+                <label className="block font-medium min-w-[100px]">Name</label>
+                <input
+                  type="text"
+                  value={newBrandName}
+                  onChange={(e) => setNewBrandName(e.target.value)}
+                  placeholder="Enter brand name"
+                  className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-4">
+                  <label className="block font-medium min-w-[100px]">
+                    Image
+                  </label>
+                  <input
+                    type="file"
+                    ref={newBrandImageRef}
+                    onChange={(e) => {
+                      setNewBrandImage(e.target.files[0]);
+                      if (e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setNewBrandImagePreview(reader.result);
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                      } else {
+                        setNewBrandImagePreview(null);
+                      }
+                    }}
+                    className="file-input file-input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                  />
+                </div>
+                {/* Brand Image Preview */}
+                {newBrandImagePreview && (
+                  <div className="relative mt-2 ml-[115px] w-32 h-32 border border-gray-300 rounded-2xl">
+                    <img
+                      src={newBrandImagePreview}
+                      alt="Brand Preview"
+                      className="object-cover w-full h-full rounded-2xl"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewBrandImage(null);
+                        setNewBrandImagePreview(null);
+                      }}
+                      className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer rounded-2xl"
+                    >
+                      <RiDeleteBin5Fill size={18} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="block font-medium min-w-[100px]">
+                  Description
+                </label>
+                <textarea
+                  value={newBrandDescription}
+                  onChange={(e) => setNewBrandDescription(e.target.value)}
+                  placeholder="Enter brand description"
+                  className="textarea w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                  rows={3}
+                ></textarea>
+              </div>
             </div>
-            <div className="text-[#1D372E] mb-8">
-              <label className="block font-medium mb-2">
-                Brand Description
-              </label>
-              <textarea
-                value={newBrandDescription}
-                onChange={(e) => setNewBrandDescription(e.target.value)}
-                placeholder="Enter brand description"
-                className="textarea w-full bg-white border-2 border-[#1D372E] rounded-2xl"
-                rows={3}
-              ></textarea>
-            </div>
-
             <div className="flex justify-end">
               <button
                 onClick={handleAddBrand}

@@ -10,6 +10,7 @@ import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./pages/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
+import Settings from "./components/Settings";
 
 const App = () => {
   return (
@@ -46,13 +47,12 @@ const App = () => {
             path="customer-managed-form"
             element={<CustomerManagedForm />}
           />
+          <Route path="settings" element={<Settings />} />
         </Route>
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
-
-
   );
 };
 

@@ -228,8 +228,17 @@ async function createBrand(req, res) {
       return res.status(400).json({ message: "Brand name is required" });
     }
 
+    // Build the ful URL for the uploaded brand image
+    let brandImageUrl = null;
+    if (req.file) {
+      brandImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        req.file.filename
+      }`;
+    }
+
     const result = await Product.createBrand(
       brandName,
+      brandImageUrl,
       shortDescription,
       userId
     );
