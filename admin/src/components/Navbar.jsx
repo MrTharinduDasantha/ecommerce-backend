@@ -71,7 +71,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
 
+
                         to="/"
+
+                        to="/profile"
+
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
@@ -82,7 +86,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                       <Link
                         to="/dashboard"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
                         role="menuitem"
                       >
                         Dashboard
@@ -91,10 +94,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
-
                         role="menuitem"
                       >
                         Manage Products
@@ -103,9 +103,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
                         role="menuitem"
                       >
                         Manage Orders
@@ -114,9 +112,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
                         role="menuitem"
                       >
                         Notifications
@@ -125,9 +121,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
                         to="#"
-
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
                         role="menuitem"
                       >
                         Manage Users
@@ -135,11 +129,8 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     </li>
                     <li>
                       <Link
-
                         to="/logout"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-
-
                         role="menuitem"
                       >
                         Logout
@@ -154,7 +145,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
         </div>
       </div>
     </nav>
-  ); 
+  );
 };
 
 export default Navbar;

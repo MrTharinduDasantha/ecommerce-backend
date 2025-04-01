@@ -5,7 +5,7 @@ import { GiShoppingBag } from "react-icons/gi";
 import { FaSignOutAlt, FaUsers } from "react-icons/fa";
 import { MdDeliveryDining } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
-import { IoMdArrowDropdownCircle } from "react-icons/io";
+import { IoMdArrowDropdownCircle, IoMdSettings } from "react-icons/io";
 import { AuthContext } from "../context/AuthContext";
 import { FaUser } from "react-icons/fa";  // Import the profile icon
 import toast from "react-hot-toast";
@@ -19,24 +19,17 @@ const Sidebar = ({ isSidebarOpen }) => {
   const [isProductSubMenuOpen, setIsProductSubMenuOpen] = useState(false);
   const [isUsersSubMenuOpen, setIsUsersSubMenuOpen] = useState(false);
 
-  // Determine if one of the Manage Products routes is active
+  // Determine active states for various sections
   const isManageProductsActive =
     location.pathname.includes("products/add-product") ||
     location.pathname.includes("products/add-category-subcategory") ||
     location.pathname.includes("products/edit-product");
-
-
-  // Determine if one of the Manage Users routes is active
   const isManageUsersActive =
     location.pathname.includes("users_managed-form") ||
     location.pathname.includes("customer-managed-form");
-
-  // Toggle functions
-
-  // Determine if one of the Manage Orders routes is active
   const isManageOrdersActive = location.pathname.includes("orders");
 
-
+  // Toggle submenu functions
   const toggleProductSubMenu = () => {
     setIsProductSubMenuOpen(!isProductSubMenuOpen);
   };
@@ -45,7 +38,7 @@ const Sidebar = ({ isSidebarOpen }) => {
     setIsUsersSubMenuOpen(!isUsersSubMenuOpen);
   };
 
-  // Parent style for submenus – use active background if the respective section is active
+  // Parent style for submenus
   const productParentClasses = `flex items-center w-full p-2 text-base rounded-lg transition-colors duration-300 ease-in-out group cursor-pointer ${
     isManageProductsActive
       ? "bg-gray-100 text-[#1D372E]"
@@ -78,8 +71,14 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* Dashboard */}
           <li>
             <NavLink
-              to="/dashboard-private"
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
+              to="dashboard-private"
+              className={({ isActive }) =>
+                `flex items-center p-2 rounded-lg transition-colors duration-300 ease-in-out group ${
+                  isActive
+                    ? "bg-gray-100 text-[#1D372E]"
+                    : "hover:bg-gray-100 hover:text-[#1D372E]"
+                }`
+              }
             >
               <TbDashboardFilled className="w-5 h-5" />
               <span className="ms-3">Dashboard</span>
@@ -170,7 +169,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                     className={({ isActive }) =>
                       `flex items-center w-full p-2 rounded-lg pl-11 transition-colors duration-300 ease-in-out group ${
                         isActive
-                          ? "text-[#a3fe00]"
+                          ? "text-[#5CAF90]"
                           : "hover:bg-gray-100 hover:text-[#2d2d2d]"
                       }`
                     }
@@ -184,7 +183,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                     className={({ isActive }) =>
                       `flex items-center w-full p-2 rounded-lg pl-11 transition-colors duration-300 ease-in-out group ${
                         isActive
-                          ? "text-[#a3fe00]"
+                          ? "text-[#5CAF90]"
                           : "hover:bg-gray-100 hover:text-[#2d2d2d]"
                       }`
                     }
@@ -196,6 +195,27 @@ const Sidebar = ({ isSidebarOpen }) => {
             )}
           </li>
 
+          {/* Settings */}
+          <li>
+            <NavLink
+              to="settings"
+              className={({ isActive }) =>
+                `flex items-center p-2 rounded-lg transition-colors duration-300 ease-in-out group ${
+                  isActive
+                    ? "bg-gray-100 text-[#1D372E]"
+                    : "hover:bg-gray-100 hover:text-[#1D372E]"
+                }`
+              }
+            >
+              <IoMdSettings className="w-5 h-5" />
+              <span className="ms-3">Manage Settings</span>
+            </NavLink>
+          </li>
+
+          {/* Manage Orders */}
+          <li>
+            <NavLink
+              to="orders"
           {/* Manage Orders */}
           
           <li>

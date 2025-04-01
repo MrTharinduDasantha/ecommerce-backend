@@ -326,11 +326,15 @@ const ProductList = () => {
                         <tr key={variation.idProduct_Variations}>
                           <td className="border-2 p-2">
                             <div className="inline-flex items-center gap-2">
-                              {/* Small color box */}
-                              <div
-                                className="w-6 h-6 border border-gray-300"
-                                style={{ backgroundColor: variation.Colour }}
-                              />
+                              {variation.Colour &&
+                                variation.Colour !== "No color selected" && (
+                                  <div
+                                    className="w-6 h-6 border border-[#1D372E]"
+                                    style={{
+                                      backgroundColor: variation.Colour,
+                                    }}
+                                  />
+                                )}
                               {/* Hex value text */}
                               <span>{variation.Colour}</span>
                             </div>

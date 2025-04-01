@@ -10,15 +10,7 @@ import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
-import OrderList from "./components/OrderList";
-import OrderDetails from "./components/OrderDetails";
-
-// Import necessary chart.js components
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import './utills/chartConfig';
-
-// Register components with ChartJS
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import Settings from "./components/Settings";
 
 const App = () => {
   return (
@@ -42,6 +34,7 @@ const App = () => {
             </PrivateRoute>
           }
         >
+          <Route path="dashboard-private" element={<DashboardPrivate />} />
           <Route path="products/add-product" element={<ProductForm />} />
           <Route
             path="products/add-category-subcategory"
@@ -54,19 +47,12 @@ const App = () => {
             path="customer-managed-form"
             element={<CustomerManagedForm />}
           />
+          <Route path="settings" element={<Settings />} />
         </Route>
-        <Route
-            path="dashboard-private"
-            element={<DashboardPrivate />}
-          />
-               <Route path="orders" element={<OrderList />} />
-               <Route path="orders/:orderId" element={<OrderDetails />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
-
-
   );
 };
 
