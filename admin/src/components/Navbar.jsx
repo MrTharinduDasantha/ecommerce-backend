@@ -71,7 +71,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     <li>
                       <Link
 
-                        to="/profile"
+                        to="/"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >

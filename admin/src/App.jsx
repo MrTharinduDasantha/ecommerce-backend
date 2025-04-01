@@ -8,7 +8,7 @@ import ProductCategorySubCategoryForm from "./components/ProductCategorySubCateg
 import ProductList from "./components/ProductList";
 import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
-import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";

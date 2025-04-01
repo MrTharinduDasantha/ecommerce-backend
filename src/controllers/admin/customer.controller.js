@@ -80,11 +80,11 @@ const getCustomerHistory = async (req, res) => {
       'SELECT * FROM Delivery_Address WHERE Customer_idCustomer = ?',
       [customerId]
     );
-    console.log('Delivery Addresses:', deliveryAddresses); // Debugging the result of deliveryAddresses query
+    console.log('Delivery Addresses:', deliveryAddresses); 
 
     res.json({ orders, deliveryAddresses });
   } catch (error) {
-    console.error('Database query error:', error.message); // Log the error message
+    console.error('Database query error:', error.message); 
     res.status(500).json({ error: 'Database error', details: error.message });
   }
 };
