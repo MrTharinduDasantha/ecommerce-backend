@@ -7,6 +7,7 @@ import { MdDeliveryDining } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
 import { IoMdArrowDropdownCircle, IoMdSettings } from "react-icons/io";
 import { AuthContext } from "../context/AuthContext";
+import { FaUser } from "react-icons/fa";  // Import the profile icon
 import toast from "react-hot-toast";
 
 const Sidebar = ({ isSidebarOpen }) => {
@@ -243,6 +244,19 @@ const Sidebar = ({ isSidebarOpen }) => {
               </span>
             </NavLink>
           </li>
+
+
+          <li>
+        <NavLink
+        to="/profile"
+         className="flex items-center p-2 rounded-lg hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out group"
+        >
+    <FaUser className="w-5 h-5" /> {/* Profile icon */}
+    <span className="flex-1 ms-3 whitespace-nowrap">
+      Profile
+    </span>
+  </NavLink>
+</li>
 
           {/* Logout */}
           <li>

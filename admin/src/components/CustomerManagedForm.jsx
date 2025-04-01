@@ -31,6 +31,8 @@ const CustomerManagedForm = () => {
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'Cancel',
+      confirmButtonColor: '#5CAF90', // Set custom color for the confirm button
+      cancelButtonColor: '#5CAF90',  // Set custom color for the cancel button
     }).then((result) => {
       if (result.isConfirmed) {
         // Delete the customer
@@ -52,23 +54,52 @@ const CustomerManagedForm = () => {
     if (!customer) return;
 
     Swal.fire({
-      title: 'Edit Customer',
       width: '600px',
-      height: '200px',
+      height: 'auto',
       html: `
-        <input id="name" class="swal2-input" value="${customer.Full_Name || ''}" placeholder="Enter Name">
-        <input id="email" class="swal2-input" value="${customer.Email || ''}" placeholder="Enter Email">
-        <input id="phone" class="swal2-input" value="${customer.Mobile_No || ''}" placeholder="Enter Phone Number">
-        <input id="address" class="swal2-input" value="${customer.Address || ''}" placeholder="Enter Address">
-        <input id="city" class="swal2-input" value="${customer.City || ''}" placeholder="Enter City">
-        <input id="country" class="swal2-input" value="${customer.Country || ''}" placeholder="Enter Country">
-        <input id="password" type="password" class="swal2-input" placeholder="Enter New Password (Leave Blank if Unchanged)">
-        <select id="status" class="swal2-input">
-          <option value="Active" ${customer.Status === 'Active' ? 'selected' : ''}>Active</option>
-          <option value="Inactive" ${customer.Status === 'Inactive' ? 'selected' : ''}>Inactive</option>
-        </select>
+      <div style="position: relative; max-height: 400px; overflow-y: auto;">
+  <h3 style="padding-top: 20px; font-size: 20px; font-weight: bold; text-align: left;">
+    Edit Customer Information
+  </h3>
+
+  <!-- Close Icon -->
+  <button id="close-modal" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: #333;">
+    &times;
+  </button>
+
+  <label for="name" style=" margin-top: 20px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Customer Name:</label>
+  <input id="name" class="swal2-input" value="${customer.Full_Name || ''}" placeholder="Enter Name" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+
+  <label for="email" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Customer Email:</label>
+  <input id="email" class="swal2-input" value="${customer.Email || ''}" placeholder="Enter Email" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+
+  <label for="phone" style="margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Phone Number:</label>
+  <input id="phone" class="swal2-input" value="${customer.Mobile_No || ''}" placeholder="Enter Phone Number" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+
+  <label for="address" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Customer Address:</label>
+  <input id="address" class="swal2-input" value="${customer.Address || ''}" placeholder="Enter Address" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+
+  <label for="city" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">City:</label>
+  <input id="city" class="swal2-input" value="${customer.City || ''}" placeholder="Enter City" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+
+  <label for="country" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Country:</label>
+  <input id="country" class="swal2-input" value="${customer.Country || ''}" placeholder="Enter Country" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+
+  <label for="password" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">New Password (Leave Blank if Unchanged):</label>
+  <input id="password" type="password" class="swal2-input" placeholder="Enter New Password" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+
+  <label for="status" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Change Status:</label>
+  <select id="status" class="swal2-input" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;">
+    <option value="Active" ${customer.Status === 'Active' ? 'selected' : ''}>Active</option>
+    <option value="Inactive" ${customer.Status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+  </select>
+</div>
+
       `,
       focusConfirm: false,
+      showCancelButton: false, // Removed cancel button
+      confirmButtonText: 'Update', // Changed the button text to Update
+      confirmButtonColor: '#5CAF90', // Set color for the update button
       preConfirm: () => {
         const full_name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
@@ -107,35 +138,41 @@ const CustomerManagedForm = () => {
           });
       }
     });
+
+    // Close modal when clicking the close icon
+    document.getElementById('close-modal')?.addEventListener('click', () => {
+      Swal.close();
+    });
   };
 
   const handleHistory = async (customerId) => {
     try {
       const history = await api.getCustomerHistory(customerId);
-
+  
       // Display order and delivery details in SweetAlert2 modal
-      let orderHtml = '<h3>Order History</h3>';
+      let orderHtml = '<h3 style="font-size: 20px; font-weight: bold; text-align: left; margin-top: 20px; margin-bottom: 10px;">Order History</h3>';
       history.orders.forEach(order => {
-        orderHtml += `<p><strong>Order ID:</strong> ${order.idOrder}<br/><strong>Status:</strong> ${order.Delivery_Status}<br/><strong>Total Amount:</strong> ${order.Total_Amount}</p>`;
+        orderHtml += `<p style="margin-bottom: 8px; font-weight: semibold; text-align: left; ">Order ID: ${order.idOrder}<br/>Status: ${order.Delivery_Status}<br/>Total Amount: ${order.Total_Amount}</p>`;
       });
-
-      let deliveryHtml = '<h3>Delivery Address</h3>';
+  
+      let deliveryHtml = '<h3 style="font-size: 20px; font-weight: bold; text-align: left; margin-top: 20px; margin-bottom: 10px;">Delivery Address</h3>';
       history.deliveryAddresses.forEach(address => {
-        deliveryHtml += `<p><strong>Address:</strong> ${address.Address}, ${address.City}, ${address.Country}<br/><strong>Phone:</strong> ${address.Mobile_No}</p>`;
+        deliveryHtml += `<p style="margin-bottom: 8px; text-align: left;">Address: ${address.Address}, ${address.City}, ${address.Country}<br/>Phone: ${address.Mobile_No}</p>`;
       });
-
+  
       Swal.fire({
         title: 'Customer History',
         html: orderHtml + deliveryHtml,
         width: '600px',
         confirmButtonText: 'Close',
+        confirmButtonColor: '#5CAF90', // Custom color for the Close button
       });
     } catch (error) {
       console.error('Error fetching customer history:', error);
       Swal.fire('Error!', 'There was an issue fetching the customer history.', 'error');
     }
   };
-
+  
   // Updated search logic
   const filteredCustomers = customers.filter((customer) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
@@ -193,31 +230,31 @@ const CustomerManagedForm = () => {
                 <td className="p-3">{customer.Status}</td>
                 <td className="p-3">{new Date(customer.created_at).toLocaleString()}</td>
                 <td className="p-3">{new Date(customer.updated_at).toLocaleString()}</td>
-                <td className="p-3 space-x-2">
+                <td className="p-3">
+              
                   <button
                     onClick={() => handleEdit(customer.idCustomer)}
-                    className="text-yellow-500"
+                    className="text-yellow-500 hover:underline "
                   >
-                    <FaEdit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(customer.idCustomer)}
-                    className="text-red-500"
-                  >
-                    <FaTrashAlt className="w-5 h-5" />
+                    <FaEdit /> 
                   </button>
                   <button
                     onClick={() => handleHistory(customer.idCustomer)}
-                    className="text-blue-500"
+                    className="text-blue-500 hover:underline mx-3"
                   >
-                    <FaHistory className="w-5 h-5" />
+                    <FaHistory /> 
+                  </button>
+                  <button
+                    onClick={() => handleDelete(customer.idCustomer)}
+                    className="text-red-500 hover:underline"
+                  >
+                    <FaTrashAlt /> 
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-
       </div>
     </div>
   );
