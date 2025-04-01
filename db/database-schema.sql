@@ -226,3 +226,12 @@ CREATE TABLE FAQ (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
+
+-- Header Footer Setting Table
+CREATE TABLE Header_Footer_Setting (
+  idHeader_Footer_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Navbar_Logo_Url TEXT,
+  Footer_Copyright VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

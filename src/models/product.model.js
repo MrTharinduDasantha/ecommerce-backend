@@ -277,9 +277,13 @@ async function updateProduct(productId, productData, associatedData) {
 async function getAllProducts() {
   // Join product table with product brand table
   const query = `
-    SELECT P.*, B.Brand_Name
+    SELECT P.*, 
+      B.Brand_Name,
+      B.Brand_Image_Url,
+      B.ShortDescription
     FROM Product P
-    LEFT JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    LEFT JOIN Product_Brand B 
+      ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
   `;
   const [products] = await pool.query(query);
 
@@ -325,9 +329,13 @@ async function getAllProducts() {
 async function getProductById(productId) {
   // Fetch main product record with brand info
   const query = `
-    SELECT P.*, B.Brand_Name
+    SELECT P.*, 
+      B.Brand_Name,
+      B.Brand_Image_Url,
+      B.ShortDescription
     FROM Product P
-    LEFT JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    LEFT JOIN Product_Brand B 
+      ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
     WHERE P.idProduct = ?
   `;
   const [rows] = await pool.query(query, [productId]);

@@ -63,7 +63,6 @@ export const loginUser = async (email, password) => {
   }
 };
 
-
 export const getProfile = async () => {
   try {
     const response = await api.get("/api/admin/users/profile");
@@ -84,10 +83,11 @@ export const updateUserStatus = async (userId, status) => {
 
 export const updateUserPassword = async (userId, newPassword) => {
   try {
-    const response = await api.put(`/api/users/${userId}/password`, { newPassword });
+    const response = await api.put(`/api/users/${userId}/password`, {
+      newPassword,
+    });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
   }
 };
-

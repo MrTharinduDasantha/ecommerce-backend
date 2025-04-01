@@ -215,11 +215,6 @@ const Sidebar = ({ isSidebarOpen }) => {
           <li>
             <NavLink
               to="orders"
-          {/* Manage Orders */}
-          
-          <li>
-            <NavLink
-              to="/orders"
               className={({ isActive }) =>
                 `flex items-center p-2 rounded-lg transition-colors duration-300 ease-in-out group ${
                   isActive || isManageOrdersActive

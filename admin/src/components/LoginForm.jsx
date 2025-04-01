@@ -35,7 +35,7 @@ const LoginForm = () => {
         );
         localStorage.setItem("token", data.token);
         toast.success("Login successful");
-        navigate("/dashboard");
+        navigate("/dashboard/dashboard-private");
       } else {
         toast.error("Invalid credentials");
       }
