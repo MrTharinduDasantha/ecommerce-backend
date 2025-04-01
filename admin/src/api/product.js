@@ -105,7 +105,7 @@ export const createProduct = async (formData) => {
 export const createBrand = async (formData) => {
   try {
     const response = await api.post("/api/products/brands", formData, {
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   } catch (error) {

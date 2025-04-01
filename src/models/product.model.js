@@ -135,15 +135,16 @@ async function createProduct(productData) {
 }
 
 // Insert a new brand into product brand table
-async function createBrand(brandName, shortDescription, userId) {
+async function createBrand(brandName, brandImageUrl, shortDescription, userId) {
   if (!brandName) throw new Error("Brand name is required");
   const query = `
-    INSERT INTO Product_Brand (Brand_Name, ShortDescription, User_idUser)
-    VALUES (?, ?, ?)
+    INSERT INTO Product_Brand (Brand_Name, Brand_Image_Url, ShortDescription, User_idUser)
+    VALUES (?, ?, ?, ?)
   `;
 
   const [result] = await pool.query(query, [
     brandName,
+    brandImageUrl,
     shortDescription,
     userId,
   ]);

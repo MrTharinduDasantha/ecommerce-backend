@@ -53,7 +53,11 @@ router.delete(
 // Product Routes
 // ---------------
 router.post("/", cpUpload, productController.createProduct);
-router.post("/brands", productController.createBrand);
+router.post(
+  "/brands",
+  upload.single("brandImage"),
+  productController.createBrand
+);
 router.get("/brands", productController.getBrands);
 router.put("/:id", cpUpload, productController.updateProduct);
 router.get("/", productController.getAllProducts);
