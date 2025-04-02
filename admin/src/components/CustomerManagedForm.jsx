@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaEdit, FaTrashAlt, FaHistory } from 'react-icons/fa';
-import Swal from 'sweetalert2'; // Import SweetAlert2
-import * as api from '../api/customer'; // Adjusted API import for customers
+import { Search, Edit, Trash2, History } from 'lucide-react';
+import Swal from 'sweetalert2';
+import * as api from '../api/customer';
 
 const CustomerManagedForm = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [customers, setCustomers] = useState([]); // Renamed users to customers
+  const [customers, setCustomers] = useState([]);
 
-  // Fetch data from the backend
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
         const data = await api.fetchCustomers();
-        console.log('API Response:', data); // Log the response
         setCustomers(data);
       } catch (error) {
         console.error('Error fetching customers:', error);
@@ -20,7 +18,7 @@ const CustomerManagedForm = () => {
       }
     };
 
-    fetchCustomers(); // Corrected function name to fetchCustomers
+    fetchCustomers();
   }, []);
 
   const handleDelete = (customerId) => {
@@ -31,14 +29,13 @@ const CustomerManagedForm = () => {
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#5CAF90', // Set custom color for the confirm button
-      cancelButtonColor: '#5CAF90',  // Set custom color for the cancel button
+      confirmButtonColor: '#5CAF90',
+      cancelButtonColor: '#5CAF90',
     }).then((result) => {
       if (result.isConfirmed) {
-        // Delete the customer
         api.deleteCustomer(customerId)
           .then(() => {
-            setCustomers(customers.filter((customer) => customer.idCustomer !== customerId)); // Remove deleted customer from state
+            setCustomers(customers.filter((customer) => customer.idCustomer !== customerId));
             Swal.fire('Deleted!', 'The customer has been deleted.', 'success');
           })
           .catch((error) => {
@@ -54,71 +51,79 @@ const CustomerManagedForm = () => {
     if (!customer) return;
 
     Swal.fire({
-      width: '600px',
+      width: '90%',
+      maxWidth: '600px',
       height: 'auto',
       html: `
-      <div style="position: relative; max-height: 400px; overflow-y: auto;">
-  <h3 style="padding-top: 20px; font-size: 20px; font-weight: bold; text-align: left;">
-    Edit Customer Information
-  </h3>
+      <div class="max-h-[80vh] overflow-y-auto px-4 py-2">
+        <h3 class="pt-5 text-xl font-bold text-left">
+          Edit Customer Information
+        </h3>
 
-  <!-- Close Icon -->
-  <button id="close-modal" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: #333;">
-    &times;
-  </button>
+        <button id="close-modal" class="absolute top-3 right-3 bg-transparent border-none cursor-pointer text-xl text-gray-600">
+          &times;
+        </button>
 
-  <label for="name" style=" margin-top: 20px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Customer Name:</label>
-  <input id="name" class="swal2-input" value="${customer.Full_Name || ''}" placeholder="Enter Name" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+        <div class="space-y-4 mt-6">
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">Customer Name:</label>
+            <input id="name" class="w-full px-3 py-2 border rounded-md" value="${customer.Full_Name || ''}" placeholder="Enter Name" />
+          </div>
 
-  <label for="email" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Customer Email:</label>
-  <input id="email" class="swal2-input" value="${customer.Email || ''}" placeholder="Enter Email" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">Customer Email:</label>
+            <input id="email" class="w-full px-3 py-2 border rounded-md" value="${customer.Email || ''}" placeholder="Enter Email" />
+          </div>
 
-  <label for="phone" style="margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Phone Number:</label>
-  <input id="phone" class="swal2-input" value="${customer.Mobile_No || ''}" placeholder="Enter Phone Number" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
+            <input id="phone" class="w-full px-3 py-2 border rounded-md" value="${customer.Mobile_No || ''}" placeholder="Enter Phone Number" />
+          </div>
 
-  <label for="address" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Customer Address:</label>
-  <input id="address" class="swal2-input" value="${customer.Address || ''}" placeholder="Enter Address" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">Customer Address:</label>
+            <input id="address" class="w-full px-3 py-2 border rounded-md" value="${customer.Address || ''}" placeholder="Enter Address" />
+          </div>
 
-  <label for="city" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">City:</label>
-  <input id="city" class="swal2-input" value="${customer.City || ''}" placeholder="Enter City" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">City:</label>
+            <input id="city" class="w-full px-3 py-2 border rounded-md" value="${customer.City || ''}" placeholder="Enter City" />
+          </div>
 
-  <label for="country" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Country:</label>
-  <input id="country" class="swal2-input" value="${customer.Country || ''}" placeholder="Enter Country" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">Country:</label>
+            <input id="country" class="w-full px-3 py-2 border rounded-md" value="${customer.Country || ''}" placeholder="Enter Country" />
+          </div>
 
-  <label for="password" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">New Password (Leave Blank if Unchanged):</label>
-  <input id="password" type="password" class="swal2-input" placeholder="Enter New Password" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;" />
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">New Password:</label>
+            <input id="password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Enter New Password" />
+          </div>
 
-  <label for="status" style=" margin-top: 10px; display: block; font-size: 16px;  text-align: left; font-medium; margin-bottom: 8px;">Change Status:</label>
-  <select id="status" class="swal2-input" style="margin-bottom: 10px; padding: 8px; font-size: 14px; width: 450px; border: 1px solid #ccc; border-radius: 4px;">
-    <option value="Active" ${customer.Status === 'Active' ? 'selected' : ''}>Active</option>
-    <option value="Inactive" ${customer.Status === 'Inactive' ? 'selected' : ''}>Inactive</option>
-  </select>
-</div>
-
+          <div>
+            <label class="block text-sm font-medium text-left mb-2">Status:</label>
+            <select id="status" class="w-full px-3 py-2 border rounded-md">
+              <option value="Active" ${customer.Status === 'Active' ? 'selected' : ''}>Active</option>
+              <option value="Inactive" ${customer.Status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
       `,
       focusConfirm: false,
-      showCancelButton: false, // Removed cancel button
-      confirmButtonText: 'Update', // Changed the button text to Update
-      confirmButtonColor: '#5CAF90', // Set color for the update button
+      showCancelButton: false,
+      confirmButtonText: 'Update',
+      confirmButtonColor: '#5CAF90',
       preConfirm: () => {
-        const full_name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const mobile_no = document.getElementById('phone').value;
-        const address = document.getElementById('address').value;
-        const city = document.getElementById('city').value;
-        const country = document.getElementById('country').value;
-        const password = document.getElementById('password').value;
-        const status = document.getElementById('status').value;
-
-        return { 
-          full_name, 
-          email, 
-          mobile_no, 
-          address, 
-          city, 
-          country, 
-          status, 
-          password: password || undefined  // Send password only if it's updated
+        return {
+          full_name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          mobile_no: document.getElementById('phone').value,
+          address: document.getElementById('address').value,
+          city: document.getElementById('city').value,
+          country: document.getElementById('country').value,
+          status: document.getElementById('status').value,
+          password: document.getElementById('password').value || undefined
         };
       }
     }).then((result) => {
@@ -139,7 +144,6 @@ const CustomerManagedForm = () => {
       }
     });
 
-    // Close modal when clicking the close icon
     document.getElementById('close-modal')?.addEventListener('click', () => {
       Swal.close();
     });
@@ -149,23 +153,38 @@ const CustomerManagedForm = () => {
     try {
       const history = await api.getCustomerHistory(customerId);
   
-      // Display order and delivery details in SweetAlert2 modal
-      let orderHtml = '<h3 style="font-size: 20px; font-weight: bold; text-align: left; margin-top: 20px; margin-bottom: 10px;">Order History</h3>';
-      history.orders.forEach(order => {
-        orderHtml += `<p style="margin-bottom: 8px; font-weight: semibold; text-align: left; ">Order ID: ${order.idOrder}<br/>Status: ${order.Delivery_Status}<br/>Total Amount: ${order.Total_Amount}</p>`;
-      });
-  
-      let deliveryHtml = '<h3 style="font-size: 20px; font-weight: bold; text-align: left; margin-top: 20px; margin-bottom: 10px;">Delivery Address</h3>';
-      history.deliveryAddresses.forEach(address => {
-        deliveryHtml += `<p style="margin-bottom: 8px; text-align: left;">Address: ${address.Address}, ${address.City}, ${address.Country}<br/>Phone: ${address.Mobile_No}</p>`;
-      });
+      const orderHtml = `
+        <div class="max-h-[70vh] overflow-y-auto px-4">
+          <h3 class="text-xl font-bold text-left mt-5 mb-3">Order History</h3>
+          <div class="space-y-4">
+            ${history.orders.map(order => `
+              <div class="p-4 border rounded-lg">
+                <p class="font-semibold text-left">Order ID: ${order.idOrder}</p>
+                <p class="text-left">Status: ${order.Delivery_Status}</p>
+                <p class="text-left">Total Amount: ${order.Total_Amount}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          <h3 class="text-xl font-bold text-left mt-6 mb-3">Delivery Addresses</h3>
+          <div class="space-y-4 mb-4">
+            ${history.deliveryAddresses.map(address => `
+              <div class="p-4 border rounded-lg">
+                <p class="text-left">Address: ${address.Address}, ${address.City}, ${address.Country}</p>
+                <p class="text-left">Phone: ${address.Mobile_No}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
   
       Swal.fire({
         title: 'Customer History',
-        html: orderHtml + deliveryHtml,
-        width: '600px',
+        html: orderHtml,
+        width: '90%',
+        maxWidth: '600px',
         confirmButtonText: 'Close',
-        confirmButtonColor: '#5CAF90', // Custom color for the Close button
+        confirmButtonColor: '#5CAF90',
       });
     } catch (error) {
       console.error('Error fetching customer history:', error);
@@ -173,10 +192,8 @@ const CustomerManagedForm = () => {
     }
   };
   
-  // Updated search logic
   const filteredCustomers = customers.filter((customer) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
-
     return (
       (customer.idCustomer && customer.idCustomer.toString().includes(lowerSearchTerm)) ||
       (customer.Full_Name && customer.Full_Name.toLowerCase().includes(lowerSearchTerm)) ||
@@ -186,16 +203,16 @@ const CustomerManagedForm = () => {
   });
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-2xl font-semibold">Customers</h2>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="p-4 border-b">
           <div className="flex items-center">
             <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by ID, Name, Email, or Phone..."
@@ -207,54 +224,91 @@ const CustomerManagedForm = () => {
           </div>
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className="p-3 text-left">Customer ID</th>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Email</th>
-              <th className="p-3 text-left">Phone</th>
-              <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Created At</th>
-              <th className="p-3 text-left">Updated At</th>
-              <th className="p-3 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div className="block w-full overflow-x-auto">
+          <div className="hidden sm:block">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredCustomers.map((customer) => (
+                  <tr key={customer.idCustomer} className="hover:bg-gray-50">
+                    <td className="p-3 whitespace-nowrap">{customer.idCustomer}</td>
+                    <td className="p-3 whitespace-nowrap">{customer.Full_Name}</td>
+                    <td className="p-3 whitespace-nowrap">{customer.Email}</td>
+                    <td className="p-3 whitespace-nowrap">{customer.Mobile_No}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        customer.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {customer.Status}
+                      </span>
+                    </td>
+                    <td className="p-3 whitespace-nowrap">{new Date(customer.created_at).toLocaleDateString()}</td>
+                    <td className="p-3 whitespace-nowrap">{new Date(customer.updated_at).toLocaleDateString()}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <button onClick={() => handleEdit(customer.idCustomer)} className="text-yellow-500 hover:text-yellow-600">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleHistory(customer.idCustomer)} className="text-blue-500 hover:text-blue-600">
+                          <History className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(customer.idCustomer)} className="text-red-500 hover:text-red-600">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile view */}
+          <div className="sm:hidden">
             {filteredCustomers.map((customer) => (
-              <tr key={customer.idCustomer} className="border-b">
-                <td className="p-3">{customer.idCustomer}</td>
-                <td className="p-3">{customer.Full_Name}</td>
-                <td className="p-3">{customer.Email}</td>
-                <td className="p-3">{customer.Mobile_No}</td>
-                <td className="p-3">{customer.Status}</td>
-                <td className="p-3">{new Date(customer.created_at).toLocaleString()}</td>
-                <td className="p-3">{new Date(customer.updated_at).toLocaleString()}</td>
-                <td className="p-3">
-              
-                  <button
-                    onClick={() => handleEdit(customer.idCustomer)}
-                    className="text-yellow-500 hover:underline "
-                  >
-                    <FaEdit /> 
+              <div key={customer.idCustomer} className="bg-white p-4 border-b">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{customer.Full_Name}</div>
+                    <div className="text-sm text-gray-500">ID: {customer.idCustomer}</div>
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    customer.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {customer.Status}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500 mb-1">{customer.Email}</div>
+                <div className="text-sm text-gray-500 mb-2">{customer.Mobile_No}</div>
+                <div className="text-xs text-gray-400 mb-3">
+                  Created: {new Date(customer.created_at).toLocaleDateString()}
+                </div>
+                <div className="flex justify-end space-x-3">
+                  <button onClick={() => handleEdit(customer.idCustomer)} className="text-yellow-500 hover:text-yellow-600">
+                    <Edit className="w-5 h-5" />
                   </button>
-                  <button
-                    onClick={() => handleHistory(customer.idCustomer)}
-                    className="text-blue-500 hover:underline mx-3"
-                  >
-                    <FaHistory /> 
+                  <button onClick={() => handleHistory(customer.idCustomer)} className="text-blue-500 hover:text-blue-600">
+                    <History className="w-5 h-5" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(customer.idCustomer)}
-                    className="text-red-500 hover:underline"
-                  >
-                    <FaTrashAlt /> 
+                  <button onClick={() => handleDelete(customer.idCustomer)} className="text-red-500 hover:text-red-600">
+                    <Trash2 className="w-5 h-5" />
                   </button>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   );

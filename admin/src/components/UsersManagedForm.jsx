@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { FaUserPlus, FaSearch } from 'react-icons/fa';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import { Search, UserPlus } from 'lucide-react';
+import Swal from 'sweetalert2';
 import * as api from '../api/auth';
 
 const UsersManagedForm = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
 
-  // Fetch data from the backend
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await api.fetchUsers();
-        console.log('API Response:', data); // Log the response
         setUsers(data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -23,77 +21,110 @@ const UsersManagedForm = () => {
     fetchUsers();
   }, []);
 
- 
-
   const handleAddUser = () => {
     Swal.fire({
       title: 'Add New User',
+      width: '90%',
+      maxWidth: '600px',
       html: `
-        <input id="name" class="swal2-input" placeholder="Enter Name">
-        <input id="email" class="swal2-input" placeholder="Enter Email">
-        <input id="password" type="password" class="swal2-input" placeholder="Enter Password">
-        <input id="phone" class="swal2-input" placeholder="Enter Phone Number">
-        <select id="status" class="swal2-input">
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
+        <div class="max-h-[80vh] overflow-y-auto px-4 py-2">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-left mb-2">Full Name:</label>
+              <input id="name" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Name" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-left mb-2">Email:</label>
+              <input id="email" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Email" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-left mb-2">Password:</label>
+              <input id="password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Password" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
+              <input id="phone" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Phone Number" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-left mb-2">Status:</label>
+              <select id="status" class="w-full px-3 py-2 border rounded-md">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
       `,
       focusConfirm: false,
+      confirmButtonText: 'Add User',
+      confirmButtonColor: '#5CAF90',
+      showCancelButton: true,
+      cancelButtonColor: '#5CAF90',
       preConfirm: () => {
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const phone = document.getElementById('phone').value;
         const status = document.getElementById('status').value;
-  
-        // Validate inputs
+
         if (!name || !email || !password || !phone) {
           Swal.showValidationMessage('All fields are required');
-          return false; // Prevent form submission if validation fails
+          return false;
         }
-  
+
         return { full_name: name, email, password, phone_no: phone, status };
       }
     }).then((result) => {
       if (result.isConfirmed) {
         const newUser = result.value;
-  
-        // Make sure the URL is correct (e.g., localhost:9000)
+
         api.addUser(newUser)
           .then((response) => {
-            console.log(response); // Check the response in the console
-            setUsers([...users, { id: response.id, ...newUser }]); // Update the state with the new user
-            Swal.fire('User Added', 'The user has been successfully added!', 'success');
+            setUsers([...users, { id: response.id, ...newUser }]);
+            Swal.fire('Success', 'User has been added successfully!', 'success');
           })
           .catch((error) => {
-            console.error('Error adding user:', error.response || error); // Log the error to understand what went wrong
+            console.error('Error adding user:', error);
             Swal.fire('Error', 'There was an issue adding the user', 'error');
           });
       }
     });
   };
 
+  const filteredUsers = users.filter((user) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      (user.Full_Name && user.Full_Name.toLowerCase().includes(searchLower)) ||
+      (user.Email && user.Email.toLowerCase().includes(searchLower)) ||
+      (user.Phone_No && user.Phone_No.toLowerCase().includes(searchLower))
+    );
+  });
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-2xl font-semibold">Users</h2>
         <button
           onClick={handleAddUser}
-          className="bg-[#5CAF90] text-white px-4 py-2 rounded-lg flex items-center"
+          className="bg-[#5CAF90] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4a9277] transition-colors"
         >
-          <FaUserPlus className="w-5 h-5 mr-2" />
+          <UserPlus className="w-5 h-5 mr-2" />
           Add User
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="p-4 border-b">
           <div className="flex items-center">
             <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Search by name, email, or phone..."
                 className="pl-10 pr-4 py-2 w-full border rounded-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -102,38 +133,67 @@ const UsersManagedForm = () => {
           </div>
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Email</th>
-              <th className="p-3 text-left">Phone</th>
-              <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Created At</th> {/* New Column */}
-              <th className="p-3 text-left">Updated At</th> 
-             
-            </tr>
-          </thead>
-          <tbody>
-            {users
-              .filter((user) =>
-                user.Full_Name.toLowerCase().includes(searchTerm.toLowerCase())
-              )
-              .map((user) => (
-                <tr key={user.idUser} className="border-b">
-                  <td className="p-3">{user.Full_Name}</td>
-                  <td className="p-3">{user.Email}</td>
-                  <td className="p-3">{user.Phone_No}</td>
-                  <td className="p-3">{user.Status}</td>
-                  <td className="p-3">{new Date(user.created_at).toLocaleString()}</td> {/* Display Created At */}
-                  <td className="p-3">{new Date(user.updated_at).toLocaleString()}</td> {/* Display Updated At */}
-                  <td className="p-3">
-                 
-                  </td>
+        <div className="block w-full overflow-x-auto">
+          {/* Desktop view */}
+          <div className="hidden sm:block">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated At</th>
                 </tr>
-              ))}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.idUser} className="hover:bg-gray-50">
+                    <td className="p-3 whitespace-nowrap">{user.Full_Name}</td>
+                    <td className="p-3 whitespace-nowrap">{user.Email}</td>
+                    <td className="p-3 whitespace-nowrap">{user.Phone_No}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.Status}
+                      </span>
+                    </td>
+                    <td className="p-3 whitespace-nowrap">{new Date(user.created_at).toLocaleDateString()}</td>
+                    <td className="p-3 whitespace-nowrap">{new Date(user.updated_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile view */}
+          <div className="sm:hidden">
+            {filteredUsers.map((user) => (
+              <div key={user.idUser} className="bg-white p-4 border-b">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{user.Full_Name}</div>
+                    <div className="text-sm text-gray-500">{user.Email}</div>
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    user.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {user.Status}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500 mb-2">{user.Phone_No}</div>
+                <div className="text-xs text-gray-400">
+                  Created: {new Date(user.created_at).toLocaleDateString()}
+                </div>
+                <div className="text-xs text-gray-400">
+                  Updated: {new Date(user.updated_at).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
