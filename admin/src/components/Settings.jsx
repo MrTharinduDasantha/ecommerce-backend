@@ -87,17 +87,17 @@ const Settings = () => {
     }
   };
   return (
-    <div className="max-w-5xl mx-auto my-5 p-10 bg-white rounded-md shadow-md">
+    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 lg:p-10 bg-white rounded-md shadow-md">
       {/* Heading */}
-      <h2 className="text-2xl font-bold text-[#1D372E] mb-6">
+      <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-4 md:mb-5 lg:mb-6">
         Manage Settings
       </h2>
 
       {/* Header and Footer Settings */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 md:mb-5 lg:mb-6">
         <div className="flex items-center">
-          <div className="w-1 h-8 bg-[#5CAF90] mr-3"></div>
-          <h3 className="text-xl font-semibold text-[#1D372E]">
+          <div className="w-1 h-6 md:h-7 lg:h-8 bg-[#5CAF90] mr-2 md:mr-3"></div>
+          <h3 className="text-lg md:text-xl font-semibold text-[#1D372E]">
             Header and Footer
           </h3>
         </div>
@@ -105,27 +105,30 @@ const Settings = () => {
         {!isEditing && (
           <button
             onClick={handleEdit}
-            className="flex items-center bg-[#5CAF90] text-white px-4 py-2 rounded-2xl cursor-pointer"
+            className="flex items-center bg-[#5CAF90] text-white px-4 py-2 rounded-2xl cursor-pointer text-xs md:text-sm lg:text-base"
           >
-            <FaEdit className="mr-2" /> Edit
+            <FaEdit className="mr-1 md:mr-2 w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />{" "}
+            Edit
           </button>
         )}
       </div>
 
       {/* Form */}
       <form onSubmit={handleSave}>
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
           {/* Navbar Logo Input */}
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Navbar Logo</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Navbar Logo
+            </label>
             <input
               type="file"
               onChange={handleLogoChange}
               ref={logoInputRef}
-              className="file-input file-input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
             />
             {logoPreview && (
-              <div className="relative mt-4 w-32 h-32 border border-gray-300 rounded-2xl">
+              <div className="relative mt-3 md:mt-4 w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl">
                 <img
                   src={logoPreview}
                   alt="Logo Preview"
@@ -135,9 +138,9 @@ const Settings = () => {
                   <button
                     type="button"
                     onClick={removeLogo}
-                    className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer rounded-2xl"
+                    className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
                   >
-                    <RiDeleteBin5Fill size={18} />
+                    <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                   </button>
                 )}
               </div>
@@ -146,22 +149,24 @@ const Settings = () => {
 
           {/* Copyright Input */}
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Footer Copyright</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Footer Copyright
+            </label>
             <input
               type="text"
               value={copyrightText}
               onChange={(e) => setCopyrightText(e.target.value)}
               placeholder="Enter copyright text"
-              className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="input input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
             />
           </div>
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end mt-4 md:mt-5 lg:mt-6">
           <button
             type="submit"
-            className="btn bg-[#5CAF90] border-none font-medium rounded-2xl"
+            className="btn bg-[#5CAF90] border-none font-medium text-sm md:text-base py-2 px-3 md:px-4 h-auto min-h-0 rounded-2xl"
           >
             Save
           </button>

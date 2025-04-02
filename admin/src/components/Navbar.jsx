@@ -56,7 +56,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               {/* User dropdown */}
               {isDropdownOpen && (
                 <div
-                  className="z-50 absolute right-0 mt-[22rem] w-48 text-base list-none bg-[#1D372E] divide-y divide-white rounded-sm shadow-sm"
+                  className="z-50 absolute right-0 mt-[202px] w-48 text-base list-none bg-[#1D372E] divide-y divide-white rounded-sm shadow-sm"
                   id="dropdown-user"
                 >
                   <div className="px-4 py-3" role="none">
@@ -70,61 +70,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                   <ul className="py-1" role="none">
                     <li>
                       <Link
-
-
-                        to="/"
-
-                        to="/profile"
-
+                        to="profile"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
                         role="menuitem"
                       >
                         User Profile
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/dashboard"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-                        role="menuitem"
-                      >
-                        Dashboard
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-                        role="menuitem"
-                      >
-                        Manage Products
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-                        role="menuitem"
-                      >
-                        Manage Orders
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-                        role="menuitem"
-                      >
-                        Notifications
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="#"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-                        role="menuitem"
-                      >
-                        Manage Users
                       </Link>
                     </li>
                     <li>

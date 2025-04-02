@@ -410,33 +410,40 @@ const ProductForm = () => {
     }
   };
   return (
-    <div className="max-w-5xl mx-auto my-5 p-10 bg-white rounded-md shadow-md">
+    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 lg:p-10 bg-white rounded-md shadow-md">
       {/* Heading */}
-      <h2 className="text-2xl font-bold text-[#1D372E] mb-4">
+      <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
         {isEditMode ? "Edit Product" : "Add Product"}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 md:space-y-5 lg:space-y-6"
+      >
         {/* Description and Brand */}
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Main Description</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Main Description
+            </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter product description"
-              className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
             />
           </div>
 
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Brand</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Brand
+            </label>
             <div className="flex items-center gap-2">
               <select
                 value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}
-                className="select select-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                className="select select-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
               >
                 <option value="" className="font-bold">
                   Select Brand
@@ -450,7 +457,7 @@ const ProductForm = () => {
               <button
                 type="button"
                 onClick={openBrandPopup}
-                className="btn btn-primary bg-[#5CAF90] border-none rounded-2xl"
+                className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
               >
                 Add Brand
               </button>
@@ -459,23 +466,27 @@ const ProductForm = () => {
         </div>
 
         {/* Market Price and Sub Categories */}
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Market Price</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Market Price
+            </label>
             <input
               type="number"
               value={marketPrice}
               onChange={(e) => setMarketPrice(e.target.value)}
               placeholder="Enter market price"
-              className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
             />
           </div>
 
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Sub Categories</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Sub Categories
+            </label>
             <select
               value=""
-              className="w-full select select-bordered bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="w-full select select-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
               onChange={handleSubcategorySelect}
             >
               <option value="" className="font-bold">
@@ -497,11 +508,11 @@ const ProductForm = () => {
               {selectedSubCategories.map((subcat, index) => (
                 <div
                   key={index}
-                  className="inline-flex items-center bg-[#5CAF90] text-white px-3 py-2 rounded-2xl flex-shrink-0"
+                  className="inline-flex items-center bg-[#5CAF90] text-white px-2 md:px-3 py-2 rounded-2xl flex-shrink-0 text-xs md:text-sm"
                 >
-                  <span className="mr-2">{subcat.Description}</span>
+                  <span className="mr-1 md:mr-2">{subcat.Description}</span>
                   <RiDeleteBack2Fill
-                    className="cursor-pointer"
+                    className="cursor-pointer w-3 h-3 md:w-4 md:h-4"
                     onClick={() =>
                       setSelectedSubCategories((prev) =>
                         prev.filter(
@@ -517,28 +528,32 @@ const ProductForm = () => {
         </div>
 
         {/* Selling Price and Main Image */}
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Selling Price</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Selling Price
+            </label>
             <input
               type="number"
               value={sellingPrice}
               onChange={(e) => setSellingPrice(e.target.value)}
               placeholder="Enter selling price"
-              className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
             />
           </div>
 
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Main Image</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Main Image
+            </label>
             <input
               type="file"
               onChange={handleMainImageChange}
               ref={mainImageRef}
-              className="file-input file-input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
             />
             {mainImagePreview && (
-              <div className="relative mt-4 w-32 h-32 border border-gray-300 rounded-2xl">
+              <div className="relative mt-3 md:mt-4 w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl">
                 <img
                   src={mainImagePreview}
                   alt="Main Preview"
@@ -547,9 +562,9 @@ const ProductForm = () => {
                 <button
                   type="button"
                   onClick={removeMainImage}
-                  className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer rounded-2xl"
+                  className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
                 >
-                  <RiDeleteBin5Fill size={18} />
+                  <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                 </button>
               </div>
             )}
@@ -557,22 +572,24 @@ const ProductForm = () => {
         </div>
 
         {/* Sub Images and Sub Description */}
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Sub Images</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Sub Images
+            </label>
             <input
               type="file"
               multiple
               onChange={handleSubImagesChange}
               ref={subImagesRef}
-              className="file-input file-input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
             />
             {subImagesPreview.length > 0 && (
-              <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar">
+              <div className="flex gap-2 mt-3 md:mt-4 overflow-x-auto pb-2 scrollbar">
                 {subImagesPreview.map((preview, index) => (
                   <div
                     key={index}
-                    className="relative w-32 h-32 border border-gray-300 rounded-2xl flex-shrink-0"
+                    className="relative w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl flex-shrink-0"
                   >
                     <img
                       src={preview}
@@ -582,9 +599,9 @@ const ProductForm = () => {
                     <button
                       type="button"
                       onClick={() => removeSubImage(index)}
-                      className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer rounded-2xl"
+                      className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
                     >
-                      <RiDeleteBin5Fill size={18} />
+                      <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                     </button>
                   </div>
                 ))}
@@ -593,33 +610,39 @@ const ProductForm = () => {
           </div>
 
           <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium mb-1">Sub Description</label>
+            <label className="block font-medium text-sm md:text-base mb-1">
+              Sub Description
+            </label>
             <textarea
               value={subDescription}
               onChange={(e) => setSubDescription(e.target.value)}
               placeholder="Enter additional product details"
-              className="w-full textarea textarea-bordered bg-white border-2 border-[#1D372E] rounded-2xl"
+              className="w-full textarea textarea-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
               rows={5}
             />
           </div>
         </div>
 
         {/* Variations Section */}
-        <div className="mt-8">
-          <div className="bg-[#5CAF90] text-[#1D372E] p-3 border-2 border-[#1D372E] border-b-0 rounded-t-2xl">
-            <h3 className="font-bold text-center">Product Variations</h3>
+        <div className="mt-6 md:mt-7 lg:mt-8">
+          <div className="bg-[#5CAF90] text-[#1D372E] p-2 md:p-3 border-2 border-[#1D372E] border-b-0 rounded-t-2xl">
+            <h3 className="font-bold text-center text-sm md:text-base lg:text-lg">
+              Product Variations
+            </h3>
           </div>
-          <div className="flex flex-wrap gap-5 items-center p-5 border-2 border-[#1D372E] rounded-b-2xl">
+          <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5 items-center p-3 md:p-4 lg:p-5 border-2 border-[#1D372E] rounded-b-2xl">
             {/* Color */}
             <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium mb-1">Color</label>
+              <label className="block font-medium text-sm md:text-base mb-1">
+                Color
+              </label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={colorName}
                   onChange={(e) => setColorName(e.target.value)}
                   placeholder="Enter color hex value"
-                  className="input input-bordered w-full bg-white border-2 border-[#1D372E] placeholder:text-gray-400 rounded-2xl"
+                  className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] placeholder:text-gray-400 rounded-2xl"
                   disabled={isColorLocked}
                   style={getInputStyle()}
                 />
@@ -642,12 +665,12 @@ const ProductForm = () => {
                 </div>
                 {isColorLocked ? (
                   <FaCheckSquare
-                    className="cursor-pointer text-3xl"
+                    className="cursor-pointer w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
                     onClick={toggleColorLock}
                   />
                 ) : (
                   <FaRegCheckSquare
-                    className="cursor-pointer text-3xl"
+                    className="cursor-pointer w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
                     onClick={toggleColorLock}
                   />
                 )}
@@ -656,33 +679,37 @@ const ProductForm = () => {
 
             {/* Size */}
             <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium mb-1">Size</label>
+              <label className="block font-medium text-sm md:text-base mb-1">
+                Size
+              </label>
               <input
                 type="text"
                 value={size}
                 onChange={(e) => setSize(e.target.value)}
                 placeholder="Enter size"
-                className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
               />
             </div>
 
             {/* Quantity */}
             <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium mb-1">Quantity</label>
+              <label className="block font-medium text-sm md:text-base mb-1">
+                Quantity
+              </label>
               <input
                 type="number"
                 value={colorQuantity}
                 onChange={(e) => setColorQuantity(e.target.value)}
                 placeholder="Enter quantity"
-                className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
               />
             </div>
 
-            <div className="mt-7">
+            <div className="mt-5 md:mt-6 lg:mt-7">
               <button
                 type="button"
                 onClick={handleAddVariation}
-                className="btn bg-[#5CAF90] border-none font-medium rounded-2xl"
+                className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
               >
                 Add
               </button>
@@ -691,40 +718,52 @@ const ProductForm = () => {
 
           {/* Variations Table */}
           {variations.length > 0 && (
-            <div className="overflow-x-auto mt-4">
+            <div className="overflow-x-auto mt-3 md:mt-4">
               <table className="table-auto w-full text-center border border-[#1D372E]">
                 <thead className="bg-[#5CAF90] text-[#1D372E]">
                   <tr>
-                    <th className="border-2 p-2">Color Code</th>
-                    <th className="border-2 p-2">Size</th>
-                    <th className="border-2 p-2">Quantity</th>
-                    <th className="border-2 p-2">Action</th>
+                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                      Color Code
+                    </th>
+                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                      Size
+                    </th>
+                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                      Quantity
+                    </th>
+                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
                   {variations.map((item, index) => (
                     <tr key={index}>
-                      <td className="border-2 p-2">
-                        <div className="inline-flex items-center gap-2">
+                      <td className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                        <div className="inline-flex items-center gap-1 md:gap-2">
                           {item.colorCode !== "No color selected" && (
                             <div
-                              className="w-6 h-6 border border-[#1D372E]"
+                              className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border border-[#1D372E]"
                               style={{ backgroundColor: item.colorCode }}
                             />
                           )}
                           <span>{item.colorCode}</span>
                         </div>
                       </td>
-                      <td className="border-2 p-2">{item.size}</td>
-                      <td className="border-2 p-2">{item.quantity}</td>
-                      <td className="border-2 p-2">
+                      <td className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                        {item.size}
+                      </td>
+                      <td className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                        {item.quantity}
+                      </td>
+                      <td className="border-2 p-1 md:p-2">
                         <button
                           type="button"
                           onClick={() => removeVariation(index)}
-                          className="bg-[#5CAF90] p-1.5 cursor-pointer ml-3"
+                          className="bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer ml-1 md:ml-2 lg:ml-3"
                           title="Remove Varation"
                         >
-                          <RiDeleteBin5Fill className="w-5 h-5" />
+                          <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                         </button>
                       </td>
                     </tr>
@@ -736,36 +775,42 @@ const ProductForm = () => {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-8">
-          <div className="bg-[#5CAF90] text-[#1D372E] p-3 border-2 border-[#1D372E] border-b-0 rounded-t-2xl">
-            <h3 className="font-bold text-center">Frequently Ask Question</h3>
+        <div className="mt-6 md:mt-7 lg:mt-8">
+          <div className="bg-[#5CAF90] text-[#1D372E] p-2 md:p-3 border-2 border-[#1D372E] border-b-0 rounded-t-2xl">
+            <h3 className="font-bold text-center text-sm md:text-base lg:text-lg">
+              Frequently Ask Question
+            </h3>
           </div>
-          <div className="flex flex-wrap gap-5 p-5 border-2 border-[#1D372E] rounded-b-2xl">
-            <div className="flex-1 min-w-[250px] text-[#1D372E]">
-              <label className="block font-medium mb-1">Question</label>
+          <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5 p-3 md:p-4 lg:p-5 border-2 border-[#1D372E] rounded-b-2xl">
+            <div className="flex-1 min-w-[200px] text-[#1D372E]">
+              <label className="block font-medium text-sm md:text-base mb-1">
+                Question
+              </label>
               <textarea
                 value={faqQuestion}
                 onChange={(e) => setFaqQuestion(e.target.value)}
                 placeholder="Enter question"
-                className="w-full textarea textarea-bordered bg-white border-2 border-[#1D372E] rounded-2xl"
+                className="w-full textarea textarea-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
                 rows={5}
               />
             </div>
-            <div className="flex-1 min-w-[250px] text-[#1D372E]">
-              <label className="block font-medium mb-1">Answer</label>
+            <div className="flex-1 min-w-[200px] text-[#1D372E]">
+              <label className="block font-medium text-sm md:text-base mb-1">
+                Answer
+              </label>
               <textarea
                 value={faqAnswer}
                 onChange={(e) => setFaqAnswer(e.target.value)}
                 placeholder="Enter answer"
-                className="w-full textarea textarea-bordered bg-white border-2 border-[#1D372E] rounded-2xl"
+                className="w-full textarea textarea-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
                 rows={5}
               />
             </div>
-            <div className="mt-7">
+            <div className="mt-5 md:mt-6 lg:mt-7">
               <button
                 type="button"
                 onClick={handleAddFaq}
-                className="btn bg-[#5CAF90] border-none font-medium rounded-2xl"
+                className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
               >
                 Add
               </button>
@@ -774,31 +819,33 @@ const ProductForm = () => {
 
           {/* Show FAQs */}
           {faqs.length > 0 && (
-            <div className="mt-4 space-y-4">
+            <div className="mt-3 md:mt-4 space-y-3 md:space-y-4">
               {faqs.map((faq, index) => (
                 <div
                   key={index}
-                  className="border-2 border-[#1D372E] rounded-2xl p-4"
+                  className="border-2 border-[#1D372E] rounded-2xl p-3 md:p-4"
                 >
                   <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
-                      <FaQuestionCircle className="text-[#5CAF90] mt-0.5 text-xl" />
+                    <div className="flex items-start gap-2 md:gap-3">
+                      <FaQuestionCircle className="text-[#5CAF90] mt-0.5 w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
                       <div className="flex-1">
-                        <h4 className="font-medium text-[#1D372E]">
+                        <h4 className="font-medium text-sm md:text-base text-[#1D372E]">
                           {faq.question}
                         </h4>
-                        <div className="mt-2">
-                          <p className="text-[#1D372E]">{faq.answer}</p>
+                        <div className="mt-1 md:mt-2">
+                          <p className="text-xs md:text-sm lg:text-base text-[#1D372E]">
+                            {faq.answer}
+                          </p>
                         </div>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => removeFaq(index)}
-                      className="bg-[#5CAF90] text-[#1D372E] p-1.5 cursor-pointer rounded-2xl"
+                      className="bg-[#5CAF90] text-[#1D372E] p-1 md:p-1.5 cursor-pointer rounded-2xl"
                       title="Remove FAQ"
                     >
-                      <RiDeleteBin5Fill className="w-5 h-5" />
+                      <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                     </button>
                   </div>
                 </div>
@@ -808,10 +855,10 @@ const ProductForm = () => {
         </div>
 
         {/* Save button */}
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end mt-4 md:mt-5 lg:mt-6">
           <button
             type="submit"
-            className="btn bg-[#5CAF90] border-none font-medium rounded-2xl"
+            className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
           >
             {isEditMode ? "Edit Product" : "Add Product"}
           </button>
@@ -821,29 +868,31 @@ const ProductForm = () => {
       {/* Brand Popup */}
       {brandPopupVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-          <div className="bg-white rounded-md p-8 w-[90%] max-w-lg max-h-[90vh] overflow-y-auto relative">
+          <div className="bg-white rounded-md p-6 md:p-8 w-[90%] max-w-lg max-h-[90vh] overflow-y-auto relative">
             {/* Popup Header */}
-            <div className="flex justify-between items-center text-[#1D372E] mb-5">
-              <h3 className="text-xl font-bold">Add Brand</h3>
+            <div className="flex justify-between items-center text-[#1D372E] mb-3 md:mb-4 lg:mb-5">
+              <h3 className="text-lg md:text-xl font-bold">Add Brand</h3>
               <button onClick={closeBrandPopup} className="cursor-pointer">
-                <IoClose size={24} />
+                <IoClose className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" />
               </button>
             </div>
             {/* Add Brand Form */}
-            <div className="flex flex-col gap-5 text-[#1D372E] mb-5">
-              <div className="flex items-center gap-4">
-                <label className="block font-medium min-w-[100px]">Name</label>
+            <div className="flex flex-col gap-3 md:gap-4 lg:gap-5 text-[#1D372E] mb-3 md:mb-4 lg:mb-5">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <label className="block font-medium text-sm md:text-base min-w-[80px] md:min-w-[100px]">
+                  Name
+                </label>
                 <input
                   type="text"
                   value={newBrandName}
                   onChange={(e) => setNewBrandName(e.target.value)}
                   placeholder="Enter brand name"
-                  className="input input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                  className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-4">
-                  <label className="block font-medium min-w-[100px]">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                  <label className="block font-medium text-sm md:text-base min-w-[80px] md:min-w-[100px]">
                     Image
                   </label>
                   <input
@@ -861,14 +910,14 @@ const ProductForm = () => {
                         setNewBrandImagePreview(null);
                       }
                     }}
-                    className="file-input file-input-bordered w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                    className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
                   />
                 </div>
                 {/* Brand Image Preview */}
                 {newBrandImagePreview && (
-                  <div className="relative mt-2 ml-[115px] w-32 h-32 border border-gray-300 rounded-2xl">
+                  <div className="relative mt-2 md:ml-[115px] w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl">
                     <img
-                      src={newBrandImagePreview}
+                      src={newBrandImagePreview || "/placeholder.svg"}
                       alt="Brand Preview"
                       className="object-cover w-full h-full rounded-2xl"
                     />
@@ -880,22 +929,22 @@ const ProductForm = () => {
                         if (newBrandImageRef.current)
                           newBrandImageRef.current.value = "";
                       }}
-                      className="absolute top-1 right-1 bg-[#5CAF90] p-1.5 cursor-pointer rounded-2xl"
+                      className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
                     >
-                      <RiDeleteBin5Fill size={18} />
+                      <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                     </button>
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-4">
-                <label className="block font-medium min-w-[100px]">
+              <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <label className="block font-medium text-sm md:text-base min-w-[80px] md:min-w-[100px]">
                   Description
                 </label>
                 <textarea
                   value={newBrandDescription}
                   onChange={(e) => setNewBrandDescription(e.target.value)}
                   placeholder="Enter brand description"
-                  className="textarea w-full bg-white border-2 border-[#1D372E] rounded-2xl"
+                  className="textarea w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
                   rows={3}
                 ></textarea>
               </div>
@@ -903,7 +952,7 @@ const ProductForm = () => {
             <div className="flex justify-end">
               <button
                 onClick={handleAddBrand}
-                className="btn bg-[#5CAF90] border-none font-medium rounded-2xl"
+                className="btn bg-[#5CAF90] border-none font-medium text-sm md:text-base py-2 px-3 md:px-4 h-auto min-h-0 rounded-2xl"
               >
                 Add Brand
               </button>

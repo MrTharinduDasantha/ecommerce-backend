@@ -48,8 +48,8 @@ const App = () => {
             element={<CustomerManagedForm />}
           />
           <Route path="settings" element={<Settings />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
-        <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>

@@ -71,6 +71,7 @@ export const getProfile = async () => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
 // For status update
 export const updateUserStatus = async (userId, status) => {
   try {
