@@ -15,17 +15,34 @@ const OrderDetails = () => {
   const [selectedStatus, setSelectedStatus] = useState(null);
 
   useEffect(() => {
-    fetchOrderDetails();
+    if (orderId) {
+      // Validate orderId is a number before fetching
+      if (!isNaN(parseInt(orderId, 10))) {
+        fetchOrderDetails();
+      } else {
+        setError('Invalid order ID format. Order ID must be a number.');
+        setLoading(false);
+      }
+    } else {
+      setError('Order ID is required');
+      setLoading(false);
+    }
   }, [orderId]);
 
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
+      setError(null);
+      console.log(`Fetching order details for ID: ${orderId}`);
+      
       const data = await getOrderById(orderId);
+      console.log('Order details received:', data);
+      
       setOrderDetails(data);
       setSelectedStatus(data.order.Status);
       setLoading(false);
     } catch (err) {
+      console.error('Error in OrderDetails.fetchOrderDetails:', err);
       setError(err.message || 'Failed to fetch order details');
       setLoading(false);
     }
