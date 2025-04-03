@@ -36,7 +36,7 @@ const DashboardPage = () => {
     <div>
       <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar isSidebarOpen={isSidebarOpen} />
-      <div className="p-3 sm:p-4 md:p-5 lg:p-6 sm:ml-56 md:ml-60 lg:ml-64 mt-8 md:mt-9 lg:mt-10 bg-[#1D372E] min-h-screen">
+      <div className="p-3 sm:p-4 md:p-5 lg:p-6 sm:ml-56 md:ml-60 lg:ml-64 mt-8 md:mt-9 lg:mt-12 bg-[#1D372E] min-h-screen">
         <Outlet />
       </div>
     </div>

@@ -36,6 +36,7 @@ const App = () => {
             </PrivateRoute>
           }
         >
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="dashboard-private" element={<DashboardPrivate />} />
           <Route path="products/add-product" element={<ProductForm />} />
           <Route
@@ -50,7 +51,6 @@ const App = () => {
             element={<CustomerManagedForm />}
           />
           <Route path="settings" element={<Settings />} />
-          <Route path="profile" element={<ProfilePage />} />
           <Route path="orders" element={<OrderList />} />
           <Route path="orders/:orderId" element={<OrderDetails />} />
         </Route>
