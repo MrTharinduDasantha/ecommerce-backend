@@ -22,8 +22,9 @@ const ProfilePage = () => {
 
   const handleEditProfile = async () => {
     const { value: formValues } = await Swal.fire({
-      width: "90%",
-      maxWidth: "600px",
+      
+      maxWidth: '600px',
+      height: '200px',
       html: `<div class="relative max-h-[80vh] overflow-y-auto p-4">
           <h3 class="pt-5 text-xl font-bold text-left">
             Update Your Information
@@ -105,8 +106,9 @@ const ProfilePage = () => {
 
   const handleChangePassword = async () => {
     const { value: formValues } = await Swal.fire({
-      width: "90%",
-      maxWidth: "600px",
+       
+      maxWidth: '600px',
+      height: '200px',
       html: `<div class="relative max-h-[80vh] overflow-y-auto p-4">
           <h3 class="pt-5 text-xl font-bold text-left">
             Change Your Password

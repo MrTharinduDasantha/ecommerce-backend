@@ -23,6 +23,9 @@ const CustomerManagedForm = () => {
 
   const handleDelete = (customerId) => {
     Swal.fire({
+        
+      maxWidth: '600px',
+      height: '200px',
       title: 'Are you sure?',
       text: 'This customer will be permanently deleted.',
       icon: 'warning',
@@ -51,9 +54,9 @@ const CustomerManagedForm = () => {
     if (!customer) return;
 
     Swal.fire({
-      width: '90%',
+      
       maxWidth: '600px',
-      height: 'auto',
+      height: '200px',
       html: `
       <div class="max-h-[80vh] overflow-y-auto px-4 py-2">
         <h3 class="pt-5 text-xl font-bold text-left">
@@ -181,8 +184,9 @@ const CustomerManagedForm = () => {
       Swal.fire({
         title: 'Customer History',
         html: orderHtml,
-        width: '90%',
-        maxWidth: '600px',
+         
+      maxWidth: '600px',
+      height: '200px',
         confirmButtonText: 'Close',
         confirmButtonColor: '#5CAF90',
       });
