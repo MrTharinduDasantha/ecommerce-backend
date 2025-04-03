@@ -11,6 +11,8 @@ import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import Settings from "./components/Settings";
+// import OrdersPage from "./pages/OrdersPage";
+// import OrderDetailsPage from "./pages/OrderDetailsPage";
 
 const App = () => {
   return (
@@ -34,6 +36,7 @@ const App = () => {
             </PrivateRoute>
           }
         >
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="dashboard-private" element={<DashboardPrivate />} />
           <Route path="products/add-product" element={<ProductForm />} />
           <Route
@@ -48,7 +51,8 @@ const App = () => {
             element={<CustomerManagedForm />}
           />
           <Route path="settings" element={<Settings />} />
-          <Route path="profile" element={<ProfilePage />} />
+          {/* <Route path="orders" element={<OrdersPage />} /> */}
+          {/* <Route path="orders/:orderId" element={<OrderDetailsPage />} /> */}
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
