@@ -29,14 +29,30 @@ class OrderController {
   // Get order details by ID
   async getOrderById(req, res) {
     try {
-      const orderDetails = await Order.findById(req.params.id);
+      const id = req.params.id;
+      console.log(`Requested order ID: ${id}`);
+      
+      if (!id) {
+        return res.status(400).json({ message: 'Order ID is required' });
+      }
+      
+      // Validate if id is numeric before calling the model
+      if (isNaN(parseInt(id, 10))) {
+        console.error(`Invalid order ID format: ${id}`);
+        return res.status(400).json({ message: 'Invalid order ID format, must be a number' });
+      }
+      
+      const orderDetails = await Order.findById(id);
       
       if (!orderDetails) {
+        console.log(`Order with ID ${id} not found`);
         return res.status(404).json({ message: 'Order not found' });
       }
       
+      console.log(`Successfully retrieved order ${id}`);
       res.json(orderDetails);
     } catch (error) {
+      console.error(`Error in getOrderById: ${error.message}`);
       res.status(500).json({ message: 'Failed to fetch order details', error: error.message });
     }
   }

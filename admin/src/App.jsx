@@ -11,6 +11,8 @@ import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import Settings from "./components/Settings";
+import OrderList from "./components/OrderList";
+import OrderDetails from "./components/OrderDetails";
 
 const App = () => {
   return (
@@ -49,6 +51,8 @@ const App = () => {
           />
           <Route path="settings" element={<Settings />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="orders" element={<OrderList />} />
+          <Route path="orders/:orderId" element={<OrderDetails />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
