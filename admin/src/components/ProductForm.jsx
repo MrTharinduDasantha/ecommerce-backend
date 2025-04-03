@@ -16,7 +16,40 @@ import {
   getCategories,
   getProduct,
 } from "../api/product";
+// eslint-disable-next-line no-unused-vars
+import { components } from "react-select";
 import toast from "react-hot-toast";
+import Select from "react-select";
+
+const customStyles = {
+  menuList: (provided) => ({
+    ...provided,
+    maxHeight: "150px",
+    overflowY: "auto",
+    borderRadius: "1rem",
+  }),
+  menu: (provided) => ({
+    ...provided,
+    borderRadius: "1rem",
+    borderWidth: "2px",
+    borderColor: "#1D372E",
+  }),
+  control: (provided) => ({
+    ...provided,
+    minHeight: "2.5rem",
+    borderWidth: "2px",
+    borderColor: "#1D372E",
+    borderRadius: "1rem",
+    boxShadow: "none",
+    "&:hover": {
+      borderColor: "#1D372E",
+    },
+  }),
+  option: (provided) => ({
+    ...provided,
+    fontSize: "0.875rem",
+  }),
+};
 
 const ProductForm = () => {
   const { id } = useParams();
@@ -380,35 +413,6 @@ const ProductForm = () => {
       toast.error(error.message || "Failed to add product");
     }
   };
-
-  // Handler for subcategory select
-  const handleSubcategorySelect = (e) => {
-    const subId = e.target.value;
-    if (subId) {
-      // Find the subcategory object from availableSubCategories
-      let selectedSubcat = null;
-      availableSubCategories.forEach((category) => {
-        if (category.subcategories) {
-          const found = category.subcategories.find(
-            (sub) => String(sub.idSub_Category) === subId
-          );
-          if (found) {
-            selectedSubcat = found;
-          }
-        }
-      });
-
-      // Only add if not already added (using id)
-      if (
-        selectedSubcat &&
-        !selectedSubCategories.some(
-          (sc) => sc.idSub_Category === selectedSubcat.idSub_Category
-        )
-      ) {
-        setSelectedSubCategories((prev) => [...prev, selectedSubcat]);
-      }
-    }
-  };
   return (
     <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 lg:p-10 bg-white rounded-md shadow-md">
       {/* Heading */}
@@ -440,20 +444,24 @@ const ProductForm = () => {
               Brand
             </label>
             <div className="flex items-center gap-2">
-              <select
-                value={selectedBrand}
-                onChange={(e) => setSelectedBrand(e.target.value)}
-                className="select select-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-              >
-                <option value="" className="font-bold">
-                  Select Brand
-                </option>
-                {brands.map((brand, index) => (
-                  <option key={index} value={brand.idProduct_Brand}>
-                    {brand.Brand_Name}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={
+                  brands
+                    .map((brand) => ({
+                      value: brand.idProduct_Brand,
+                      label: brand.Brand_Name,
+                    }))
+                    .find((option) => option.value === selectedBrand) || null
+                }
+                onChange={(selected) => setSelectedBrand(selected.value)}
+                options={brands.map((brand) => ({
+                  value: brand.idProduct_Brand,
+                  label: brand.Brand_Name,
+                }))}
+                styles={customStyles}
+                placeholder="Select Brand"
+                className="w-full"
+              />
               <button
                 type="button"
                 onClick={openBrandPopup}
@@ -484,26 +492,59 @@ const ProductForm = () => {
             <label className="block font-medium text-sm md:text-base mb-1">
               Sub Categories
             </label>
-            <select
-              value=""
-              className="w-full select select-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-              onChange={handleSubcategorySelect}
-            >
-              <option value="" className="font-bold">
-                Select Sub Category
-              </option>
-              {availableSubCategories.map((cat, cIndex) => (
-                <optgroup key={cIndex} label={cat.Description}>
-                  {cat.subcategories &&
-                    cat.subcategories.map((subcat, sIndex) => (
-                      <option key={sIndex} value={subcat.idSub_Category}>
-                        {subcat.Description}
-                      </option>
-                    ))}
-                </optgroup>
-              ))}
-            </select>
+            <Select
+              value={selectedSubCategories.map((sc) => ({
+                value: sc.idSub_Category,
+                label: sc.Description,
+              }))}
+              onChange={(selected) =>
+                setSelectedSubCategories(
+                  selected.map((opt) => ({
+                    idSub_Category: opt.value,
+                    Description: opt.label,
+                  }))
+                )
+              }
+              options={availableSubCategories.map((cat) => ({
+                label: cat.Description,
+                options: cat.subcategories
+                  ? cat.subcategories
+                      .filter(
+                        (subcat) =>
+                          !selectedSubCategories.some(
+                            (sc) => sc.idSub_Category === subcat.idSub_Category
+                          )
+                      )
+                      .map((subcat) => ({
+                        value: subcat.idSub_Category,
+                        label: subcat.Description,
+                      }))
+                  : [],
+              }))}
+              styles={customStyles}
+              isMulti
+              placeholder="Select sub category"
+              className="w-full"
+              formatGroupLabel={(data) => (
+                <div className="font-bold text-[#1D372E]">{data.label}</div>
+              )}
+              components={{
+                // Hide selected subcategory values
+                MultiValue: () => null,
+                // Hide the clear icon
+                ClearIndicator: () => null,
+                // Always show the placeholder instead of selected values
+                ValueContainer: ({ ...props }) => {
+                  return (
+                    <components.ValueContainer {...props}>
+                      {props.selectProps.placeholder}
+                    </components.ValueContainer>
+                  );
+                },
+              }}
+            />
 
+            {/* Display of selected subcategories */}
             <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
               {selectedSubCategories.map((subcat, index) => (
                 <div
