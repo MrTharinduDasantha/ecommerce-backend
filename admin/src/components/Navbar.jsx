@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { RiSidebarUnfoldFill, RiSidebarFoldFill } from "react-icons/ri";
 import { IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
+import { AuthContext } from "../context/AuthContext"; // Import your AuthContext
 import logo from "../assets/logo.png";
-import profile from "../assets/profile.png";
+import profile from "../assets/userprofile.png";
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
+  const { user } = useContext(AuthContext); // Get the user from the AuthContext
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -60,11 +62,12 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                   id="dropdown-user"
                 >
                   <div className="px-4 py-3" role="none">
+                    {/* Display user details */}
                     <p className="text-sm" role="none">
-                      Admin
+                      {user ? user.fullName : "Admin"} {/* Display dynamic name */}
                     </p>
                     <p className="text-sm font-medium" role="none">
-                      admin@gmail.com
+                      {user ? user.email : "admin@gmail.com"} {/* Display dynamic email */}
                     </p>
                   </div>
                   <ul className="py-1" role="none">

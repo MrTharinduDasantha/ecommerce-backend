@@ -24,8 +24,8 @@ const UsersManagedForm = () => {
   const handleAddUser = () => {
     Swal.fire({
       title: 'Add New User',  
-      maxWidth: '600px',
-      height: '200px',
+      maxWidth: '100%',
+      height: '100%',
       html: `
         <div class="max-h-[80vh] overflow-y-auto px-4 py-2">
           <div class="space-y-4">
