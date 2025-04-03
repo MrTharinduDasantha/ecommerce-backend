@@ -84,9 +84,9 @@ const ProductList = () => {
         All Products
       </h2>
 
-      {/* Search Bar - Centered */}
+      {/* Search Bar */}
       <div className="flex items-center justify-center gap-2 mb-6 md:mb-8">
-        <div className="relative flex max-w-md w-full">
+        <div className="relative flex w-full lg:max-w-xl md:max-w-md sm:max-w-sm">
           <div className="absolute inset-y-0 left-0 flex items-center pl-2 md:pl-3 pointer-events-none z-10">
             <FaSearch className="text-[#1D372E] text-sm md:text-base" />
           </div>

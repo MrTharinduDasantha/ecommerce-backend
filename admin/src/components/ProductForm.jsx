@@ -21,10 +21,11 @@ import { components } from "react-select";
 import toast from "react-hot-toast";
 import Select from "react-select";
 
+// Custom styles for react-select components
 const customStyles = {
   menuList: (provided) => ({
     ...provided,
-    maxHeight: "150px",
+    maxHeight: "160px",
     overflowY: "auto",
     borderRadius: "1rem",
   }),
