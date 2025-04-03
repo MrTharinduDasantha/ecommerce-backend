@@ -19,11 +19,17 @@ const OrderList = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
+      console.log('Fetching orders, page:', currentPage);
+      
       const data = await getOrders(currentPage);
+      console.log('Orders data received:', data);
+      
       setOrders(data.orders);
       setTotalPages(data.pagination.totalPages);
       setLoading(false);
     } catch (err) {
+      console.error('Error in OrderList.fetchOrders:', err);
       setError(err.message || 'Failed to fetch orders');
       setLoading(false);
     }

@@ -2,7 +2,8 @@ const pool = require('../config/database');
 
 class Order {
   static async findAll(limit, offset) {
-    const [rows] = await pool.query(
+    // First, get the basic order information
+    const [orders] = await pool.query(
       'SELECT o.*, da.Full_Name, da.Address, da.City, da.Country, c.Email ' +
       'FROM `Order` o ' +
       'JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address ' +
@@ -10,30 +11,73 @@ class Order {
       'ORDER BY o.idOrder DESC LIMIT ? OFFSET ?',
       [limit, offset]
     );
-    return rows;
+    
+    // If we have orders, fetch image for each order's first product
+    if (orders.length > 0) {
+      // Get an array of order IDs
+      const orderIds = orders.map(order => order.idOrder);
+      
+      // Get product images for the first product in each order
+      const [productImages] = await pool.query(
+        'SELECT ohpv.Order_idOrder, p.Main_Image_Url as product_image ' +
+        'FROM Order_has_Product_Variations ohpv ' +
+        'JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations ' +
+        'JOIN Product p ON pv.Product_idProduct = p.idProduct ' +
+        'WHERE ohpv.Order_idOrder IN (?) ' +
+        'GROUP BY ohpv.Order_idOrder',
+        [orderIds]
+      );
+      
+      // Create a map of order ID to product image
+      const imageMap = {};
+      productImages.forEach(item => {
+        imageMap[item.Order_idOrder] = item.product_image;
+      });
+      
+      // Add the product_image field to each order
+      orders.forEach(order => {
+        order.product_image = imageMap[order.idOrder] || null;
+      });
+    }
+    
+    return orders;
   }
 
   static async findById(id) {
+    // Parse id to integer and validate it
+    const orderId = parseInt(id, 10);
+    
+    // Check if orderId is a valid number
+    if (isNaN(orderId)) {
+      console.error('Invalid order ID, not a number:', id);
+      return null;
+    }
+    
+    console.log('Finding order with ID:', orderId);
+    
     const [orders] = await pool.query(
       'SELECT o.*, da.Full_Name, da.Address, da.City, da.Country, c.Email ' +
       'FROM `Order` o ' +
       'JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address ' +
       'JOIN Customer c ON da.Customer_idCustomer = c.idCustomer ' +
       'WHERE o.idOrder = ?',
-      [id]
+      [orderId]
     );
+    
+    console.log('Orders found:', orders.length);
     
     if (orders.length === 0) {
       return null;
     }
     
+    // Get order items with product images
     const [orderItems] = await pool.query(
-      'SELECT oi.*, p.Description as product_name, pv.Colour, pv.Size ' +
+      'SELECT oi.*, p.Description as product_name, p.Main_Image_Url as product_image, pv.Colour, pv.Size ' +
       'FROM Order_has_Product_Variations oi ' +
       'JOIN Product_Variations pv ON oi.Product_Variations_idProduct_Variations = pv.idProduct_Variations ' +
       'JOIN Product p ON pv.Product_idProduct = p.idProduct ' +
       'WHERE oi.Order_idOrder = ?',
-      [id]
+      [orderId]
     );
     
     return {

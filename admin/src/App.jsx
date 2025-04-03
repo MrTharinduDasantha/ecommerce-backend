@@ -11,8 +11,8 @@ import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import Settings from "./components/Settings";
-// import OrdersPage from "./pages/OrdersPage";
-// import OrderDetailsPage from "./pages/OrderDetailsPage";
+import OrderList from "./components/OrderList";
+import OrderDetails from "./components/OrderDetails";
 
 const App = () => {
   return (
@@ -51,8 +51,8 @@ const App = () => {
             element={<CustomerManagedForm />}
           />
           <Route path="settings" element={<Settings />} />
-          {/* <Route path="orders" element={<OrdersPage />} /> */}
-          {/* <Route path="orders/:orderId" element={<OrderDetailsPage />} /> */}
+          <Route path="orders" element={<OrderList />} />
+          <Route path="orders/:orderId" element={<OrderDetails />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
