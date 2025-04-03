@@ -22,8 +22,9 @@ const ProfilePage = () => {
 
   const handleEditProfile = async () => {
     const { value: formValues } = await Swal.fire({
-      width: "90%",
-      maxWidth: "600px",
+      
+      Width: '100%',
+      height: '100%',
       html: `<div class="relative max-h-[80vh] overflow-y-auto p-4">
           <h3 class="pt-5 text-xl font-bold text-left">
             Update Your Information
@@ -105,8 +106,9 @@ const ProfilePage = () => {
 
   const handleChangePassword = async () => {
     const { value: formValues } = await Swal.fire({
-      width: "90%",
-      maxWidth: "600px",
+       
+      maxWidth: '600px',
+      height: '200px',
       html: `<div class="relative max-h-[80vh] overflow-y-auto p-4">
           <h3 class="pt-5 text-xl font-bold text-left">
             Change Your Password
@@ -186,7 +188,7 @@ const ProfilePage = () => {
               {/* Profile Image */}
               <div className="relative flex-shrink-0">
                 <img
-                  src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop"
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsyA44JdhHChP6kGqx36BolQq4Hn7z2yGekw&s"
                   alt="Profile"
                   className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover shadow-md ring-4 ring-gray-50"
                 />

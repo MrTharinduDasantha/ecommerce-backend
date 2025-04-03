@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { RiSidebarUnfoldFill, RiSidebarFoldFill } from "react-icons/ri";
 import { IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
+import { AuthContext } from "../context/AuthContext"; // Import your AuthContext
 import logo from "../assets/logo.png";
-import profile from "../assets/profile.png";
+import profile from "../assets/userprofile.png";
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
+  const { user } = useContext(AuthContext); // Get the user from the AuthContext
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const text = "Admin Panel".split("");
 
@@ -88,12 +90,22 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                   className="z-50 absolute right-0 mt-[150px] md:mt-[198px] lg:mt-[202px] w-40 md:w-44 lg:w-48 text-base list-none bg-[#1D372E] divide-y divide-white rounded-sm shadow-sm"
                   id="dropdown-user"
                 >
+
+                  <div className="px-4 py-3" role="none">
+                    {/* Display user details */}
+                    <p className="text-sm" role="none">
+                      {user ? user.fullName : "Admin"} {/* Display dynamic name */}
+                    </p>
+                    <p className="text-sm font-medium" role="none">
+                      {user ? user.email : "admin@gmail.com"} {/* Display dynamic email */}
+
                   <div className="px-3 py-2 md:px-4 md:py-3" role="none">
                     <p className="text-xs md:text-sm" role="none">
                       Admin
                     </p>
                     <p className="text-xs md:text-sm font-medium" role="none">
                       admin@gmail.com
+
                     </p>
                   </div>
                   <ul className="py-1" role="none">
