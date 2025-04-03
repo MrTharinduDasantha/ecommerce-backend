@@ -46,7 +46,7 @@ class OrderController {
     try {
       const { status } = req.body;
       
-      if (!['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+      if (!['Order Confirmed', 'Order Packed', 'Awaiting Delivery', 'Out for Delivery', 'Delivered'].includes(status)) {
         return res.status(400).json({ message: 'Invalid status' });
       }
       
