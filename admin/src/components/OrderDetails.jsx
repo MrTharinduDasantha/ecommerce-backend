@@ -65,16 +65,16 @@ const OrderDetails = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending':
+      case 'Order Confirmed':
         return 'bg-yellow-100 text-yellow-800';
-      case 'processing':
+      case 'Order Packed':
         return 'bg-blue-100 text-blue-800';
-      case 'shipped':
+      case 'Awaiting Delivery':
         return 'bg-indigo-100 text-indigo-800';
-      case 'delivered':
+      case 'Out for Delivery':
+        return 'bg-purple-100 text-purple-800';
+      case 'Delivered':
         return 'bg-green-100 text-green-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -119,86 +119,86 @@ const OrderDetails = () => {
   const { order, items } = orderDetails;
 
   return (
-    <div className="bg-[#333] p-6 rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
         <button 
           onClick={() => navigate('/dashboard/orders')} 
-          className="flex items-center text-[#a3fe00] hover:text-white transition-colors"
+          className="flex items-center text-[#5CAF90] hover:text-[#1D372E] transition-colors mb-2 sm:mb-0"
         >
           <FiArrowLeft className="mr-2" /> Back to Orders
         </button>
-        <h1 className="text-2xl font-bold text-white">Order #{order.idOrder}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#1D372E]">Order #{order.idOrder}</h1>
       </div>
 
       {statusUpdateSuccess && (
-        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">
+        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded text-sm">
           Order status updated successfully
         </div>
       )}
 
       {statusError && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">
+        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">
           {statusError}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-[#444] p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-3 text-white">Order Information</h2>
-          <div className="space-y-2 text-sm">
-            <p className="flex justify-between text-white">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+          <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">Order Information</h2>
+          <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Date:</span>
               <span>{new Date(order.Date_Time).toLocaleString()}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Status:</span>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.Status)}`}>
                 {order.Status}
               </span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Total Amount:</span>
               <span>${order.Total_Amount}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Delivery Charges:</span>
               <span>${order.Delivery_Charges}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Net Amount:</span>
               <span>${order.Net_Amount}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Payment Type:</span>
               <span>{order.Payment_Type}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Payment Status:</span>
               <span>{order.Payment_Stats}</span>
             </p>
           </div>
         </div>
 
-        <div className="bg-[#444] p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-3 text-white">Customer Information</h2>
-          <div className="space-y-2 text-sm">
-            <p className="flex justify-between text-white">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+          <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">Customer Information</h2>
+          <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Name:</span>
               <span>{order.Full_Name}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Email:</span>
               <span>{order.Email}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Address:</span>
               <span>{order.Address}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">City:</span>
               <span>{order.City}</span>
             </p>
-            <p className="flex justify-between text-white">
+            <p className="flex justify-between text-[#1D372E]">
               <span className="font-medium">Country:</span>
               <span>{order.Country}</span>
             </p>
@@ -206,19 +206,28 @@ const OrderDetails = () => {
         </div>
       </div>
 
-      <div className="bg-[#444] p-4 rounded-lg mb-6">
-        <h2 className="text-lg font-semibold mb-3 text-white">Update Order Status</h2>
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
+      {order.Customer_Note && (
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 mb-4 sm:mb-6">
+          <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">Customer Note</h2>
+          <div className="text-xs sm:text-sm text-[#1D372E] bg-white p-3 rounded border border-gray-200">
+            {order.Customer_Note}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 mb-4 sm:mb-6">
+        <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">Update Order Status</h2>
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex flex-wrap gap-1 sm:gap-2">
+            {['Order Confirmed', 'Order Packed', 'Awaiting Delivery', 'Out for Delivery', 'Delivered'].map((status) => (
               <button
                 key={status}
                 onClick={() => handleStatusSelect(status)}
                 disabled={updatingStatus}
-                className={`px-4 py-2 rounded capitalize ${
+                className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm capitalize ${
                   selectedStatus === status
-                    ? 'bg-gray-100 text-[#2d2d2d] border-2 border-[#a3fe00]'
-                    : 'bg-gray-600 text-white hover:bg-gray-500'
+                    ? 'bg-gray-100 text-[#1D372E] border-2 border-[#5CAF90]'
+                    : 'bg-white text-[#1D372E] border border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 {status}
@@ -226,91 +235,77 @@ const OrderDetails = () => {
             ))}
           </div>
           
-          <div className="flex items-center">
+          <div className="flex flex-col sm:flex-row sm:items-center">
             <button
               onClick={handleStatusChange}
               disabled={updatingStatus || selectedStatus === order.Status}
-              className={`px-6 py-2 rounded font-medium ${
+              className={`px-4 py-1 sm:px-6 sm:py-2 rounded text-xs sm:text-sm font-medium mb-2 sm:mb-0 ${
                 updatingStatus || selectedStatus === order.Status
-                  ? 'bg-gray-600 text-white cursor-not-allowed'
-                  : 'bg-[#a3fe00] text-[#2d2d2d] hover:bg-opacity-90'
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#5CAF90] text-white hover:bg-opacity-90'
               }`}
             >
               Update
             </button>
             
             {updatingStatus && (
-              <span className="ml-3 text-white flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-[#a3fe00] mr-2"></div>
+              <span className="ml-0 sm:ml-3 text-[#1D372E] flex items-center text-xs sm:text-sm">
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-t-2 border-b-2 border-[#5CAF90] mr-2"></div>
                 Updating...
               </span>
             )}
             
             {selectedStatus !== order.Status && !updatingStatus && (
-              <span className="ml-3 text-white">
-                Change status from <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.Status)}`}>{order.Status}</span> to <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedStatus)}`}>{selectedStatus}</span>
+              <span className="ml-0 sm:ml-3 text-[#1D372E] text-xs sm:text-sm">
+                Status will be updated from <span className="font-medium">{order.Status}</span> to <span className="font-medium">{selectedStatus}</span>
               </span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="bg-[#444] p-4 rounded-lg">
-        <h2 className="text-lg font-semibold mb-3 text-white">Order Items</h2>
+      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+        <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">Order Items</h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-white">
-            <thead className="text-xs uppercase bg-[#555] text-white">
+          <table className="w-full text-xs sm:text-sm text-left text-[#1D372E]">
+            <thead className="text-xs uppercase bg-[#5CAF90] text-white">
               <tr>
-                <th scope="col" className="px-4 py-3">Image</th>
-                <th scope="col" className="px-4 py-3">Product</th>
-                <th scope="col" className="px-4 py-3">Variant</th>
-                <th scope="col" className="px-4 py-3">Price</th>
-                <th scope="col" className="px-4 py-3">Quantity</th>
-                <th scope="col" className="px-4 py-3">Discount</th>
-                <th scope="col" className="px-4 py-3">Total</th>
+                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">Product</th>
+                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 hidden sm:table-cell">Price</th>
+                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">Quantity</th>
+                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">Total</th>
               </tr>
             </thead>
             <tbody>
-              {items.length > 0 ? (
-                items.map((item, index) => (
-                  <tr key={index} className="border-b border-[#555] hover:bg-[#555] transition-colors">
-                    <td className="px-4 py-3">
+              {items.map((item) => (
+                <tr key={item.idOrderItem} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                  <td className="px-3 py-2 sm:px-6 sm:py-4">
+                    <div className="flex items-center">
                       {item.product_image ? (
                         <img 
                           src={item.product_image} 
                           alt={item.product_name} 
-                          className="w-16 h-16 object-cover rounded"
+                          className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 rounded object-cover"
                           onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/80?text=No+Image';
+                            e.target.src = 'https://via.placeholder.com/40?text=No+Image';
                           }} 
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-gray-700 rounded flex items-center justify-center text-xs text-gray-400">
-                          No Image
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500 mr-2 sm:mr-3">
+                          No IMG
                         </div>
                       )}
-                    </td>
-                    <td className="px-4 py-3">{item.product_name}</td>
-                    <td className="px-4 py-3">
-                      {item.Colour && item.Size ? `${item.Colour}, ${item.Size}` : item.Colour || item.Size || 'N/A'}
-                    </td>
-                    <td className="px-4 py-3">${item.Rate}</td>
-                    <td className="px-4 py-3">{item.Qty}</td>
-                    <td className="px-4 py-3">
-                      {item.Discount_Percentage > 0 ? (
-                        <span>{item.Discount_Percentage}% (${item.Discount_Amount})</span>
-                      ) : (
-                        <span>-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">${item.Total_Amount}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-4 py-3 text-center">No items found</td>
+                      <div>
+                        <span className="block">{item.product_name}</span>
+                        <span className="block text-xs text-gray-500 sm:hidden">${item.Rate || 0}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 hidden sm:table-cell">${item.Rate || 0}</td>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4">{item.Qty || 0}</td>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4">${item.Total || 0}</td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
