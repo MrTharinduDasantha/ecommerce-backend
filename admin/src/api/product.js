@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:9000"; // Your API base URL
+// API base URL
+const API_URL = "http://localhost:9000";
 
 // Create an instance of axios to include default headers
 const api = axios.create({
@@ -8,6 +9,15 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+// Attach token from local storage on every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // --------------------------------------------

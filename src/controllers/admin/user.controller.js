@@ -113,7 +113,7 @@ const loginUser = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ userId: user.idUser }, "your-secret-key", {
-      expiresIn: "1h",
+      expiresIn: "1d",
     });
 
     // Send the response with the token
@@ -144,13 +144,12 @@ const getProfile = async (req, res) => {
   }
 };
 
-
 const updateUserStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const userId = req.params.id;
 
-    if (!['Active', 'Inactive'].includes(status)) {
+    if (!["Active", "Inactive"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
@@ -178,10 +177,10 @@ const updateUserPassword = async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(newPassword, 10); // Hash the new password
-    await pool.query(
-      "UPDATE User SET Password = ? WHERE idUser = ?",
-      [hashedPassword, id]
-    );
+    await pool.query("UPDATE User SET Password = ? WHERE idUser = ?", [
+      hashedPassword,
+      id,
+    ]);
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
     console.error("Error updating password:", error);
@@ -197,7 +196,6 @@ module.exports = {
   loginUser,
   deleteUser,
   getProfile,
-  updateUserStatus, 
-  updateUserPassword
-
+  updateUserStatus,
+  updateUserPassword,
 };

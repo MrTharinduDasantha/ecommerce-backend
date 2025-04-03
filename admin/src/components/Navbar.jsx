@@ -39,7 +39,10 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                 <RiSidebarUnfoldFill className="w-5 h-5 md:w-6 md:h-6" />
               )}
             </button>
-            <Link to="/dashboard" className="flex ms-2 md:me-24">
+            <Link
+              to="/dashboard/dashboard-private"
+              className="flex ms-2 md:me-24"
+            >
               <img
                 src={logo}
                 className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 me-2 md:me-3"
