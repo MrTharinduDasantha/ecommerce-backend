@@ -13,7 +13,7 @@ const ProfilePage = () => {
         const data = await api.getProfile();
         console.log(data);
         setUser(data);
-        toast.success("Profile loaded successfully!"); // Success message added here
+
       } catch (error) {
         console.error("Error fetching profile:", error);
         setError("Failed to fetch profile");

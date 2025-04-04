@@ -13,7 +13,7 @@ const UsersManagedForm = () => {
       try {
         const data = await api.fetchUsers();
         setUsers(data);
-        toast.success("Users fetched successfully!");
+       
       } catch (error) {
         console.error("Error fetching users:", error);
         toast.error("There was an issue fetching users.");
@@ -109,18 +109,17 @@ const UsersManagedForm = () => {
 
   return (
     <div className="p-4">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl font-semibold">Users</h2>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 mt-5 ml-5">
+        <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4"> Admin Details</h2>
         <button
           onClick={handleAddUser}
-          className="bg-[#5CAF90] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4a9277] transition-colors"
+          className="bg-[#5CAF90] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4a9277] transition-colors mr-5"
         >
           <UserPlus className="w-5 h-5 mr-2" />
           Add User
         </button>
       </div>
-
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="p-4 border-b">
           <div className="flex items-center">
             <div className="relative flex-1">
@@ -142,22 +141,22 @@ const UsersManagedForm = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Name
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Email
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Phone
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Status
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Created At
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Updated At
                   </th>
                 </tr>
@@ -165,10 +164,10 @@ const UsersManagedForm = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredUsers.map((user) => (
                   <tr key={user.idUser} className="hover:bg-gray-50">
-                    <td className="p-3 whitespace-nowrap">{user.Full_Name}</td>
-                    <td className="p-3 whitespace-nowrap">{user.Email}</td>
-                    <td className="p-3 whitespace-nowrap">{user.Phone_No}</td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">{user.Full_Name}</td>
+                    <td className="p-3 whitespace-nowrap text-black">{user.Email}</td>
+                    <td className="p-3 whitespace-nowrap text-black">{user.Phone_No}</td>
+                    <td className="p-3 whitespace-nowrap text-black">
                       <span
                         className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           user.Status === "Active"
@@ -179,10 +178,10 @@ const UsersManagedForm = () => {
                         {user.Status}
                       </span>
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">
                       {new Date(user.updated_at).toLocaleDateString()}
                     </td>
                   </tr>
