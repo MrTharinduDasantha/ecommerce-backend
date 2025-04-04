@@ -3,7 +3,6 @@ import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FaCheckSquare, FaRegCheckSquare, FaEdit } from "react-icons/fa";
 import { MdAddBox } from "react-icons/md";
-import toast from "react-hot-toast";
 import {
   getCategories,
   createCategory,
@@ -12,6 +11,8 @@ import {
   createSubCategory,
   deleteSubCategory,
 } from "../api/product";
+import toast from "react-hot-toast";
+import LoadingSpinner from "./LoadingSpinner";
 
 const ProductCategorySubCategoryForm = () => {
   const [categoryDescription, setCategoryDescription] = useState("");
@@ -24,6 +25,7 @@ const ProductCategorySubCategoryForm = () => {
   const [subCategoryDescription, setSubCategoryDescription] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Load categories on component mount
   useEffect(() => {
@@ -37,6 +39,8 @@ const ProductCategorySubCategoryForm = () => {
       setCategories(data.categories);
     } catch (error) {
       toast.error(error.message || "Failed to fetch categories");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,7 +170,7 @@ const ProductCategorySubCategoryForm = () => {
     }
   };
   return (
-    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 lg:p-10 bg-white rounded-md shadow-md">
+    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
       {/* Heading */}
       <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
         {isEditing ? "Edit Category" : "Add Category and Sub Category"}
@@ -229,7 +233,9 @@ const ProductCategorySubCategoryForm = () => {
       </div>
 
       {/* Category Table */}
-      {categories.length > 0 && (
+      {loading ? (
+        <LoadingSpinner />
+      ) : categories.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="table-auto w-full min-w-[750px] text-center border border-[#1D372E]">
             <thead className="bg-[#5CAF90] text-[#1D372E]">
@@ -406,6 +412,10 @@ const ProductCategorySubCategoryForm = () => {
               )}
             </tbody>
           </table>
+        </div>
+      ) : (
+        <div className="text-center py-14 md:py-16 text-base md:text-lg font-medium text-[#1D372E]">
+          No categoy found
         </div>
       )}
     </div>

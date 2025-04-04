@@ -4,6 +4,7 @@ import { FaEye, FaEdit, FaSearch } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IoClose } from "react-icons/io5";
 import { getProducts, deleteProduct } from "../api/product";
+import LoadingSpinner from "./LoadingSpinner";
 import toast from "react-hot-toast";
 
 const ProductList = () => {
@@ -13,6 +14,7 @@ const ProductList = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProductPopup, setShowProductPopup] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -24,6 +26,8 @@ const ProductList = () => {
       setFilteredProducts(data.products);
     } catch (error) {
       toast.error(error.message || "Failed to load products");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,7 +82,7 @@ const ProductList = () => {
     }
   };
   return (
-    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 lg:p-10 bg-white rounded-md shadow-md">
+    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
       {/* Heading */}
       <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
         All Products
@@ -108,8 +112,10 @@ const ProductList = () => {
       </div>
 
       {/* If no products found */}
-      {filteredProducts.length === 0 ? (
-        <div className="text-center py-8 md:py-10 text-base md:text-lg lg:text-xl font-medium text-[#1D372E]">
+      {loading ? (
+        <LoadingSpinner />
+      ) : filteredProducts.length === 0 ? (
+        <div className="text-center py-14 md:py-16 text-base md:text-lg font-medium text-[#1D372E]">
           No product found
         </div>
       ) : (
