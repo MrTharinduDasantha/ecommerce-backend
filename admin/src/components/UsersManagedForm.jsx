@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, UserPlus } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { toast } from 'react-hot-toast';
 import * as api from '../api/auth';
 
 const UsersManagedForm = () => {
@@ -12,9 +13,10 @@ const UsersManagedForm = () => {
       try {
         const data = await api.fetchUsers();
         setUsers(data);
+        toast.success('Users fetched successfully!');
       } catch (error) {
         console.error('Error fetching users:', error);
-        Swal.fire('Error', 'There was an issue fetching users.', 'error');
+        toast.error('There was an issue fetching users.');
       }
     };
 
@@ -23,7 +25,7 @@ const UsersManagedForm = () => {
 
   const handleAddUser = () => {
     Swal.fire({
-      title: 'Add New User',  
+      title: 'Add New User',
       maxWidth: '100%',
       height: '100%',
       html: `
@@ -85,11 +87,11 @@ const UsersManagedForm = () => {
         api.addUser(newUser)
           .then((response) => {
             setUsers([...users, { id: response.id, ...newUser }]);
-            Swal.fire('Success', 'User has been added successfully!', 'success');
+            toast.success('User has been added successfully!');
           })
           .catch((error) => {
             console.error('Error adding user:', error);
-            Swal.fire('Error', 'There was an issue adding the user', 'error');
+            toast.error('There was an issue adding the user.');
           });
       }
     });

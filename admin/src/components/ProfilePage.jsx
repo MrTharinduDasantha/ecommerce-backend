@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import * as api from "../api/auth";
 import Swal from "sweetalert2";
+import { toast } from "react-hot-toast";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -12,9 +13,11 @@ const ProfilePage = () => {
         const data = await api.getProfile();
         console.log(data);
         setUser(data);
+        toast.success("Profile loaded successfully!"); // Success message added here
       } catch (error) {
         console.error("Error fetching profile:", error);
         setError("Failed to fetch profile");
+        toast.error("There was an error loading your profile."); // Error message added here
       }
     };
     fetchProfile();
@@ -72,34 +75,22 @@ const ProfilePage = () => {
       }
     });
 
+   
     if (formValues) {
       try {
         await api.updateUser(user.idUser, formValues);
-        Swal.fire({
-          title: "Updated!",
-          text: "Your profile has been updated.",
-          icon: "success",
-          confirmButtonColor: "#5CAF90"
-        });
+        toast.success("Your profile has been updated.");
+
         if (formValues.email !== user.Email) {
-          Swal.fire({
-            title: "Email Updated",
-            text: "A confirmation email has been sent to your new email address.",
-            icon: "info",
-            confirmButtonColor: "#5CAF90"
-          });
+          toast("A confirmation email has been sent to your new email address.");
         }
+
         setUser((prevUser) => ({
           ...prevUser,
           ...formValues,
         }));
       } catch (error) {
-        Swal.fire({
-          title: "Error",
-          text: "There was an error updating the profile.",
-          icon: "error",
-          confirmButtonColor: "#5CAF90"
-        });
+        toast.error("There was an error updating the profile.");
       }
     }
   };
@@ -140,32 +131,17 @@ const ProfilePage = () => {
         };
       }
     });
-
     if (formValues) {
       if (formValues.newPassword !== formValues.confirmPassword) {
-        Swal.fire({
-          title: "Error",
-          text: "Passwords do not match",
-          icon: "error",
-          confirmButtonColor: "#5CAF90"
-        });
+        toast.error("Passwords do not match");
         return;
       }
+
       try {
         await api.updateUserPassword(user.idUser, formValues.newPassword);
-        Swal.fire({
-          title: "Updated!",
-          text: "Your password has been updated.",
-          icon: "success",
-          confirmButtonColor: "#5CAF90"
-        });
+        toast.success("Your password has been updated.");
       } catch (error) {
-        Swal.fire({
-          title: "Error",
-          text: "There was an error updating your password.",
-          icon: "error",
-          confirmButtonColor: "#5CAF90"
-        });
+        toast.error("There was an error updating your password.");
       }
     }
   };
@@ -177,6 +153,7 @@ const ProfilePage = () => {
       </div>
     );
   }
+
 
   return (
     <section className="min-h-screen bg-gray-50">
