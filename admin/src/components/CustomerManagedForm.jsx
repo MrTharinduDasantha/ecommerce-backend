@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Edit, Trash2, History } from 'lucide-react';
 import Swal from 'sweetalert2';
+import toast, { Toaster } from 'react-hot-toast';
 import * as api from '../api/customer';
 
 const CustomerManagedForm = () => {
@@ -12,9 +13,10 @@ const CustomerManagedForm = () => {
       try {
         const data = await api.fetchCustomers();
         setCustomers(data);
+        toast.success('Customers fetched successfully');
       } catch (error) {
         console.error('Error fetching customers:', error);
-        Swal.fire('Error', 'There was an issue fetching customers.', 'error');
+        toast.error('There was an issue fetching customers.');
       }
     };
 
@@ -23,7 +25,6 @@ const CustomerManagedForm = () => {
 
   const handleDelete = (customerId) => {
     Swal.fire({
-        
       maxWidth: '100%',
       height: '100%',
       title: 'Are you sure?',
@@ -39,11 +40,11 @@ const CustomerManagedForm = () => {
         api.deleteCustomer(customerId)
           .then(() => {
             setCustomers(customers.filter((customer) => customer.idCustomer !== customerId));
-            Swal.fire('Deleted!', 'The customer has been deleted.', 'success');
+            toast.success('Customer deleted successfully');
           })
           .catch((error) => {
             console.error('Error deleting customer:', error);
-            Swal.fire('Error!', 'There was an issue deleting the customer.', 'error');
+            toast.error('There was an issue deleting the customer.');
           });
       }
     });
@@ -54,55 +55,43 @@ const CustomerManagedForm = () => {
     if (!customer) return;
 
     Swal.fire({
-      
       maxWidth: '100%',
       height: '100%',
       html: `
       <div class="max-h-[80vh] overflow-y-auto px-4 py-2">
-        <h3 class="pt-5 text-xl font-bold text-left">
-          Edit Customer Information
-        </h3>
-
+        <h3 class="pt-5 text-xl font-bold text-left">Edit Customer Information</h3>
         <button id="close-modal" class="absolute top-3 right-3 bg-transparent border-none cursor-pointer text-xl text-gray-600">
           &times;
         </button>
-
         <div class="space-y-4 mt-6">
           <div>
             <label class="block text-sm font-medium text-left mb-2">Customer Name:</label>
             <input id="name" class="w-full px-3 py-2 border rounded-md" value="${customer.Full_Name || ''}" placeholder="Enter Name" />
           </div>
-
           <div>
             <label class="block text-sm font-medium text-left mb-2">Customer Email:</label>
             <input id="email" class="w-full px-3 py-2 border rounded-md" value="${customer.Email || ''}" placeholder="Enter Email" />
           </div>
-
           <div>
             <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
             <input id="phone" class="w-full px-3 py-2 border rounded-md" value="${customer.Mobile_No || ''}" placeholder="Enter Phone Number" />
           </div>
-
           <div>
             <label class="block text-sm font-medium text-left mb-2">Customer Address:</label>
             <input id="address" class="w-full px-3 py-2 border rounded-md" value="${customer.Address || ''}" placeholder="Enter Address" />
           </div>
-
           <div>
             <label class="block text-sm font-medium text-left mb-2">City:</label>
             <input id="city" class="w-full px-3 py-2 border rounded-md" value="${customer.City || ''}" placeholder="Enter City" />
           </div>
-
           <div>
             <label class="block text-sm font-medium text-left mb-2">Country:</label>
             <input id="country" class="w-full px-3 py-2 border rounded-md" value="${customer.Country || ''}" placeholder="Enter Country" />
           </div>
-
           <div>
             <label class="block text-sm font-medium text-left mb-2">New Password:</label>
             <input id="password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Enter New Password" />
           </div>
-
           <div>
             <label class="block text-sm font-medium text-left mb-2">Status:</label>
             <select id="status" class="w-full px-3 py-2 border rounded-md">
@@ -126,7 +115,7 @@ const CustomerManagedForm = () => {
           city: document.getElementById('city').value,
           country: document.getElementById('country').value,
           status: document.getElementById('status').value,
-          password: document.getElementById('password').value || undefined
+          password: document.getElementById('password').value || undefined,
         };
       }
     }).then((result) => {
@@ -135,14 +124,14 @@ const CustomerManagedForm = () => {
 
         api.updateCustomer(customerId, updatedCustomer)
           .then(() => {
-            setCustomers(customers.map((customer) => 
+            setCustomers(customers.map((customer) =>
               customer.idCustomer === customerId ? { ...customer, ...updatedCustomer } : customer
             ));
-            Swal.fire('Updated!', 'The customer details have been updated.', 'success');
+            toast.success('Customer updated successfully');
           })
           .catch((error) => {
             console.error('Error updating customer:', error);
-            Swal.fire('Error!', 'There was an issue updating the customer.', 'error');
+            toast.error('There was an issue updating the customer.');
           });
       }
     });
@@ -155,7 +144,7 @@ const CustomerManagedForm = () => {
   const handleHistory = async (customerId) => {
     try {
       const history = await api.getCustomerHistory(customerId);
-  
+
       const orderHtml = `
         <div class="max-h-[70vh] overflow-y-auto px-4">
           <h3 class="text-xl font-bold text-left mt-5 mb-3">Order History</h3>
@@ -180,22 +169,21 @@ const CustomerManagedForm = () => {
           </div>
         </div>
       `;
-  
+
       Swal.fire({
         title: 'Customer History',
         html: orderHtml,
-         
-      maxWidth: '100%',
-      height: '100%',
+        maxWidth: '100%',
+        height: '100%',
         confirmButtonText: 'Close',
         confirmButtonColor: '#5CAF90',
       });
     } catch (error) {
       console.error('Error fetching customer history:', error);
-      Swal.fire('Error!', 'There was an issue fetching the customer history.', 'error');
+      toast.error('There was an issue fetching the customer history.');
     }
   };
-  
+
   const filteredCustomers = customers.filter((customer) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     return (
