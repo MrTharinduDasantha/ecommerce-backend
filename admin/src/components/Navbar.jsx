@@ -2,12 +2,12 @@ import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { RiSidebarUnfoldFill, RiSidebarFoldFill } from "react-icons/ri";
 import { IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext"; // Import your AuthContext
 import logo from "../assets/logo.png";
-import profile from "../assets/userprofile.png";
+import profile from "../assets/userprofile.png.png";
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext); // Get the user from the AuthContext
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -16,16 +16,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
 
   return (
     <nav className="fixed top-0 z-50 w-full bg-[#1D372E] border-b border-white">
-
       <div className="px-3 py-3 lg:px-5 lg:pl-3">
-      <style>{`
-        @keyframes colorWave {
-          0%, 100% { color: white; }
-          50% { color: #5CAF90; }
-        }
-      `}</style>
-
-      <div className="px-2 py-2 md:px-3 md:py-3 lg:px-5 lg:pl-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center justify-start">
             <button
@@ -39,38 +30,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                 <RiSidebarUnfoldFill className="w-6 h-6" />
               )}
             </button>
-
             <Link to="/dashboard" className="flex ms-2 md:me-24">
               <img src={logo} className="w-8 h-8 me-3" alt="Logo" />
               <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">
                 Admin Panel
               </span>
-            </Link>
-          </div>
-
-            <Link
-              to="/dashboard/dashboard-private"
-              className="flex ms-2 md:me-24"
-            >
-              <img
-                src={logo}
-                className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 me-2 md:me-3"
-                alt="Logo"
-              />
-              <div className="self-center flex space-x-[0.05em]">
-                {text.map((char, index) => (
-                  <span
-                    key={index}
-                    className="text-lg md:text-xl lg:text-2xl font-semibold"
-                    style={{
-                      animation: `colorWave 2s ease-in-out infinite`,
-                      animationDelay: `${index * 0.15}s`,
-                    }}
-                  >
-                    {char}
-                  </span>
-                ))}
-              </div>
             </Link>
           </div>
           <div className="flex items-center">
@@ -91,31 +55,21 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                   )}
                 </button>
               </div>
-
               {/* User dropdown */}
               {isDropdownOpen && (
                 <div
                   className="z-50 absolute right-0 mt-[202px] w-48 text-base list-none bg-[#1D372E] divide-y divide-white rounded-sm shadow-sm"
-
-
-              {isDropdownOpen && (
-                <div
-                  className="z-50 absolute right-0 mt-[170px] md:mt-[198px] lg:mt-[202px] w-40 md:w-44 lg:w-48 text-base list-none bg-[#1D372E] divide-y divide-white rounded-sm shadow-sm"
-
                   id="dropdown-user"
                 >
                   <div className="px-4 py-3" role="none">
+                    {/* Display user details */}
                     <p className="text-sm" role="none">
-                      {user ? user.fullName : "Admin"}
+                      {user ? user.fullName : "Admin"} {/* Display dynamic name */}
                     </p>
                     <p className="text-sm font-medium" role="none">
-
                       {user ? user.email : "admin@gmail.com"} {/* Display dynamic email */}
-
-                      {user ? user.email : "admin@gmail.com"}
                     </p>
                   </div>
-
                   <ul className="py-1" role="none">
                     <li>
                       <Link
