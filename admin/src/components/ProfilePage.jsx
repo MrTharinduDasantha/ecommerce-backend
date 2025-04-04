@@ -25,32 +25,23 @@ const ProfilePage = () => {
 
   const handleEditProfile = async () => {
     const { value: formValues } = await Swal.fire({
-      
-      Width: '100%',
-      height: '100%',
-      html: `<div class="relative max-h-[80vh] overflow-y-auto p-4">
-          <h3 class="pt-5 text-xl font-bold text-left">
-            Update Your Information
-          </h3>
-          <button id="close-modal" class="absolute top-2 right-2 bg-transparent border-none cursor-pointer text-xl text-gray-600">
-            &times;
-          </button>
+      html: `
+        <div class="relative max-h-[80vh] overflow-y-auto p-4">
+          <h3 class="pt-5 text-xl font-bold text-left">Update Your Information</h3>
+       
           <div class="space-y-4 mt-6">
             <div>
               <label class="block text-sm font-medium text-left mb-2">Full Name:</label>
               <input id="name" class="w-full px-3 py-2 border rounded-md" value="${user.Full_Name}" placeholder="Enter Name" />
             </div>
-
             <div>
               <label class="block text-sm font-medium text-left mb-2">Email Address:</label>
               <input id="email" class="w-full px-3 py-2 border rounded-md" value="${user.Email}" placeholder="Enter Email" />
             </div>
-
             <div>
               <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
               <input id="phonenumber" class="w-full px-3 py-2 border rounded-md" value="${user.Phone_No}" placeholder="Enter Phone Number" />
             </div>
-
             <div>
               <label class="block text-sm font-medium text-left mb-2">Status:</label>
               <select id="status" class="w-full px-3 py-2 border rounded-md">
@@ -59,7 +50,8 @@ const ProfilePage = () => {
               </select>
             </div>
           </div>
-        </div>`,
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonText: "Update",
       cancelButtonText: "Cancel",
@@ -74,17 +66,21 @@ const ProfilePage = () => {
         };
       }
     });
-
-   
+  
+    // Adding the event listener for the close button after the modal is shown
+    document.getElementById("close-modal")?.addEventListener("click", () => {
+      Swal.close();  // Close the modal when the close button is clicked
+    });
+  
     if (formValues) {
       try {
         await api.updateUser(user.idUser, formValues);
         toast.success("Your profile has been updated.");
-
+  
         if (formValues.email !== user.Email) {
           toast("A confirmation email has been sent to your new email address.");
         }
-
+  
         setUser((prevUser) => ({
           ...prevUser,
           ...formValues,
@@ -94,6 +90,7 @@ const ProfilePage = () => {
       }
     }
   };
+  
 
   const handleChangePassword = async () => {
     const { value: formValues } = await Swal.fire({
@@ -104,9 +101,7 @@ const ProfilePage = () => {
           <h3 class="pt-5 text-xl font-bold text-left">
             Change Your Password
           </h3>
-          <button id="close-modal" class="absolute top-2 right-2 bg-transparent border-none cursor-pointer text-xl text-gray-600">
-            &times;
-          </button>
+      
           <div class="space-y-4 mt-6">
             <div>
               <label class="block text-sm font-medium text-left mb-2">New Password:</label>
@@ -152,6 +147,8 @@ const ProfilePage = () => {
         <p className="text-red-500 text-lg">{error}</p>
       </div>
     );
+    
+      
   }
 
 
@@ -193,13 +190,13 @@ const ProfilePage = () => {
             {/* Action Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
-                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium"
+                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-2xl hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium"
                 onClick={handleEditProfile}
               >
                 Edit Profile
               </button>
               <button
-                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium"
+                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-2xl hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium"
                 onClick={handleChangePassword}
               >
                 Change Password
