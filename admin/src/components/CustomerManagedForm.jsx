@@ -13,7 +13,7 @@ const CustomerManagedForm = () => {
       try {
         const data = await api.fetchCustomers();
         setCustomers(data);
-        toast.success("Customers fetched successfully");
+    
       } catch (error) {
         console.error("Error fetching customers:", error);
         toast.error("There was an issue fetching customers.");
@@ -233,11 +233,11 @@ const CustomerManagedForm = () => {
 
   return (
     <div className="p-4">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl font-semibold">Customers</h2>
-      </div>
-
+   
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 mt-5 ml-5">
+        <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">Customers Details</h2>
+      </div>
         <div className="p-4 border-b">
           <div className="flex items-center">
             <div className="relative flex-1">
@@ -258,28 +258,28 @@ const CustomerManagedForm = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     ID
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Name
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Email
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Phone
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Status
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Created
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Updated
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
                     Actions
                   </th>
                 </tr>
@@ -287,14 +287,14 @@ const CustomerManagedForm = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCustomers.map((customer) => (
                   <tr key={customer.idCustomer} className="hover:bg-gray-50">
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">
                       {customer.idCustomer}
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">
                       {customer.Full_Name}
                     </td>
-                    <td className="p-3 whitespace-nowrap">{customer.Email}</td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">{customer.Email}</td>
+                    <td className="p-3 whitespace-nowrap text-black">
                       {customer.Mobile_No}
                     </td>
                     <td className="p-3 whitespace-nowrap">
@@ -308,13 +308,13 @@ const CustomerManagedForm = () => {
                         {customer.Status}
                       </span>
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">
                       {new Date(customer.created_at).toLocaleDateString()}
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">
                       {new Date(customer.updated_at).toLocaleDateString()}
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-black">
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => handleEdit(customer.idCustomer)}
