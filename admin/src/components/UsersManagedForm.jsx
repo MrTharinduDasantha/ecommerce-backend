@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Search, UserPlus } from 'lucide-react';
-import Swal from 'sweetalert2';
-import { toast } from 'react-hot-toast';
-import * as api from '../api/auth';
+import React, { useState, useEffect } from "react";
+import { Search, UserPlus } from "lucide-react";
+import Swal from "sweetalert2";
+import { toast } from "react-hot-toast";
+import * as api from "../api/auth";
 
 const UsersManagedForm = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -13,10 +13,10 @@ const UsersManagedForm = () => {
       try {
         const data = await api.fetchUsers();
         setUsers(data);
-        toast.success('Users fetched successfully!');
+        toast.success("Users fetched successfully!");
       } catch (error) {
-        console.error('Error fetching users:', error);
-        toast.error('There was an issue fetching users.');
+        console.error("Error fetching users:", error);
+        toast.error("There was an issue fetching users.");
       }
     };
 
@@ -25,9 +25,9 @@ const UsersManagedForm = () => {
 
   const handleAddUser = () => {
     Swal.fire({
-      title: 'Add New User',
-      maxWidth: '100%',
-      height: '100%',
+      title: "Add New User",
+      maxWidth: "100%",
+      height: "100%",
       html: `
         <div class="max-h-[80vh] overflow-y-auto px-4 py-2">
           <div class="space-y-4">
@@ -62,36 +62,37 @@ const UsersManagedForm = () => {
         </div>
       `,
       focusConfirm: false,
-      confirmButtonText: 'Add User',
-      confirmButtonColor: '#5CAF90',
+      confirmButtonText: "Add User",
+      confirmButtonColor: "#5CAF90",
       showCancelButton: true,
-      cancelButtonColor: '#5CAF90',
+      cancelButtonColor: "#5CAF90",
       preConfirm: () => {
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const phone = document.getElementById('phone').value;
-        const status = document.getElementById('status').value;
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const phone = document.getElementById("phone").value;
+        const status = document.getElementById("status").value;
 
         if (!name || !email || !password || !phone) {
-          Swal.showValidationMessage('All fields are required');
+          Swal.showValidationMessage("All fields are required");
           return false;
         }
 
         return { full_name: name, email, password, phone_no: phone, status };
-      }
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         const newUser = result.value;
 
-        api.addUser(newUser)
+        api
+          .addUser(newUser)
           .then((response) => {
             setUsers([...users, { id: response.id, ...newUser }]);
-            toast.success('User has been added successfully!');
+            toast.success("User has been added successfully!");
           })
           .catch((error) => {
-            console.error('Error adding user:', error);
-            toast.error('There was an issue adding the user.');
+            console.error("Error adding user:", error);
+            toast.error("There was an issue adding the user.");
           });
       }
     });
@@ -141,12 +142,24 @@ const UsersManagedForm = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated At</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created At
+                  </th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Updated At
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -156,14 +169,22 @@ const UsersManagedForm = () => {
                     <td className="p-3 whitespace-nowrap">{user.Email}</td>
                     <td className="p-3 whitespace-nowrap">{user.Phone_No}</td>
                     <td className="p-3 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.Status === "Active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {user.Status}
                       </span>
                     </td>
-                    <td className="p-3 whitespace-nowrap">{new Date(user.created_at).toLocaleDateString()}</td>
-                    <td className="p-3 whitespace-nowrap">{new Date(user.updated_at).toLocaleDateString()}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="p-3 whitespace-nowrap">
+                      {new Date(user.updated_at).toLocaleDateString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -176,16 +197,24 @@ const UsersManagedForm = () => {
               <div key={user.idUser} className="bg-white p-4 border-b">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <div className="text-sm font-medium text-gray-900">{user.Full_Name}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {user.Full_Name}
+                    </div>
                     <div className="text-sm text-gray-500">{user.Email}</div>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    user.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      user.Status === "Active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
                     {user.Status}
                   </span>
                 </div>
-                <div className="text-sm text-gray-500 mb-2">{user.Phone_No}</div>
+                <div className="text-sm text-gray-500 mb-2">
+                  {user.Phone_No}
+                </div>
                 <div className="text-xs text-gray-400">
                   Created: {new Date(user.created_at).toLocaleDateString()}
                 </div>
