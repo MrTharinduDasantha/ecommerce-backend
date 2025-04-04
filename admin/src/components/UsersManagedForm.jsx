@@ -96,6 +96,10 @@ const UsersManagedForm = () => {
           });
       }
     });
+     document.getElementById("close-modal")?.addEventListener("click", () => {
+          Swal.close();
+        });
+      
   };
 
   const filteredUsers = users.filter((user) => {
@@ -106,6 +110,7 @@ const UsersManagedForm = () => {
       (user.Phone_No && user.Phone_No.toLowerCase().includes(searchLower))
     );
   });
+  
 
   return (
     <div className="p-4">
@@ -114,7 +119,7 @@ const UsersManagedForm = () => {
         <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4"> Admin Details</h2>
         <button
           onClick={handleAddUser}
-          className="bg-[#5CAF90] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4a9277] transition-colors mr-5"
+          className="bg-[#5CAF90] text-white px-4 py-2 rounded-2xl flex items-center hover:bg-[#4a9277] transition-colors mr-5 "
         >
           <UserPlus className="w-5 h-5 mr-2" />
           Add User
@@ -123,11 +128,11 @@ const UsersManagedForm = () => {
         <div className="p-4 border-b">
           <div className="flex items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by name, email, or phone..."
-                className="pl-10 pr-4 py-2 w-full border rounded-lg"
+                className="pl-10 pr-4 py-2 w-full border rounded-lg text-black border-[#1D372E]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -138,56 +143,63 @@ const UsersManagedForm = () => {
         <div className="block w-full overflow-x-auto">
           {/* Desktop view */}
           <div className="hidden sm:block">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
-                    Name
-                  </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
-                    Email
-                  </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
-                    Phone
-                  </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
-                    Status
-                  </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
-                    Created At
-                  </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
-                    Updated At
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.idUser} className="hover:bg-gray-50">
-                    <td className="p-3 whitespace-nowrap text-black">{user.Full_Name}</td>
-                    <td className="p-3 whitespace-nowrap text-black">{user.Email}</td>
-                    <td className="p-3 whitespace-nowrap text-black">{user.Phone_No}</td>
-                    <td className="p-3 whitespace-nowrap text-black">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.Status === "Active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {user.Status}
-                      </span>
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-black">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-black">
-                      {new Date(user.updated_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <table className="min-w-full divide-y divide-gray-200 border border-black-300">
+  <thead className="bg-black-50">
+    <tr>
+      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+        Name
+      </th>
+      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+        Email
+      </th>
+      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+        Phone
+      </th>
+      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+        Status
+      </th>
+      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+        Created At
+      </th>
+      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+        Updated At
+      </th>
+    </tr>
+  </thead>
+  <tbody className="bg-white divide-y divide-black-200">
+    {filteredUsers.map((user) => (
+      <tr key={user.idUser} className="hover:bg-gray-50">
+        <td className="p-3 whitespace-nowrap text-black border border-black-300">
+          {user.Full_Name}
+        </td>
+        <td className="p-3 whitespace-nowrap text-black border border-black-300">
+          {user.Email}
+        </td>
+        <td className="p-3 whitespace-nowrap text-black border border-black-300">
+          {user.Phone_No}
+        </td>
+        <td className="p-3 whitespace-nowrap text-black border border-black-300">
+          <span
+            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              user.Status === "Active"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {user.Status}
+          </span>
+        </td>
+        <td className="p-3 whitespace-nowrap text-black border border-black-300">
+          {new Date(user.created_at).toLocaleDateString()}
+        </td>
+        <td className="p-3 whitespace-nowrap text-black border border-black-300">
+          {new Date(user.updated_at).toLocaleDateString()}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
           </div>
 
           {/* Mobile view */}

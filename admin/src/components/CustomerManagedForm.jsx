@@ -241,11 +241,11 @@ const CustomerManagedForm = () => {
         <div className="p-4 border-b">
           <div className="flex items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by ID, Name, Email, or Phone..."
-                className="pl-10 pr-4 py-2 w-full border rounded-lg"
+                className="pl-10 pr-4 py-2 w-full border rounded-lg text-black border-[#1D372E]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -255,51 +255,51 @@ const CustomerManagedForm = () => {
 
         <div className="block w-full overflow-x-auto">
           <div className="hidden sm:block">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-black-200 border border-black-300">
+              <thead className="bg-black-50">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     ID
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     Name
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     Email
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     Phone
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     Status
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     Created
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     Updated
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90]">
+                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-black-200">
                 {filteredCustomers.map((customer) => (
                   <tr key={customer.idCustomer} className="hover:bg-gray-50">
-                    <td className="p-3 whitespace-nowrap text-black">
+                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
                       {customer.idCustomer}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black">
+                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
                       {customer.Full_Name}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black">{customer.Email}</td>
-                    <td className="p-3 whitespace-nowrap text-black">
+                    <td className="p-3 whitespace-nowrap text-black border border-black-300">{customer.Email}</td>
+                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
                       {customer.Mobile_No}
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap border border-black-300">
                       <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                           customer.Status === "Active"
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
@@ -308,13 +308,13 @@ const CustomerManagedForm = () => {
                         {customer.Status}
                       </span>
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black">
+                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
                       {new Date(customer.created_at).toLocaleDateString()}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black">
+                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
                       {new Date(customer.updated_at).toLocaleDateString()}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black">
+                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => handleEdit(customer.idCustomer)}
