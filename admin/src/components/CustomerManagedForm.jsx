@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Search, Edit, Trash2, History } from "lucide-react";
+import { FaEdit, FaHistory } from "react-icons/fa";
+import { RiDeleteBin5Fill } from "react-icons/ri";
 import Swal from "sweetalert2";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import * as api from "../api/customer";
 
 const CustomerManagedForm = () => {
@@ -13,7 +15,6 @@ const CustomerManagedForm = () => {
       try {
         const data = await api.fetchCustomers();
         setCustomers(data);
-    
       } catch (error) {
         console.error("Error fetching customers:", error);
         toast.error("There was an issue fetching customers.");
@@ -233,19 +234,20 @@ const CustomerManagedForm = () => {
 
   return (
     <div className="p-4">
-   
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 mt-5 ml-5">
-        <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">Customers Details</h2>
-      </div>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 ml-5">
+          <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
+            Customers Details
+          </h2>
+        </div>
         <div className="p-4 border-b">
-          <div className="flex items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black-400 w-5 h-5" />
+          <div className="max-w-sm mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5 z-10" />
               <input
                 type="text"
                 placeholder="Search by ID, Name, Email, or Phone..."
-                className="pl-10 pr-4 py-2 w-full border rounded-lg text-black border-[#1D372E]"
+                className="input input-bordered w-full pl-8 md:pl-10 py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] text-[#1D372E] rounded-2xl"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -253,51 +255,53 @@ const CustomerManagedForm = () => {
           </div>
         </div>
 
-        <div className="block w-full overflow-x-auto">
+        <div className="block w-full p-5 overflow-x-auto">
           <div className="hidden sm:block">
-            <table className="min-w-full divide-y divide-black-200 border border-black-300">
-              <thead className="bg-black-50">
+            <table className="min-w-full divide-y divide-gray-200 border border-[#1D372E]">
+              <thead className="bg-[#5CAF90] text-[#1D372E]">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     ID
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     Name
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     Email
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     Phone
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     Status
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     Created
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     Updated
                   </th>
-                  <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-black-200">
+              <tbody className="bg-white divide-y text-[#1D372E] divide-black-200">
                 {filteredCustomers.map((customer) => (
                   <tr key={customer.idCustomer} className="hover:bg-gray-50">
-                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
                       {customer.idCustomer}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
                       {customer.Full_Name}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black border border-black-300">{customer.Email}</td>
-                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
+                      {customer.Email}
+                    </td>
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
                       {customer.Mobile_No}
                     </td>
-                    <td className="p-3 whitespace-nowrap border border-black-300">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
                       <span
                         className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                           customer.Status === "Active"
@@ -308,31 +312,34 @@ const CustomerManagedForm = () => {
                         {customer.Status}
                       </span>
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
                       {new Date(customer.created_at).toLocaleDateString()}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
                       {new Date(customer.updated_at).toLocaleDateString()}
                     </td>
-                    <td className="p-3 whitespace-nowrap text-black border border-black-300">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => handleEdit(customer.idCustomer)}
-                          className="text-yellow-500 hover:text-yellow-600"
+                          className="bg-[#5CAF90] p-1.5 cursor-pointer"
+                          title="Edit Customer"
                         >
-                          <Edit className="w-4 h-4" />
+                          <FaEdit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleHistory(customer.idCustomer)}
-                          className="text-blue-500 hover:text-blue-600"
+                          className="bg-[#5CAF90] p-1.5 cursor-pointer"
+                          title="View Customer History"
                         >
-                          <History className="w-4 h-4" />
+                          <FaHistory className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(customer.idCustomer)}
-                          className="text-red-500 hover:text-red-600"
+                          className="bg-[#5CAF90] p-1.5 cursor-pointer"
+                          title="Delete Customer"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <RiDeleteBin5Fill className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -374,24 +381,27 @@ const CustomerManagedForm = () => {
                 <div className="text-xs text-gray-400 mb-3">
                   Created: {new Date(customer.created_at).toLocaleDateString()}
                 </div>
-                <div className="flex justify-end space-x-3">
+                <div className="flex justify-end space-x-3 text-[#1D372E]">
                   <button
                     onClick={() => handleEdit(customer.idCustomer)}
-                    className="text-yellow-500 hover:text-yellow-600"
+                    className="bg-[#5CAF90] p-1.5 cursor-pointer"
+                    title="Edit Customer"
                   >
-                    <Edit className="w-5 h-5" />
+                    <FaEdit className="w-3 h-3" />
                   </button>
                   <button
                     onClick={() => handleHistory(customer.idCustomer)}
-                    className="text-blue-500 hover:text-blue-600"
+                    className="bg-[#5CAF90] p-1.5 cursor-pointer"
+                    title="View Customer History"
                   >
-                    <History className="w-5 h-5" />
+                    <FaHistory className="w-3 h-3" />
                   </button>
                   <button
                     onClick={() => handleDelete(customer.idCustomer)}
-                    className="text-red-500 hover:text-red-600"
+                    className="bg-[#5CAF90] p-1.5 cursor-pointer"
+                    title="Delete Customer"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <RiDeleteBin5Fill className="w-3 h-3" />
                   </button>
                 </div>
               </div>
