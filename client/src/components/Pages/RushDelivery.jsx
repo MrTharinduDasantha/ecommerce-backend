@@ -136,7 +136,7 @@ const RushDelivery = () => {
           <div className="flex-1">
             <RushDeliveryBanner />
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-[#000000] text-2xl font-semibold">RUSH DELIVERY OFFERS</h2>
+              <h2 className="text-[#1D372E] text-2xl font-semibold">RUSH DELIVERY OFFERS</h2>
               {addedProducts.length > 0 && (
                 <button 
                   onClick={handleViewCart}

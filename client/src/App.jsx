@@ -3,8 +3,8 @@ import { Routes, Route } from "react-router-dom";
 
 import Home from "./routes/Home/Home";
 import Events from "./routes/Events/Events";
-import Footer from "./Components/Footer/Footer";
-import NavBar from "./Components/NavBar/NavBar";
+import Footer from "./components/Footer/Footer";
+import NavBar from "./components/NavBar/NavBar";
 import Brands from "./routes/Brands/brands";
 import BrandDetails from "./routes/Brands/BrandDetails";
 import SignIn from "./Components/SignIn";
@@ -14,9 +14,10 @@ import ResetPassword from "./Components/ResetPassword";
 import ProductPage from "./Components/ProductPage";
 import OrderTracking from "./Components/OrderTracking";
 import Checkout from "./Components/Checkout";
-import Profile from "./Components/Pages/Profile";
-import AboutUs from "./Components/Pages/AboutUs";
-import RushDelivery from "./Components/Pages/RushDelivery";
+import Profile from "./components/Pages/Profile";
+import AboutUs from "./components/Pages/AboutUs";
+import RushDelivery from "./components/Pages/RushDelivery";
+import ForYou from "./components/Pages/ForYou";
 import SeasonalOffers from "./Components/Pages/SeasonalOffers";
 import Cart from "./Components/Cart";
 // import Banner from "./Components/Banner";
@@ -49,6 +50,7 @@ const App = () => {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/seasonal-offers" element={<SeasonalOffers />} />
         <Route path="/ramadan" element={<SeasonalOffers />} />
+        <Route path="/for-you" element={<ForYou/>} />
       </Routes>
       <Footer />
     </CartProvider>
