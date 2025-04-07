@@ -13,7 +13,6 @@ const UsersManagedForm = () => {
       try {
         const data = await api.fetchUsers();
         setUsers(data);
-       
       } catch (error) {
         console.error("Error fetching users:", error);
         toast.error("There was an issue fetching users.");
@@ -96,10 +95,9 @@ const UsersManagedForm = () => {
           });
       }
     });
-     document.getElementById("close-modal")?.addEventListener("click", () => {
-          Swal.close();
-        });
-      
+    document.getElementById("close-modal")?.addEventListener("click", () => {
+      Swal.close();
+    });
   };
 
   const filteredUsers = users.filter((user) => {
@@ -110,29 +108,31 @@ const UsersManagedForm = () => {
       (user.Phone_No && user.Phone_No.toLowerCase().includes(searchLower))
     );
   });
-  
 
   return (
     <div className="p-4">
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 mt-5 ml-5">
-        <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4"> Admin Details</h2>
-        <button
-          onClick={handleAddUser}
-          className="bg-[#5CAF90] text-white px-4 py-2 rounded-2xl flex items-center hover:bg-[#4a9277] transition-colors mr-5 "
-        >
-          <UserPlus className="w-5 h-5 mr-2" />
-          Add User
-        </button>
-      </div>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 ml-5">
+          <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
+            {" "}
+            Admin Details
+          </h2>
+          <button
+            onClick={handleAddUser}
+            className="bg-[#5CAF90] text-white px-4 py-2 rounded-2xl flex items-center hover:bg-[#4a9277] transition-colors mr-5 cursor-pointer"
+          >
+            <UserPlus className="w-5 h-5 mr-2" />
+            Add User
+          </button>
+        </div>
         <div className="p-4 border-b">
-          <div className="flex items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5" />
+          <div className="max-w-sm mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5 z-10" />
               <input
                 type="text"
                 placeholder="Search by name, email, or phone..."
-                className="pl-10 pr-4 py-2 w-full border rounded-lg text-black border-[#1D372E]"
+                className="input input-bordered w-full pl-8 md:pl-10 py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] text-[#1D372E] rounded-2xl"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -142,64 +142,63 @@ const UsersManagedForm = () => {
 
         <div className="block w-full overflow-x-auto">
           {/* Desktop view */}
-          <div className="hidden sm:block">
-          <table className="min-w-full divide-y divide-gray-200 border border-black-300">
-  <thead className="bg-black-50">
-    <tr>
-      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
-        Name
-      </th>
-      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
-        Email
-      </th>
-      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
-        Phone
-      </th>
-      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
-        Status
-      </th>
-      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
-        Created At
-      </th>
-      <th className="p-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider bg-[#5CAF90] border border-black-300">
-        Updated At
-      </th>
-    </tr>
-  </thead>
-  <tbody className="bg-white divide-y divide-black-200">
-    {filteredUsers.map((user) => (
-      <tr key={user.idUser} className="hover:bg-gray-50">
-        <td className="p-3 whitespace-nowrap text-black border border-black-300">
-          {user.Full_Name}
-        </td>
-        <td className="p-3 whitespace-nowrap text-black border border-black-300">
-          {user.Email}
-        </td>
-        <td className="p-3 whitespace-nowrap text-black border border-black-300">
-          {user.Phone_No}
-        </td>
-        <td className="p-3 whitespace-nowrap text-black border border-black-300">
-          <span
-            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-              user.Status === "Active"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {user.Status}
-          </span>
-        </td>
-        <td className="p-3 whitespace-nowrap text-black border border-black-300">
-          {new Date(user.created_at).toLocaleDateString()}
-        </td>
-        <td className="p-3 whitespace-nowrap text-black border border-black-300">
-          {new Date(user.updated_at).toLocaleDateString()}
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-
+          <div className="m-4 hidden sm:block">
+            <table className="min-w-full divide-y divide-gray-200 border border-[#1D372E]">
+              <thead className="bg-[#5CAF90] text-[#1D372E]">
+                <tr>
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                    Name
+                  </th>
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                    Email
+                  </th>
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                    Phone
+                  </th>
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                    Status
+                  </th>
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                    Created At
+                  </th>
+                  <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
+                    Updated At
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white text-[#1D372E] divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.idUser} className="hover:bg-gray-50">
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
+                      {user.Full_Name}
+                    </td>
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
+                      {user.Email}
+                    </td>
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
+                      {user.Phone_No}
+                    </td>
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
+                          user.Status === "Active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {user.Status}
+                      </span>
+                    </td>
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
+                      {new Date(user.updated_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Mobile view */}

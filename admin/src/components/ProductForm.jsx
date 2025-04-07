@@ -415,7 +415,7 @@ const ProductForm = () => {
     }
   };
   return (
-    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
+    <div className="mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
       {/* Heading */}
       <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
         {isEditMode ? "Edit Product" : "Add Product"}

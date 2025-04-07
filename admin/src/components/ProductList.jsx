@@ -82,7 +82,7 @@ const ProductList = () => {
     }
   };
   return (
-    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
+    <div className="mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
       {/* Heading */}
       <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
         All Products
@@ -99,7 +99,7 @@ const ProductList = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Search for product..."
+            placeholder="Search by product..."
             className="input input-bordered w-full pl-8 md:pl-10 py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] text-[#1D372E] rounded-2xl"
           />
           <button
