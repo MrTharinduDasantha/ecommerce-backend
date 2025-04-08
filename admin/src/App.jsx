@@ -6,6 +6,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import ProductForm from "./components/ProductForm";
 import ProductCategorySubCategoryForm from "./components/ProductCategorySubCategoryForm";
 import ProductList from "./components/ProductList";
+import ProductDetails from "./components/ProductDetails";
 import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
@@ -45,6 +46,10 @@ const App = () => {
           />
           <Route path="products/edit-product" element={<ProductList />} />
           <Route path="products/edit-product/:id" element={<ProductForm />} />
+          <Route
+            path="products/view-product/:id"
+            element={<ProductDetails />}
+          />
           <Route path="users_managed-form" element={<UsersManagedForm />} />
           <Route
             path="customer-managed-form"

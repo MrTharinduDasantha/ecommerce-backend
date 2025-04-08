@@ -27,20 +27,20 @@ const customStyles = {
     ...provided,
     maxHeight: "160px",
     overflowY: "auto",
-    borderRadius: "1rem",
+    borderRadius: "0.5rem",
   }),
   menu: (provided) => ({
     ...provided,
-    borderRadius: "1rem",
-    borderWidth: "2px",
+    borderRadius: "0.5rem",
+    borderWidth: "1px",
     borderColor: "#1D372E",
   }),
   control: (provided) => ({
     ...provided,
     minHeight: "2.5rem",
-    borderWidth: "2px",
+    borderWidth: "1px",
     borderColor: "#1D372E",
-    borderRadius: "1rem",
+    borderRadius: "0.5rem",
     boxShadow: "none",
     "&:hover": {
       borderColor: "#1D372E",
@@ -59,6 +59,7 @@ const ProductForm = () => {
 
   // Determine edit mode based on the id parameter
   const [isEditMode, setIsEditMode] = useState(!!id);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Product Fields
   const [description, setDescription] = useState("");
@@ -143,6 +144,7 @@ const ProductForm = () => {
     if (id) {
       const loadProductData = async () => {
         try {
+          setIsLoading(true);
           const data = await getProduct(id);
           const product = data.product;
           // Set product fields
@@ -180,6 +182,8 @@ const ProductForm = () => {
           setIsEditMode(true);
         } catch (error) {
           toast.error(error.message || "Failed to load product");
+        } finally {
+          setIsLoading(false);
         }
       };
       loadProductData();
@@ -205,10 +209,13 @@ const ProductForm = () => {
   const handleSubImagesChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setSubImages((prev) => [...prev, ...files]);
+      // Replace the existing subImages with the new files
+      setSubImages(files);
+      // Replace the preview images with the new file previews
       const newPreviews = files.map((file) => URL.createObjectURL(file));
-      setSubImagesPreview((prev) => [...prev, ...newPreviews]);
-      // Reset the input to allow re-uploading the same files
+      setSubImagesPreview(newPreviews);
+
+      // Reset the input so that you can re-upload the same files if needed
       if (subImagesRef.current) {
         subImagesRef.current.value = "";
       }
@@ -231,15 +238,6 @@ const ProductForm = () => {
     setNewBrandName("");
     setNewBrandDescription("");
   };
-
-  // Hide scrollbar when popup is open, restore when closed
-  useEffect(() => {
-    if (brandPopupVisible) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [brandPopupVisible]);
 
   const handleAddBrand = async () => {
     if (newBrandName.trim() === "") {
@@ -265,6 +263,7 @@ const ProductForm = () => {
       if (newBrandImageRef.current) newBrandImageRef.current.value = "";
 
       loadBrands();
+      closeBrandPopup();
     } catch (error) {
       toast.error(error.message || "Failed to add brand");
     }
@@ -297,8 +296,8 @@ const ProductForm = () => {
 
   // Variation Handlers
   const getInputStyle = () => {
-    let bg = isColorLocked ? colorPickerValue : "#ffffff";
-    let txt = bg === "#ffffff" ? "#000000" : "#ffffff";
+    const bg = isColorLocked ? colorPickerValue : "#ffffff";
+    const txt = bg === "#ffffff" ? "#000000" : "#ffffff";
     return { backgroundColor: bg, color: txt };
   };
 
@@ -356,26 +355,28 @@ const ProductForm = () => {
       return;
     }
 
-    // Build FormData
-    const formData = new FormData();
-    formData.append("Description", description);
-    formData.append("Product_Brand_idProduct_Brand", selectedBrand);
-    formData.append("Market_Price", marketPrice);
-    formData.append("Selling_Price", sellingPrice);
-    formData.append("Long_Description", subDescription);
-    if (mainImage) {
-      formData.append("mainImage", mainImage);
-    }
-    // For multiple sub images
-    subImages.forEach((file) => {
-      formData.append("subImages", file);
-    });
-    // Append JSON stringified arrays
-    formData.append("variations", JSON.stringify(variations));
-    formData.append("faqs", JSON.stringify(faqs));
-    formData.append("subCategoryIds", JSON.stringify(selectedSubCategories));
-
     try {
+      setIsLoading(true);
+
+      // Build FormData
+      const formData = new FormData();
+      formData.append("Description", description);
+      formData.append("Product_Brand_idProduct_Brand", selectedBrand);
+      formData.append("Market_Price", marketPrice);
+      formData.append("Selling_Price", sellingPrice);
+      formData.append("Long_Description", subDescription);
+      if (mainImage) {
+        formData.append("mainImage", mainImage);
+      }
+      // For multiple sub images
+      subImages.forEach((file) => {
+        formData.append("subImages", file);
+      });
+      // Append JSON stringified arrays
+      formData.append("variations", JSON.stringify(variations));
+      formData.append("faqs", JSON.stringify(faqs));
+      formData.append("subCategoryIds", JSON.stringify(selectedSubCategories));
+
       if (isEditMode && id) {
         await updateProduct(id, formData);
         toast.success("Product updated successfully");
@@ -412,589 +413,636 @@ const ProductForm = () => {
       }
     } catch (error) {
       toast.error(error.message || "Failed to add product");
+    } finally {
+      setIsLoading(false);
     }
   };
-  return (
-    <div className="mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
-      {/* Heading */}
-      <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
-        {isEditMode ? "Edit Product" : "Add Product"}
-      </h2>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 md:space-y-5 lg:space-y-6"
-      >
-        {/* Description and Brand */}
-        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Main Description
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter product description"
-              className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-            />
-          </div>
-
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Brand
-            </label>
-            <div className="flex items-center gap-2">
-              <Select
-                value={
-                  brands
-                    .map((brand) => ({
-                      value: brand.idProduct_Brand,
-                      label: brand.Brand_Name,
-                    }))
-                    .find((option) => option.value === selectedBrand) || null
-                }
-                onChange={(selected) => setSelectedBrand(selected.value)}
-                options={brands.map((brand) => ({
-                  value: brand.idProduct_Brand,
-                  label: brand.Brand_Name,
-                }))}
-                styles={customStyles}
-                placeholder="Select Brand"
-                className="w-full"
-              />
-              <button
-                type="button"
-                onClick={openBrandPopup}
-                className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
-              >
-                Add Brand
-              </button>
-            </div>
+  if (isLoading) {
+    return (
+      <div className="card bg-base-100 shadow-md">
+        <div className="card-body">
+          <div className="flex justify-center items-center h-40">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Market Price and Sub Categories */}
-        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Market Price
-            </label>
-            <input
-              type="number"
-              value={marketPrice}
-              onChange={(e) => setMarketPrice(e.target.value)}
-              placeholder="Enter market price"
-              className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-            />
-          </div>
+  return (
+    <div className="card bg-white shadow-md">
+      <div className="card-body p-4 md:p-6">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-1 h-6 bg-[#5CAF90]"></div>
+          <h2 className="text-xl font-bold text-[#1D372E]">
+            {isEditMode ? "Edit Product" : "Add Product"}
+          </h2>
+        </div>
 
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Sub Categories
-            </label>
-            <Select
-              value={selectedSubCategories.map((sc) => ({
-                value: sc.idSub_Category,
-                label: sc.Description,
-              }))}
-              onChange={(selected) =>
-                setSelectedSubCategories(
-                  selected.map((opt) => ({
-                    idSub_Category: opt.value,
-                    Description: opt.label,
-                  }))
-                )
-              }
-              options={availableSubCategories.map((cat) => ({
-                label: cat.Description,
-                options: cat.subcategories
-                  ? cat.subcategories
-                      .filter(
-                        (subcat) =>
-                          !selectedSubCategories.some(
-                            (sc) => sc.idSub_Category === subcat.idSub_Category
-                          )
-                      )
-                      .map((subcat) => ({
-                        value: subcat.idSub_Category,
-                        label: subcat.Description,
-                      }))
-                  : [],
-              }))}
-              styles={customStyles}
-              isMulti
-              placeholder="Select sub category"
-              className="w-full"
-              formatGroupLabel={(data) => (
-                <div className="font-bold text-[#1D372E]">{data.label}</div>
-              )}
-              components={{
-                // Hide selected subcategory values
-                MultiValue: () => null,
-                // Hide the clear icon
-                ClearIndicator: () => null,
-                // Always show the placeholder instead of selected values
-                ValueContainer: ({ ...props }) => {
-                  return (
-                    <components.ValueContainer {...props}>
-                      {props.selectProps.placeholder}
-                    </components.ValueContainer>
-                  );
-                },
-              }}
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="card bg-white border border-[#1D372E]">
+            <div className="card-body p-4">
+              <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+                Basic Information
+              </h3>
 
-            {/* Display of selected subcategories */}
-            <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
-              {selectedSubCategories.map((subcat, index) => (
-                <div
-                  key={index}
-                  className="inline-flex items-center bg-[#5CAF90] text-white px-2 md:px-3 py-2 rounded-2xl flex-shrink-0 text-xs md:text-sm"
-                >
-                  <span className="mr-1 md:mr-2">{subcat.Description}</span>
-                  <RiDeleteBack2Fill
-                    className="cursor-pointer w-3 h-3 md:w-4 md:h-4"
-                    onClick={() =>
-                      setSelectedSubCategories((prev) =>
-                        prev.filter(
-                          (sc) => sc.idSub_Category !== subcat.idSub_Category
-                        )
-                      )
-                    }
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Description */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">
+                      Main Description
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Enter product description"
+                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Selling Price and Main Image */}
-        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Selling Price
-            </label>
-            <input
-              type="number"
-              value={sellingPrice}
-              onChange={(e) => setSellingPrice(e.target.value)}
-              placeholder="Enter selling price"
-              className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-            />
-          </div>
-
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Main Image
-            </label>
-            <input
-              type="file"
-              onChange={handleMainImageChange}
-              ref={mainImageRef}
-              className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-            />
-            {mainImagePreview && (
-              <div className="relative mt-3 md:mt-4 w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl">
-                <img
-                  src={mainImagePreview}
-                  alt="Main Preview"
-                  className="object-cover w-full h-full rounded-2xl"
-                />
-                <button
-                  type="button"
-                  onClick={removeMainImage}
-                  className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
-                >
-                  <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sub Images and Sub Description */}
-        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Sub Images
-            </label>
-            <input
-              type="file"
-              multiple
-              onChange={handleSubImagesChange}
-              ref={subImagesRef}
-              className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-            />
-            {subImagesPreview.length > 0 && (
-              <div className="flex gap-2 mt-3 md:mt-4 overflow-x-auto pb-2 scrollbar">
-                {subImagesPreview.map((preview, index) => (
-                  <div
-                    key={index}
-                    className="relative w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl flex-shrink-0"
-                  >
-                    <img
-                      src={preview}
-                      alt={`Sub Preview ${index}`}
-                      className="object-cover w-full h-full rounded-2xl"
+                {/* Brand */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Brand</span>
+                  </label>
+                  <div className="flex gap-2 text-[#1D372E]">
+                    <Select
+                      value={
+                        brands
+                          .map((brand) => ({
+                            value: brand.idProduct_Brand,
+                            label: brand.Brand_Name,
+                          }))
+                          .find((option) => option.value === selectedBrand) ||
+                        null
+                      }
+                      onChange={(selected) => setSelectedBrand(selected.value)}
+                      options={brands.map((brand) => ({
+                        value: brand.idProduct_Brand,
+                        label: brand.Brand_Name,
+                      }))}
+                      styles={customStyles}
+                      placeholder="Select Brand"
+                      className="flex-1"
                     />
                     <button
                       type="button"
-                      onClick={() => removeSubImage(index)}
-                      className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
+                      onClick={openBrandPopup}
+                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
                     >
-                      <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                      Add
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
 
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Sub Description
-            </label>
-            <textarea
-              value={subDescription}
-              onChange={(e) => setSubDescription(e.target.value)}
-              placeholder="Enter additional product details"
-              className="w-full textarea textarea-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-              rows={5}
-            />
-          </div>
-        </div>
-
-        {/* Variations Section */}
-        <div className="mt-6 md:mt-7 lg:mt-8">
-          <div className="bg-[#5CAF90] text-[#1D372E] p-2 md:p-3 border-2 border-[#1D372E] border-b-0 rounded-t-2xl">
-            <h3 className="font-bold text-center text-sm md:text-base lg:text-lg">
-              Product Variations
-            </h3>
-          </div>
-          <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5 items-center p-3 md:p-4 lg:p-5 border-2 border-[#1D372E] rounded-b-2xl">
-            {/* Color */}
-            <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium text-sm md:text-base mb-1">
-                Color
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={colorName}
-                  onChange={(e) => setColorName(e.target.value)}
-                  placeholder="Enter color hex value"
-                  className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] placeholder:text-gray-400 rounded-2xl"
-                  disabled={isColorLocked}
-                  style={getInputStyle()}
-                />
-                <div className="relative">
-                  <div
-                    className="w-10 h-10 border-2 border-[#1D372E] rounded-2xl cursor-pointer"
-                    style={{ backgroundColor: colorPickerValue }}
-                    onClick={() =>
-                      document.getElementById("colorPicker").click()
-                    }
-                  />
+                {/* Market Price */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Market Price</span>
+                  </label>
                   <input
-                    id="colorPicker"
-                    type="color"
-                    value={colorPickerValue}
-                    onChange={handleColorPickerChange}
-                    className="absolute z-10 mt-2 left-0 opacity-0 pointer-events-none"
-                    style={{ width: "0px", height: "0px" }}
+                    type="number"
+                    value={marketPrice}
+                    onChange={(e) => setMarketPrice(e.target.value)}
+                    placeholder="Enter market price"
+                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
-                {isColorLocked ? (
-                  <FaCheckSquare
-                    className="cursor-pointer w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
-                    onClick={toggleColorLock}
+
+                {/* Selling Price */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">
+                      Selling Price
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    value={sellingPrice}
+                    onChange={(e) => setSellingPrice(e.target.value)}
+                    placeholder="Enter selling price"
+                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
-                ) : (
-                  <FaRegCheckSquare
-                    className="cursor-pointer w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
-                    onClick={toggleColorLock}
+                </div>
+
+                {/* Sub Categories */}
+                <div className="form-control md:col-span-2">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">
+                      Sub Categories
+                    </span>
+                  </label>
+                  <Select
+                    value={selectedSubCategories.map((sc) => ({
+                      value: sc.idSub_Category,
+                      label: sc.Description,
+                    }))}
+                    onChange={(selected) =>
+                      setSelectedSubCategories(
+                        selected.map((opt) => ({
+                          idSub_Category: opt.value,
+                          Description: opt.label,
+                        }))
+                      )
+                    }
+                    options={availableSubCategories.map((cat) => ({
+                      label: cat.Description,
+                      options: cat.subcategories
+                        ? cat.subcategories
+                            .filter(
+                              (subcat) =>
+                                !selectedSubCategories.some(
+                                  (sc) =>
+                                    sc.idSub_Category === subcat.idSub_Category
+                                )
+                            )
+                            .map((subcat) => ({
+                              value: subcat.idSub_Category,
+                              label: subcat.Description,
+                            }))
+                        : [],
+                    }))}
+                    styles={customStyles}
+                    isMulti
+                    placeholder="Select sub category"
+                    className="w-full text-[#1D372E]"
+                    formatGroupLabel={(data) => (
+                      <div className="font-bold text-[#1D372E]">
+                        {data.label}
+                      </div>
+                    )}
+                    components={{
+                      // Hide selected subcategory values
+                      MultiValue: () => null,
+                      // Hide the clear icon
+                      ClearIndicator: () => null,
+                      // Always show the placeholder instead of selected values
+                      ValueContainer: ({ ...props }) => {
+                        return (
+                          <components.ValueContainer {...props}>
+                            {props.selectProps.placeholder}
+                          </components.ValueContainer>
+                        );
+                      },
+                    }}
                   />
-                )}
-              </div>
-            </div>
 
-            {/* Size */}
-            <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium text-sm md:text-base mb-1">
-                Size
-              </label>
-              <input
-                type="text"
-                value={size}
-                onChange={(e) => setSize(e.target.value)}
-                placeholder="Enter size"
-                className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-              />
-            </div>
-
-            {/* Quantity */}
-            <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium text-sm md:text-base mb-1">
-                Quantity
-              </label>
-              <input
-                type="number"
-                value={colorQuantity}
-                onChange={(e) => setColorQuantity(e.target.value)}
-                placeholder="Enter quantity"
-                className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-              />
-            </div>
-
-            <div className="mt-5 md:mt-6 lg:mt-7">
-              <button
-                type="button"
-                onClick={handleAddVariation}
-                className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          {/* Variations Table */}
-          {variations.length > 0 && (
-            <div className="overflow-x-auto mt-3 md:mt-4">
-              <table className="table-auto w-full text-center border border-[#1D372E]">
-                <thead className="bg-[#5CAF90] text-[#1D372E]">
-                  <tr>
-                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
-                      Color Code
-                    </th>
-                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
-                      Size
-                    </th>
-                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
-                      Quantity
-                    </th>
-                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-[#1D372E]">
-                  {variations.map((item, index) => (
-                    <tr key={index}>
-                      <td className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
-                        <div className="inline-flex items-center gap-1 md:gap-2">
-                          {item.colorCode !== "No color selected" && (
-                            <div
-                              className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border border-[#1D372E]"
-                              style={{ backgroundColor: item.colorCode }}
-                            />
-                          )}
-                          <span>{item.colorCode}</span>
-                        </div>
-                      </td>
-                      <td className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
-                        {item.size}
-                      </td>
-                      <td className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">
-                        {item.quantity}
-                      </td>
-                      <td className="border-2 p-1 md:p-2">
+                  {/* Display of selected subcategories */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedSubCategories.map((subcat, index) => (
+                      <div
+                        key={index}
+                        className="badge badge-primary gap-1 px-3 py-4 bg-[#5CAF90] border-[#5CAF90]"
+                      >
+                        <span>{subcat.Description}</span>
                         <button
                           type="button"
-                          onClick={() => removeVariation(index)}
-                          className="bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer ml-1 md:ml-2 lg:ml-3"
-                          title="Remove Varation"
+                          onClick={() =>
+                            setSelectedSubCategories((prev) =>
+                              prev.filter(
+                                (sc) =>
+                                  sc.idSub_Category !== subcat.idSub_Category
+                              )
+                            )
+                          }
                         >
-                          <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                          <RiDeleteBack2Fill className="cursor-pointer" />
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* FAQ Section */}
-        <div className="mt-6 md:mt-7 lg:mt-8">
-          <div className="bg-[#5CAF90] text-[#1D372E] p-2 md:p-3 border-2 border-[#1D372E] border-b-0 rounded-t-2xl">
-            <h3 className="font-bold text-center text-sm md:text-base lg:text-lg">
-              Frequently Ask Question
-            </h3>
-          </div>
-          <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5 p-3 md:p-4 lg:p-5 border-2 border-[#1D372E] rounded-b-2xl">
-            <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium text-sm md:text-base mb-1">
-                Question
-              </label>
-              <textarea
-                value={faqQuestion}
-                onChange={(e) => setFaqQuestion(e.target.value)}
-                placeholder="Enter question"
-                className="w-full textarea textarea-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-                rows={5}
-              />
-            </div>
-            <div className="flex-1 min-w-[200px] text-[#1D372E]">
-              <label className="block font-medium text-sm md:text-base mb-1">
-                Answer
-              </label>
-              <textarea
-                value={faqAnswer}
-                onChange={(e) => setFaqAnswer(e.target.value)}
-                placeholder="Enter answer"
-                className="w-full textarea textarea-bordered py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-                rows={5}
-              />
-            </div>
-            <div className="mt-5 md:mt-6 lg:mt-7">
-              <button
-                type="button"
-                onClick={handleAddFaq}
-                className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          {/* Show FAQs */}
-          {faqs.length > 0 && (
-            <div className="mt-3 md:mt-4 space-y-3 md:space-y-4">
-              {faqs.map((faq, index) => (
-                <div
-                  key={index}
-                  className="border-2 border-[#1D372E] rounded-2xl p-3 md:p-4"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-2 md:gap-3">
-                      <FaQuestionCircle className="text-[#5CAF90] mt-0.5 w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm md:text-base text-[#1D372E]">
-                          {faq.question}
-                        </h4>
-                        <div className="mt-1 md:mt-2">
-                          <p className="text-xs md:text-sm lg:text-base text-[#1D372E]">
-                            {faq.answer}
-                          </p>
-                        </div>
                       </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFaq(index)}
-                      className="bg-[#5CAF90] text-[#1D372E] p-1 md:p-1.5 cursor-pointer rounded-2xl"
-                      title="Remove FAQ"
-                    >
-                      <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                    </button>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Save button */}
-        <div className="flex justify-end mt-4 md:mt-5 lg:mt-6">
-          <button
-            type="submit"
-            className="btn btn-primary bg-[#5CAF90] border-none text-sm md:text-base py-1 md:py-2 px-3 md:px-4 rounded-2xl"
-          >
-            {isEditMode ? "Edit Product" : "Add Product"}
-          </button>
-        </div>
-      </form>
-
-      {/* Brand Popup */}
-      {brandPopupVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-          <div className="bg-white rounded-md p-6 md:p-8 w-[90%] max-w-lg max-h-[90vh] overflow-y-auto relative">
-            {/* Popup Header */}
-            <div className="flex justify-between items-center text-[#1D372E] mb-3 md:mb-4 lg:mb-5">
-              <h3 className="text-lg md:text-xl font-bold">Add Brand</h3>
-              <button onClick={closeBrandPopup} className="cursor-pointer">
-                <IoClose className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" />
-              </button>
-            </div>
-            {/* Add Brand Form */}
-            <div className="flex flex-col gap-3 md:gap-4 lg:gap-5 text-[#1D372E] mb-3 md:mb-4 lg:mb-5">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                <label className="block font-medium text-sm md:text-base min-w-[80px] md:min-w-[100px]">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={newBrandName}
-                  onChange={(e) => setNewBrandName(e.target.value)}
-                  placeholder="Enter brand name"
-                  className="input input-bordered w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-                />
               </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                  <label className="block font-medium text-sm md:text-base min-w-[80px] md:min-w-[100px]">
-                    Image
+            </div>
+          </div>
+
+          {/* Images & Description */}
+          <div className="card bg-white border border-[#1D372E]">
+            <div className="card-body p-4">
+              <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+                Images and Description
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Main Image */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Main Image</span>
                   </label>
                   <input
                     type="file"
-                    ref={newBrandImageRef}
-                    onChange={(e) => {
-                      setNewBrandImage(e.target.files[0]);
-                      if (e.target.files[0]) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setNewBrandImagePreview(reader.result);
-                        };
-                        reader.readAsDataURL(e.target.files[0]);
-                      } else {
-                        setNewBrandImagePreview(null);
-                      }
-                    }}
-                    className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
+                    onChange={handleMainImageChange}
+                    ref={mainImageRef}
+                    className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  />
+                  {mainImagePreview && (
+                    <div className="relative mt-2 w-24 h-24 rounded-lg overflow-hidden">
+                      <img
+                        src={mainImagePreview}
+                        alt="Main Preview"
+                        className="object-cover w-full h-full"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeMainImage}
+                        className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square absolute top-1 right-1"
+                      >
+                        <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sub Images */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Sub Images</span>
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleSubImagesChange}
+                    ref={subImagesRef}
+                    className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  />
+                  {subImagesPreview.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {subImagesPreview.map((preview, index) => (
+                        <div
+                          key={index}
+                          className="relative w-24 h-24 rounded-lg overflow-hidden"
+                        >
+                          <img
+                            src={preview || "/placeholder.svg"}
+                            alt={`Sub Preview ${index}`}
+                            className="object-cover w-full h-full"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSubImage(index)}
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square absolute top-1 right-1"
+                          >
+                            <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Sub Description */}
+                <div className="form-control md:col-span-2">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">
+                      Sub Description
+                    </span>
+                  </label>
+                  <textarea
+                    value={subDescription}
+                    onChange={(e) => setSubDescription(e.target.value)}
+                    placeholder="Enter additional product details"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    rows={4}
                   />
                 </div>
-                {/* Brand Image Preview */}
-                {newBrandImagePreview && (
-                  <div className="relative mt-2 md:ml-[115px] w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl">
-                    <img
-                      src={newBrandImagePreview || "/placeholder.svg"}
-                      alt="Brand Preview"
-                      className="object-cover w-full h-full rounded-2xl"
+              </div>
+            </div>
+          </div>
+
+          {/* Variations */}
+          <div className="card bg-white border border-[#1D372E]">
+            <div className="card-body p-4">
+              <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+                Product Variations
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
+                {/* Color */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Color</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={colorName}
+                      onChange={(e) => setColorName(e.target.value)}
+                      placeholder="Enter color hex value"
+                      className="input input-bordered flex-1 border-[#1D372E] text-[#1D372E]"
+                      disabled={isColorLocked}
+                      style={getInputStyle()}
+                    />
+                    <div className="relative">
+                      <div
+                        className="w-10 h-10 border border-base-300 rounded-md cursor-pointer"
+                        style={{ backgroundColor: colorPickerValue }}
+                        onClick={() =>
+                          document.getElementById("colorPicker").click()
+                        }
+                      />
+                      <input
+                        id="colorPicker"
+                        type="color"
+                        value={colorPickerValue}
+                        onChange={handleColorPickerChange}
+                        className="absolute z-10 mt-2 left-0 opacity-0 pointer-events-none"
+                        style={{ width: "0px", height: "0px" }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={toggleColorLock}
+                      className="text-[#1D372E]"
+                    >
+                      {isColorLocked ? (
+                        <FaCheckSquare className="w-5 h-5" />
+                      ) : (
+                        <FaRegCheckSquare className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Size */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Size</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={size}
+                    onChange={(e) => setSize(e.target.value)}
+                    placeholder="Enter size"
+                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  />
+                </div>
+
+                {/* Quantity */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Quantity</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={colorQuantity}
+                      onChange={(e) => setColorQuantity(e.target.value)}
+                      placeholder="Enter quantity"
+                      className="input input-bordered flex-1 bg-white border-[#1D372E] text-[#1D372E]"
                     />
                     <button
                       type="button"
-                      onClick={() => {
-                        setNewBrandImage(null);
-                        setNewBrandImagePreview(null);
-                        if (newBrandImageRef.current)
-                          newBrandImageRef.current.value = "";
-                      }}
-                      className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
+                      onClick={handleAddVariation}
+                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
                     >
-                      <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                      Add
                     </button>
                   </div>
-                )}
+                </div>
               </div>
-              <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
-                <label className="block font-medium text-sm md:text-base min-w-[80px] md:min-w-[100px]">
-                  Description
-                </label>
-                <textarea
-                  value={newBrandDescription}
-                  onChange={(e) => setNewBrandDescription(e.target.value)}
-                  placeholder="Enter brand description"
-                  className="textarea w-full py-1 md:py-2 text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-                  rows={3}
-                ></textarea>
-              </div>
+
+              {/* Variations Table */}
+              {variations.length > 0 && (
+                <div className="overflow-x-auto mt-4">
+                  <table className="table text-center border border-[#1D372E]">
+                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                      <tr className="border-b border-[#1D372E]">
+                        <th className="font-semibold">Color Code</th>
+                        <th className="font-semibold">Size</th>
+                        <th className="font-semibold">Quantity</th>
+                        <th className="font-semibold">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#1D372E]">
+                      {variations.map((item, index) => (
+                        <tr key={index} className="border-b border-[#1D372E]">
+                          <td>
+                            <div className="flex items-center justify-center gap-2">
+                              {item.colorCode !== "No color selected" && (
+                                <div
+                                  className="w-5 h-5 border border-base-300 rounded-md"
+                                  style={{ backgroundColor: item.colorCode }}
+                                />
+                              )}
+                              <span>{item.colorCode}</span>
+                            </div>
+                          </td>
+                          <td>{item.size}</td>
+                          <td>{item.quantity}</td>
+                          <td>
+                            <button
+                              type="button"
+                              onClick={() => removeVariation(index)}
+                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                            >
+                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-            <div className="flex justify-end">
+          </div>
+
+          {/* FAQs */}
+          <div className="card bg-white border border-[#1D372E]">
+            <div className="card-body p-4">
+              <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+                Frequently Asked Questions
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Question */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Question</span>
+                  </label>
+                  <textarea
+                    value={faqQuestion}
+                    onChange={(e) => setFaqQuestion(e.target.value)}
+                    placeholder="Enter question"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Answer */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text font-medium">Answer</span>
+                  </label>
+                  <textarea
+                    value={faqAnswer}
+                    onChange={(e) => setFaqAnswer(e.target.value)}
+                    placeholder="Enter answer"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="md:col-span-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleAddFaq}
+                    className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* FAQ List */}
+              {faqs.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  {faqs.map((faq, index) => (
+                    <div
+                      key={index}
+                      className="card bg-white border border-[#1D372E] text-[#1D372E]"
+                    >
+                      <div className="card-body p-4">
+                        <div className="flex justify-between">
+                          <div className="flex items-start gap-2 flex-1">
+                            <FaQuestionCircle className="mt-1 text-[#5CAF90]" />
+                            <div>
+                              <h4 className="font-medium">{faq.question}</h4>
+                              <p className="text-sm mt-1">{faq.answer}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFaq(index)}
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square self-start"
+                          >
+                            <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] "
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <span className="loading loading-spinner loading-xs"></span>
+                  {isEditMode ? "Updating..." : "Saving..."}
+                </>
+              ) : isEditMode ? (
+                "Edit Product"
+              ) : (
+                "Add Product"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Brand Popup */}
+      {brandPopupVisible && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-md bg-white text-[#1D372E]">
+            <h3 className="font-bold text-lg mb-4">Add Brand</h3>
+            <button
+              onClick={closeBrandPopup}
+              className="absolute right-6 top-7 text-lg text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+
+            <div className="form-control mb-3">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Brand Name</span>
+              </label>
+              <input
+                type="text"
+                value={newBrandName}
+                onChange={(e) => setNewBrandName(e.target.value)}
+                placeholder="Enter brand name"
+                className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+              />
+            </div>
+
+            <div className="form-control mb-3">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Brand Image</span>
+              </label>
+              <input
+                type="file"
+                ref={newBrandImageRef}
+                onChange={(e) => {
+                  setNewBrandImage(e.target.files[0]);
+                  if (e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setNewBrandImagePreview(reader.result);
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                  } else {
+                    setNewBrandImagePreview(null);
+                  }
+                }}
+                className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                accept="image/*"
+              />
+
+              {newBrandImagePreview && (
+                <div className="relative mt-2 w-24 h-24 border border-base-300 rounded-lg overflow-hidden">
+                  <img
+                    src={newBrandImagePreview}
+                    alt="Brand Preview"
+                    className="object-cover w-full h-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewBrandImage(null);
+                      setNewBrandImagePreview(null);
+                      if (newBrandImageRef.current)
+                        newBrandImageRef.current.value = "";
+                    }}
+                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square absolute top-1 right-1"
+                  >
+                    <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="form-control mb-4">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Description</span>
+              </label>
+              <textarea
+                value={newBrandDescription}
+                onChange={(e) => setNewBrandDescription(e.target.value)}
+                placeholder="Enter brand description"
+                className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                rows={3}
+              ></textarea>
+            </div>
+
+            <div className="modal-action">
               <button
                 onClick={handleAddBrand}
-                className="btn bg-[#5CAF90] border-none font-medium text-sm md:text-base py-2 px-3 md:px-4 h-auto min-h-0 rounded-2xl"
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
               >
                 Add Brand
               </button>
