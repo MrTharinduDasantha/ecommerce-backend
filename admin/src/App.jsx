@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import VerifyOtpPage from "./pages/VerifyOtpPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import PrivateRoute from "./components/PrivateRoute";
 import ProductForm from "./components/ProductForm";
@@ -29,6 +32,12 @@ const App = () => {
       />
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-otp/:email" element={<VerifyOtpPage />} />
+        <Route
+          path="/reset-password/:email/:otp"
+          element={<ResetPasswordPage />}
+        />
         <Route
           path="/dashboard"
           element={

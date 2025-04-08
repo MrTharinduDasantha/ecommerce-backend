@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+import { FiUser, FiLock } from "react-icons/fi";
 import * as api from "../api/auth";
 import toast from "react-hot-toast";
 
@@ -9,6 +10,7 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ const LoginForm = () => {
     }
 
     try {
+      setIsLoading(true);
       const data = await api.loginUser(email, password);
 
       if (data.message === "Login successful") {
@@ -42,45 +45,92 @@ const LoginForm = () => {
     } catch (error) {
       toast.error(error.message || "Invalid credentials");
       console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-1 text-[#1D372E]">
-        <label className="block font-medium">Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="input bg-white border-2 border-[#2d2d2d] w-full rounded-2xl"
-          placeholder="Enter your email"
-        />
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text text-[#1D372E] font-medium">Email</span>
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+            <FiUser className="text-[#5CAF90]" />
+          </div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input input-bordered w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
       </div>
-      <div className="space-y-1 text-[#1D372E] relative">
-        <label className="block font-medium">Password</label>
-        <input
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="input bg-white border-2 border-[#1D372E] rounded-2xl w-full pr-10"
-          placeholder="Enter your password"
-        />
-        <span
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute bottom-3.5 right-3 cursor-pointer text-xl text-[#1D372E]"
-        >
-          {showPassword ? <IoMdEyeOff /> : <IoMdEye />}
-        </span>
+
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text text-[#1D372E] font-medium">
+            Password
+          </span>
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+            <FiLock className="text-[#5CAF90]" />
+          </div>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input input-bordered w-full pl-10 pr-10 bg-white border-[#1D372E] text-[#1D372E]"
+            placeholder="Enter your password"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3"
+          >
+            {showPassword ? (
+              <IoMdEyeOff className="text-[#5CAF90]" />
+            ) : (
+              <IoMdEye className="text-[#5CAF90]" />
+            )}
+          </button>
+        </div>
       </div>
-      <div>
+
+      <div className="flex justify-end">
         <button
-          type="submit"
-          className="mt-2 btn btn-primary bg-[#5CAF90] border-none text-white w-full rounded-2xl"
+          type="button"
+          onClick={handleForgotPassword}
+          className="text-sm text-[#5CAF90] hover:underline cursor-pointer"
         >
-          Login
+          Forgot Password?
         </button>
       </div>
+
+      <button
+        type="submit"
+        className="btn btn-primary bg-[#5CAF90] hover:bg-[#4a9a7d] border-none text-white w-full"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <span className="loading loading-spinner loading-xs"></span>
+            Logging in...
+          </>
+        ) : (
+          "Login"
+        )}
+      </button>
     </form>
   );
 };
