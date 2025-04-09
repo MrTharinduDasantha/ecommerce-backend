@@ -1,11 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import VerifyOtpPage from "./pages/VerifyOtpPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import PrivateRoute from "./components/PrivateRoute";
 import ProductForm from "./components/ProductForm";
 import ProductCategorySubCategoryForm from "./components/ProductCategorySubCategoryForm";
 import ProductList from "./components/ProductList";
+import ProductDetails from "./components/ProductDetails";
 import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
@@ -29,6 +33,12 @@ const App = () => {
       />
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-otp/:email" element={<VerifyOtpPage />} />
+        <Route
+          path="/reset-password/:email/:otp"
+          element={<ResetPasswordPage />}
+        />
         <Route
           path="/dashboard"
           element={
@@ -46,6 +56,10 @@ const App = () => {
           />
           <Route path="products/edit-product" element={<ProductList />} />
           <Route path="products/edit-product/:id" element={<ProductForm />} />
+          <Route
+            path="products/view-product/:id"
+            element={<ProductDetails />}
+          />
           <Route path="users_managed-form" element={<UsersManagedForm />} />
           <Route path="admin-logs" element={<AdminLogs />} />
           <Route

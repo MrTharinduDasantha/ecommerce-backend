@@ -47,8 +47,6 @@ const getUserByEmail = async (email) => {
   return rows[0]; // Return the user record
 };
 
-
-
 module.exports = {
   getAllUsers,
   getUserById,
@@ -56,5 +54,9 @@ module.exports = {
   updateUser,
   getUserByEmail,
   deleteUser,
+
  
 };
+
+};
+

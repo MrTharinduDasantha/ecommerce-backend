@@ -121,7 +121,7 @@ const UsersManagedForm = () => {
   });
 
   return (
-    <div className="p-4">
+    <div className="px-1 py-5">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 ml-5">
           <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">

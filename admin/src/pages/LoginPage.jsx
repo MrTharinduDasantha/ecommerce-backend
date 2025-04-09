@@ -2,6 +2,7 @@ import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import LoginForm from "../components/LoginForm";
+import logo from "../assets/logo.png";
 
 const LoginPage = () => {
   const { user } = useContext(AuthContext);
@@ -13,11 +14,18 @@ const LoginPage = () => {
     }
   }, [user, navigate]);
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#1D372E]">
-      <div className="w-full max-w-96 p-8 space-y-6 bg-[#ffffff] rounded-lg shadow-lg">
-        <h2 className="text-center text-2xl font-bold text-[#1D372E]">
-          Admin Login
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1D372E] to-[#2a4f43] p-4">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-xl">
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <img src={logo} alt="Logo" className="h-16 w-auto" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#1D372E]">Admin Login</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Enter your credentials to access the admin panel
+          </p>
+        </div>
+
         <LoginForm />
       </div>
     </div>
