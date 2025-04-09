@@ -58,6 +58,34 @@ const AdminLogs = () => {
                     case 'Deleted customer':
                         detailsMessage += `\n\nDeleted Customer Details:\n- Name: ${details.customerName}\n- Email: ${details.customerEmail}`;
                         break;
+                    // Product-related actions
+                    case 'Created category':
+                        detailsMessage += `\n\nCategory Details:\n- Description: ${details.description}`;
+                        break;
+                    case 'Updated category':
+                        detailsMessage += `\n\nCategory Update:\n- Description: ${details.description}`;
+                        break;
+                    case 'Toggled category status':
+                        detailsMessage += `\n\nCategory Status Update:\n- New Status: ${details.status}`;
+                        break;
+                    case 'Created subcategory':
+                        detailsMessage += `\n\nSubcategory Details:\n- Description: ${details.description}\n- Parent Category ID: ${details.categoryId}`;
+                        break;
+                    case 'Deleted subcategory':
+                        detailsMessage += `\n\nDeleted Subcategory:\n- ID: ${details.subCategoryId}`;
+                        break;
+                    case 'Created product':
+                        detailsMessage += `\n\nProduct Details:\n- Description: ${details.description}\n- Brand: ${details.brand}\n- Price: ${details.price}`;
+                        break;
+                    case 'Created brand':
+                        detailsMessage += `\n\nBrand Details:\n- Name: ${details.brandName}\n- Description: ${details.description || 'N/A'}`;
+                        break;
+                    case 'Updated product':
+                        detailsMessage += `\n\nProduct Update:\n- Description: ${details.description}\n- Updated Fields: ${details.updatedFields.join(', ')}`;
+                        break;
+                    case 'Deleted product':
+                        detailsMessage += `\n\nDeleted Product Details:\n- ID: ${details.productId}\n- Description: ${details.description}`;
+                        break;
                     default:
                         if (typeof details === 'object') {
                             detailsMessage += '\n\nAdditional Details:';
@@ -84,6 +112,7 @@ const AdminLogs = () => {
     };
 
     const getActionStyle = (action) => {
+        // Add new action types for product-related actions
         switch (action) {
             case 'Logged In':
                 return 'bg-blue-100 text-blue-800';
@@ -93,6 +122,19 @@ const AdminLogs = () => {
                 return 'bg-yellow-100 text-yellow-800';
             case 'Deleted customer':
                 return 'bg-red-100 text-red-800';
+            // Product-related actions
+            case 'Created category':
+            case 'Created subcategory':
+            case 'Created product':
+            case 'Created brand':
+                return 'bg-emerald-100 text-emerald-800';
+            case 'Updated category':
+            case 'Updated product':
+            case 'Toggled category status':
+                return 'bg-amber-100 text-amber-800';
+            case 'Deleted subcategory':
+            case 'Deleted product':
+                return 'bg-rose-100 text-rose-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
