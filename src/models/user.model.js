@@ -8,6 +8,7 @@ const getAllUsers = async () => {
   return rows;
 };
 
+// Get user by ID
 const getUserById = async (id) => {
   console.log("Fetching user with ID:", id); // Log the ID being queried
   const [rows] = await pool.query("SELECT * FROM User WHERE idUser = ?", [id]);
@@ -52,6 +53,6 @@ module.exports = {
   getUserById,
   addUser,
   updateUser,
-  getUserByEmail,
   deleteUser,
+  getUserByEmail,
 };

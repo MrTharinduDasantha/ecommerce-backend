@@ -1,7 +1,7 @@
 const User = require("../../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Importing JWT
-const sendConfirmationEmail = require("../../utils/mailer");
+const { sendConfirmationEmail } = require("../../utils/mailer");
 const pool = require("../../config/database");
 
 // Get all users
@@ -86,6 +86,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// Login user
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -132,6 +133,7 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Get user profile
 const getProfile = async (req, res) => {
   try {
     console.log("User info from JWT:", req.user); // This should print user info like { userId: 2 }
@@ -144,6 +146,7 @@ const getProfile = async (req, res) => {
   }
 };
 
+// Update user status
 const updateUserStatus = async (req, res) => {
   try {
     const { status } = req.body;
