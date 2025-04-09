@@ -4,9 +4,15 @@ const authenticate = require("../../middleware/authMiddleware");
 
 const router = express.Router();
 
+// Auth Routes (no authentication required)
 router.post("/login", userController.loginUser);
+router.post("/forgot-password", userController.forgotPassword);
+router.post("/verify-otp", userController.verifyOTP);
+router.post("/reset-password", userController.resetPassword);
+
+// protected routes (authentication required)
 router.get("/logs", authenticate, userController.getAdminLogs);
-router.post("/", authenticate, userController.createUser);
+router.post("/", userController.createUser);
 router.get("/profile", authenticate, userController.getProfile);
 router.get("/:id", authenticate, userController.getUser);
 router.get("/", authenticate, userController.getUsers);

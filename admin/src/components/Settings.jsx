@@ -125,7 +125,7 @@ const Settings = () => {
           {!isEditing && (
             <button
               onClick={handleEdit}
-              className="btn btn-primary btn-sm gap-2 bg-[#5CAF90] border-[#5CAF90]"
+              className="btn btn-primary btn-sm gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             >
               <FaEdit className="w-4 h-4" /> Edit
             </button>
@@ -157,7 +157,7 @@ const Settings = () => {
                     <button
                       type="button"
                       onClick={removeLogo}
-                      className="btn btn-xs bg-[#5CAF90] border-[#5CAF90] btn-square absolute top-1.5 right-1 text-white"
+                      className="btn btn-xs bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-square absolute top-1.5 right-1 text-white"
                     >
                       <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                     </button>
@@ -202,8 +202,9 @@ const Settings = () => {
               </button>
               <button
                 type="submit"
-                className="btn btn-sm bg-[#5CAF90] border-[#5CAF90]"
-                disabled={isLoading}
+                className={`btn btn-sm bg-[#5CAF90] border-none text-white ${
+                  isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+                }`}
               >
                 {isLoading ? (
                   <>

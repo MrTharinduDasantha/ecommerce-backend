@@ -49,15 +49,15 @@ const CustomerManagedForm = () => {
 
   const handleViewDetails = async (customerId) => {
     try {
-      const customer = customers.find(c => c.idCustomer === customerId);
+      const customer = customers.find((c) => c.idCustomer === customerId);
       if (customer) {
         const detailsMessage = `
           Name: ${customer.Full_Name}
           Email: ${customer.Email}
           Phone: ${customer.Mobile_No}
-          Address: ${customer.Address || 'N/A'}
-          City: ${customer.City || 'N/A'}
-          Country: ${customer.Country || 'N/A'}
+          Address: ${customer.Address || "N/A"}
+          City: ${customer.City || "N/A"}
+          Country: ${customer.Country || "N/A"}
           Status: ${customer.Status}
         `;
         setModalDetails(detailsMessage);
@@ -74,14 +74,16 @@ const CustomerManagedForm = () => {
   };
 
   const handleEdit = async (customerId) => {
-    const customer = customers.find((customer) => customer.idCustomer === customerId);
+    const customer = customers.find(
+      (customer) => customer.idCustomer === customerId
+    );
     if (!customer) return;
-  
+
     // Original data for logging
     const originalData = {
       name: customer.Full_Name,
       email: customer.Email,
-      status: customer.Status
+      status: customer.Status,
     };
 
     Swal.fire({
@@ -96,27 +98,39 @@ const CustomerManagedForm = () => {
         <div class="space-y-4 mt-6">
           <div>
             <label class="block text-sm font-medium text-left mb-2">Customer Name:</label>
-            <input id="name" class="w-full px-3 py-2 border rounded-md" value="${customer.Full_Name || ""}" placeholder="Enter Name" />
+            <input id="name" class="w-full px-3 py-2 border rounded-md" value="${
+              customer.Full_Name || ""
+            }" placeholder="Enter Name" />
           </div>
           <div>
             <label class="block text-sm font-medium text-left mb-2">Customer Email:</label>
-            <input id="email" class="w-full px-3 py-2 border rounded-md" value="${customer.Email || ""}" placeholder="Enter Email" />
+            <input id="email" class="w-full px-3 py-2 border rounded-md" value="${
+              customer.Email || ""
+            }" placeholder="Enter Email" />
           </div>
           <div>
             <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
-            <input id="phone" class="w-full px-3 py-2 border rounded-md" value="${customer.Mobile_No || ""}" placeholder="Enter Phone Number" />
+            <input id="phone" class="w-full px-3 py-2 border rounded-md" value="${
+              customer.Mobile_No || ""
+            }" placeholder="Enter Phone Number" />
           </div>
           <div>
             <label class="block text-sm font-medium text-left mb-2">Customer Address:</label>
-            <input id="address" class="w-full px-3 py-2 border rounded-md" value="${customer.Address || ""}" placeholder="Enter Address" />
+            <input id="address" class="w-full px-3 py-2 border rounded-md" value="${
+              customer.Address || ""
+            }" placeholder="Enter Address" />
           </div>
           <div>
             <label class="block text-sm font-medium text-left mb-2">City:</label>
-            <input id="city" class="w-full px-3 py-2 border rounded-md" value="${customer.City || ""}" placeholder="Enter City" />
+            <input id="city" class="w-full px-3 py-2 border rounded-md" value="${
+              customer.City || ""
+            }" placeholder="Enter City" />
           </div>
           <div>
             <label class="block text-sm font-medium text-left mb-2">Country:</label>
-            <input id="country" class="w-full px-3 py-2 border rounded-md" value="${customer.Country || ""}" placeholder="Enter Country" />
+            <input id="country" class="w-full px-3 py-2 border rounded-md" value="${
+              customer.Country || ""
+            }" placeholder="Enter Country" />
           </div>
           <div>
             <label class="block text-sm font-medium text-left mb-2">New Password:</label>
@@ -125,8 +139,12 @@ const CustomerManagedForm = () => {
           <div>
             <label class="block text-sm font-medium text-left mb-2">Status:</label>
             <select id="status" class="w-full px-3 py-2 border rounded-md">
-              <option value="Active" ${customer.Status === "Active" ? "selected" : ""}>Active</option>
-              <option value="Inactive" ${customer.Status === "Inactive" ? "selected" : ""}>Inactive</option>
+              <option value="Active" ${
+                customer.Status === "Active" ? "selected" : ""
+              }>Active</option>
+              <option value="Inactive" ${
+                customer.Status === "Inactive" ? "selected" : ""
+              }>Inactive</option>
             </select>
           </div>
         </div>
@@ -155,7 +173,7 @@ const CustomerManagedForm = () => {
         const updatedCustomer = result.value;
         try {
           await api.updateCustomer(customerId, updatedCustomer);
-          
+
           await authApi.logAdminAction(
             "Updated customer",
             navigator.userAgent,
@@ -180,7 +198,10 @@ const CustomerManagedForm = () => {
           toast.success("Customer updated successfully");
         } catch (error) {
           // This console log will show any error from the update call
-          console.error("Error updating customer:", error.response ? error.response.data : error.message);
+          console.error(
+            "Error updating customer:",
+            error.response ? error.response.data : error.message
+          );
           toast.error("There was an issue updating the customer.");
         }
       }
@@ -199,23 +220,31 @@ const CustomerManagedForm = () => {
         <div class="max-h-[70vh] overflow-y-auto px-4">
           <h3 class="text-xl font-bold text-left mt-5 mb-3">Order History</h3>
           <div class="space-y-4">
-            ${history.orders.map((order) => `
+            ${history.orders
+              .map(
+                (order) => `
               <div class="p-4 border rounded-lg">
                 <p class="font-semibold text-left">Order ID: ${order.idOrder}</p>
                 <p class="text-left">Status: ${order.Delivery_Status}</p>
                 <p class="text-left">Total Amount: ${order.Total_Amount}</p>
               </div>
-            `).join("")}
+            `
+              )
+              .join("")}
           </div>
 
           <h3 class="text-xl font-bold text-left mt-6 mb-3">Delivery Addresses</h3>
           <div class="space-y-4 mb-4">
-            ${history.deliveryAddresses.map((address) => `
+            ${history.deliveryAddresses
+              .map(
+                (address) => `
               <div class="p-4 border rounded-lg">
                 <p class="text-left">Address: ${address.Address}, ${address.City}, ${address.Country}</p>
                 <p class="text-left">Phone: ${address.Mobile_No}</p>
               </div>
-            `).join("")}
+            `
+              )
+              .join("")}
           </div>
         </div>
       `;
@@ -235,7 +264,7 @@ const CustomerManagedForm = () => {
   };
 
   const handleDelete = (customerId) => {
-    const customer = customers.find(c => c.idCustomer === customerId);
+    const customer = customers.find((c) => c.idCustomer === customerId);
     if (!customer) return;
 
     Swal.fire({
@@ -251,7 +280,7 @@ const CustomerManagedForm = () => {
       if (result.isConfirmed) {
         try {
           await api.deleteCustomer(customerId);
-          
+
           // Log the admin action with customer details
           await authApi.logAdminAction(
             "Deleted customer",
@@ -259,7 +288,7 @@ const CustomerManagedForm = () => {
             JSON.stringify({
               customerId,
               customerName: customer.Full_Name,
-              customerEmail: customer.Email
+              customerEmail: customer.Email,
             })
           );
 
@@ -276,9 +305,12 @@ const CustomerManagedForm = () => {
   const filteredCustomers = customers.filter((customer) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     return (
-      (customer.idCustomer && customer.idCustomer.toString().includes(lowerSearchTerm)) ||
-      (customer.Full_Name && customer.Full_Name.toLowerCase().includes(lowerSearchTerm)) ||
-      (customer.Email && customer.Email.toLowerCase().includes(lowerSearchTerm)) ||
+      (customer.idCustomer &&
+        customer.idCustomer.toString().includes(lowerSearchTerm)) ||
+      (customer.Full_Name &&
+        customer.Full_Name.toLowerCase().includes(lowerSearchTerm)) ||
+      (customer.Email &&
+        customer.Email.toLowerCase().includes(lowerSearchTerm)) ||
       (customer.Mobile_No && customer.Mobile_No.includes(lowerSearchTerm))
     );
   });
@@ -292,19 +324,12 @@ const CustomerManagedForm = () => {
   }
 
   return (
-
-    <div className="p-4">
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 mt-5 ml-5">
-          <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">Customers Details</h2>
-
     <div className="px-1 py-5">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 ml-5">
           <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
             Customers Details
           </h2>
-
         </div>
         <div className="p-4 border-b">
           <div className="flex items-center">

@@ -245,8 +245,9 @@ const ProductCategorySubCategoryForm = () => {
               <div className="md:col-span-2 flex justify-end">
                 <button
                   onClick={handleCategoryFormSubmit}
-                  className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
-                  disabled={isSubmitting}
+                  className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+                    isSubmitting ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+                  }`}
                 >
                   {isSubmitting ? (
                     <>
@@ -336,14 +337,14 @@ const ProductCategorySubCategoryForm = () => {
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => handleEditCategory(cat)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="Edit Category"
                         >
                           <FaEdit />
                         </button>
                         <button
                           onClick={() => openSubCategoryPopup(index)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="Add Sub Category"
                         >
                           <FaPlus />
@@ -390,8 +391,9 @@ const ProductCategorySubCategoryForm = () => {
             <div className="modal-action">
               <button
                 onClick={handleAddSubCategory}
-                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
-                disabled={isSubmitting}
+                className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+                  isSubmitting ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+                }`}
               >
                 {isSubmitting ? (
                   <>
@@ -433,7 +435,7 @@ const ProductCategorySubCategoryForm = () => {
                                       sub
                                     )
                                   }
-                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                                   title="Delete Sub Category"
                                 >
                                   <RiDeleteBin5Fill className="w-3.5 h-3.5" />

@@ -22,7 +22,8 @@ const Sidebar = ({ isSidebarOpen }) => {
   const isManageProductsActive = location.pathname.includes("products/");
   const isManageUsersActive =
     location.pathname.includes("users_managed-form") ||
-    location.pathname.includes("customer-managed-form");
+    location.pathname.includes("customer-managed-form") ||
+    location.pathname.includes("admin-logs");
   const isManageOrdersActive = location.pathname.includes("orders");
 
   // Toggle submenu functions
@@ -166,12 +167,10 @@ const Sidebar = ({ isSidebarOpen }) => {
                 </li>
                 <li>
                   <NavLink
-                    to="/dashboard/admin-logs"
+                    to="admin-logs"
                     className={({ isActive }) =>
-                      `flex items-center w-full p-1 md:p-2 rounded-lg pl-8 md:pl-11 transition-colors duration-300 ease-in-out group text-sm md:text-base ${
-                        isActive
-                          ? "text-[#5CAF90]"
-                          : "hover:bg-gray-100 hover:text-[#2d2d2d]"
+                      `py-1.5 hover:bg-[#5CAF90] hover:text-white transition-colors ${
+                        isActive ? "text-[#5CAF90] font-medium" : ""
                       }`
                     }
                   >

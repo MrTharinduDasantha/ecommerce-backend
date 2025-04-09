@@ -104,7 +104,7 @@ const ProductList = () => {
             />
             <button
               onClick={handleSearch}
-              className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90]"
+              className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             >
               Search
             </button>
@@ -161,7 +161,7 @@ const ProductList = () => {
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => handleViewProduct(product.idProduct)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="View Product"
                         >
                           <FaEye />
@@ -172,14 +172,14 @@ const ProductList = () => {
                               `/dashboard/products/edit-product/${product.idProduct}`
                             )
                           }
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="Edit Product"
                         >
                           <FaEdit />
                         </button>
                         <button
                           onClick={() => setDeleteProductId(product.idProduct)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="Delete Product"
                         >
                           <RiDeleteBin5Fill />
