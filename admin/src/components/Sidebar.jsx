@@ -164,6 +164,20 @@ const Sidebar = ({ isSidebarOpen }) => {
                     Customer
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink
+                    to="/dashboard/admin-logs"
+                    className={({ isActive }) =>
+                      `flex items-center w-full p-1 md:p-2 rounded-lg pl-8 md:pl-11 transition-colors duration-300 ease-in-out group text-sm md:text-base ${
+                        isActive
+                          ? "text-[#5CAF90]"
+                          : "hover:bg-gray-100 hover:text-[#2d2d2d]"
+                      }`
+                    }
+                  >
+                    Admin Logs
+                  </NavLink>
+                </li>
               </ul>
             </details>
           </li>
