@@ -34,22 +34,22 @@ const UsersManagedForm = () => {
               <label class="block text-sm font-medium text-left mb-2">Full Name:</label>
               <input id="name" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Name" />
             </div>
-
+  
             <div>
               <label class="block text-sm font-medium text-left mb-2">Email:</label>
               <input id="email" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Email" />
             </div>
-
+  
             <div>
               <label class="block text-sm font-medium text-left mb-2">Password:</label>
               <input id="password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Password" />
             </div>
-
+  
             <div>
               <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
               <input id="phone" class="w-full px-3 py-2 border rounded-md" placeholder="Enter Phone Number" />
             </div>
-
+  
             <div>
               <label class="block text-sm font-medium text-left mb-2">Status:</label>
               <select id="status" class="w-full px-3 py-2 border rounded-md">
@@ -71,30 +71,41 @@ const UsersManagedForm = () => {
         const password = document.getElementById("password").value;
         const phone = document.getElementById("phone").value;
         const status = document.getElementById("status").value;
-
+  
         if (!name || !email || !password || !phone) {
           Swal.showValidationMessage("All fields are required");
           return false;
         }
-
+  
         return { full_name: name, email, password, phone_no: phone, status };
       },
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         const newUser = result.value;
-
-        api
-          .addUser(newUser)
-          .then((response) => {
-            setUsers([...users, { id: response.id, ...newUser }]);
-            toast.success("User has been added successfully!");
-          })
-          .catch((error) => {
-            console.error("Error adding user:", error);
-            toast.error("There was an issue adding the user.");
+  
+        try {
+          // Add the user through the API
+          const response = await api.addUser(newUser);
+          
+          // Update local state with new user data
+          setUsers([...users, { id: response.id, ...newUser }]);
+          
+          // Show success message
+          toast.success("User has been added successfully!");
+  
+          // Log admin action with new user details
+          await api.logAdminAction("Added new admin", { // Ensure this API endpoint exists
+            name: newUser.full_name,
+            email: newUser.email,
+            phone: newUser.phone_no,
           });
+        } catch (error) {
+          console.error("Error adding user:", error);
+          toast.error("There was an issue adding the user.");
+        }
       }
     });
+  
     document.getElementById("close-modal")?.addEventListener("click", () => {
       Swal.close();
     });

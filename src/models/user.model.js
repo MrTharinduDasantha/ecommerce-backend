@@ -15,7 +15,7 @@ const getUserById = async (id) => {
   return rows[0]; // Return the first row if found
 };
 
-// Add user
+// Add user to database
 const addUser = async (full_name, email, password, phone_no, status) => {
   const [result] = await pool.query(
     "INSERT INTO User (Full_Name, Email, Password, Phone_No, Status) VALUES (?, ?, ?, ?, ?)",

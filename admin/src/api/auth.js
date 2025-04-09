@@ -58,7 +58,7 @@ export const updateUser = async (userId, updatedUser) => {
 
 export const addUser = async (newUser) => {
   try {
-    const response = await api.post("/api/users", newUser);
+    const response = await api.post("/api/admin/users", newUser);
     return response.data;
   } catch (error) {
     console.error("Error adding user:", error);
@@ -110,6 +110,26 @@ export const updateUserPassword = async (userId, newPassword) => {
     return response.data;
   } catch (error) {
     console.error(`Error updating password for user ${userId}:`, error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const fetchAdminLogs = async () => {
+  try {
+    const response = await api.get("/api/users/logs");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching admin logs:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const logAdminAction = async (action, deviceInfo, newUserInfo) => {
+  try {
+    const response = await api.post("/api/admin/logs", { action, device_info: deviceInfo, new_user_info: newUserInfo });
+    return response.data;
+  } catch (error) {
+    console.error("Error logging admin action:", error);
     throw error.response ? error.response.data : error.message;
   }
 };

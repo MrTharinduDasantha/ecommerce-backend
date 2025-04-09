@@ -13,7 +13,8 @@ import DashboardPrivate from "./components/DashboardPrivate";
 import Settings from "./components/Settings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
-
+import AdminLogs from "./components/AdminLogs";
+ 
 const App = () => {
   return (
     <>
@@ -46,6 +47,7 @@ const App = () => {
           <Route path="products/edit-product" element={<ProductList />} />
           <Route path="products/edit-product/:id" element={<ProductForm />} />
           <Route path="users_managed-form" element={<UsersManagedForm />} />
+          <Route path="admin-logs" element={<AdminLogs />} />
           <Route
             path="customer-managed-form"
             element={<CustomerManagedForm />}
