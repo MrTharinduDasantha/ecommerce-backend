@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
-import { FiUser, FiLock } from "react-icons/fi";
+import { FiMail, FiLock } from "react-icons/fi";
 import * as api from "../api/auth";
 import toast from "react-hot-toast";
 
@@ -62,7 +62,7 @@ const LoginForm = () => {
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
-            <FiUser className="text-[#5CAF90]" />
+            <FiMail className="text-[#5CAF90]" />
           </div>
           <input
             type="email"

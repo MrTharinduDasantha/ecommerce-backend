@@ -217,5 +217,5 @@ module.exports = {
   updateUserStatus,
   updateUserPassword,
   logoutAdmin,
-  getAdminLogs
+  getAdminLogs
 };

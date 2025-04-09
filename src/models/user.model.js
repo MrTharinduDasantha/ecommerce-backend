@@ -54,9 +54,4 @@ module.exports = {
   updateUser,
   getUserByEmail,
   deleteUser,
-
- 
-};
-
-};
-
+}
