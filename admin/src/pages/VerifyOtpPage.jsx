@@ -41,6 +41,24 @@ const VerifyOtpPage = () => {
     }
   };
 
+  // Handle pasting full OTP at once
+  const handlePaste = (e) => {
+    const pastedData = e.clipboardData.getData("text");
+    // Remove any spaces if pasted with formatting
+    const cleanPasted = pastedData.replace(/\s+/g, "");
+    // Validate if pasted input is exactly 6 digits long
+    if (/^\d{6}$/.test(cleanPasted)) {
+      const pastedOtp = cleanPasted.split("");
+      setOtp(pastedOtp);
+      // Focus the last input field after pasting
+      if (inputRef.current[5]) {
+        inputRef.current[5].focus();
+      }
+      // Prevent default paste behavior
+      e.preventDefault();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -99,6 +117,7 @@ const VerifyOtpPage = () => {
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={index === 0 ? handlePaste : undefined}
                 ref={(el) => (inputRef.current[index] = el)}
                 className="input input-bordered w-12 h-12 text-center text-xl bg-white border-[#1D372E] text-[#1D372E]"
                 required
@@ -108,8 +127,9 @@ const VerifyOtpPage = () => {
 
           <button
             type="submit"
-            className="btn btn-primary bg-[#5CAF90] hover:bg-[#4a9a7d] border-none text-white w-full"
-            disabled={isLoading}
+            className={`btn btn-primary bg-[#5CAF90] border-none text-white w-full ${
+              isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+            }`}
           >
             {isLoading ? (
               <>

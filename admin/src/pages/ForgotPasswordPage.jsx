@@ -21,7 +21,7 @@ const ForgotPasswordPage = () => {
     try {
       setIsLoading(true);
       await api.requestPasswordReset(email);
-      toast.success("OTP sent to your email address");
+      toast.success("OTP sent to your email");
       navigate(`/verify-otp/${email}`);
     } catch (error) {
       toast.error(error.message || "Failed to send OTP. Please try again.");
@@ -66,8 +66,9 @@ const ForgotPasswordPage = () => {
 
           <button
             type="submit"
-            className="btn btn-primary bg-[#5CAF90] hover:bg-[#4a9a7d] border-none text-white w-full"
-            disabled={isLoading}
+            className={`btn btn-primary bg-[#5CAF90] border-none text-white w-full ${
+              isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+            }`}
           >
             {isLoading ? (
               <>

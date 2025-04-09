@@ -124,8 +124,9 @@ const ResetPasswordPage = () => {
 
           <button
             type="submit"
-            className="btn btn-primary bg-[#5CAF90] hover:bg-[#4a9a7d] border-none text-white w-full"
-            disabled={isLoading}
+            className={`btn btn-primary bg-[#5CAF90] border-none text-white w-full ${
+              isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+            }`}
           >
             {isLoading ? (
               <>

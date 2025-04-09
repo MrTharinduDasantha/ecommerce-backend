@@ -67,7 +67,7 @@ const ProductDetails = () => {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={handleBack}
-            className="btn btn-circle btn-sm bg-[#5CAF90] border-[#5CAF90]"
+            className="btn btn-circle btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
           >
             <FaArrowLeft className="w-3 h-3" />
           </button>

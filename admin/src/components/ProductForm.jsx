@@ -420,9 +420,9 @@ const ProductForm = () => {
 
   if (isLoading) {
     return (
-      <div className="card bg-base-100 shadow-md">
+      <div className="card bg-white shadow-md">
         <div className="card-body">
-          <div className="flex justify-center items-center h-40">
+          <div className="flex justify-center items-center min-h-[75vh]">
             <span className="loading loading-spinner loading-lg text-primary"></span>
           </div>
         </div>
@@ -494,7 +494,7 @@ const ProductForm = () => {
                     <button
                       type="button"
                       onClick={openBrandPopup}
-                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
+                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
                       Add
                     </button>
@@ -651,7 +651,7 @@ const ProductForm = () => {
                       <button
                         type="button"
                         onClick={removeMainImage}
-                        className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square absolute top-1 right-1"
+                        className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square absolute top-1 right-1"
                       >
                         <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                       </button>
@@ -686,7 +686,7 @@ const ProductForm = () => {
                           <button
                             type="button"
                             onClick={() => removeSubImage(index)}
-                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square absolute top-1 right-1"
+                            className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square absolute top-1 right-1"
                           >
                             <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                           </button>
@@ -799,7 +799,7 @@ const ProductForm = () => {
                     <button
                       type="button"
                       onClick={handleAddVariation}
-                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
+                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
                       Add
                     </button>
@@ -839,7 +839,7 @@ const ProductForm = () => {
                             <button
                               type="button"
                               onClick={() => removeVariation(index)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square"
+                              className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
                             >
                               <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                             </button>
@@ -893,7 +893,7 @@ const ProductForm = () => {
                   <button
                     type="button"
                     onClick={handleAddFaq}
-                    className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
+                    className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                   >
                     Add
                   </button>
@@ -920,7 +920,7 @@ const ProductForm = () => {
                           <button
                             type="button"
                             onClick={() => removeFaq(index)}
-                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square self-start"
+                            className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square self-start"
                           >
                             <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                           </button>
@@ -937,8 +937,9 @@ const ProductForm = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] "
-              disabled={isLoading}
+              className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+                isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+              }`}
             >
               {isLoading ? (
                 <>
@@ -1042,7 +1043,7 @@ const ProductForm = () => {
             <div className="modal-action">
               <button
                 onClick={handleAddBrand}
-                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90]"
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
               >
                 Add Brand
               </button>

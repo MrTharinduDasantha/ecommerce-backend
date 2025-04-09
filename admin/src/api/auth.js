@@ -114,6 +114,41 @@ export const updateUserPassword = async (userId, newPassword) => {
   }
 };
 
+// Password reset API calls
+export const requestPasswordReset = async (email) => {
+  try {
+    const response = await api.post("/api/users/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    console.error("Error requesting password reset:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const verifyOtp = async (email, otp) => {
+  try {
+    const response = await api.post("/api/users/verify-otp", { email, otp });
+    return response.data;
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const resetPassword = async (email, otp, newPassword) => {
+  try {
+    const response = await api.post("/api/users/reset-password", {
+      email,
+      otp,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
 export const fetchAdminLogs = async () => {
   try {
     const response = await api.get("/api/users/logs");
@@ -126,7 +161,11 @@ export const fetchAdminLogs = async () => {
 
 export const logAdminAction = async (action, deviceInfo, newUserInfo) => {
   try {
-    const response = await api.post("/api/admin/logs", { action, device_info: deviceInfo, new_user_info: newUserInfo });
+    const response = await api.post("/api/admin/logs", {
+      action,
+      device_info: deviceInfo,
+      new_user_info: newUserInfo,
+    });
     return response.data;
   } catch (error) {
     console.error("Error logging admin action:", error);
