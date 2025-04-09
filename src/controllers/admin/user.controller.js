@@ -1,7 +1,7 @@
 const User = require("../../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Importing JWT
-const { sendConfirmationEmail } = require("../../utils/mailer");
+const sendConfirmationEmail = require("../../utils/mailer");
 const pool = require("../../config/database");
 
 // Get all users
@@ -26,6 +26,7 @@ const getUser = async (req, res) => {
   }
 };
 
+
 // Add a new user
 const createUser = async (req, res) => {
   try {
@@ -43,6 +44,10 @@ const createUser = async (req, res) => {
       phone_no,
       status || "Active"
     );
+
+    // Log admin action with user details
+    const newUserInfo = { full_name, email, phone_no }; // Construct the new user info as an object
+    await logAdminAction(req.user.userId, "Added new user", req.headers['user-agent'], JSON.stringify(newUserInfo));
 
     res.status(201).json({ id: userId, message: "User added successfully" });
   } catch (error) {
@@ -86,54 +91,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Login user
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log("Received login attempt for:", email); // Add logging for email
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Please provide both email and password." });
-    }
-
-    // Fetch user by email
-    const user = await User.getUserByEmail(email);
-    console.log("User fetched from DB:", user); // Log user from DB
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // Compare the password with the stored hashed password
-    const isMatch = await bcrypt.compare(password, user.Password);
-    if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.idUser }, "your-secret-key", {
-      expiresIn: "1d",
-    });
-
-    // Send the response with the token
-    res.json({
-      message: "Login successful",
-      userId: user.idUser,
-      fullName: user.Full_Name,
-      email: user.Email,
-      phoneNo: user.Phone_No,
-      status: user.Status,
-      token: token,
-    });
-  } catch (error) {
-    console.error("Error during login:", error); // Log any unexpected errors
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-// Get user profile
 const getProfile = async (req, res) => {
   try {
     console.log("User info from JWT:", req.user); // This should print user info like { userId: 2 }
@@ -146,7 +104,6 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Update user status
 const updateUserStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -190,6 +147,64 @@ const updateUserPassword = async (req, res) => {
     res.status(500).json({ message: "Error updating password" });
   }
 };
+const logAdminAction = async (adminId, action, deviceInfo, newUserInfo = null) => {
+  console.log("Logging action", { adminId, action, deviceInfo, newUserInfo }); // Add this line
+  const query = "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)";
+  await pool.query(query, [adminId, action, deviceInfo, newUserInfo]);
+};
+const getAdminLogs = async (req, res) => {
+  try {
+      const [logs] = await pool.query(
+          `
+          SELECT admin_logs.*, User.Full_Name AS Admin_Name,
+          admin_logs.new_user_info AS User_Details
+          FROM admin_logs
+          JOIN User ON admin_logs.admin_id = User.idUser
+          ORDER BY timestamp DESC
+          `
+      );
+      console.log("Admin Logs:", logs); // Log what you retrieve from the database
+      res.json(logs);
+  } catch (error) {
+      console.error("Error fetching admin logs:", error);
+      res.status(500).json({ error: "Database error" });
+  }
+};
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+      const user = await User.getUserByEmail(email);
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      const isMatch = await bcrypt.compare(password, user.Password);
+      if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
+
+      const token = jwt.sign({ userId: user.idUser }, "your-secret-key", {
+          expiresIn: "1d",
+      });
+
+      // Log the login action
+      await logAdminAction(user.idUser, "Logged In", req.headers['user-agent']);
+
+      res.json({
+          message: "Login successful",
+          userId: user.idUser,
+          fullName: user.Full_Name,
+          email: user.Email,
+          phoneNo: user.Phone_No,
+          status: user.Status,
+          token: token,
+      });
+  } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Logout function (optional, if you support logout)
+const logoutAdmin = async (adminId) => {
+  await logAdminAction(adminId, "Logged Out", "Logout");
+};
 
 module.exports = {
   getUsers,
@@ -201,4 +216,6 @@ module.exports = {
   getProfile,
   updateUserStatus,
   updateUserPassword,
+  logoutAdmin,
+  getAdminLogs
 };

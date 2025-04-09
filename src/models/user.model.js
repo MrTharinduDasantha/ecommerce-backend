@@ -8,7 +8,6 @@ const getAllUsers = async () => {
   return rows;
 };
 
-// Get user by ID
 const getUserById = async (id) => {
   console.log("Fetching user with ID:", id); // Log the ID being queried
   const [rows] = await pool.query("SELECT * FROM User WHERE idUser = ?", [id]);
@@ -16,7 +15,7 @@ const getUserById = async (id) => {
   return rows[0]; // Return the first row if found
 };
 
-// Add user
+// Add user to database
 const addUser = async (full_name, email, password, phone_no, status) => {
   const [result] = await pool.query(
     "INSERT INTO User (Full_Name, Email, Password, Phone_No, Status) VALUES (?, ?, ?, ?, ?)",
@@ -53,6 +52,6 @@ module.exports = {
   getUserById,
   addUser,
   updateUser,
-  deleteUser,
   getUserByEmail,
-};
+  deleteUser,
+}
