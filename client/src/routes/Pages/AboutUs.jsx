@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Slide } from 'react-awesome-reveal';
 import CountUp from 'react-countup';
-import Header from '../components/Header';
+import Navbar from '../components/Navbar/Navbar';
 import Footer from '../components/Footer';
 import WhyChooseUs from '../components/WhyChooseUs';
 import saleBanner from '../assets/sale-banner.jpg';
@@ -34,7 +34,7 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Navbar />
       <div className="flex-1 mt-[108px]">
         <div className="w-full flex justify-center">
           <img 
