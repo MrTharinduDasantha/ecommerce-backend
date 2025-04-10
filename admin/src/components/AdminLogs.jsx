@@ -86,6 +86,10 @@ const AdminLogs = () => {
                     case 'Deleted product':
                         detailsMessage += `\n\nDeleted Product Details:\n- ID: ${details.productId}\n- Description: ${details.description}`;
                         break;
+                    // Order status update action
+                    case 'Updated order status':
+                        detailsMessage += `\n\nOrder Status Update:\n- Order ID: ${details.orderId}\n- Customer: ${details.customerName}\n- Previous Status: ${details.previousStatus}\n- New Status: ${details.newStatus}\n- Order Total: $${details.orderTotal}`;
+                        break;
                     default:
                         if (typeof details === 'object') {
                             detailsMessage += '\n\nAdditional Details:';
@@ -112,7 +116,6 @@ const AdminLogs = () => {
     };
 
     const getActionStyle = (action) => {
-        // Add new action types for product-related actions
         switch (action) {
             case 'Logged In':
                 return 'bg-blue-100 text-blue-800';
@@ -135,6 +138,9 @@ const AdminLogs = () => {
             case 'Deleted subcategory':
             case 'Deleted product':
                 return 'bg-rose-100 text-rose-800';
+            // Order status update action
+            case 'Updated order status':
+                return 'bg-purple-100 text-purple-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
