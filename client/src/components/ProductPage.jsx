@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { products } from "./Products";
 import Banner from "../assets/banner.png";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { useCart } from "../context/CartContext";
 
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { addToCart, updateCartItem } = useCart();
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(0);
   const [activeTab, setActiveTab] = useState("details");
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState("");
+  const [isFromCart, setIsFromCart] = useState(false);
+  const [cartItem, setCartItem] = useState(null);
 
   useEffect(() => {
     const selectedProduct = products.find((p) => p.id === parseInt(id));
@@ -22,17 +27,67 @@ const ProductPage = () => {
       if (selectedProduct.variants[0]?.size) {
         setSelectedSize(selectedProduct.variants[0].size[0]);
       }
-      setQuantity(
-        selectedProduct.variants[selectedVariant].quantity > 0 ? 1 : 0
-      );
+      setQuantity(selectedProduct.variants[selectedVariant].quantity > 0 ? 1 : 0);
     }
-  }, [id]);
+
+    // Check if coming from cart
+    if (location.state?.fromCart) {
+      setIsFromCart(true);
+      setCartItem(location.state.selectedVariant);
+      // Set initial variant based on cart item
+      if (location.state.selectedVariant) {
+        const variantIndex = selectedProduct.variants.findIndex(
+          v => v.colorName === location.state.selectedVariant.color
+        );
+        if (variantIndex !== -1) {
+          setSelectedVariant(variantIndex);
+        }
+      }
+    }
+  }, [id, location.state]);
 
   useEffect(() => {
     if (product) {
       setQuantity(currentVariant.quantity > 0 ? 1 : 0);
     }
   }, [selectedVariant, product]);
+
+  const currentVariant = product?.variants[selectedVariant] || {};
+
+  const handleAddToCart = () => {
+    if (product && currentVariant.quantity > 0) {
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        image: mainImage,
+        price: `LKR ${currentVariant.price.toFixed(2)}`,
+        quantity: quantity,
+        size: selectedSize,
+        color: currentVariant.colorName || null,
+        colorCode: currentVariant.color || null
+      };
+      
+      if (isFromCart) {
+        // Update existing cart item
+        updateCartItem(cartItem);
+        navigate('/cart', { 
+          state: { 
+            selectedProduct: cartItem,
+            source: 'product-page'
+          } 
+        });
+      } else {
+        // Add new item to cart
+        addToCart(cartItem);
+        navigate('/cart', { 
+          state: { 
+            selectedProduct: cartItem,
+            source: 'product-page'
+          } 
+        });
+      }
+    }
+  };
 
   const renderRatingStars = () => {
     const stars = [];
@@ -65,8 +120,6 @@ const ProductPage = () => {
     .filter((p) => p.id !== parseInt(id))
     .slice(0, 4);
 
-  const currentVariant = product.variants[selectedVariant];
-
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       {/* Product Section */}
@@ -75,10 +128,11 @@ const ProductPage = () => {
         <div>
           <div
             className=" border rounded-lg overflow-hidden mb-4 mt-3"
-            style={{ maxWidth: "600px", maxHeight: "400px" }}
+            style={{ maxWidth: "600px", maxHeight: "400px", borderColor:"transparent" }}
           >
             <img
               src={mainImage}
+              style={{maxHeight: "400px"}}
               alt={product.name}
               className="w-full h-full object-cover"
             />
@@ -208,7 +262,7 @@ const ProductPage = () => {
               </button>
             </div>
 
-            {/* Add to Cart Button (already updated earlier) */}
+            {/* Add to Cart Button */}
             <button
               className={`${
                 currentVariant.quantity > 0
@@ -216,6 +270,7 @@ const ProductPage = () => {
                   : " cursor-not-allowed"
               } text-white bg-[#5CAF90] border-black border-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg w-full sm:w-auto text-center`}
               disabled={currentVariant.quantity <= 0}
+              onClick={handleAddToCart}
             >
               Add to Cart
             </button>

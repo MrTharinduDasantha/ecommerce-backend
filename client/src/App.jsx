@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-
+import OnSale from "./components/Pages/OnSale";
 import Home from "./routes/Home/Home";
 import Events from "./routes/Events/Events";
 import Footer from "./components/Footer/Footer";
@@ -11,20 +11,15 @@ import SignIn from "./Components/SignIn";
 import SignUp from "./Components/SignUp";
 import ForgotPassword from "./Components/ForgotPassword";
 import ResetPassword from "./Components/ResetPassword";
-import ProductPage from "./Components/ProductPage";
+import ProductPage from "./components/ProductPage";
 import OrderTracking from "./Components/OrderTracking";
-import Checkout from "./Components/Checkout";
+import Checkout from "./components/Checkout";
 import Profile from "./components/Pages/Profile";
 import AboutUs from "./components/Pages/AboutUs";
 import RushDelivery from "./components/Pages/RushDelivery";
 import ForYou from "./components/Pages/ForYou";
-import SeasonalOffers from "./Components/Pages/SeasonalOffers";
-import Cart from "./Components/Cart";
-// import Banner from "./Components/Banner";
-// import Sidebar from "./Components/Sidebar";
-// import WhyChooseUs from "./Components/WhyChooseUs";
-// import RushDeliveryBanner from "./Components/RushDeliveryBanner";
-// import CurrentOrders from "./Components/CurrentOrders";
+import SeasonalOffers from "./components/Pages/SeasonalOffers";
+import Cart from "./components/Cart";
 import { CartProvider } from "./context/CartContext";
 
 const App = () => {
@@ -42,6 +37,7 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/product-page/:id" element={<ProductPage />} />
         <Route path="/order-tracking/:id" element={<OrderTracking />} />
+        <Route path="/track-order" element={<OrderTracking />} />
         <Route path="/track-order/:id" element={<OrderTracking />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/rush-delivery" element={<RushDelivery />} />
@@ -50,7 +46,8 @@ const App = () => {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/seasonal-offers" element={<SeasonalOffers />} />
         <Route path="/ramadan" element={<SeasonalOffers />} />
-        <Route path="/for-you" element={<ForYou/>} />
+        <Route path="/for-you" element={<ForYou />} />
+        <Route path="/on-sale" element={<OnSale />} />
       </Routes>
       <Footer />
     </CartProvider>

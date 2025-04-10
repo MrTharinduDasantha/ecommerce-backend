@@ -11,7 +11,7 @@ import { products } from "./Products";
 import { useNavigate } from "react-router-dom";
 import OrderDetails from "./OrderDetails";
 
-const CheckoutPage = () => {
+const Checkout = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -107,7 +107,7 @@ const CheckoutPage = () => {
       totalAmount: total,
     });
     alert("Order placed successfully!");
-    navigate("/order-confirmation");
+    navigate("/");
   };
 
   const handleCancel = () => {
@@ -377,4 +377,4 @@ const CheckoutPage = () => {
   );
 };
 
-export default CheckoutPage;
+export default Checkout;

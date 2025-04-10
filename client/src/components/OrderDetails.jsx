@@ -6,8 +6,18 @@ const formatPrice = (price) => {
   return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-const OrderDetails = ({ cartItems, subtotal, discount, deliveryFee, total, orderInfo }) => {
+const OrderDetails = ({ cartItems, deliveryFee, orderInfo }) => {
   const navigate = useNavigate();
+
+  // Calculate subtotal and discount for single quantity
+  const subtotal = cartItems.reduce((sum, product) => sum + product.variants[0].price, 0);
+  const discount = cartItems.reduce((sum, product) => {
+    if (product.marketPrice > product.variants[0].price) {
+      return sum + (product.marketPrice - product.variants[0].price);
+    }
+    return sum;
+  }, 0);
+  const total = subtotal - discount + deliveryFee;
 
   return (
     <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-[#E8E8E8]">
@@ -21,7 +31,7 @@ const OrderDetails = ({ cartItems, subtotal, discount, deliveryFee, total, order
         <div className="mt-4 space-y-4">
           {cartItems.map((product) => (
             <div
-              key={`${product.id}-${product.variant.colorName || ''}-${product.variant.size ? product.variant.size[0] : ''}`}
+              key={`${product.id}-${product.variants.colorName || ''}-${product.variants.size ? product.variants.size[0] : ''}`}
               className="flex items-center space-x-4 bg-gray-100 rounded-lg p-3 cursor-pointer border border-[#E8E8E8]"
               onClick={() => navigate(`/product-page/${product.id}`)}
             >
@@ -33,29 +43,29 @@ const OrderDetails = ({ cartItems, subtotal, discount, deliveryFee, total, order
               <div className="min-w-0 flex-1">
                 <p className="font-medium truncate">{product.name}</p>
                 <div className="mt-1 space-y-1">
-                  {product.variant.size && (
+                  {product.variants.size && (
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Size:</span>{" "}
-                      {product.variant.size[0]}
+                      {product.variants.size[0]}
                     </p>
                   )}
-                  {product.variant.colorName && (
+                  {product.variants.colorName && (
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Color:</span>{" "}
-                      {product.variant.colorName}
+                      {product.variants.colorName}
                     </p>
                   )}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
-                  Qty: {product.quantity}
+                  Qty: 1
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-black font-semibold">
-                    {formatPrice(product.variant.price * product.quantity)} LKR
+                    {formatPrice(product.variants[0].price)} LKR
                   </p>
-                  {product.marketPrice > product.variant.price && (
+                  {product.marketPrice > product.variants[0].price && (
                     <p className="text-gray-500 line-through text-sm">
-                      {formatPrice(product.marketPrice * product.quantity)} LKR
+                      {formatPrice(product.marketPrice)} LKR
                     </p>
                   )}
                 </div>

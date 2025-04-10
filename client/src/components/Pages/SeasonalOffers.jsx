@@ -1,19 +1,10 @@
 import React, { useState } from 'react';
-import RoseVelvetCake from '../../assets/RamadanOffers/RoseVelvetCake.jpg';
-import ChocolateDelight from '../../assets/RamadanOffers/ChocolateDelight.jpg';
-import BerryDelight from '../../assets/RamadanOffers/BerryDelight.jpg';
-import CranberryDelight from '../../assets/RamadanOffers/CranberryDelight.jpg';
-import WonderChocolateTreat from '../../assets/RamadanOffers/WonderChocolateTreat.jpg';
-import WeddingCake from '../../assets/RamadanOffers/WeddingCake.jpg';
-import StrawberryTreat from '../../assets/RamadanOffers/StrawberryTreat.jpg';
-import FloralTouchDelight from '../../assets/RamadanOffers/FloralTouchDelight.jpg';
-import BlueberrySponge from '../../assets/RamadanOffers/BlueberrySponge.jpg';
-import FruitAndNuttyTreat from '../../assets/RamadanOffers/FruitAndNuttyTreat.jpg';
 import { useCart } from '../../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import Banner from '../Banner';
 import ProductCard from '../ProductCard';
+import { seasonalProducts } from '../SeasonalProducts';
 
 const SeasonalOffers = () => {
   const { addToCart } = useCart();
@@ -21,13 +12,16 @@ const SeasonalOffers = () => {
   const [addedProducts, setAddedProducts] = useState([]);
 
   const handleProductClick = (product) => {
+    // Navigate to product detail page
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleAddToCart = (product) => {
     // Add the product to cart
     addToCart(product);
     
     // Add to the list of added products
     setAddedProducts(prev => [...prev, product]);
-    
-    // Show a success message or notification here if desired
   };
 
   const handleViewCart = () => {
@@ -39,91 +33,6 @@ const SeasonalOffers = () => {
       } 
     });
   };
-
-  const products = [
-    // First Row
-    {
-      id: 101,
-      name: 'Rose Velvet Cake',
-      image: RoseVelvetCake,
-      price: 'Rs. 6,790',
-      weight: '3.1 Lbs',
-      oldPrice: 'Rs. 7,990'
-    },
-    {
-      id: 102,
-      name: 'Chocolate Delight',
-      image: ChocolateDelight,
-      price: 'Rs. 6,070',
-      weight: '1.98 Lbs',
-      oldPrice: 'Rs. 7,070'
-    },
-    {
-      id: 103,
-      name: 'Berry Delight',
-      image: BerryDelight,
-      price: 'Rs. 6,040',
-      weight: '2.2 Lbs',
-      oldPrice: 'Rs. 7,040'
-    },
-    {
-      id: 104,
-      name: 'Wonder Chocolate Treat',
-      image: WonderChocolateTreat,
-      price: 'Rs. 5,460',
-      weight: '2.33 Lbs',
-      oldPrice: 'Rs. 6,460'
-    },
-    {
-      id: 105,
-      name: 'Wedding Cake',
-      image: WeddingCake,
-      price: 'Rs. 6,650',
-      weight: '1.88 Lbs',
-      oldPrice: 'Rs. 7,650'
-    },
-    // Second Row
-    {
-      id: 106,
-      name: 'Strawberry Treat',
-      image: StrawberryTreat,
-      price: 'Rs. 6,290',
-      weight: '2.1 Lbs',
-      oldPrice: 'Rs. 7,290'
-    },
-    {
-      id: 107,
-      name: 'Cranberry Delight',
-      image: CranberryDelight,
-      price: 'Rs. 5,970',
-      weight: '2.3 Lbs',
-      oldPrice: 'Rs. 6,970'
-    },
-    {
-      id: 108,
-      name: 'Floral Touch Delight',
-      image: FloralTouchDelight,
-      price: 'Rs. 6,140',
-      weight: '2.5 Lbs',
-      oldPrice: 'Rs. 7,140'
-    },
-    {
-      id: 109,
-      name: 'Blueberry Sponge',
-      image: BlueberrySponge,
-      price: 'Rs. 5,860',
-      weight: '2.1 Lbs',
-      oldPrice: 'Rs. 6,860'
-    },
-    {
-      id: 110,
-      name: 'Fruit & Nutty Treat',
-      image: FruitAndNuttyTreat,
-      price: 'Rs. 6,450',
-      weight: '2.4 Lbs',
-      oldPrice: 'Rs. 7,450'
-    }
-  ];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -147,7 +56,7 @@ const SeasonalOffers = () => {
               )}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
-              {products.map((product) => (
+              {seasonalProducts.map((product) => (
                 <div 
                   key={product.id} 
                   className="cursor-pointer hover:scale-105 hover:shadow-lg transform transition-all duration-300"
@@ -155,11 +64,11 @@ const SeasonalOffers = () => {
                 >
                   <ProductCard 
                     image={product.image}
-                    category="Seasonal Offers"
+                    category={product.category}
                     title={product.name}
-                    price={product.price}
-                    oldPrice={product.oldPrice}
-                    weight={product.weight}
+                    price={`Rs. ${product.sellingPrice.toLocaleString()}`}
+                    oldPrice={`Rs. ${product.marketPrice.toLocaleString()}`}
+                    weight={product.variants[0].size}
                   />
                 </div>
               ))}

@@ -51,6 +51,16 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  const updateCartItem = (updatedItem) => {
+    setCartItems(prevItems =>
+      prevItems.map(item =>
+        item.id === updatedItem.id
+          ? { ...updatedItem }
+          : item
+      )
+    );
+  };
+
   const clearCart = () => {
     setCartItems([]);
   };
@@ -60,6 +70,7 @@ export const CartProvider = ({ children }) => {
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateCartItem,
     clearCart
   };
 

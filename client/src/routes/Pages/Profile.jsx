@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../components/Header';
+import Navbar from '../components/Navbar/Navbar';
 import Footer from '../components/Footer';
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -113,7 +113,7 @@ const Profile = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 w-full flex flex-col">
-            <Header />
+            <Navbar />
             <div className="flex-1 px-4 py-8 mt-[20px]">
                 <div className="flex flex-col lg:flex-row gap-8 max-w-[1400px] mx-auto">
                     {/* Left Column - Profile */}

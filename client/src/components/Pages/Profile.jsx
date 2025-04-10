@@ -22,10 +22,35 @@ const Profile = () => {
     const [showAddSuccessMessage, setShowAddSuccessMessage] = React.useState(false);
     const [showProfileSuccessMessage, setShowProfileSuccessMessage] = React.useState(false);
     const [newAddress, setNewAddress] = React.useState('');
-    const [editingAddress, setEditingAddress] = React.useState({ id: null, address: '' });
+    const [newAddressDetails, setNewAddressDetails] = React.useState({
+        address: '',
+        city: '',
+        country: '',
+        mobile: ''
+    });
+    const [formErrors, setFormErrors] = React.useState({
+        address: '',
+        city: '',
+        country: '',
+        mobile: ''
+    });
+    const [editingAddress, setEditingAddress] = React.useState({ 
+        id: null, 
+        address: '',
+        city: '',
+        country: '',
+        mobile: ''
+    });
     const [addressToDelete, setAddressToDelete] = React.useState(null);
     const [addresses, setAddresses] = React.useState([
-        { id: 1, address: '104/piliyandala.boralasgomuwa', isMain: true }
+        { 
+            id: 1, 
+            address: '104/piliyandala.boralasgomuwa', 
+            city: 'Colombo',
+            country: 'Sri Lanka',
+            mobile: '0701234567',
+            isMain: true 
+        }
     ]);
     const [profileData, setProfileData] = React.useState({
         name: 'Sarah Jasmine',
@@ -36,11 +61,75 @@ const Profile = () => {
         password: '************************'
     });
 
+    const [profileErrors, setProfileErrors] = React.useState({
+        name: '',
+        contactNo: '',
+        email: '',
+        address: '',
+        dateOfBirth: '',
+        password: ''
+    });
+
+    const validateForm = () => {
+        let isValid = true;
+        const errors = {
+            address: '',
+            city: '',
+            country: '',
+            mobile: ''
+        };
+
+        if (!newAddressDetails.address.trim()) {
+            errors.address = 'Address is required';
+            isValid = false;
+        }
+
+        if (!newAddressDetails.city.trim()) {
+            errors.city = 'City is required';
+            isValid = false;
+        }
+
+        if (!newAddressDetails.country.trim()) {
+            errors.country = 'Country is required';
+            isValid = false;
+        }
+
+        if (!newAddressDetails.mobile.trim()) {
+            errors.mobile = 'Mobile number is required';
+            isValid = false;
+        } else if (!/^\d{10}$/.test(newAddressDetails.mobile.trim())) {
+            errors.mobile = 'Mobile number must be exactly 10 digits';
+            isValid = false;
+        }
+
+        setFormErrors(errors);
+        return isValid;
+    };
+
     const handleAddAddress = () => {
-        if (newAddress.trim()) {
+        if (validateForm()) {
             const newId = Math.max(...addresses.map(a => a.id), 0) + 1;
-            setAddresses(prevAddresses => [...prevAddresses, { id: newId, address: newAddress.trim(), isMain: false }]);
-            setNewAddress('');
+            const formattedAddress = `${newAddressDetails.address.trim()}, ${newAddressDetails.city.trim()}, ${newAddressDetails.country.trim()}`;
+            setAddresses(prevAddresses => [...prevAddresses, { 
+                id: newId, 
+                address: formattedAddress,
+                city: newAddressDetails.city.trim(),
+                country: newAddressDetails.country.trim(),
+                mobile: newAddressDetails.mobile.trim(),
+                isMain: false 
+            }]);
+            setNewAddressDetails({
+                address: '',
+                city: '',
+                country: '',
+                mobile: ''
+            });
+            setFormErrors({
+                address: '',
+                city: '',
+                country: '',
+                mobile: ''
+            });
 
             // Show success message
             setShowAddSuccessMessage(true);
@@ -53,10 +142,19 @@ const Profile = () => {
         }
     };
 
-    const handleEditAddress = (id, address) => {
-        setEditingAddress({ id, address });
-        setIsEditAddressModalOpen(true);
-        setShowSuccessMessage(false);
+    const handleEditAddress = (id) => {
+        const addressToEdit = addresses.find(addr => addr.id === id);
+        if (addressToEdit) {
+            setEditingAddress({
+                id: addressToEdit.id,
+                address: addressToEdit.address,
+                city: addressToEdit.city,
+                country: addressToEdit.country,
+                mobile: addressToEdit.mobile
+            });
+            setIsEditAddressModalOpen(true);
+            setShowSuccessMessage(false);
+        }
     };
 
     const handleDeleteAddress = (id) => {
@@ -97,11 +195,17 @@ const Profile = () => {
     };
 
     const handleUpdateAddress = () => {
-        if (editingAddress.address.trim()) {
+        if (validateEditForm()) {
             setAddresses(prevAddresses =>
                 prevAddresses.map(addr =>
                     addr.id === editingAddress.id
-                        ? { ...addr, address: editingAddress.address.trim() }
+                        ? { 
+                            ...addr, 
+                            address: editingAddress.address.trim(),
+                            city: editingAddress.city.trim(),
+                            country: editingAddress.country.trim(),
+                            mobile: editingAddress.mobile.trim()
+                        }
                         : addr
                 )
             );
@@ -121,10 +225,46 @@ const Profile = () => {
             // Close the modal after a delay
             setTimeout(() => {
                 setIsEditAddressModalOpen(false);
-                setEditingAddress({ id: null, address: '' });
+                setEditingAddress({ id: null, address: '', city: '', country: '', mobile: '' });
                 setShowSuccessMessage(false);
             }, 1500);
         }
+    };
+
+    const validateEditForm = () => {
+        let isValid = true;
+        const errors = {
+            address: '',
+            city: '',
+            country: '',
+            mobile: ''
+        };
+
+        if (!editingAddress.address.trim()) {
+            errors.address = 'Address is required';
+            isValid = false;
+        }
+
+        if (!editingAddress.city.trim()) {
+            errors.city = 'City is required';
+            isValid = false;
+        }
+
+        if (!editingAddress.country.trim()) {
+            errors.country = 'Country is required';
+            isValid = false;
+        }
+
+        if (!editingAddress.mobile.trim()) {
+            errors.mobile = 'Mobile number is required';
+            isValid = false;
+        } else if (!/^\d{10}$/.test(editingAddress.mobile.trim())) {
+            errors.mobile = 'Mobile number must be exactly 10 digits';
+            isValid = false;
+        }
+
+        setFormErrors(errors);
+        return isValid;
     };
 
     const handleSetMainAddress = (id) => {
@@ -144,34 +284,108 @@ const Profile = () => {
         }
     };
 
-    const handleProfileUpdate = () => {
-        // Update the main address in the addresses list
-        if (profileData.address) {
-            setAddresses(prevAddresses =>
-                prevAddresses.map(addr =>
-                    addr.isMain
-                        ? { ...addr, address: profileData.address }
-                        : addr
-                )
-            );
+    const validateProfileForm = () => {
+        let isValid = true;
+        const errors = {
+            name: '',
+            contactNo: '',
+            email: '',
+            address: '',
+            dateOfBirth: '',
+            password: ''
+        };
+
+        // Name validation
+        if (!profileData.name.trim()) {
+            errors.name = 'Name is required';
+            isValid = false;
         }
 
-        // Show success message
-        setShowProfileSuccessMessage(true);
+        // Contact number validation
+        if (!profileData.contactNo.trim()) {
+            errors.contactNo = 'Contact number is required';
+            isValid = false;
+        } else if (!/^\d{10}$/.test(profileData.contactNo.trim())) {
+            errors.contactNo = 'Mobile number must be 10 digits';
+            isValid = false;
+        }
 
-        // Close the modal after a delay
-        setTimeout(() => {
-            setIsEditProfileOpen(false);
-            setShowProfileSuccessMessage(false);
-        }, 1500);
+        // Email validation
+        if (!profileData.email.trim()) {
+            errors.email = 'Email is required';
+            isValid = false;
+        } else if (!profileData.email.includes('@')) {
+            errors.email = '@ is missing in email';
+            isValid = false;
+        }
+
+        // Address validation
+        if (!profileData.address.trim()) {
+            errors.address = 'Address is required';
+            isValid = false;
+        }
+
+        // Date of birth validation
+        if (!profileData.dateOfBirth.trim()) {
+            errors.dateOfBirth = 'Date of birth is required';
+            isValid = false;
+        }
+
+        // Password validation
+        if (!profileData.password.trim()) {
+            errors.password = 'Password is required';
+            isValid = false;
+        }
+
+        setProfileErrors(errors);
+        return isValid;
     };
 
-    const handleInputChange = (e) => {
+    const handleProfileUpdate = () => {
+        if (validateProfileForm()) {
+            // Update the main address in the addresses list
+            if (profileData.address) {
+                setAddresses(prevAddresses =>
+                    prevAddresses.map(addr =>
+                        addr.isMain
+                            ? { ...addr, address: profileData.address }
+                            : addr
+                    )
+                );
+            }
+
+            // Show success message
+            setShowProfileSuccessMessage(true);
+
+            // Close the modal after a delay
+            setTimeout(() => {
+                setIsEditProfileOpen(false);
+                setShowProfileSuccessMessage(false);
+            }, 1500);
+        }
+    };
+
+    const handleProfileInputChange = (e) => {
         const { name, value } = e.target;
         setProfileData(prev => ({
             ...prev,
             [name]: value
         }));
+        // Clear error when user starts typing
+        if (profileErrors[name]) {
+            setProfileErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    const handleInputChange = (field, value) => {
+        setNewAddressDetails(prev => ({...prev, [field]: value}));
+        // Clear error when user starts typing
+        if (formErrors[field]) {
+            setFormErrors(prev => ({...prev, [field]: ''}));
+        }
     };
 
     return (
@@ -228,35 +442,37 @@ const Profile = () => {
                                     <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
                                         <LocationOnIcon className="text-gray-500" style={{ fontSize: '20px' }} />
                                     </div>
-                                    <span className="w-20 mr-2 text-gray-600">Address</span>
-                                    <span className="text-gray-800 pr-4 whitespace-pre-line pl-0">
-                                        {(() => {
-                                            const mainAddress = addresses.find(addr => addr.isMain)?.address || profileData.address;
-                                            const parts = mainAddress.split(/[.,/]/).map(part => part.trim()).filter(part => part);
+                                    <span className="w-24 text-gray-600">Address</span>
+                                    <div className="flex-1">
+                                        <span className="text-gray-800 whitespace-pre-line">
+                                            {(() => {
+                                                const mainAddress = addresses.find(addr => addr.isMain)?.address || profileData.address;
+                                                const parts = mainAddress.split(/[.,/]/).map(part => part.trim()).filter(part => part);
 
-                                            // If we have more than 2 parts, combine all but the first into the second line
-                                            if (parts.length > 2) {
-                                                return (
-                                                    <>
-                                                        {parts[0]}
-                                                        {'\n'}
-                                                        {parts.slice(1).join(', ')}
-                                                    </>
-                                                );
-                                            } else if (parts.length === 2) {
-                                                return (
-                                                    <>
-                                                        {parts[0]}
-                                                        {'\n'}
-                                                        {parts[1]}
-                                                    </>
-                                                );
-                                            } else {
-                                                // If we only have one part, display it on one line
-                                                return parts[0];
-                                            }
-                                        })()}
-                                    </span>
+                                                // If we have more than 2 parts, combine all but the first into the second line
+                                                if (parts.length > 2) {
+                                                    return (
+                                                        <>
+                                                            {parts[0]}
+                                                            {'\n'}
+                                                            {parts.slice(1).join(', ')}
+                                                        </>
+                                                    );
+                                                } else if (parts.length === 2) {
+                                                    return (
+                                                        <>
+                                                            {parts[0]}
+                                                            {'\n'}
+                                                            {parts[1]}
+                                                        </>
+                                                    );
+                                                } else {
+                                                    // If we only have one part, display it on one line
+                                                    return parts[0];
+                                                }
+                                            })()}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="pt-4">
                                     <button
@@ -269,34 +485,33 @@ const Profile = () => {
                                 </div>
                                 <div className="space-y-2 mt-4">
                                     {addresses.map((addr) => (
-                                        <div key={addr.id} className="flex items-center space-x-2 bg-gray-50 p-3 rounded hover:bg-gray-100 transition-all duration-300">
+                                        <div key={addr.id} className="flex items-start space-x-2 bg-gray-50 p-3 rounded hover:bg-gray-100 transition-all duration-300">
                                             <input
                                                 type="radio"
                                                 name="mainAddress"
                                                 checked={addr.isMain}
                                                 onChange={() => handleSetMainAddress(addr.id)}
-                                                className="text-[#5CAF90] focus:ring-[#5CAF90]"
+                                                className="mt-1 text-[#5CAF90] focus:ring-[#5CAF90]"
                                             />
-                                            <span className="text-gray-800 whitespace-pre-line flex-grow">
-                                                {addr.address.split(/[.,/]/).map((part, index, array) => (
-                                                    <React.Fragment key={index}>
-                                                        {part.trim()}
-                                                        {index < array.length - 1 && '\n'}
-                                                    </React.Fragment>
-                                                ))}
-                                            </span>
-                                            <button
-                                                onClick={() => handleEditAddress(addr.id, addr.address)}
-                                                className="text-gray-500 hover:text-[#5CAF90] hover:scale-110 transition-all duration-300"
-                                            >
-                                                <EditIcon fontSize="small" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteAddress(addr.id)}
-                                                className="text-gray-500 hover:text-red-500 hover:scale-110 transition-all duration-300"
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </button>
+                                            <div className="flex-grow">
+                                                <p className="text-gray-800">{addr.address}</p>
+                                                <p className="text-gray-600 text-sm">{addr.city}, {addr.country}</p>
+                                                <p className="text-gray-600 text-sm">Mobile: {addr.mobile}</p>
+                                            </div>
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    onClick={() => handleEditAddress(addr.id)}
+                                                    className="text-gray-500 hover:text-[#5CAF90] hover:scale-110 transition-all duration-300"
+                                                >
+                                                    <EditIcon fontSize="small" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteAddress(addr.id)}
+                                                    className="text-gray-500 hover:text-red-500 hover:scale-110 transition-all duration-300"
+                                                >
+                                                    <DeleteIcon fontSize="small" />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -334,64 +549,97 @@ const Profile = () => {
                             ) : (
                                 <>
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Name</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Name <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="text"
                                             name="name"
                                             value={profileData.name}
-                                            onChange={handleInputChange}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                            onChange={handleProfileInputChange}
+                                            className={`w-full p-3 border ${profileErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]`}
                                         />
+                                        {profileErrors.name && (
+                                            <p className="text-red-500 text-sm mt-1">{profileErrors.name}</p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Contact No</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Contact No <span className="text-red-500">*</span>
+                                        </label>
                                         <input
-                                            type="text"
+                                            type="tel"
                                             name="contactNo"
                                             value={profileData.contactNo}
-                                            onChange={handleInputChange}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                            onChange={handleProfileInputChange}
+                                            className={`w-full p-3 border ${profileErrors.contactNo ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]`}
+                                            maxLength="10"
+                                            pattern="\d{10}"
                                         />
+                                        <p className="text-gray-500 text-xs mt-1">Mobile number must be 10 digits</p>
+                                        {profileErrors.contactNo && (
+                                            <p className="text-red-500 text-sm mt-1">{profileErrors.contactNo}</p>
+                                        )}
                                     </div>
                                     <div>
-                                            <label className="block text-gray-700 mb-2">Email</label> {/* Added email input */}
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={profileData.email}
-                                                onChange={handleInputChange}
-                                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
-                                            />
-                                        </div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Email <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={profileData.email}
+                                            onChange={handleProfileInputChange}
+                                            className={`w-full p-3 border ${profileErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]`}
+                                        />
+                                        {profileErrors.email && (
+                                            <p className="text-red-500 text-sm mt-1">{profileErrors.email}</p>
+                                        )}
+                                    </div>
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Address</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Address <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="text"
                                             name="address"
                                             value={profileData.address}
-                                            onChange={handleInputChange}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                            onChange={handleProfileInputChange}
+                                            className={`w-full p-3 border ${profileErrors.address ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]`}
                                         />
+                                        {profileErrors.address && (
+                                            <p className="text-red-500 text-sm mt-1">{profileErrors.address}</p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Date of birth</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Date of birth <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="text"
                                             name="dateOfBirth"
                                             value={profileData.dateOfBirth}
-                                            onChange={handleInputChange}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                            onChange={handleProfileInputChange}
+                                            className={`w-full p-3 border ${profileErrors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]`}
                                         />
+                                        {profileErrors.dateOfBirth && (
+                                            <p className="text-red-500 text-sm mt-1">{profileErrors.dateOfBirth}</p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Change Password</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Change Password <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="password"
                                             name="password"
                                             value={profileData.password}
-                                            onChange={handleInputChange}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                            onChange={handleProfileInputChange}
+                                            className={`w-full p-3 border ${profileErrors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]`}
                                         />
+                                        {profileErrors.password && (
+                                            <p className="text-red-500 text-sm mt-1">{profileErrors.password}</p>
+                                        )}
                                     </div>
                                     <div className="flex justify-center space-x-4 mt-6">
                                         <button
@@ -437,18 +685,72 @@ const Profile = () => {
                                 <>
                                     <div>
                                         <label htmlFor="newAddress" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Address
+                                            Address <span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             id="newAddress"
-                                            value={newAddress}
-                                            onChange={(e) => setNewAddress(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent"
+                                            value={newAddressDetails.address}
+                                            onChange={(e) => handleInputChange('address', e.target.value)}
+                                            className={`w-full px-3 py-2 border ${formErrors.address ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
                                             rows="3"
-                                            placeholder="Enter your address"
+                                            placeholder="Enter your street address"
                                         />
+                                        {formErrors.address && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.address}</p>
+                                        )}
                                     </div>
-                                    <div className="flex justify-end space-x-3">
+                                    <div>
+                                        <label htmlFor="newCity" className="block text-sm font-medium text-gray-700 mb-1">
+                                            City <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="newCity"
+                                            value={newAddressDetails.city}
+                                            onChange={(e) => handleInputChange('city', e.target.value)}
+                                            className={`w-full px-3 py-2 border ${formErrors.city ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                                            placeholder="Enter your city"
+                                        />
+                                        {formErrors.city && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="newCountry" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Country <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="newCountry"
+                                            value={newAddressDetails.country}
+                                            onChange={(e) => handleInputChange('country', e.target.value)}
+                                            className={`w-full px-3 py-2 border ${formErrors.country ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                                            placeholder="Enter your country"
+                                        />
+                                        {formErrors.country && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.country}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label htmlFor="newMobile" className="block text-sm font-medium text-gray-700">
+                                            Mobile No <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            id="newMobile"
+                                            value={newAddressDetails.mobile}
+                                            onChange={(e) => handleInputChange('mobile', e.target.value)}
+                                            className={`w-full px-3 py-2 border ${formErrors.mobile ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                                            placeholder="Enter your mobile number"
+                                            maxLength="10"
+                                            pattern="\d{10}"
+                                        />
+                                        <p className="text-gray-500 text-xs">Mobile number must be 10 digits</p>
+                                        {formErrors.mobile && (
+                                            <p className="text-red-500 text-sm">{formErrors.mobile}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-end space-x-3 mt-6">
                                         <button
                                             onClick={() => setIsAddAddressModalOpen(false)}
                                             className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-all duration-300"
@@ -492,16 +794,70 @@ const Profile = () => {
                                 <>
                                     <div>
                                         <label htmlFor="editAddress" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Address
+                                            Address <span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             id="editAddress"
                                             value={editingAddress.address}
                                             onChange={(e) => setEditingAddress(prev => ({ ...prev, address: e.target.value }))}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent"
+                                            className={`w-full px-3 py-2 border ${formErrors.address ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
                                             rows="3"
                                             placeholder="Enter your address"
                                         />
+                                        {formErrors.address && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.address}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="editCity" className="block text-sm font-medium text-gray-700 mb-1">
+                                            City <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="editCity"
+                                            value={editingAddress.city}
+                                            onChange={(e) => setEditingAddress(prev => ({ ...prev, city: e.target.value }))}
+                                            className={`w-full px-3 py-2 border ${formErrors.city ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                                            placeholder="Enter your city"
+                                        />
+                                        {formErrors.city && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="editCountry" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Country <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="editCountry"
+                                            value={editingAddress.country}
+                                            onChange={(e) => setEditingAddress(prev => ({ ...prev, country: e.target.value }))}
+                                            className={`w-full px-3 py-2 border ${formErrors.country ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                                            placeholder="Enter your country"
+                                        />
+                                        {formErrors.country && (
+                                            <p className="text-red-500 text-sm mt-1">{formErrors.country}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label htmlFor="editMobile" className="block text-sm font-medium text-gray-700">
+                                            Mobile No <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            id="editMobile"
+                                            value={editingAddress.mobile}
+                                            onChange={(e) => setEditingAddress(prev => ({ ...prev, mobile: e.target.value }))}
+                                            className={`w-full px-3 py-2 border ${formErrors.mobile ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                                            placeholder="Enter your mobile number"
+                                            maxLength="10"
+                                            pattern="\d{10}"
+                                        />
+                                        <p className="text-gray-500 text-xs">Mobile number must be 10 digits</p>
+                                        {formErrors.mobile && (
+                                            <p className="text-red-500 text-sm">{formErrors.mobile}</p>
+                                        )}
                                     </div>
                                     <div className="flex justify-end space-x-3 mt-6">
                                         <button
