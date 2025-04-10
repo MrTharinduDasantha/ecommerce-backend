@@ -54,13 +54,13 @@ export const getOrderById = async (orderId) => {
 };
 
 // Update order status
-export const updateOrderStatus = async (orderId, status) => {
+export const updateOrderStatus = async (orderId, status, customerName, orderTotal) => {
   try {
     const token = getToken();
     console.log('Using token for updateOrderStatus:', token);
     
     const response = await axios.put(`${API_URL}/${orderId}/status`, 
-      { status },
+      { status, customerName, orderTotal },
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -72,4 +72,4 @@ export const updateOrderStatus = async (orderId, status) => {
     console.error('Error updating order status:', error);
     throw error.response?.data || { message: 'Failed to update order status' };
   }
-}; 
+};

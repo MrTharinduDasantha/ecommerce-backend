@@ -88,26 +88,23 @@ const UsersManagedForm = () => {
           const response = await api.addUser(newUser);
           
           // Update local state with new user data
-          setUsers([...users, { id: response.id, ...newUser }]);
+          setUsers([...users, { 
+            idUser: response.id,
+            Full_Name: newUser.full_name,
+            Email: newUser.email,
+            Phone_No: newUser.phone_no,
+            Status: newUser.status,
+            created_at: new Date(),
+            updated_at: new Date()
+          }]);
           
           // Show success message
           toast.success("User has been added successfully!");
-  
-          // Log admin action with new user details
-          await api.logAdminAction("Added new admin", { // Ensure this API endpoint exists
-            name: newUser.full_name,
-            email: newUser.email,
-            phone: newUser.phone_no,
-          });
         } catch (error) {
           console.error("Error adding user:", error);
           toast.error("There was an issue adding the user.");
         }
       }
-    });
-  
-    document.getElementById("close-modal")?.addEventListener("click", () => {
-      Swal.close();
     });
   };
 
@@ -125,7 +122,6 @@ const UsersManagedForm = () => {
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 ml-5">
           <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">
-            {" "}
             Admin Details
           </h2>
           <button

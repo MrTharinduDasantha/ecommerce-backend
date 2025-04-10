@@ -58,7 +58,12 @@ const OrderDetails = () => {
       setStatusError(null);
       setStatusUpdateSuccess(false);
       
-      await updateOrderStatus(orderId, selectedStatus);
+      await updateOrderStatus(
+        orderId, 
+        selectedStatus,
+        orderDetails.order.Full_Name,
+        orderDetails.order.Total_Amount
+      );
       
       // Re-fetch the order details to get the updated status
       await fetchOrderDetails();
@@ -75,6 +80,7 @@ const OrderDetails = () => {
       setUpdatingStatus(false);
     }
   };
+  
 
   const handleStatusSelect = (status) => {
     setSelectedStatus(status);
