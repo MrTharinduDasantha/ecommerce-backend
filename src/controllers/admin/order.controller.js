@@ -1,4 +1,5 @@
 const Order = require('../../models/order.model');
+const pool = require('../../config/database');
 
 // Admin Orders Controller
 class OrderController {
@@ -22,6 +23,7 @@ class OrderController {
         }
       });
     } catch (error) {
+      console.error('Error in getAllOrders:', error);
       res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
     }
   }
@@ -60,23 +62,57 @@ class OrderController {
   // Update order status
   async updateOrderStatus(req, res) {
     try {
-      const { status } = req.body;
+      const { status, customerName, orderTotal } = req.body;
+      const orderId = req.params.id;
       
       if (!['Order Confirmed', 'Order Packed', 'Awaiting Delivery', 'Out for Delivery', 'Delivered'].includes(status)) {
         return res.status(400).json({ message: 'Invalid status' });
       }
+
+      // Get the current order status
+      const [currentOrder] = await pool.query(
+        'SELECT Status FROM `Order` WHERE idOrder = ?',
+        [orderId]
+      );
+
+      if (!currentOrder.length) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+
+      const previousStatus = currentOrder[0].Status;
       
-      const affectedRows = await Order.updateStatus(req.params.id, status);
+      // Update the order status
+      const affectedRows = await Order.updateStatus(orderId, status);
       
       if (affectedRows === 0) {
         return res.status(404).json({ message: 'Order not found' });
       }
+
+      // Log the admin action
+      const logData = {
+        orderId,
+        customerName,
+        previousStatus,
+        newStatus: status,
+        orderTotal
+      };
+
+      await pool.query(
+        'INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)',
+        [
+          req.user.userId,
+          'Updated order status',
+          req.headers['user-agent'],
+          JSON.stringify(logData)
+        ]
+      );
       
       res.json({ message: 'Order status updated successfully' });
     } catch (error) {
+      console.error('Error in updateOrderStatus:', error);
       res.status(500).json({ message: 'Failed to update order status', error: error.message });
     }
   }
 }
 
-module.exports = new OrderController(); 
+module.exports = new OrderController();

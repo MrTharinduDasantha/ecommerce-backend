@@ -13,7 +13,7 @@ import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
-import Header from '../components/Header';
+import Navbar from '../components/Navbar/Navbar';
 import RushDeliveryBanner from '../components/RushDeliveryBanner';
 // Update Rush
 const RushDelivery = () => {
@@ -102,7 +102,7 @@ const RushDelivery = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Navbar />
       <div className="container mx-auto px-4 py-8 flex-grow">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
