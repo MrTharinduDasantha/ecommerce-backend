@@ -512,9 +512,6 @@ const CustomerManagedForm = () => {
       <Modal isOpen={isModalOpen} onClose={closeModal} details={modalDetails} />
       <Toaster position="top-right" />
     </div>
-    </div>
-    </div>
-    </div>
   );
 };
 
