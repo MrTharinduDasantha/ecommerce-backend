@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { TbDashboardFilled } from "react-icons/tb";
 import { GiShoppingBag } from "react-icons/gi";
 import { FaSignOutAlt, FaUsers } from "react-icons/fa";
-import { MdDeliveryDining } from "react-icons/md";
+import { MdDeliveryDining, MdDiscount } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
 import { IoMdSettings } from "react-icons/io";
 import { AuthContext } from "../context/AuthContext";
@@ -17,9 +17,11 @@ const Sidebar = ({ isSidebarOpen }) => {
   // Submenu states
   const [isProductSubMenuOpen, setIsProductSubMenuOpen] = useState(false);
   const [isUsersSubMenuOpen, setIsUsersSubMenuOpen] = useState(false);
+  const [isDiscountSubMenuOpen, setIsDiscountSubMenuOpen] = useState(false);
 
   // Determine active states
   const isManageProductsActive = location.pathname.includes("products/");
+  const isManageDiscountsActive = location.pathname.includes("discounts/");
   const isManageUsersActive =
     location.pathname.includes("users_managed-form") ||
     location.pathname.includes("customer-managed-form") ||
@@ -29,6 +31,10 @@ const Sidebar = ({ isSidebarOpen }) => {
   // Toggle submenu functions
   const toggleProductSubMenu = () => {
     setIsProductSubMenuOpen(!isProductSubMenuOpen);
+  };
+
+  const toggleDiscountSubMenu = () => {
+    setIsDiscountSubMenuOpen(!isDiscountSubMenuOpen);
   };
 
   const toggleUsersSubMenu = () => {
@@ -118,6 +124,51 @@ const Sidebar = ({ isSidebarOpen }) => {
                     }
                   >
                     All Products
+                  </NavLink>
+                </li>
+              </ul>
+            </details>
+          </li>
+
+          {/* Manage Discounts */}
+          <li className="menu-collapse">
+            <details open={isDiscountSubMenuOpen || isManageDiscountsActive}>
+              <summary
+                onClick={toggleDiscountSubMenu}
+                className={`flex items-center justify-between gap-3 py-2 hover:bg-[#5CAF90] transition-colors cursor-pointer ${
+                  isManageDiscountsActive
+                    ? "bg-[#5CAF90] text-white font-medium"
+                    : ""
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <MdDiscount className="w-4 h-4" />
+                  <span>Manage Discounts</span>
+                </div>
+              </summary>
+              <ul className="menu-sub pl-4 mt-1">
+                <li>
+                  <NavLink
+                    to="discounts/add-discount"
+                    className={({ isActive }) =>
+                      `py-1.5 hover:bg-[#5CAF90] hover:text-white transition-colors ${
+                        isActive ? "text-[#5CAF90] font-medium" : ""
+                      }`
+                    }
+                  >
+                    Add Discount
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="discounts/all-discounts"
+                    className={({ isActive }) =>
+                      `py-1.5 hover:bg-[#5CAF90] hover:text-white transition-colors ${
+                        isActive ? "text-[#5CAF90] font-medium" : ""
+                      }`
+                    }
+                  >
+                    All Discounts
                   </NavLink>
                 </li>
               </ul>

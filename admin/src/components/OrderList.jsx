@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getOrders, updateOrderStatus } from '../api/orders';
-import { FiEye } from 'react-icons/fi';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getOrders, updateOrderStatus } from "../api/orders";
+import { FiEye } from "react-icons/fi";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
@@ -20,17 +20,17 @@ const OrderList = () => {
     try {
       setLoading(true);
       setError(null); // Clear any previous errors
-      console.log('Fetching orders, page:', currentPage);
-      
+      console.log("Fetching orders, page:", currentPage);
+
       const data = await getOrders(currentPage);
-      console.log('Orders data received:', data);
-      
+      console.log("Orders data received:", data);
+
       setOrders(data.orders);
       setTotalPages(data.pagination.totalPages);
       setLoading(false);
     } catch (err) {
-      console.error('Error in OrderList.fetchOrders:', err);
-      setError(err.message || 'Failed to fetch orders');
+      console.error("Error in OrderList.fetchOrders:", err);
+      setError(err.message || "Failed to fetch orders");
       setLoading(false);
     }
   };
@@ -49,36 +49,36 @@ const OrderList = () => {
     try {
       setUpdatingStatus(orderId);
       await updateOrderStatus(orderId, newStatus);
-      
+
       // Update the orders list locally
-      setOrders(orders.map(order => 
-        order.idOrder === orderId 
-          ? { ...order, Status: newStatus } 
-          : order
-      ));
-      
+      setOrders(
+        orders.map((order) =>
+          order.idOrder === orderId ? { ...order, Status: newStatus } : order
+        )
+      );
+
       setUpdatingStatus(null);
     } catch (err) {
-      console.error('Failed to update order status:', err);
-      setError('Failed to update order status');
+      console.error("Failed to update order status:", err);
+      setError("Failed to update order status");
       setUpdatingStatus(null);
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Order Confirmed':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Order Packed':
-        return 'bg-blue-100 text-blue-800';
-      case 'Awaiting Delivery':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'Out for Delivery':
-        return 'bg-purple-100 text-purple-800';
-      case 'Delivered':
-        return 'bg-green-100 text-green-800';
+      case "Order Confirmed":
+        return "bg-yellow-100 text-yellow-800";
+      case "Order Packed":
+        return "bg-blue-100 text-blue-800";
+      case "Awaiting Delivery":
+        return "bg-indigo-100 text-indigo-800";
+      case "Out for Delivery":
+        return "bg-purple-100 text-purple-800";
+      case "Delivered":
+        return "bg-green-100 text-green-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -94,8 +94,8 @@ const OrderList = () => {
     return (
       <div className="text-center py-8">
         <p className="text-red-500 text-lg">{error}</p>
-        <button 
-          onClick={fetchOrders} 
+        <button
+          onClick={fetchOrders}
           className="mt-4 bg-[#a3fe00] text-[#2d2d2d] px-4 py-2 rounded hover:bg-opacity-90"
         >
           Try Again
@@ -107,34 +107,61 @@ const OrderList = () => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold mb-6 text-[#1D372E]">Manage Orders</h1>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-[#1D372E]">
           <thead className="text-xs uppercase bg-[#5CAF90] text-white">
             <tr>
-              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">Tracking No</th>
-              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 hidden sm:table-cell">Order Date & Time</th>
-              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">Order Name</th>
-              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 hidden sm:table-cell">Price</th>
-              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 hidden md:table-cell">Delivery Date</th>
-              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">Order Status</th>
-              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">Action</th>
+              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">
+                Tracking No
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 sm:px-6 sm:py-3 hidden sm:table-cell"
+              >
+                Order Date & Time
+              </th>
+              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">
+                Order Name
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 sm:px-6 sm:py-3 hidden sm:table-cell"
+              >
+                Price
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 sm:px-6 sm:py-3 hidden md:table-cell"
+              >
+                Delivery Date
+              </th>
+              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">
+                Order Status
+              </th>
+              <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             {orders.length > 0 ? (
               orders.map((order) => (
-                <tr key={order.idOrder} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                <tr
+                  key={order.idOrder}
+                  className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-3 py-2 sm:px-6 sm:py-4">
                     <div className="flex items-center">
                       {order.product_image ? (
-                        <img 
-                          src={order.product_image} 
-                          alt="Product" 
+                        <img
+                          src={order.product_image}
+                          alt="Product"
                           className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 rounded object-cover"
                           onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/40?text=No+Image';
-                          }} 
+                            e.target.src =
+                              "https://via.placeholder.com/40?text=No+Image";
+                          }}
                         />
                       ) : (
                         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500 mr-2 sm:mr-3">
@@ -143,15 +170,29 @@ const OrderList = () => {
                       )}
                       <div>
                         <span className="block">#{order.idOrder}</span>
-                        <span className="block text-xs text-gray-500 sm:hidden">{new Date(order.Date_Time).toLocaleDateString()}</span>
-                        <span className="block text-xs text-gray-500 sm:hidden">${order.Total_Amount}</span>
+                        <span className="block text-xs text-gray-500 sm:hidden">
+                          {new Date(order.Date_Time).toLocaleDateString()}
+                        </span>
+                        <span className="block text-xs text-gray-500 sm:hidden">
+                          Rs. {order.Total_Amount}
+                        </span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 hidden sm:table-cell">{new Date(order.Date_Time).toLocaleString()}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4">{order.Full_Name}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 hidden sm:table-cell">${order.Total_Amount}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 hidden md:table-cell">{order.Delivery_Date ? new Date(order.Delivery_Date).toLocaleDateString() : 'Not set'}</td>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 hidden sm:table-cell">
+                    {new Date(order.Date_Time).toLocaleString()}
+                  </td>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4">
+                    {order.Full_Name}
+                  </td>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 hidden sm:table-cell">
+                    Rs. {order.Total_Amount}
+                  </td>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 hidden md:table-cell">
+                    {order.Delivery_Date
+                      ? new Date(order.Delivery_Date).toLocaleDateString()
+                      : "Not set"}
+                  </td>
                   <td className="px-3 py-2 sm:px-6 sm:py-4">
                     {updatingStatus === order.idOrder ? (
                       <div className="flex items-center">
@@ -161,14 +202,43 @@ const OrderList = () => {
                     ) : (
                       <select
                         value={order.Status}
-                        onChange={(e) => handleStatusChange(order.idOrder, e.target.value)}
-                        className={`px-1 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(order.Status)}`}
+                        onChange={(e) =>
+                          handleStatusChange(order.idOrder, e.target.value)
+                        }
+                        className={`px-1 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(
+                          order.Status
+                        )}`}
                       >
-                        <option value="Order Confirmed" className="bg-white text-yellow-800">Order Confirmed</option>
-                        <option value="Order Packed" className="bg-white text-blue-800">Order Packed</option>
-                        <option value="Awaiting Delivery" className="bg-white text-indigo-800">Awaiting Delivery</option>
-                        <option value="Out for Delivery" className="bg-white text-purple-800">Out for Delivery</option>
-                        <option value="Delivered" className="bg-white text-green-800">Delivered</option>
+                        <option
+                          value="Order Confirmed"
+                          className="bg-white text-yellow-800"
+                        >
+                          Order Confirmed
+                        </option>
+                        <option
+                          value="Order Packed"
+                          className="bg-white text-blue-800"
+                        >
+                          Order Packed
+                        </option>
+                        <option
+                          value="Awaiting Delivery"
+                          className="bg-white text-indigo-800"
+                        >
+                          Awaiting Delivery
+                        </option>
+                        <option
+                          value="Out for Delivery"
+                          className="bg-white text-purple-800"
+                        >
+                          Out for Delivery
+                        </option>
+                        <option
+                          value="Delivered"
+                          className="bg-white text-green-800"
+                        >
+                          Delivered
+                        </option>
                       </select>
                     )}
                   </td>
@@ -185,7 +255,12 @@ const OrderList = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="px-3 py-2 sm:px-6 sm:py-4 text-center">No orders found</td>
+                <td
+                  colSpan="7"
+                  className="px-3 py-2 sm:px-6 sm:py-4 text-center"
+                >
+                  No orders found
+                </td>
               </tr>
             )}
           </tbody>
@@ -200,8 +275,8 @@ const OrderList = () => {
             disabled={currentPage === 1}
             className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
               currentPage === 1
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-[#5CAF90] text-white hover:bg-opacity-90'
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-[#5CAF90] text-white hover:bg-opacity-90"
             }`}
           >
             Previous
@@ -214,8 +289,8 @@ const OrderList = () => {
             disabled={currentPage === totalPages}
             className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
               currentPage === totalPages
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-[#5CAF90] text-white hover:bg-opacity-90'
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-[#5CAF90] text-white hover:bg-opacity-90"
             }`}
           >
             Next
@@ -226,4 +301,4 @@ const OrderList = () => {
   );
 };
 
-export default OrderList; 
+export default OrderList;

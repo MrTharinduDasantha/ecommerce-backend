@@ -95,9 +95,9 @@ export const deleteSubCategory = async (categoryId, subId) => {
   }
 };
 
-// ---------------------------
+// --------------------------
 // Product Related Api Calls
-// ---------------------------
+// --------------------------
 
 // Create a new product
 export const createProduct = async (formData) => {
@@ -169,6 +169,75 @@ export const updateProduct = async (id, formData) => {
 export const deleteProduct = async (id) => {
   try {
     const response = await api.delete(`/api/products/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// ---------------------------
+// Discount Related Api Calls
+// ---------------------------
+
+// Get all discounts
+export const getDiscounts = async () => {
+  try {
+    const response = await api.get("/api/products/discounts/all");
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Get a single discount
+export const getDiscount = async (id) => {
+  try {
+    const response = await api.get(`/api/products/discounts/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Get discounts for a specific product
+export const getProductDiscounts = async (productId) => {
+  try {
+    const response = await api.get(
+      `/api/products/products/${productId}/discounts`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Create a new discount
+export const createDiscount = async (discountData) => {
+  try {
+    const response = await api.post("/api/products/discounts", discountData);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Update a discount
+export const updateDiscount = async (id, discountData) => {
+  try {
+    const response = await api.put(
+      `/api/products/discounts/${id}`,
+      discountData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Delete a discount
+export const deleteDiscount = async (id) => {
+  try {
+    const response = await api.delete(`/api/products/discounts/${id}`);
     return response.data;
   } catch (error) {
     throw error.response.data;
