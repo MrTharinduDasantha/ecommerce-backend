@@ -1,8 +1,8 @@
 const pool = require("../config/database");
 
-// --------------------------------------------
+// -------------------------------------------
 // Category and Subcategory Related Functions
-// --------------------------------------------
+// -------------------------------------------
 
 // Fetch all categories with subcategories
 async function getAllCategories() {
@@ -110,9 +110,9 @@ async function deleteSubCategory(subCategoryId) {
   ]);
 }
 
-// ---------------------------
+// --------------------------
 // Product Related Functions
-// ---------------------------
+// --------------------------
 
 // Insert main product record into product table
 async function createProduct(productData) {
@@ -402,6 +402,109 @@ async function deleteProduct(productId) {
   await pool.query("DELETE FROM Product WHERE idProduct = ?", [productId]);
 }
 
+// ---------------------------
+// Discount Related Functions
+// ---------------------------
+
+// Get all discounts
+async function getAllDiscounts() {
+  const query = `
+    SELECT d.*, p.Description as ProductName
+    FROM Discounts d
+    JOIN Product p ON d.Product_idProduct = p.idProduct
+    ORDER BY d.created_at DESC
+  `;
+  const [discounts] = await pool.query(query);
+  return discounts;
+}
+
+// Get discounts for a specific product
+async function getDiscountsByProductId(productId) {
+  const query = `
+    SELECT * FROM Discounts
+    WHERE Product_idProduct = ?
+    ORDER BY created_at DESC
+  `;
+  const [discounts] = await pool.query(query, [productId]);
+  return discounts;
+}
+
+// Create a new discount
+async function createDiscount(discountData) {
+  const query = `
+    INSERT INTO Discounts (
+      Product_idProduct,
+      Description,
+      Dicaunt_Type,
+      Discount_Value,
+      Start_Date,
+      End_Date,
+      Status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const [result] = await pool.query(query, [
+    discountData.productId,
+    discountData.description,
+    discountData.discountType,
+    discountData.discountValue,
+    discountData.startDate,
+    discountData.endDate,
+    discountData.status || "active",
+  ]);
+
+  return result;
+}
+
+// Update an existing discount
+async function updateDiscount(discountId, discountData) {
+  const query = `
+    UPDATE Discounts
+    SET
+      Product_idProduct = ?,
+      Description = ?,
+      Dicaunt_Type = ?,
+      Discount_Value = ?,
+      Start_Date = ?,
+      End_Date = ?,
+      Status = ?
+    WHERE idDiscounts = ?
+  `;
+
+  const [result] = await pool.query(query, [
+    discountData.productId,
+    discountData.description,
+    discountData.discountType,
+    discountData.discountValue,
+    discountData.startDate,
+    discountData.endDate,
+    discountData.status,
+    discountId,
+  ]);
+}
+
+// Delete a discount
+async function deleteDiscount(discountId) {
+  const query = `
+    DELETE FROM Discounts
+    WHERE idDiscounts = ?
+  `;
+  const [result] = await pool.query(query, [discountId]);
+  return result;
+}
+
+// Get a single discount by id
+async function getDiscountById(discountId) {
+  const query = `
+    SELECT d.*, p.Description as ProductName
+    FROM Discounts d
+    JOIN Product p ON d.Product_idProduct = p.idProduct
+    WHERE d.idDiscounts = ?
+  `;
+  const [rows] = await pool.query(query, [discountId]);
+  return rows.length > 0 ? rows[0] : null;
+}
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -420,4 +523,10 @@ module.exports = {
   getAllProducts,
   getProductById,
   deleteProduct,
+  getAllDiscounts,
+  getDiscountsByProductId,
+  createDiscount,
+  updateDiscount,
+  deleteDiscount,
+  getDiscountById,
 };

@@ -1,11 +1,11 @@
 const Product = require("../../models/product.model");
 const fs = require("fs");
 const path = require("path");
-const pool = require('../../config/database');
+const pool = require("../../config/database");
 
-// --------------------------------------------
+// -------------------------------------------
 // Category and Subcategory Related Functions
-// --------------------------------------------
+// -------------------------------------------
 
 // Fetch all categories with subcategories
 async function getAllCategories(req, res) {
@@ -477,6 +477,23 @@ async function updateProduct(req, res) {
     });
 
     // Log the admin action
+
+    const updatedFields = [];
+    if (Description !== existingProduct.Description)
+      updatedFields.push("description");
+    if (Market_Price !== existingProduct.Market_Price)
+      updatedFields.push("market price");
+    if (Selling_Price !== existingProduct.Selling_Price)
+      updatedFields.push("selling price");
+    if (Long_Description !== existingProduct.Long_Description)
+      updatedFields.push("long description");
+    if (mainImageUrl !== existingProduct.Main_Image_Url)
+      updatedFields.push("main image");
+    if (imagesArray) updatedFields.push("sub images");
+    if (variations) updatedFields.push("variations");
+    if (faqs) updatedFields.push("FAQs");
+    if (subCategoryIds) updatedFields.push("sub categories");
+
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
@@ -586,6 +603,228 @@ async function deleteProduct(req, res) {
   }
 }
 
+// ---------------------------
+// Discount Related Functions
+// ---------------------------
+
+// Get all discounts
+async function getAllDiscounts(req, res) {
+  try {
+    const discounts = await Product.getAllDiscounts();
+
+    res
+      .status(200)
+      .json({ message: "Discounts fetched successfully", discounts });
+  } catch (error) {
+    console.error("Error fetching discounts:", error);
+    res.status(500).json({ message: "Failed to fetch discounts" });
+  }
+}
+
+// Get discounts for a specific product
+async function getDiscountsByProductId(req, res) {
+  try {
+    const { productId } = req.params;
+    const discounts = await Product.getDiscountsByProductId(productId);
+
+    res
+      .status(200)
+      .json({ message: "Product discounts fetched successfully", discounts });
+  } catch (error) {
+    console.error("Error fetching product discounts:", error);
+    res.status(500).json({ message: "Failed to fetch product discounts" });
+  }
+}
+
+// Create a new discount
+async function createDiscount(req, res) {
+  try {
+    const {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status,
+    } = req.body;
+
+    if (
+      !productId ||
+      !description ||
+      !discountType ||
+      !discountValue ||
+      !startDate ||
+      !endDate
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if product exists
+    const product = await Product.getProductById(productId);
+    if (!product) {
+      return res.status(400).json({ message: "Product not found" });
+    }
+
+    const discountData = {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status: status || "active",
+    };
+
+    const result = await Product.createDiscount(discountData);
+
+    // Log the admin action
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Created discount",
+        req.headers["user-agent"],
+        JSON.stringify({
+          productId,
+          description,
+          discountType,
+          discountValue,
+        }),
+      ]
+    );
+
+    res.status(201).json({
+      message: "Discount created successfully",
+      discountId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error creating discount:", error);
+    res.status(500).json({ message: "Failed to create discount" });
+  }
+}
+
+// Update an existing discount
+async function updateDiscount(req, res) {
+  try {
+    const { id } = req.params;
+    const {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status,
+    } = req.body;
+
+    if (
+      !productId ||
+      !description ||
+      !discountType ||
+      !discountValue ||
+      !startDate ||
+      !endDate ||
+      !status
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if discount exists
+    const existingDiscount = await Product.getDiscountById(id);
+    if (!existingDiscount) {
+      return res.status(400).json({ message: "Discount not found" });
+    }
+
+    const discountData = {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status,
+    };
+
+    await Product.updateDiscount(id, discountData);
+
+    // Log the admin action
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Updated discount",
+        req.headers["user-agent"],
+        JSON.stringify({
+          discountId: id,
+          productId,
+          description,
+          discountType,
+          discountValue,
+        }),
+      ]
+    );
+
+    res.status(200).json({ message: "Discount updated successfully" });
+  } catch (error) {
+    console.error("Error updating discount:", error);
+    res.status(500).json({ message: "Failed to update discount" });
+  }
+}
+
+// Delete a discount
+async function deleteDiscount(req, res) {
+  try {
+    const { id } = req.params;
+
+    // Check if discount exists
+    const discount = await Product.getDiscountById(id);
+    if (!discount) {
+      return res.status(404).json({ message: "Discount not found" });
+    }
+
+    // Log the admin action before deletion
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Deleted discount",
+        req.headers["user-agent"],
+        JSON.stringify({
+          discountId: id,
+          productId: discount.Product_idProduct,
+          description: discount.Description,
+        }),
+      ]
+    );
+
+    await Product.deleteDiscount(id);
+    res.status(200).json({ message: "Discount deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting discount:", error);
+    res.status(500).json({ message: "Failed to delete discount" });
+  }
+}
+
+// Get a single discount by id
+async function getDiscountById(req, res) {
+  try {
+    const { id } = req.params;
+    const discount = await Product.getDiscountById(id);
+
+    if (!discount) {
+      return res.status(404).json({ message: "Discount not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Discount fetched successfully", discount });
+  } catch (error) {
+    console.error("Error fetching discount:", error);
+    res.status(500).json({ message: "Failed to fetch discount" });
+  }
+}
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -600,4 +839,10 @@ module.exports = {
   getAllProducts,
   getProductById,
   deleteProduct,
+  getAllDiscounts,
+  getDiscountsByProductId,
+  createDiscount,
+  updateDiscount,
+  deleteDiscount,
+  getDiscountById,
 };

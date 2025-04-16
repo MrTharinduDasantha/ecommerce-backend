@@ -27,11 +27,11 @@ const customStyles = {
     ...provided,
     maxHeight: "160px",
     overflowY: "auto",
-    borderRadius: "0.5rem",
+    borderRadius: "0.3rem",
   }),
   menu: (provided) => ({
     ...provided,
-    borderRadius: "0.5rem",
+    borderRadius: "0.3rem",
     borderWidth: "1px",
     borderColor: "#1D372E",
   }),
@@ -40,7 +40,7 @@ const customStyles = {
     minHeight: "2.5rem",
     borderWidth: "1px",
     borderColor: "#1D372E",
-    borderRadius: "0.5rem",
+    borderRadius: "0.3rem",
     boxShadow: "none",
     "&:hover": {
       borderColor: "#1D372E",

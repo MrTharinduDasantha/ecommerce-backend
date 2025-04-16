@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
 import ShareIcon from '@mui/icons-material/Share';
 import AppleIcon from '@mui/icons-material/Apple';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {useCart} from '../context/CartContext';
-import { useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import LovelySpringBouquet from '../assets/RushDelivery/LovelySpringBouquet.jpg';
 import MacaronsTreat from '../assets/RushDelivery/MacaronsTreat.jpg';
@@ -15,7 +13,14 @@ import BerryDelight from '../assets/RamadanOffers/BerryDelight.jpg';
 import FloralTouchDelight from '../assets/RamadanOffers/FloralTouchDelight.jpg';
 import StrawberryTreat from '../assets/RamadanOffers/StrawberryTreat.jpg';
 import WonderChocolateTreat from '../assets/RamadanOffers/WonderChocolateTreat.jpg';
-import { AlignCenter } from 'lucide-react';
+import LoveInBloomBouquet from '../assets/ForYou/LoveInBloomBouquet.jpg';
+import TruffleTemptation from '../assets/ForYou/TruffleTemptation.jpg';
+import VersaceEros from '../assets/ForYou/VersaceEros.jpg';
+import MeltMyHeart from '../assets/ForYou/MeltMyHeart.jpg';
+import ZARAHandbags from '../assets/OnSale/ZARAHandbags.jpg';
+import Refrigerator from '../assets/OnSale/Refrigerator.jpg';
+import MacbookAir from '../assets/OnSale/MacbookAir.jpg';
+import DELLLaptop from '../assets/OnSale/DELLLaptop.jpg';
 
 const Cart = () => {
     const {cartItems, removeFromCart, updateQuantity} = useCart();
@@ -41,17 +46,34 @@ const Cart = () => {
     }, [selectedProduct, cartItems]);
 
     const parsePrice = (priceString) => {
-        return parseInt(priceString.replace('Rs. ', '').replace(',', ''));
+        if (!priceString) return 0;
+        const numericPrice = priceString.replace('LKR ', '').replace(/,/g, '');
+        return parseFloat(numericPrice) || 0;
     };
 
     const formatPrice = (price) => {
-        return `Rs. ${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        if (isNaN(price)) return 'LKR 0.00';
+        return `LKR ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
     };
 
-    const total = cartItems.length === 0 ? 0 : cartItems.reduce((sum, item) => {
+    const calculateItemTotal = (item) => {
         const price = parsePrice(item.price);
-        return sum + (price * item.quantity);
-    }, 0);
+        return price * item.quantity;
+    };
+
+    const formatItemPrice = (item) => {
+        return formatPrice(calculateItemTotal(item));
+    };
+
+    const calculateTotal = () => {
+        if (cartItems.length === 0) return 0;
+        return cartItems.reduce((sum, item) => {
+            const price = parsePrice(item.price);
+            return sum + (price * item.quantity);
+        }, 0);
+    };
+
+    const total = calculateTotal();
 
     // Related products based on source
     const getRelatedProducts = () => {
@@ -61,25 +83,25 @@ const Cart = () => {
                     id: 1,
                     name: 'Lovely Spring Bouquet',
                     image: LovelySpringBouquet,
-                    price: 'Rs. 7,500'
+                    price: 'LKR 7,500'
                 },
                 {
                     id: 2,
                     name: 'Macarons Treat',
                     image: MacaronsTreat,
-                    price: 'Rs. 3,500'
+                    price: 'LKR 3,500'
                 },
                 {
                     id: 3,
                     name: 'Sweet Delight',
                     image: SweetDelight,
-                    price: 'Rs. 4,800'
+                    price: 'LKR 4,800'
                 },
                 {
                     id: 4,
                     name: 'Cartier Watch',
                     image: CartierWatch,
-                    price: 'Rs. 50,000'
+                    price: 'LKR 50,000'
                 }
             ];
         } else if (source === 'seasonal-offers') {
@@ -88,54 +110,108 @@ const Cart = () => {
                     id: 1,
                     name: 'Berry Delight',
                     image: BerryDelight,
-                    price: 'Rs. 4,500'
+                    price: 'LKR 4,500'
                 },
                 {
                     id: 2,
                     name: 'Floral Touch Delight',
                     image: FloralTouchDelight,
-                    price: 'Rs. 5,500'
+                    price: 'LKR 5,500'
                 },
                 {
                     id: 3,
                     name: 'Strawberry Treat',
                     image: StrawberryTreat,
-                    price: 'Rs. 3,500'
+                    price: 'LKR 3,500'
                 },
                 {
                     id: 4,
                     name: 'Wonder Chocolate Treat',
                     image: WonderChocolateTreat,
-                    price: 'Rs. 4,000'
+                    price: 'LKR 4,000'
+                }
+            ];
+        } else if (source === 'for-you') {
+            return [
+                {
+                    id: 1,
+                    name: 'Love In Bloom Bouquet',
+                    image: LoveInBloomBouquet,
+                    price: 'LKR 7,500'
+                },
+                {
+                    id: 2,
+                    name: 'Truffle Temptation',
+                    image: TruffleTemptation,
+                    price: 'LKR 9,000'
+                },
+                {
+                    id: 3,
+                    name: 'Versace Eros',
+                    image: VersaceEros,
+                    price: 'LKR 35,000'
+                },
+                {
+                    id: 4,
+                    name: 'Melt My Heart',
+                    image: MeltMyHeart,
+                    price: 'LKR 6,500'
+                }
+            ];
+        } else if (source === 'on-sale') {
+            return [
+                {
+                    id: 1,
+                    name: 'ZARA Handbags',
+                    image: ZARAHandbags,
+                    price: 'LKR 5,500'
+                },
+                {
+                    id: 2,
+                    name: 'Refrigerator',
+                    image: Refrigerator,
+                    price: 'LKR 35,000'
+                },
+                {
+                    id: 3,
+                    name: 'Macbook Air',
+                    image: MacbookAir,
+                    price: 'LKR 200,000'
+                },
+                {
+                    id: 4,
+                    name: 'DELL Laptop',
+                    image: DELLLaptop,
+                    price: 'LKR 150,000'
                 }
             ];
         }
+        
         // Default related products for other sources
         return [
             {
                 id: 1,
                 name: 'Lovely Spring Bouquet',
                 image: LovelySpringBouquet,
-                price: 'Rs. 7,500'
+                price: 'LKR 7,500'
             },
             {
                 id: 2,
                 name: 'Macarons Treat',
                 image: MacaronsTreat,
-                price: 'Rs. 3,500'
+                price: 'LKR 3,500'
             },
             {
                 id: 3,
                 name: 'Sweet Delight',
                 image: SweetDelight,
-                price: 'Rs. 4,800'
+                price: 'LKR 4,800'
             },
             {
                 id: 4,
                 name: 'Cartier Watch',
                 image: CartierWatch,
-                price: 'Rs. 50,000'
-               
+                price: 'LKR 50,000'
             }
         ];
     };
@@ -171,17 +247,43 @@ const Cart = () => {
                                             id={`product-${item.id}`}
                                             className={`grid grid-cols-6 text-center w-auto border-b-2 border-gray-200 pb-4 transition-all duration-500 ${selectedProduct && selectedProduct.id === item.id ? 'highlight-product' : ''}`}
                                         >
-                                            <div className="">
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                    className="w-24 h-24 object-cover rounded"
-                                                />
+                                            <div className="col-span-2 flex items-center">
+                                                <Link 
+                                                    to={`/product-page/${item.id}`}
+                                                    state={{ fromCart: true, selectedVariant: item }}
+                                                    className="flex items-center space-x-4"
+                                                >
+                                                    <img 
+                                                        src={item.image} 
+                                                        alt={item.name} 
+                                                        className="w-20 h-20 object-cover rounded"
+                                                    />
+                                                    <div className="text-left">
+                                                        <h3 className="font-medium">{item.name}</h3>
+                                                        {item.color && (
+                                                            <div className="flex items-center space-x-2">
+                                                                <span className="text-sm text-gray-600">Color:</span>
+                                                                <span className="text-sm font-medium">{item.color}</span>
+                                                                {item.colorCode && (
+                                                                    <div 
+                                                                        className="w-4 h-4 rounded-full border border-gray-300" 
+                                                                        style={{ backgroundColor: item.colorCode }}
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        {item.size && (
+                                                            <div className="flex items-center space-x-2">
+                                                                <span className="text-sm text-gray-600">Size:</span>
+                                                                <span className="text-sm font-medium">{item.size}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </Link>
                                             </div>
-                                            <div className="my-auto text-left"><h3
-                                                className="text-lg mb-2 text-gray-800">{item.name}</h3></div>
-                                            <div className="my-auto"><p
-                                                className="text-[#1D372E] font-medium">{item.price}</p></div>
+                                            <div className="my-auto">
+                                                <p className="text-[#1D372E] font-medium">{formatItemPrice(item)}</p>
+                                            </div>
                                             <div className="my-auto">
                                                 <input
                                                     type="number"
@@ -192,7 +294,9 @@ const Cart = () => {
                                                 />
                                             </div>
                                             <div className="my-auto">
-                                                <p className="text-[#1D372E] font-medium ml-auto">{formatPrice(parsePrice(item.price) * item.quantity)}</p>
+                                                <p className="text-[#1D372E] font-medium ml-auto">
+                                                    {formatItemPrice(item)}
+                                                </p>
                                             </div>
                                             <div className="my-auto">
                                                 <button
@@ -210,7 +314,7 @@ const Cart = () => {
                         </div>
 
                         {/* Order Summary Card */}
-                        <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:ml-auto">
+                        <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto">
                             <div className="flex justify-between items-center mb-6">
                                 <span className="text-lg font-medium">Total</span>
                                 <span className="text-lg">{formatPrice(total)}</span>
@@ -257,21 +361,22 @@ const Cart = () => {
                                     key={product.id}
                                     className="group cursor-pointer transform transition-transform duration-300 hover:scale-105">
                                     <Link to={`/product/${product.id}`} className="block relative">
-                                        <div className="overflow-hidden rounded-lg">
+                                        <div className="overflow-hidden rounded-lg mb-3">
                                             <img
                                                 src={product.image}
                                                 alt={product.name}
-                                                className="w-full h-64 object-cover rounded-lg mb-4 transition-transform duration-300 group-hover:scale-110"
+                                                className="w-full h-60 object-cover rounded-lg transition-transform duration-300 group-hover:scale-110"
                                                 style={{ 
                                                     objectPosition: product.name === 'Berry Delight' ? 'center 70%' : 
                                                                   product.name === 'Floral Touch Delight' ? 'center 40%' :
                                                                   product.name === 'Strawberry Treat' ? 'center 30%' :
+                                                                  product.name === 'Versace Eros' ? 'center 40%' :
                                                                   'center' 
                                                 }}
                                             />
                                         </div>
-                                        <h3 className="text-lg font-medium text-gray-800">{product.name}</h3>
-                                        <p className="text-[#1D372E] font-medium">{product.price}</p>
+                                        <h3 className="text-lg font-medium text-gray-800 text-align-center">{product.name}</h3>
+                                        <p className="text-[#1D372E] font-medium text-align-center">{product.price}</p>
                                     </Link>
                                 </div>
                             ))}
@@ -287,7 +392,9 @@ const Cart = () => {
                     padding: 8px;
                     animation: pulse 2s;
                 }
-                
+                .text-align-center{
+                    text-align:center;
+                }
                 @keyframes pulse {
                     0% {
                         box-shadow: 0 0 0 0 rgba(92, 175, 144, 0.4);

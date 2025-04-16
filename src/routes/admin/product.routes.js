@@ -74,3 +74,19 @@ router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
 
 module.exports = router;
+
+// ----------------
+// Discount Routes
+// ----------------
+router.get("/discounts/all", productController.getAllDiscounts);
+router.get("/discounts/:id", productController.getDiscountById);
+router.get(
+  "/products/:productId/discounts",
+  productController.getDiscountsByProductId
+);
+router.post("/discounts", authenticate, productController.createDiscount);
+router.put("/discounts/:id", authenticate, productController.updateDiscount);
+router.delete("/discounts/:id", authenticate, productController.deleteDiscount);
+
+module.exports = router;
+

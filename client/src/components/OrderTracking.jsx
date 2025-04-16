@@ -7,29 +7,30 @@ import OrderDetails from "./OrderDetails";
 
 const OrderTracking = () => {
   const { id } = useParams();
-  
+  console.log(products.filter(x => x.orderId == id))
   // Sample order with multiple products (in a real app, this would come from an API)
   const order = {
     orderNo: id,
     deliveryDate: "2025/01/24",
     address: "106/A, Piliyandala, Moratuwa",
-    items: [
-      {
-        ...products[0],
-        variant: products[0].variants[0],
-        quantity: 2
-      },
-      {
-        ...products[1],
-        variant: { ...products[1].variants[0], size: ['M'] },
-        quantity: 1
-      },
-      {
-        ...products[4],
-        variant: products[4].variants[0],
-        quantity: 3
-      }
-    ],
+    items: products.filter(x => x.orderId == id),
+    // [
+    //   {
+    //     ...products[0],
+    //     variant: products[0].variants[0],
+    //     quantity: 2
+    //   },
+    //   {
+    //     ...products[1],
+    //     variant: { ...products[1].variants[0], size: ['M'] },
+    //     quantity: 1
+    //   },
+    //   {
+    //     ...products[4],
+    //     variant: products[4].variants[0],
+    //     quantity: 3
+    //   }
+    // ],
     status: [
       {
         id: 1,
@@ -68,10 +69,10 @@ const OrderTracking = () => {
       },
     ]
   };
-
+  order.items.map(x => x.quantity=3)
   // Calculate order totals
-  const subtotal = order.items.reduce((sum, item) => sum + (item.variant.price * item.quantity), 0);
-  const discount = order.items.reduce((sum, item) => sum + ((item.marketPrice - item.variant.price) * item.quantity), 0);
+  const subtotal = order.items.reduce((sum, item) => sum + (item.variants[0].price * item.quantity), 0);
+  const discount = order.items.reduce((sum, item) => sum + ((item.marketPrice - item.variants[0].price) * item.quantity), 0);
   const deliveryFee = 500.00;
   const total = subtotal - discount + deliveryFee;
 

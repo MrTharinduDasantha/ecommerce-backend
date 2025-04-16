@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import AnniversaryPackage from '../../assets/ForYou/AnniversaryPackage.jpg';
-import ChanelChance from '../../assets/ForYou/ChanelChance.jpg';
-import ForeverMineBouquet from '../../assets/ForYou/ForeverMineBouquet.jpg';
+import { useNavigate } from 'react-router-dom';
+import ForeverMineBouquetImage from '../../assets/ForYou/ForeverMineBouquet.jpg';
 import LoveInBloomBouquet from '../../assets/ForYou/LoveInBloomBouquet.jpg';
-import LovelyTreats from '../../assets/ForYou/LovelyTreats.jpg';
 import MeltMyHeart from '../../assets/ForYou/MeltMyHeart.jpg';
-import SurpriseGift from '../../assets/ForYou/SurpriseGift.jpg';
 import TruffleTemptation from '../../assets/ForYou/TruffleTemptation.jpg';
+import Anniversarypackage from '../../assets/ForYou/AnniversaryPackage.jpg';
+import LovelyTreats from '../../assets/ForYou/LovelyTreats.jpg';
+import SurpriseGift from '../../assets/ForYou/SurpriseGift.jpg';
+import ChanelChance from '../../assets/ForYou/ChanelChance.jpg';
 import ValentinesPackage from '../../assets/ForYou/ValentinesPackage.jpg';
 import VersaceEros from '../../assets/ForYou/VersaceEros.jpg';
 import { useCart } from '../../context/CartContext';
-import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import ProductCard from '../ProductCard';
 import ForYouBanner from '../ForYouBanner';
@@ -21,13 +21,36 @@ const ForYou = () => {
   const [addedProducts, setAddedProducts] = useState([]);
 
   const handleProductClick = (product) => {
-    // Add the product to cart
-    addToCart(product);
+    // Format the product data before adding to cart
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      price: product.price.replace('Rs. ', 'LKR '),
+      quantity: 1,
+      // Only add size property if it's not the Forever Mine Bouquet
+      ...(product.id !== 1 && { size: product.size || null }),
+      // Add color property for all products
+      color: product.color || null
+    };
     
-    // Add to the list of added products
-    setAddedProducts(prev => [...prev, product]);
+    // Check if the product already exists in the cart
+    const existingItemIndex = addedProducts.findIndex(item => item.id === product.id);
     
-    // Show a success message or notification here if desired
+    if (existingItemIndex !== -1) {
+      // Update the existing item in the cart
+      const updatedProducts = [...addedProducts];
+      updatedProducts[existingItemIndex] = {
+        ...updatedProducts[existingItemIndex],
+        color: cartItem.color,
+        ...(product.id !== 1 && { size: cartItem.size })
+      };
+      setAddedProducts(updatedProducts);
+    } else {
+      // Add the product to cart if it doesn't exist
+      addToCart(cartItem);
+      setAddedProducts(prev => [...prev, cartItem]);
+    }
   };
 
   const handleViewCart = () => {
@@ -45,18 +68,20 @@ const ForYou = () => {
     {
       id: 1,
       name: 'Forever Mine Bouquet',
-      image: ForeverMineBouquet,
+      image: ForeverMineBouquetImage,
       price: 'Rs. 5,000',
       weight: '1.3 kg',
-      oldPrice: 'Rs. 7,000'
+      oldPrice: 'Rs. 7,000',
+      color: 'Black'  // Add default color
     },
     {
       id: 2,
       name: 'Anniversary Package',
-      image: AnniversaryPackage,
+      image: Anniversarypackage,
       price: 'Rs. 7,000',
       weight: '800 g',
-      oldPrice: 'Rs. 9,000'
+      oldPrice: 'Rs. 9,000',
+      color: 'Black'  // Add default color
     },
     {
       id: 3,
@@ -64,7 +89,8 @@ const ForYou = () => {
       image: LovelyTreats,
       price: 'Rs. 5,500',
       weight: '600 g',
-      oldPrice: 'Rs. 6,000'
+      oldPrice: 'Rs. 6,000',
+      color: 'Mixed'  // Add default color
     },
     {
       id: 4,
@@ -72,7 +98,8 @@ const ForYou = () => {
       image: TruffleTemptation,
       price: 'Rs. 9,000',
       weight: '1.7 kg',
-      oldPrice: 'Rs. 10,000'
+      oldPrice: 'Rs. 10,000',
+      color: 'Black'  // Add default color
     },
     {
       id: 5,
@@ -80,7 +107,8 @@ const ForYou = () => {
       image: SurpriseGift,
       price: 'Rs. 5,500',
       weight: '1.5 kg',
-      oldPrice: 'Rs. 7,000'
+      oldPrice: 'Rs. 7,000',
+      color: 'Red'  // Add default color
     },
     // Second Row
     {
@@ -89,7 +117,8 @@ const ForYou = () => {
       image: ChanelChance,
       price: 'Rs. 45,000',
       weight: '550 g',
-      oldPrice: 'Rs. 55,000'
+      oldPrice: 'Rs. 55,000',
+      color: 'Pink'  // Add default color
     },
     {
       id: 7,
@@ -97,7 +126,8 @@ const ForYou = () => {
       image: ValentinesPackage,
       price: 'Rs. 10,000',
       weight: '1.7 kg',
-      oldPrice: 'Rs. 15,000'
+      oldPrice: 'Rs. 15,000',
+      color: 'Red'  // Add default color
     },
     {
       id: 8,
@@ -105,7 +135,8 @@ const ForYou = () => {
       image: VersaceEros,
       price: 'Rs. 35,000',
       weight: '650 g',
-      oldPrice: 'Rs. 45,000'
+      oldPrice: 'Rs. 45,000',
+      color: 'Black'  // Add default color
     },
     {
       id: 9,
@@ -113,7 +144,8 @@ const ForYou = () => {
       image: LoveInBloomBouquet,
       price: 'Rs. 7,500',
       weight: '1.5 kg',
-      oldPrice: 'Rs. 8,500'
+      oldPrice: 'Rs. 8,500',
+      color: 'Pink'  // Add default color
     },
     {
       id: 10,
@@ -121,7 +153,8 @@ const ForYou = () => {
       image: MeltMyHeart,
       price: 'Rs. 6,500',
       weight: '500 g',
-      oldPrice: 'Rs. 7,500'
+      oldPrice: 'Rs. 7,500',
+      color: 'Pink'  // Add default color
     }
   ];
 
@@ -159,8 +192,7 @@ const ForYou = () => {
               {products.map((product) => (
                 <div 
                   key={product.id} 
-                  className="cursor-pointer hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                  onClick={() => handleProductClick(product)}
+                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
                 >
                   <ProductCard 
                     image={product.image}
@@ -169,7 +201,8 @@ const ForYou = () => {
                     price={product.price}
                     oldPrice={product.oldPrice}
                     weight={product.weight}
-                    className="h-full" // Ensure cards take full height properly
+                    id={product.id}
+                    className="h-full"
                   />
                 </div>
               ))}

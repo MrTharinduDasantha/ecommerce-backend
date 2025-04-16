@@ -10,6 +10,8 @@ import ProductForm from "./components/ProductForm";
 import ProductCategorySubCategoryForm from "./components/ProductCategorySubCategoryForm";
 import ProductList from "./components/ProductList";
 import ProductDetails from "./components/ProductDetails";
+import DiscountList from "./components/DiscountList";
+import DiscountForm from "./components/DiscountForm";
 import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
@@ -62,6 +64,9 @@ const App = () => {
             path="products/view-product/:id"
             element={<ProductDetails />}
           />
+          <Route path="discounts/add-discount" element={<DiscountForm />} />
+          <Route path="discounts/add-discount/:id" element={<DiscountForm />} />
+          <Route path="discounts/all-discounts" element={<DiscountList />} />
           <Route path="users_managed-form" element={<UsersManagedForm />} />
           <Route path="admin-logs" element={<AdminLogs />} />
           <Route

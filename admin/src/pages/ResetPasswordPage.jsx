@@ -45,8 +45,8 @@ const ResetPasswordPage = () => {
     }
   };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1D372E] to-[#2a4f43] p-4">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#1D372E] via-[#5CAF90] to-[#1D372E] p-4">
+      <div className="w-full max-w-[26rem] p-8 space-y-8 bg-white rounded-lg shadow-xl">
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <img src={logo} alt="Logo" className="h-16 w-auto" />
