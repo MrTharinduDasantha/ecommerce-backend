@@ -69,9 +69,9 @@ class OrderController {
         return res.status(400).json({ message: 'Invalid status' });
       }
 
-      // Get the current order status
+      // Get the current order details
       const [currentOrder] = await pool.query(
-        'SELECT Status FROM `Order` WHERE idOrder = ?',
+        'SELECT Status, Total_Amount, Date_Time FROM `Order` WHERE idOrder = ?',
         [orderId]
       );
 
@@ -79,8 +79,6 @@ class OrderController {
         return res.status(404).json({ message: 'Order not found' });
       }
 
-      const previousStatus = currentOrder[0].Status;
-      
       // Update the order status
       const affectedRows = await Order.updateStatus(orderId, status);
       
@@ -88,13 +86,20 @@ class OrderController {
         return res.status(404).json({ message: 'Order not found' });
       }
 
-      // Log the admin action
+      // Log the admin action with original and updated data
       const logData = {
-        orderId,
-        customerName,
-        previousStatus,
-        newStatus: status,
-        orderTotal
+        originalData: {
+          status: currentOrder[0].Status,
+          total_amount: currentOrder[0].Total_Amount,
+          order_date: currentOrder[0].Date_Time,
+          customer_name: customerName
+        },
+        updatedData: {
+          status: status,
+          total_amount: orderTotal,
+          order_date: currentOrder[0].Date_Time,
+          customer_name: customerName
+        }
       };
 
       await pool.query(

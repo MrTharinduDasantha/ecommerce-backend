@@ -67,22 +67,44 @@ async function updateCategory(req, res) {
       return res.status(400).json({ message: "Description is required" });
     }
 
+    // Get original category data for logging
+    const [originalCategory] = await pool.query(
+      'SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ?',
+      [id]
+    );
+
+    if (!originalCategory.length) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     let imageUrl = null;
     if (req.file) {
       imageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
         req.file.filename
       }`;
     }
+
     await Product.updateCategory(id, description, imageUrl);
 
-    // Log the admin action
+    // Log the admin action with original and updated data
+    const logData = {
+      originalData: {
+        description: originalCategory[0].Description,
+        image_url: originalCategory[0].Image_Icon_Url
+      },
+      updatedData: {
+        description: description,
+        image_url: imageUrl || originalCategory[0].Image_Icon_Url
+      }
+    };
+
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated category",
         req.headers["user-agent"],
-        JSON.stringify({ description }),
+        JSON.stringify(logData)
       ]
     );
 
@@ -102,16 +124,37 @@ async function toggleCategoryStatus(req, res) {
       return res.status(400).json({ message: "Status is required" });
     }
 
+    // Get original category data for logging
+    const [originalCategory] = await pool.query(
+      'SELECT Description, Status FROM Product_Category WHERE idProduct_Category = ?',
+      [id]
+    );
+
+    if (!originalCategory.length) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     await Product.toggleCategoryStatus(id, status);
 
-    // Log the admin action
+    // Log the admin action with original and updated data
+    const logData = {
+      originalData: {
+        description: originalCategory[0].Description,
+        status: originalCategory[0].Status
+      },
+      updatedData: {
+        description: originalCategory[0].Description,
+        status: status
+      }
+    };
+
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
         req.user.userId,
         "Toggled category status",
         req.headers["user-agent"],
-        JSON.stringify({ status }),
+        JSON.stringify(logData)
       ]
     );
 
@@ -370,56 +413,19 @@ async function updateProduct(req, res) {
       subCategoryIds,
     } = req.body;
 
+    // Get the original product data for logging
     const existingProduct = await Product.getProductById(id);
-
-    let totalQty = 0;
-    let variationData = [];
-    if (variations) {
-      variationData = JSON.parse(variations);
-      for (const variation of variationData) {
-        totalQty += Number(variation.quantity);
-      }
+    if (!existingProduct) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
     let mainImageUrl = null;
     if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
-      if (existingProduct && existingProduct.Main_Image_Url) {
-        const oldPath = existingProduct.Main_Image_Url.replace(
-          `${req.protocol}://${req.get("host")}/`,
-          ""
-        );
-        fs.unlink(oldPath, (err) => {
-          if (err) console.error("Error removing old main image:", err);
-        });
-      }
       mainImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
         req.files.mainImage[0].filename
       }`;
     } else {
-      mainImageUrl = existingProduct ? existingProduct.Main_Image_Url : null;
-    }
-
-    let imagesArray = null;
-    if (req.files && req.files.subImages && req.files.subImages.length > 0) {
-      if (
-        existingProduct &&
-        existingProduct.images &&
-        existingProduct.images.length > 0
-      ) {
-        existingProduct.images.forEach((img) => {
-          const oldPath = img.Image_Url.replace(
-            `${req.protocol}://${req.get("host")}/`,
-            ""
-          );
-          fs.unlink(oldPath, (err) => {
-            if (err) console.error("Error removing old sub image:", err);
-          });
-        });
-      }
-      imagesArray = req.files.subImages.map(
-        (file) =>
-          `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
-      );
+      mainImageUrl = existingProduct.Main_Image_Url;
     }
 
     const productData = {
@@ -429,40 +435,55 @@ async function updateProduct(req, res) {
       Selling_Price,
       Main_Image_Url: mainImageUrl,
       Long_Description,
-      SIH: totalQty,
     };
 
-    const associatedData = {
-      images: imagesArray,
-      variations: variationData,
+    // Get brand names for logging
+    const [oldBrand] = await pool.query(
+      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
+      [existingProduct.Product_Brand_idProduct_Brand]
+    );
+    const [newBrand] = await pool.query(
+      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
+      [Product_Brand_idProduct_Brand]
+    );
+
+    // Prepare logging data
+    const logData = {
+      originalData: {
+        description: existingProduct.Description,
+        brand: oldBrand[0]?.Brand_Name,
+        market_price: existingProduct.Market_Price,
+        selling_price: existingProduct.Selling_Price,
+        long_description: existingProduct.Long_Description,
+        main_image: existingProduct.Main_Image_Url
+      },
+      updatedData: {
+        description: Description,
+        brand: newBrand[0]?.Brand_Name,
+        market_price: Market_Price,
+        selling_price: Selling_Price,
+        long_description: Long_Description,
+        main_image: mainImageUrl
+      }
+    };
+
+    await Product.updateProduct(id, productData, {
+      images: req.files?.subImages?.map(file => 
+        `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
+      ),
+      variations: variations ? JSON.parse(variations) : null,
       faqs: faqs ? JSON.parse(faqs) : null,
       subCategoryIds: subCategoryIds ? JSON.parse(subCategoryIds) : null,
-    };
-
-    await Product.updateProduct(id, productData, associatedData);
+    });
 
     // Log the admin action
-    const updatedFields = [];
-    if (Description !== existingProduct.Description) updatedFields.push('description');
-    if (Market_Price !== existingProduct.Market_Price) updatedFields.push('market price');
-    if (Selling_Price !== existingProduct.Selling_Price) updatedFields.push('selling price');
-    if (Long_Description !== existingProduct.Long_Description) updatedFields.push('long description');
-    if (mainImageUrl !== existingProduct.Main_Image_Url) updatedFields.push('main image');
-    if (imagesArray) updatedFields.push('sub images');
-    if (variations) updatedFields.push('variations');
-    if (faqs) updatedFields.push('FAQs');
-    if (subCategoryIds) updatedFields.push('sub categories');
-
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated product",
         req.headers["user-agent"],
-        JSON.stringify({
-          description: Description,
-          updatedFields,
-        }),
+        JSON.stringify(logData)
       ]
     );
 

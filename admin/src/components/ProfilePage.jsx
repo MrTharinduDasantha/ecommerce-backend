@@ -11,13 +11,11 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const data = await api.getProfile();
-        console.log(data);
         setUser(data);
-
       } catch (error) {
         console.error("Error fetching profile:", error);
         setError("Failed to fetch profile");
-        toast.error("There was an error loading your profile."); // Error message added here
+        toast.error("There was an error loading your profile.");
       }
     };
     fetchProfile();
@@ -28,19 +26,18 @@ const ProfilePage = () => {
       html: `
         <div class="relative max-h-[80vh] overflow-y-auto p-4">
           <h3 class="pt-5 text-xl font-bold text-left">Update Your Information</h3>
-       
           <div class="space-y-4 mt-6">
             <div>
               <label class="block text-sm font-medium text-left mb-2">Full Name:</label>
-              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${user.Full_Name}" placeholder="Enter Name" />
+              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${user.Full_Name}" placeholder="Enter Name" required />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Email Address:</label>
-              <input id="email" class="w-full px-3 py-2 border rounded-md" value="${user.Email}" placeholder="Enter Email" />
+              <input id="email" class="w-full px-3 py-2 border rounded-md" value="${user.Email}" placeholder="Enter Email" type="email" required />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
-              <input id="phonenumber" class="w-full px-3 py-2 border rounded-md" value="${user.Phone_No}" placeholder="Enter Phone Number" />
+              <input id="phonenumber" class="w-full px-3 py-2 border rounded-md" value="${user.Phone_No}" placeholder="Enter Phone Number" required />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Status:</label>
@@ -58,29 +55,47 @@ const ProfilePage = () => {
       confirmButtonColor: "#5CAF90",
       cancelButtonColor: "#5CAF90",
       preConfirm: () => {
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const phoneNo = document.getElementById("phonenumber").value;
+        const status = document.getElementById("status").value;
+
+        const errors = [];
+        
+        // Validation rules
+        if (!name) errors.push("Full Name is required.");
+        if (!email) {
+          errors.push("Email Address is required.");
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+          errors.push("Enter a valid email address.");
+        }
+        if (!/^(\+?\d{1,3}[- ]?)?\d{10}$/.test(phoneNo)) {
+          errors.push("Enter a valid phone number.");
+        }
+
+        if (errors.length) {
+          Swal.showValidationMessage(errors.join(" "));
+          return false;
+        }
+
         return {
-          full_name: document.getElementById("name").value,
-          email: document.getElementById("email").value,
-          phone_no: document.getElementById("phonenumber").value,
-          status: document.getElementById("status").value,
+          full_name: name,
+          email: email,
+          phone_no: phoneNo,
+          status: status,
         };
-      }
+      },
     });
-  
-    // Adding the event listener for the close button after the modal is shown
-    document.getElementById("close-modal")?.addEventListener("click", () => {
-      Swal.close();  // Close the modal when the close button is clicked
-    });
-  
+    
     if (formValues) {
       try {
         await api.updateUser(user.idUser, formValues);
         toast.success("Your profile has been updated.");
-  
+
         if (formValues.email !== user.Email) {
           toast("A confirmation email has been sent to your new email address.");
         }
-  
+
         setUser((prevUser) => ({
           ...prevUser,
           ...formValues,
@@ -90,48 +105,49 @@ const ProfilePage = () => {
       }
     }
   };
-  
 
   const handleChangePassword = async () => {
     const { value: formValues } = await Swal.fire({
-       
       maxWidth: '600px',
       height: '200px',
-      html: `<div class="relative max-h-[80vh] overflow-y-auto p-4">
-          <h3 class="pt-5 text-xl font-bold text-left">
-            Change Your Password
-          </h3>
-      
+      html: `
+        <div class="relative max-h-[80vh] overflow-y-auto p-4">
+          <h3 class="pt-5 text-xl font-bold text-left">Change Your Password</h3>
           <div class="space-y-4 mt-6">
             <div>
               <label class="block text-sm font-medium text-left mb-2">New Password:</label>
-              <input id="new_password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Enter new password" />
+              <input id="new_password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Enter new password" required />
             </div>
-
             <div>
               <label class="block text-sm font-medium text-left mb-2">Confirm Password:</label>
-              <input id="confirm_password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Confirm new password" />
+              <input id="confirm_password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Confirm new password" required />
             </div>
           </div>
-        </div>`,
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonText: "Change Password",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#5CAF90",
       cancelButtonColor: "#5CAF90",
       preConfirm: () => {
-        return {
-          newPassword: document.getElementById("new_password").value,
-          confirmPassword: document.getElementById("confirm_password").value,
-        };
-      }
-    });
-    if (formValues) {
-      if (formValues.newPassword !== formValues.confirmPassword) {
-        toast.error("Passwords do not match");
-        return;
-      }
+        const newPassword = document.getElementById("new_password").value;
+        const confirmPassword = document.getElementById("confirm_password").value;
 
+        if (!newPassword) {
+          Swal.showValidationMessage("New Password is required.");
+          return false;
+        }
+        if (newPassword !== confirmPassword) {
+          Swal.showValidationMessage("Passwords do not match.");
+          return false;
+        }
+        
+        return { newPassword };
+      },
+    });
+    
+    if (formValues) {
       try {
         await api.updateUserPassword(user.idUser, formValues.newPassword);
         toast.success("Your password has been updated.");
@@ -147,10 +163,7 @@ const ProfilePage = () => {
         <p className="text-red-500 text-lg">{error}</p>
       </div>
     );
-    
-      
   }
-
 
   return (
     <section className="min-h-screen bg-gray-50">

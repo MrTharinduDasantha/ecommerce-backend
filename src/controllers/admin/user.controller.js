@@ -318,6 +318,16 @@ const resetPassword = async (req, res) => {
 const logoutAdmin = async (adminId) => {
   await logAdminAction(adminId, "Logged Out", "Logout");
 };
+const deleteLog = async (req, res) => {
+  try {
+    const logId = req.params.id;
+    await pool.query('DELETE FROM admin_logs WHERE log_id = ?', [logId]);
+    res.json({ message: 'Log deleted successfully' });
+  } catch (error) {
+    console.error("Error deleting log:", error);
+    res.status(500).json({ error: "Database error" });
+  }
+};
 
 module.exports = {
   getUsers,
@@ -334,4 +344,5 @@ module.exports = {
   updateUserPassword,
   getAdminLogs,
   logoutAdmin,
+  deleteLog
 };
