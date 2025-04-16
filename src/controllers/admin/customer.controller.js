@@ -42,52 +42,55 @@ const createCustomer = async (req, res) => {
 };
 
 // Update customer
+// Update customer
 const updateCustomer = async (req, res) => {
   try {
-    const customerId = req.params.id;
-    const customerData = req.body;
+      const customerId = req.params.id;
+      const customerData = req.body;
 
-    // Get the original customer data for logging
-    const originalCustomer = await Customer.getCustomerById(customerId);
-    if (!originalCustomer) {
-      return res.status(404).json({ error: 'Customer not found' });
-    }
-
-    // Update the customer
-    await Customer.updateCustomer(customerId, customerData);
-
-    // Prepare logging data
-    const logData = {
-      customerId: customerId,
-      originalData: {
-        name: originalCustomer.Full_Name,
-        email: originalCustomer.Email,
-        status: originalCustomer.Status
-      },
-      updatedData: {
-        name: customerData.full_name,
-        email: customerData.email,
-        status: customerData.status
+      // Get the original customer data for logging
+      const originalCustomer = await Customer.getCustomerById(customerId);
+      if (!originalCustomer) {
+          return res.status(404).json({ error: 'Customer not found' });
       }
-    };
 
-    // Log the admin action
-    const insertQuery = `
-      INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) 
-      VALUES (?, ?, ?, ?)
-    `;
+      // Update the customer
+      await Customer.updateCustomer(customerId, customerData);
 
-    await pool.query(insertQuery, [
-      req.user.userId,
-      'Updated customer',
-      req.headers['user-agent'],
-      JSON.stringify(logData)
-    ]);
+      // Prepare logging data, ensuring we save updated data correctly
+      const logData = {
+          customerId: customerId,
+          originalData: {
+              name: originalCustomer.Full_Name,
+              email: originalCustomer.Email,
+              status: originalCustomer.Status,
+              mobile_no: originalCustomer.Mobile_No
+          },
+          updatedData: {
+              name: customerData.full_name || originalCustomer.Full_Name, // Default to old name if not updated
+              email: customerData.email || originalCustomer.Email,      // Default to old email if not updated
+              status: customerData.status || originalCustomer.Status,    // Default to old status if not updated
+              mobile_no: customerData.mobile_no || originalCustomer.Mobile_No // Use updated mobile number, 
+          }
+      };
 
-    res.json({ message: 'Customer updated successfully' });
+      // Log the admin action
+      const insertQuery = `
+          INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) 
+          VALUES (?, ?, ?, ?)
+      `;
+
+      await pool.query(insertQuery, [
+          req.user.userId,
+          'Updated customer',
+          req.headers['user-agent'],
+          JSON.stringify(logData)
+      ]);
+
+      res.json({ message: 'Customer updated successfully' });
   } catch (error) {
-    console.error('Error in updateCustomer:', error);
-    res.status(500).json({ error: 'Database error', details: error.message });
+      console.error('Error in updateCustomer:', error);
+      res.status(500).json({ error: 'Database error', details: error.message });
   }
 };
 

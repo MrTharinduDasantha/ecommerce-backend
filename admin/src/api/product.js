@@ -30,7 +30,7 @@ export const getCategories = async () => {
     const response = await api.get("/api/products/categories");
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -42,7 +42,7 @@ export const createCategory = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -54,7 +54,7 @@ export const updateCategory = async (id, formData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -66,7 +66,7 @@ export const toggleCategoryStatus = async (id, status) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -79,7 +79,7 @@ export const createSubCategory = async (categoryId, description) => {
     );
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -91,7 +91,7 @@ export const deleteSubCategory = async (categoryId, subId) => {
     );
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -107,7 +107,7 @@ export const createProduct = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -119,7 +119,7 @@ export const createBrand = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -129,7 +129,7 @@ export const getBrands = async () => {
     const response = await api.get("/api/products/brands");
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -139,7 +139,7 @@ export const getProducts = async () => {
     const response = await api.get("/api/products");
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -149,19 +149,46 @@ export const getProduct = async (id) => {
     const response = await api.get(`/api/products/${id}`);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 // Update a product
 export const updateProduct = async (id, formData) => {
   try {
-    const response = await api.put(`/api/products/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    // Create a new FormData instance if formData is a plain object
+    let data = formData;
+    if (!(formData instanceof FormData)) {
+      data = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key === 'variations' || key === 'faqs' || key === 'subCategoryIds') {
+          data.append(key, JSON.stringify(formData[key]));
+        } else if (key === 'mainImage' && formData[key]) {
+          data.append('mainImage', formData[key]);
+        } else if (key === 'subImages' && formData[key]) {
+          Array.from(formData[key]).forEach(file => {
+            data.append('subImages', file);
+          });
+        } else {
+          data.append(key, formData[key]);
+        }
+      });
+    }
+
+    const response = await axios({
+      method: 'put',
+      url: `${API_URL}/api/products/${id}`,
+      data: data,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     });
+
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    console.error('Update product error:', error.response || error);
+    throw error.response?.data || error;
   }
 };
 
@@ -171,8 +198,11 @@ export const deleteProduct = async (id) => {
     const response = await api.delete(`/api/products/${id}`);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
+
+};
+
 };
 
 // ---------------------------
@@ -243,3 +273,4 @@ export const deleteDiscount = async (id) => {
     throw error.response.data;
   }
 };
+

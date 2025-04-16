@@ -73,6 +73,8 @@ router.get("/", productController.getAllProducts);
 router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
 
+module.exports = router;
+
 // ----------------
 // Discount Routes
 // ----------------
@@ -87,3 +89,4 @@ router.put("/discounts/:id", authenticate, productController.updateDiscount);
 router.delete("/discounts/:id", authenticate, productController.deleteDiscount);
 
 module.exports = router;
+

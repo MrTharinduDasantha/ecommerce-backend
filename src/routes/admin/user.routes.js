@@ -20,5 +20,6 @@ router.put("/:id", authenticate, userController.updateUser);
 router.delete("/:id", authenticate, userController.deleteUser);
 router.put("/:id/status", authenticate, userController.updateUserStatus); // Added authentication middleware
 router.put("/:id/password", authenticate, userController.updateUserPassword);
+router.delete("/logs/:id", authenticate, userController.deleteLog);
 
 module.exports = router;

@@ -1,31 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { fetchAdminLogs } from "../api/auth"; 
-import { FaEye } from 'react-icons/fa';
-
-// Basic modal component
-const Modal = ({ isOpen, onClose, details }) => {
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg p-5 max-w-sm w-full">
-                <h3 className="text-xl font-bold mb-4">Action Details</h3>
-                <pre className="whitespace-pre-wrap break-words">{details}</pre>
-                <button
-                    onClick={onClose}
-                    className="mt-4 bg-[#5CAF90] text-white py-2 px-4 rounded hover:bg-[#4a9277]"
-                >
-                    Close
-                </button>
-            </div>
-        </div>
-    );
-};
+import React, { useState, useEffect } from 'react';
+import { Eye, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { fetchAdminLogs, deleteLog } from '../api/auth';
+import toast, { Toaster } from 'react-hot-toast';
 
 const AdminLogs = () => {
     const [logs, setLogs] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalDetails, setModalDetails] = useState("");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -34,161 +15,96 @@ const AdminLogs = () => {
                 setLogs(logData);
             } catch (error) {
                 console.error("Error fetching logs:", error);
+                toast.error("Failed to fetch logs");
             }
         };
 
         fetchLogs();
     }, []);
 
+    const handleDeleteLog = async (logId) => {
+        try {
+            await deleteLog(logId);
+            setLogs(prevLogs => prevLogs.filter(log => log.log_id !== logId));
+            toast.success("Log deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting log:", error);
+            toast.error("Failed to delete the log.");
+        }
+    };
+
     const handleViewDetails = (log) => {
-        let detailsMessage = `Admin: ${log.Admin_Name || 'N/A'}\nAction: ${log.action}\nTimestamp: ${new Date(log.timestamp).toLocaleString()}`;
-
-        if (log.new_user_info) {
-            try {
-                const details = JSON.parse(log.new_user_info);
-                
-                // Format details based on action type
-                switch (log.action) {
-                    case 'Added new user':
-                        detailsMessage += `\n\nNew Admin Details:\n- Name: ${details.full_name || 'N/A'}\n- Email: ${details.email || 'N/A'}\n- Phone: ${details.phone_no || 'N/A'}`;
-                        break;
-                    case 'Updated customer':
-                        detailsMessage += `\n\nCustomer Update:\nOriginal Data:\n- Name: ${details.originalData.name}\n- Email: ${details.originalData.email}\n- Status: ${details.originalData.status}\n\nUpdated To:\n- Name: ${details.updatedData.name}\n- Email: ${details.updatedData.email}\n- Status: ${details.updatedData.status}`;
-                        break;
-                    case 'Deleted customer':
-                        detailsMessage += `\n\nDeleted Customer Details:\n- Name: ${details.customerName}\n- Email: ${details.customerEmail}`;
-                        break;
-                    // Product-related actions
-                    case 'Created category':
-                        detailsMessage += `\n\nCategory Details:\n- Description: ${details.description}`;
-                        break;
-                    case 'Updated category':
-                        detailsMessage += `\n\nCategory Update:\n- Description: ${details.description}`;
-                        break;
-                    case 'Toggled category status':
-                        detailsMessage += `\n\nCategory Status Update:\n- New Status: ${details.status}`;
-                        break;
-                    case 'Created subcategory':
-                        detailsMessage += `\n\nSubcategory Details:\n- Description: ${details.description}\n- Parent Category ID: ${details.categoryId}`;
-                        break;
-                    case 'Deleted subcategory':
-                        detailsMessage += `\n\nDeleted Subcategory:\n- ID: ${details.subCategoryId}`;
-                        break;
-                    case 'Created product':
-                        detailsMessage += `\n\nProduct Details:\n- Description: ${details.description}\n- Brand: ${details.brand}\n- Price: ${details.price}`;
-                        break;
-                    case 'Created brand':
-                        detailsMessage += `\n\nBrand Details:\n- Name: ${details.brandName}\n- Description: ${details.description || 'N/A'}`;
-                        break;
-                    case 'Updated product':
-                        detailsMessage += `\n\nProduct Update:\n- Description: ${details.description}\n- Updated Fields: ${details.updatedFields.join(', ')}`;
-                        break;
-                    case 'Deleted product':
-                        detailsMessage += `\n\nDeleted Product Details:\n- ID: ${details.productId}\n- Description: ${details.description}`;
-                        break;
-                    // Order status update action
-                    case 'Updated order status':
-                        detailsMessage += `\n\nOrder Status Update:\n- Order ID: ${details.orderId}\n- Customer: ${details.customerName}\n- Previous Status: ${details.previousStatus}\n- New Status: ${details.newStatus}\n- Order Total: $${details.orderTotal}`;
-                        break;
-                    default:
-                        if (typeof details === 'object') {
-                            detailsMessage += '\n\nAdditional Details:';
-                            Object.entries(details).forEach(([key, value]) => {
-                                detailsMessage += `\n- ${key}: ${value}`;
-                            });
-                        }
-                }
-            } catch (e) {
-                detailsMessage += `\n\nAdditional Info: ${log.new_user_info}`;
-            }
-        }
-
-        if (log.device_info) {
-            detailsMessage += `\n\nDevice Info: ${log.device_info}`;
-        }
-
-        setModalDetails(detailsMessage);
-        setIsModalOpen(true);
+        navigate(`/dashboard/log/view-adminlogs/${log.log_id}`, { 
+            state: { 
+                log: {
+                    ...log,
+                    details: {
+                        ...log.details,
+                        oldData: log.old_data ? JSON.parse(log.old_data) : null,
+                        newData: log.new_data ? JSON.parse(log.new_data) : null
+                    }
+                } 
+            } 
+        });
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
-
-    const getActionStyle = (action) => {
-        switch (action) {
-            case 'Logged In':
-                return 'bg-blue-100 text-blue-800';
-            case 'Added new user':
-                return 'bg-green-100 text-green-800';
-            case 'Updated customer':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'Deleted customer':
-                return 'bg-red-100 text-red-800';
-            // Product-related actions
-            case 'Created category':
-            case 'Created subcategory':
-            case 'Created product':
-            case 'Created brand':
-                return 'bg-emerald-100 text-emerald-800';
-            case 'Updated category':
-            case 'Updated product':
-            case 'Toggled category status':
-                return 'bg-amber-100 text-amber-800';
-            case 'Deleted subcategory':
-            case 'Deleted product':
-                return 'bg-rose-100 text-rose-800';
-            // Order status update action
-            case 'Updated order status':
-                return 'bg-purple-100 text-purple-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
+    const getActionBadgeWidth = (action) => {
+        const length = action.length;
+        if (length <= 8) return 'w-24';
+        if (length <= 12) return 'w-32';
+        if (length <= 16) return 'w-40';
+        if (length <= 20) return 'w-48';
+        return 'w-56';
     };
 
     return (
-        <div className="p-4">
+        <div className="px-1 py-5">
+            <Toaster />
             <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 ml-5">
-                    <h2 className="text-2xl font-bold text-[#1D372E] mb-3 md:mb-4">Admin Logs</h2>
+                <div className="flex items-center gap-2 mb-6">
+                    <div className="w-1 h-6 bg-[#5CAF90]"></div>
+                    <h2 className="text-xl font-bold text-[#1D372E]">Admin Logs</h2>
                 </div>
 
                 <div className="block w-full overflow-x-auto">
-                    <div className="m-4 hidden sm:block">
-                        <table className="min-w-full divide-y divide-gray-200 border border-[#1D372E]">
-                            <thead className="bg-[#5CAF90] text-[#1D372E]">
-                                <tr>
-                                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">Admin Name</th>
-                                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">Action</th>
-                                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">Timestamp</th>
-                                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">Device Info</th>
-                                    <th className="border-2 p-1 md:p-2 text-xs md:text-sm lg:text-base">Details</th>
+                    <div className="hidden sm:block">
+                        <table className="table min-w-[700px] w-full text-center border border-[#B7B7B7]">
+                            <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                                <tr className="border-b border-[#B7B7B7]">
+                                    <th className="font-semibold p-3">Admin Name</th>
+                                    <th className="font-semibold p-3">Action</th>
+                                    <th className="font-semibold p-3">Timestamp</th>
+                                    <th className="font-semibold p-3">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white text-[#1D372E] divide-y divide-gray-200">
+                            <tbody className="text-[#1D372E]">
                                 {logs.map((log) => (
-                                    <tr key={log.log_id} className="hover:bg-gray-50">
-                                        <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
-                                            {log.Admin_Name || 'N/A'}
+                                    <tr key={log.log_id} className="border-b border-[#B7B7B7] bg-[#F7FDFF]">
+                                        <td className="p-5">{log.Admin_Name || 'N/A'}</td>
+                                        <td className="p-5">
+                                            <div className="flex justify-center">
+                                                <span className={`${getActionBadgeWidth(log.action)} py-1 inline-flex items-center justify-center text-xs leading-4 font-semibold rounded-full border border-black-300 ${getActionStyle(log.action)}`}>
+                                                    {log.action}
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
-                                            <span className={`px-2 py-1 rounded-full text-xs ${getActionStyle(log.action)}`}>
-                                                {log.action}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
-                                            {new Date(log.timestamp).toLocaleString()}
-                                        </td>
-                                        <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
-                                            {log.device_info}
-                                        </td>
-                                        <td className="p-3 whitespace-nowrap border-2 border-[#1D372E] text-center">
-                                            <button 
-                                                onClick={() => handleViewDetails(log)} 
-                                                className="text-[#5CAF90] hover:text-[#4a9277]"
-                                            >
-                                                <FaEye />
-                                            </button>
+                                        <td className="p-5">{new Date(log.timestamp).toLocaleString()}</td>
+                                        <td className="p-5">
+                                            <div className="flex justify-center space-x-2">
+                                                <button 
+                                                    onClick={() => handleViewDetails(log)} 
+                                                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] p-1"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="w-4 h-4 text-white" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteLog(log.log_id)} 
+                                                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] p-1"
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-white" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -196,39 +112,72 @@ const AdminLogs = () => {
                         </table>
                     </div>
 
-                    {/* Mobile view */}
                     <div className="sm:hidden space-y-4">
                         {logs.map((log) => (
-                            <div key={log.log_id} className="bg-white p-4 border rounded-lg shadow-sm">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div className="text-sm font-medium text-gray-900">
-                                        {log.Admin_Name || 'N/A'}
+                            <div key={log.log_id} className="bg-[#F7FDFF] p-4 rounded-lg border border-[#B7B7B7]">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="space-y-1">
+                                        <div className="font-medium text-[#1D372E]">{log.Admin_Name || 'N/A'}</div>
+                                        <div className="text-xs text-gray-500">
+                                            {new Date(log.timestamp).toLocaleString()}
+                                        </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs ${getActionStyle(log.action)}`}>
+                                    <span className={`${getActionBadgeWidth(log.action)} py-1 text-xs font-semibold rounded-full border border-black-300 text-center ${getActionStyle(log.action)}`}>
                                         {log.action}
                                     </span>
                                 </div>
-                                <div className="text-xs text-gray-500 mb-2">
-                                    {new Date(log.timestamp).toLocaleString()}
+                                <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">
+                                    <button 
+                                        onClick={() => handleViewDetails(log)}
+                                        className="flex items-center text-[#5CAF90] hover:text-[#4a9277] text-sm"
+                                    >
+                                        <Eye className="w-4 h-4 mr-1" />
+                                        View
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDeleteLog(log.log_id)}
+                                        className="flex items-center text-red-600 hover:text-red-800 text-sm"
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-1" />
+                                        Delete
+                                    </button>
                                 </div>
-                                <div className="text-xs text-gray-500 mb-3">
-                                    {log.device_info}
-                                </div>
-                                <button 
-                                    onClick={() => handleViewDetails(log)}
-                                    className="text-[#5CAF90] hover:text-[#4a9277] flex items-center"
-                                >
-                                    <FaEye className="mr-1" /> View Details
-                                </button>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
-
-            <Modal isOpen={isModalOpen} onClose={closeModal} details={modalDetails} />
         </div>
     );
+};
+
+const getActionStyle = (action) => {
+    switch (action) {
+        case 'Logged In':
+            return 'bg-blue-100 text-blue-800';
+        case 'Added new user':
+            return 'bg-green-100 text-green-800';
+        case 'Updated customer':
+            return 'bg-yellow-100 text-yellow-800';
+        case 'Deleted customer':
+            return 'bg-red-100 text-red-800';
+        case 'Created category':
+        case 'Created subcategory':
+        case 'Created product':
+        case 'Created brand':
+            return 'bg-emerald-100 text-emerald-800';
+        case 'Updated category':
+        case 'Updated product':
+        case 'Toggled category status':
+            return 'bg-amber-100 text-amber-800';
+        case 'Deleted subcategory':
+        case 'Deleted product':
+            return 'bg-rose-100 text-rose-800';
+        case 'Updated order status':
+            return 'bg-purple-100 text-purple-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
 };
 
 export default AdminLogs;
