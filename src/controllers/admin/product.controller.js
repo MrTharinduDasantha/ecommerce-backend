@@ -69,7 +69,7 @@ async function updateCategory(req, res) {
 
     // Get original category data for logging
     const [originalCategory] = await pool.query(
-      'SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ?',
+      "SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ?",
       [id]
     );
 
@@ -90,12 +90,12 @@ async function updateCategory(req, res) {
     const logData = {
       originalData: {
         description: originalCategory[0].Description,
-        image_url: originalCategory[0].Image_Icon_Url
+        image_url: originalCategory[0].Image_Icon_Url,
       },
       updatedData: {
         description: description,
-        image_url: imageUrl || originalCategory[0].Image_Icon_Url
-      }
+        image_url: imageUrl || originalCategory[0].Image_Icon_Url,
+      },
     };
 
     await pool.query(
@@ -104,7 +104,7 @@ async function updateCategory(req, res) {
         req.user.userId,
         "Updated category",
         req.headers["user-agent"],
-        JSON.stringify(logData)
+        JSON.stringify(logData),
       ]
     );
 
@@ -126,7 +126,7 @@ async function toggleCategoryStatus(req, res) {
 
     // Get original category data for logging
     const [originalCategory] = await pool.query(
-      'SELECT Description, Status FROM Product_Category WHERE idProduct_Category = ?',
+      "SELECT Description, Status FROM Product_Category WHERE idProduct_Category = ?",
       [id]
     );
 
@@ -140,12 +140,12 @@ async function toggleCategoryStatus(req, res) {
     const logData = {
       originalData: {
         description: originalCategory[0].Description,
-        status: originalCategory[0].Status
+        status: originalCategory[0].Status,
       },
       updatedData: {
         description: originalCategory[0].Description,
-        status: status
-      }
+        status: status,
+      },
     };
 
     await pool.query(
@@ -154,7 +154,7 @@ async function toggleCategoryStatus(req, res) {
         req.user.userId,
         "Toggled category status",
         req.headers["user-agent"],
-        JSON.stringify(logData)
+        JSON.stringify(logData),
       ]
     );
 
@@ -259,6 +259,19 @@ async function createProduct(req, res) {
       }`;
     }
 
+    let variationData;
+    try {
+      variationData = JSON.parse(variations);
+      if (!Array.isArray(variationData) || variationData.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "Variations must be a non-empty array" });
+      }
+    } catch (error) {
+      console.error("Error parsing variations:", error);
+      return res.status(400).json({ message: "Invalid variations format" });
+    }
+
     const productData = {
       Description,
       Product_Brand_idProduct_Brand,
@@ -266,16 +279,20 @@ async function createProduct(req, res) {
       Selling_Price,
       Main_Image_Url: mainImageUrl,
       Long_Description,
+      SIH: 0, // Initialize SIH
     };
 
-    if (variations) {
-      const variationData = JSON.parse(variations);
-      let totalQty = 0;
-      for (const variation of variationData) {
-        totalQty += Number(variation.quantity);
+    // Calculate total SIH from variations
+    let totalQty = 0;
+    for (const variation of variationData) {
+      if (!variation.colorCode || !variation.size || !variation.quantity) {
+        return res.status(400).json({
+          message: "Each variation must have colorCode, size, and quantity",
+        });
       }
-      productData.SIH = totalQty;
+      totalQty += Number(variation.quantity);
     }
+    productData.SIH = totalQty;
 
     const result = await Product.createProduct(productData);
     const productId = result.insertId;
@@ -289,11 +306,9 @@ async function createProduct(req, res) {
       }
     }
 
-    if (variations) {
-      const variationData = JSON.parse(variations);
-      for (const variation of variationData) {
-        await Product.createProductVariant(productId, variation);
-      }
+    // Insert variations
+    for (const variation of variationData) {
+      await Product.createProductVariant(productId, variation);
     }
 
     if (faqs) {
@@ -435,7 +450,34 @@ async function updateProduct(req, res) {
       Selling_Price,
       Main_Image_Url: mainImageUrl,
       Long_Description,
+      SIH: 0, // Initialize SIH
     };
+
+    // Calculate total SIH from variations if provided
+    let variationData = null;
+    if (variations) {
+      try {
+        variationData = JSON.parse(variations);
+        if (!Array.isArray(variationData)) {
+          return res
+            .status(400)
+            .json({ message: "Variations must be an array" });
+        }
+        let totalQty = 0;
+        for (const variation of variationData) {
+          if (!variation.colorCode || !variation.size || !variation.quantity) {
+            return res.status(400).json({
+              message: "Each variation must have colorCode, size, and quantity",
+            });
+          }
+          totalQty += Number(variation.quantity);
+        }
+        productData.SIH = totalQty;
+      } catch (error) {
+        console.error("Error parsing variations:", error);
+        return res.status(400).json({ message: "Invalid variations format" });
+      }
+    }
 
     // Get brand names for logging
     const [oldBrand] = await pool.query(
@@ -447,6 +489,20 @@ async function updateProduct(req, res) {
       [Product_Brand_idProduct_Brand]
     );
 
+    // Prepare associated data
+    const subImages =
+      req.files?.subImages?.map(
+        (file) =>
+          `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
+      ) || [];
+
+    await Product.updateProduct(id, productData, {
+      images: subImages.length > 0 ? subImages : null,
+      variations: variationData,
+      faqs: faqs ? JSON.parse(faqs) : null,
+      subCategoryIds: subCategoryIds ? JSON.parse(subCategoryIds) : null,
+    });
+
     // Prepare logging data
     const logData = {
       originalData: {
@@ -455,7 +511,8 @@ async function updateProduct(req, res) {
         market_price: existingProduct.Market_Price,
         selling_price: existingProduct.Selling_Price,
         long_description: existingProduct.Long_Description,
-        main_image: existingProduct.Main_Image_Url
+        main_image: existingProduct.Main_Image_Url,
+        sub_images: existingProduct.images?.map((img) => img.Image_Url) || [],
       },
       updatedData: {
         description: Description,
@@ -463,21 +520,12 @@ async function updateProduct(req, res) {
         market_price: Market_Price,
         selling_price: Selling_Price,
         long_description: Long_Description,
-        main_image: mainImageUrl
-      }
+        main_image: mainImageUrl,
+        sub_images: subImages,
+      },
     };
 
-    await Product.updateProduct(id, productData, {
-      images: req.files?.subImages?.map(file => 
-        `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
-      ),
-      variations: variations ? JSON.parse(variations) : null,
-      faqs: faqs ? JSON.parse(faqs) : null,
-      subCategoryIds: subCategoryIds ? JSON.parse(subCategoryIds) : null,
-    });
-
-    // Log the admin action
-
+    // Log updated fields
     const updatedFields = [];
     if (Description !== existingProduct.Description)
       updatedFields.push("description");
@@ -489,7 +537,11 @@ async function updateProduct(req, res) {
       updatedFields.push("long description");
     if (mainImageUrl !== existingProduct.Main_Image_Url)
       updatedFields.push("main image");
-    if (imagesArray) updatedFields.push("sub images");
+    if (
+      subImages.length > 0 ||
+      (existingProduct.images && existingProduct.images.length > 0)
+    )
+      updatedFields.push("sub images");
     if (variations) updatedFields.push("variations");
     if (faqs) updatedFields.push("FAQs");
     if (subCategoryIds) updatedFields.push("sub categories");
@@ -500,7 +552,7 @@ async function updateProduct(req, res) {
         req.user.userId,
         "Updated product",
         req.headers["user-agent"],
-        JSON.stringify(logData)
+        JSON.stringify(logData),
       ]
     );
 
@@ -520,6 +572,48 @@ async function getAllProducts(req, res) {
       .json({ message: "Products fetched successfully", products });
   } catch (error) {
     console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+}
+
+// Get products by sub-category
+async function getProductsBySubCategory(req, res) {
+  try {
+    const { subId } = req.params;
+    const products = await Product.getProductsBySubCategory(subId);
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found for this sub-category" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Products fetched successfully", products });
+  } catch (error) {
+    console.error("Error fetching products by sub-category:", error);
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+}
+
+// Get products by brand
+async function getProductsByBrand(req, res) {
+  try {
+    const { brandId } = req.params;
+    const products = await Product.getProductsByBrand(brandId);
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found for this brand" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Products fetched successfully", products });
+  } catch (error) {
+    console.error("Error fetching products by brand:", error);
     res.status(500).json({ message: "Failed to fetch products" });
   }
 }
@@ -837,6 +931,8 @@ module.exports = {
   getBrands,
   updateProduct,
   getAllProducts,
+  getProductsBySubCategory,
+  getProductsByBrand,
   getProductById,
   deleteProduct,
   getAllDiscounts,

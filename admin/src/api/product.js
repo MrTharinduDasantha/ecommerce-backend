@@ -160,14 +160,18 @@ export const updateProduct = async (id, formData) => {
     let data = formData;
     if (!(formData instanceof FormData)) {
       data = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (key === 'variations' || key === 'faqs' || key === 'subCategoryIds') {
+      Object.keys(formData).forEach((key) => {
+        if (
+          key === "variations" ||
+          key === "faqs" ||
+          key === "subCategoryIds"
+        ) {
           data.append(key, JSON.stringify(formData[key]));
-        } else if (key === 'mainImage' && formData[key]) {
-          data.append('mainImage', formData[key]);
-        } else if (key === 'subImages' && formData[key]) {
-          Array.from(formData[key]).forEach(file => {
-            data.append('subImages', file);
+        } else if (key === "mainImage" && formData[key]) {
+          data.append("mainImage", formData[key]);
+        } else if (key === "subImages" && formData[key]) {
+          Array.from(formData[key]).forEach((file) => {
+            data.append("subImages", file);
           });
         } else {
           data.append(key, formData[key]);
@@ -176,18 +180,18 @@ export const updateProduct = async (id, formData) => {
     }
 
     const response = await axios({
-      method: 'put',
+      method: "put",
       url: `${API_URL}/api/products/${id}`,
       data: data,
       headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
 
     return response.data;
   } catch (error) {
-    console.error('Update product error:', error.response || error);
+    console.error("Update product error:", error.response || error);
     throw error.response?.data || error;
   }
 };
@@ -200,9 +204,6 @@ export const deleteProduct = async (id) => {
   } catch (error) {
     throw error.response?.data || error;
   }
-
-};
-
 };
 
 // ---------------------------
@@ -273,4 +274,3 @@ export const deleteDiscount = async (id) => {
     throw error.response.data;
   }
 };
-
