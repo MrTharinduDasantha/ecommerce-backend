@@ -70,6 +70,11 @@ router.post(
 router.get("/brands", productController.getBrands);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
 router.get("/", productController.getAllProducts);
+router.get(
+  "/sub-categories/:subId/products",
+  productController.getProductsBySubCategory
+);
+router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
 
@@ -89,4 +94,3 @@ router.put("/discounts/:id", authenticate, productController.updateDiscount);
 router.delete("/discounts/:id", authenticate, productController.deleteDiscount);
 
 module.exports = router;
-

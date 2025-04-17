@@ -275,12 +275,14 @@ async function updateProduct(productId, productData, associatedData) {
 
 // Get all products
 async function getAllProducts() {
-  // Join product table with product brand table
   const query = `
     SELECT P.*, 
       B.Brand_Name,
       B.Brand_Image_Url,
-      B.ShortDescription
+      B.ShortDescription,
+      (SELECT COUNT(*) FROM order_has_product_variations ohpv
+       JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+       WHERE pv.Product_idProduct = P.idProduct) > 0 as hasOrders
     FROM Product P
     LEFT JOIN Product_Brand B 
       ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
@@ -320,6 +322,51 @@ async function getAllProducts() {
       [product.idProduct]
     );
     product.subcategories = subCats;
+  }
+
+  return products;
+}
+
+// Get all products by subcategory id
+async function getProductsBySubCategory(subCategoryId) {
+  const query = `
+    SELECT P.*, B.Brand_Name
+    FROM Product P
+    JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct
+    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    WHERE PS.Sub_Category_idSub_Category = ?
+  `;
+  const [products] = await pool.query(query, [subCategoryId]);
+
+  // Fetch additional data like images for each product
+  for (const product of products) {
+    const [images] = await pool.query(
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
+      [product.idProduct]
+    );
+    product.images = images;
+  }
+
+  return products;
+}
+
+// Get all products by brand id
+async function getProductsByBrand(brandId) {
+  const query = `
+    SELECT P.*, B.Brand_Name
+    FROM Product P
+    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    WHERE P.Product_Brand_idProduct_Brand = ?
+  `;
+  const [products] = await pool.query(query, [brandId]);
+
+  // Fetch additional data like images for each product
+  for (const product of products) {
+    const [images] = await pool.query(
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
+      [product.idProduct]
+    );
+    product.images = images;
   }
 
   return products;
@@ -521,6 +568,8 @@ module.exports = {
   createProductSubCategory,
   updateProduct,
   getAllProducts,
+  getProductsBySubCategory,
+  getProductsByBrand,
   getProductById,
   deleteProduct,
   getAllDiscounts,
