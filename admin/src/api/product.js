@@ -123,6 +123,32 @@ export const createBrand = async (formData) => {
   }
 };
 
+// Update an existing brand
+export const updateBrand = async (brandId, formData) => {
+  try {
+    const response = await api.put(
+      `/api/products/brands/${brandId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// Delete a brand
+export const deleteBrand = async (brandId) => {
+  try {
+    const response = await api.delete(`/api/products/brands/${brandId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // Get all brands
 export const getBrands = async () => {
   try {

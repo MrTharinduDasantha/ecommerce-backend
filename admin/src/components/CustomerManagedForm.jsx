@@ -47,21 +47,31 @@ const CustomerManagedForm = () => {
           <div class="space-y-4 mt-6">
             <div>
               <label class="block text-sm font-medium text-left mb-2">Customer Name:</label>
-              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${customer.Full_Name || ""}" placeholder="Enter Name" />
+              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${
+                customer.Full_Name || ""
+              }" placeholder="Enter Name" />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Customer Email:</label>
-              <input id="email" type="email" class="w-full px-3 py-2 border rounded-md" value="${customer.Email || ""}" placeholder="Enter Email" />
+              <input id="email" type="email" class="w-full px-3 py-2 border rounded-md" value="${
+                customer.Email || ""
+              }" placeholder="Enter Email" />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
-              <input id="phone" type="tel" class="w-full px-3 py-2 border rounded-md" value="${customer.Mobile_No || ""}" placeholder="Enter Phone Number" />
+              <input id="phone" type="tel" class="w-full px-3 py-2 border rounded-md" value="${
+                customer.Mobile_No || ""
+              }" placeholder="Enter Phone Number" />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Status:</label>
               <select id="status" class="w-full px-3 py-2 border rounded-md">
-                <option value="Active" ${customer.Status === "Active" ? "selected" : ""}>Active</option>
-                <option value="Inactive" ${customer.Status === "Inactive" ? "selected" : ""}>Inactive</option>
+                <option value="Active" ${
+                  customer.Status === "Active" ? "selected" : ""
+                }>Active</option>
+                <option value="Inactive" ${
+                  customer.Status === "Inactive" ? "selected" : ""
+                }>Inactive</option>
               </select>
             </div>
           </div>
@@ -111,7 +121,9 @@ const CustomerManagedForm = () => {
         try {
           await api.updateCustomer(customerId, updatedCustomer);
           setCustomers((prevCustomers) =>
-            prevCustomers.map((c) => (c.idCustomer === customerId ? { ...c, ...updatedCustomer } : c))
+            prevCustomers.map((c) =>
+              c.idCustomer === customerId ? { ...c, ...updatedCustomer } : c
+            )
           );
 
           toast.success("Customer updated successfully");
@@ -134,22 +146,30 @@ const CustomerManagedForm = () => {
         <div class="max-h-[70vh] overflow-y-auto px-4">
           <h3 class="text-xl font-bold text-left mt-5 mb-3">Order History</h3>
           <div class="space-y-4">
-            ${history.orders.map((order) => `
+            ${history.orders
+              .map(
+                (order) => `
               <div class="p-4 border rounded-lg">
                 <p class="font-semibold text-left">Order ID: ${order.idOrder}</p>
                 <p class="text-left">Status: ${order.Delivery_Status}</p>
                 <p class="text-left">Total Amount: ${order.Total_Amount}</p>
               </div>
-            `).join("")}
+            `
+              )
+              .join("")}
           </div>
           <h3 class="text-xl font-bold text-left mt-6 mb-3">Delivery Addresses</h3>
           <div class="space-y-4 mb-4">
-            ${history.deliveryAddresses.map((address) => `
+            ${history.deliveryAddresses
+              .map(
+                (address) => `
               <div class="p-4 border rounded-lg">
                 <p class="text-left">Address: ${address.Address}, ${address.City}, ${address.Country}</p>
                 <p class="text-left">Phone: ${address.Mobile_No}</p>
               </div>
-            `).join("")}
+            `
+              )
+              .join("")}
           </div>
         </div>
       `;
@@ -198,9 +218,12 @@ const CustomerManagedForm = () => {
   const filteredCustomers = customers.filter((customer) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     return (
-      (customer.idCustomer && customer.idCustomer.toString().includes(lowerSearchTerm)) ||
-      (customer.Full_Name && customer.Full_Name.toLowerCase().includes(lowerSearchTerm)) ||
-      (customer.Email && customer.Email.toLowerCase().includes(lowerSearchTerm)) ||
+      (customer.idCustomer &&
+        customer.idCustomer.toString().includes(lowerSearchTerm)) ||
+      (customer.Full_Name &&
+        customer.Full_Name.toLowerCase().includes(lowerSearchTerm)) ||
+      (customer.Email &&
+        customer.Email.toLowerCase().includes(lowerSearchTerm)) ||
       (customer.Mobile_No && customer.Mobile_No.includes(lowerSearchTerm))
     );
   });
@@ -214,8 +237,8 @@ const CustomerManagedForm = () => {
   }
 
   return (
-    <div className="px-1 py-5">
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
+    <div>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4 md:p-6">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-[#5CAF90]"></div>
           <h2 className="text-xl font-bold text-[#1D372E]">Customer Details</h2>
@@ -232,7 +255,9 @@ const CustomerManagedForm = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]">Search</button>
+            <button className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]">
+              Search
+            </button>
           </div>
         </div>
 
@@ -253,30 +278,56 @@ const CustomerManagedForm = () => {
               </thead>
               <tbody className="text-[#1D372E]">
                 {filteredCustomers.map((customer) => (
-                  <tr key={customer.idCustomer} className="border-b border-[#B7B7B7] bg-[#F7FDFF]">
+                  <tr
+                    key={customer.idCustomer}
+                    className="border-b border-[#B7B7B7] bg-[#F7FDFF]"
+                  >
                     <td className="p-5">{customer.idCustomer}</td>
                     <td className="p-5">{customer.Full_Name}</td>
                     <td className="p-5">{customer.Email}</td>
                     <td className="p-5">{customer.Mobile_No}</td>
                     <td className="p-5">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${customer.Status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
+                          customer.Status === "Active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {customer.Status}
                       </span>
                     </td>
-                    <td className="p-5">{new Date(customer.created_at).toLocaleDateString()}</td>
-                    <td className="p-5">{new Date(customer.updated_at).toLocaleDateString()}</td>
+                    <td className="p-5">
+                      {new Date(customer.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="p-5">
+                      {new Date(customer.updated_at).toLocaleDateString()}
+                    </td>
                     <td className="p-5">
                       <div className="flex items-center space-x-3">
-                        <button onClick={() => handleViewDetails(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]" title="View Details">
+                        <button
+                          onClick={() => handleViewDetails(customer.idCustomer)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="View Details"
+                        >
                           <FaEye />
                         </button>
-                        <button onClick={() => handleEdit(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]">
+                        <button
+                          onClick={() => handleEdit(customer.idCustomer)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                        >
                           <FaEdit />
                         </button>
-                        <button onClick={() => handleHistory(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]">
+                        <button
+                          onClick={() => handleHistory(customer.idCustomer)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                        >
                           <FaHistory />
                         </button>
-                        <button onClick={() => handleDelete(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]">
+                        <button
+                          onClick={() => handleDelete(customer.idCustomer)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                        >
                           <RiDeleteBin5Fill />
                         </button>
                       </div>
@@ -293,27 +344,56 @@ const CustomerManagedForm = () => {
               <div key={customer.idCustomer} className="bg-white p-4 border-b">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <div className="text-sm font-medium text-gray-900">{customer.Full_Name}</div>
-                    <div className="text-sm text-gray-500">ID: {customer.idCustomer}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {customer.Full_Name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      ID: {customer.idCustomer}
+                    </div>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${customer.Status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                  <span
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      customer.Status === "Active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
                     {customer.Status}
                   </span>
                 </div>
-                <div className="text-sm text-gray-500 mb-1">{customer.Email}</div>
-                <div className="text-sm text-gray-500 mb-2">{customer.Mobile_No}</div>
-                <div className="text-xs text-gray-400 mb-3">Created: {new Date(customer.created_at).toLocaleDateString()}</div>
+                <div className="text-sm text-gray-500 mb-1">
+                  {customer.Email}
+                </div>
+                <div className="text-sm text-gray-500 mb-2">
+                  {customer.Mobile_No}
+                </div>
+                <div className="text-xs text-gray-400 mb-3">
+                  Created: {new Date(customer.created_at).toLocaleDateString()}
+                </div>
                 <div className="flex justify-end space-x-3">
-                  <button onClick={() => handleViewDetails(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]" title="View Details">
+                  <button
+                    onClick={() => handleViewDetails(customer.idCustomer)}
+                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                    title="View Details"
+                  >
                     <FaEye className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleEdit(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]">
+                  <button
+                    onClick={() => handleEdit(customer.idCustomer)}
+                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                  >
                     <FaEdit className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleHistory(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]">
+                  <button
+                    onClick={() => handleHistory(customer.idCustomer)}
+                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                  >
                     <FaHistory className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(customer.idCustomer)} className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]">
+                  <button
+                    onClick={() => handleDelete(customer.idCustomer)}
+                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                  >
                     <RiDeleteBin5Fill className="w-4 h-4" />
                   </button>
                 </div>

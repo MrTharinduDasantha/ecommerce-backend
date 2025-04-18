@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill, RiDeleteBack2Fill } from "react-icons/ri";
 import {
+  FaEdit,
   FaRegCheckSquare,
   FaCheckSquare,
   FaQuestionCircle,
@@ -12,6 +13,8 @@ import {
   createProduct,
   updateProduct,
   createBrand,
+  updateBrand,
+  deleteBrand,
   getBrands,
   getCategories,
   getProduct,
@@ -87,6 +90,8 @@ const ProductForm = () => {
   const [brandPopupVisible, setBrandPopupVisible] = useState(false);
   const [newBrandName, setNewBrandName] = useState("");
   const [newBrandDescription, setNewBrandDescription] = useState("");
+  const [editingBrandId, setEditingBrandId] = useState(null);
+  const [isEditingBrand, setIsEditingBrand] = useState(false);
 
   // Brand image
   const [newBrandImage, setNewBrandImage] = useState(null);
@@ -230,42 +235,80 @@ const ProductForm = () => {
 
   // Brand popup handlers
   const openBrandPopup = () => {
+    resetBrandForm();
     setBrandPopupVisible(true);
   };
 
   const closeBrandPopup = () => {
+    resetBrandForm();
     setBrandPopupVisible(false);
-    setNewBrandName("");
-    setNewBrandDescription("");
   };
 
-  const handleAddBrand = async () => {
+  const resetBrandForm = () => {
+    setNewBrandName("");
+    setNewBrandDescription("");
+    setNewBrandImage(null);
+    setNewBrandImagePreview(null);
+    setEditingBrandId(null);
+    setIsEditingBrand(false);
+    if (newBrandImageRef.current) newBrandImageRef.current.value = "";
+  };
+
+  const handleEditBrand = (brand) => {
+    setEditingBrandId(brand.idProduct_Brand);
+    setNewBrandName(brand.Brand_Name);
+    setNewBrandDescription(brand.ShortDescription || "");
+    if (brand.Brand_Image_Url) {
+      setNewBrandImagePreview(brand.Brand_Image_Url);
+    }
+    setIsEditingBrand(true);
+  };
+
+  const handleDeleteBrand = async (brandId) => {
+    try {
+      await deleteBrand(brandId);
+      toast.success("Brand deleted successfully");
+      loadBrands();
+    } catch (error) {
+      if (error.message && error.message.includes("Cannot delete brand")) {
+        toast.error("Cannot delete brand as it is used in products");
+      } else {
+        toast.error(error.message || "Failed to delete brand");
+      }
+    }
+  };
+
+  const handleAddOrUpdateBrand = async () => {
     if (newBrandName.trim() === "") {
       toast.error("Brand name is required");
       return;
     }
 
     try {
-      const brandData = {
-        brandName: newBrandName,
-        brandImage: newBrandImage,
-        shortDescription: newBrandDescription,
-        userId: user.userId,
-      };
-      await createBrand(brandData);
-      toast.success("Brand added successfully");
+      const brandData = new FormData();
+      brandData.append("brandName", newBrandName);
+      brandData.append("shortDescription", newBrandDescription);
+      brandData.append("userId", user.userId);
+
+      if (newBrandImage) {
+        brandData.append("brandImage", newBrandImage);
+      }
+
+      if (isEditingBrand) {
+        await updateBrand(editingBrandId, brandData);
+        toast.success("Brand updated successfully");
+      } else {
+        await createBrand(brandData);
+        toast.success("Brand added successfully");
+      }
 
       // Clear all fields
-      setNewBrandName("");
-      setNewBrandDescription("");
-      setNewBrandImage(null);
-
-      if (newBrandImageRef.current) newBrandImageRef.current.value = "";
-
+      resetBrandForm();
       loadBrands();
-      closeBrandPopup();
     } catch (error) {
-      toast.error(error.message || "Failed to add brand");
+      toast.error(
+        error.message || `Failed to ${isEditingBrand ? "update" : "add"} brand`
+      );
     }
   };
 
@@ -959,8 +1002,10 @@ const ProductForm = () => {
       {/* Brand Popup */}
       {brandPopupVisible && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-md bg-white text-[#1D372E]">
-            <h3 className="font-bold text-lg mb-4">Add Brand</h3>
+          <div className="modal-box max-w-md max-h-[70vh] bg-white text-[#1D372E]">
+            <h3 className="font-bold text-lg mb-4">
+              {isEditingBrand ? "Edit Brand" : "Add Brand"}
+            </h3>
             <button
               onClick={closeBrandPopup}
               className="absolute right-6 top-7 text-lg text-[#1D372E]"
@@ -1007,7 +1052,7 @@ const ProductForm = () => {
               {newBrandImagePreview && (
                 <div className="relative mt-2 w-24 h-24 border border-base-300 rounded-lg overflow-hidden">
                   <img
-                    src={newBrandImagePreview}
+                    src={newBrandImagePreview || "/placeholder.svg"}
                     alt="Brand Preview"
                     className="object-cover w-full h-full"
                   />
@@ -1042,12 +1087,77 @@ const ProductForm = () => {
 
             <div className="modal-action">
               <button
-                onClick={handleAddBrand}
+                onClick={handleAddOrUpdateBrand}
                 className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
               >
-                Add Brand
+                {isEditingBrand ? "Edit Brand" : "Add Brand"}
               </button>
             </div>
+
+            {/* Brands Table */}
+            {brands.length > 0 && (
+              <div className="mt-6">
+                <h4 className="font-medium mb-2">Existing Brands</h4>
+                <div className="overflow-x-auto">
+                  <table className="table text-center border border-[#1D372E] w-full">
+                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                      <tr className="border-b border-[#1D372E]">
+                        <th className="font-semibold">Name</th>
+                        <th className="font-semibold">Image</th>
+                        <th className="font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {brands.map((brand) => (
+                        <tr
+                          key={brand.idProduct_Brand}
+                          className="border-b border-[#1D372E]"
+                        >
+                          <td>{brand.Brand_Name}</td>
+                          <td>
+                            {brand.Brand_Image_Url ? (
+                              <div className="avatar">
+                                <div className="w-10 h-10 rounded-md">
+                                  <img
+                                    src={brand.Brand_Image_Url}
+                                    alt={brand.Brand_Name}
+                                    className="object-cover"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-sm opacity-70">
+                                No image
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <div className="flex justify-center gap-2">
+                              <button
+                                onClick={() => handleEditBrand(brand)}
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                title="Edit Brand"
+                              >
+                                <FaEdit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteBrand(brand.idProduct_Brand)
+                                }
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                title="Delete Brand"
+                              >
+                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

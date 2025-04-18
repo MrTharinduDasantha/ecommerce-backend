@@ -402,6 +402,117 @@ async function createBrand(req, res) {
   }
 }
 
+// Update an existing brand
+async function updateBrand(req, res) {
+  try {
+    const { id } = req.params;
+    const { brandName, shortDescription, userId } = req.body;
+
+    if (!brandName) {
+      return res.status(400).json({ message: "Brand name is required" });
+    }
+
+    // Get original brand data for logging
+    const [originalBrand] = await pool.query(
+      "SELECT Brand_Name, Brand_Image_Url, ShortDescription FROM Product_Brand WHERE idProduct_Brand = ?",
+      [id]
+    );
+
+    if (!originalBrand.length) {
+      return res.status(404).json({ message: "Brand not found" });
+    }
+
+    let brandImageUrl = null;
+    if (req.file) {
+      brandImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        req.file.filename
+      }`;
+    }
+
+    await Product.updateBrand(
+      id,
+      brandName,
+      brandImageUrl,
+      shortDescription,
+      userId
+    );
+
+    // Log the admin action with original and updated data
+    const logData = {
+      originalData: {
+        brandName: originalBrand[0].Brand_Name,
+        image_url: originalBrand[0].Brand_Image_Url,
+        description: originalBrand[0].ShortDescription,
+      },
+      updatedData: {
+        brandName: brandName,
+        image_url: brandImageUrl || originalBrand[0].Brand_Image_Url,
+        description: shortDescription,
+      },
+    };
+
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        userId,
+        "Updated brand",
+        req.headers["user-agent"],
+        JSON.stringify(logData),
+      ]
+    );
+
+    res.status(200).json({ message: "Brand updated successfully" });
+  } catch (error) {
+    console.error("Error updating brand:", error);
+    res.status(500).json({ message: "Failed to update brand" });
+  }
+}
+
+// Delete a brand
+async function deleteBrand(req, res) {
+  try {
+    const { id } = req.params;
+
+    // Get brand data for logging before deletion
+    const [brand] = await pool.query(
+      "SELECT Brand_Name, Brand_Image_Url, ShortDescription FROM Product_Brand WHERE idProduct_Brand = ?",
+      [id]
+    );
+
+    if (!brand.length) {
+      return res.status(404).json({ message: "Brand not found" });
+    }
+
+    try {
+      await Product.deleteBrand(id);
+    } catch (error) {
+      if (error.message.includes("Cannot delete brand")) {
+        return res.status(400).json({ message: error.message });
+      }
+      throw error;
+    }
+
+    // Log the admin action
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Deleted brand",
+        req.headers["user-agent"],
+        JSON.stringify({
+          brandId: id,
+          brandName: brand[0].Brand_Name,
+        }),
+      ]
+    );
+
+    res.status(200).json({ message: "Brand deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting brand:", error);
+    res.status(500).json({ message: "Failed to delete brand" });
+  }
+}
+
 // Fetch all brands
 async function getBrands(req, res) {
   try {
@@ -941,6 +1052,8 @@ module.exports = {
   deleteSubCategory,
   createProduct,
   createBrand,
+  updateBrand,
+  deleteBrand,
   getBrands,
   updateProduct,
   getAllProducts,

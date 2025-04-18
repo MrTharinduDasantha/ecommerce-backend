@@ -74,7 +74,6 @@ const ResetPasswordPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="input input-bordered w-full pl-10 pr-10 bg-white border-[#1D372E] text-[#1D372E]"
                 placeholder="Enter new password"
-                required
               />
               <button
                 type="button"
@@ -106,7 +105,6 @@ const ResetPasswordPage = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="input input-bordered w-full pl-10 pr-10 bg-white border-[#1D372E] text-[#1D372E]"
                 placeholder="Confirm new password"
-                required
               />
               <button
                 type="button"
