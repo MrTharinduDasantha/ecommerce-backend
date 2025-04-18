@@ -824,7 +824,7 @@ async function updateDiscount(req, res) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if discount exists
+    // Check if discount exists and get original data
     const existingDiscount = await Product.getDiscountById(id);
     if (!existingDiscount) {
       return res.status(400).json({ message: "Discount not found" });
@@ -842,20 +842,34 @@ async function updateDiscount(req, res) {
 
     await Product.updateDiscount(id, discountData);
 
-    // Log the admin action
+    // Prepare logging data with original and updated values
+    const logData = {
+      originalData: {
+        description: existingDiscount.Description,
+        discountType: existingDiscount.Dicaunt_Type,
+        discountValue: existingDiscount.Discount_Value,
+        startDate: existingDiscount.Start_Date,
+        endDate: existingDiscount.End_Date,
+        status: existingDiscount.Status,
+      },
+      updatedData: {
+        description,
+        discountType,
+        discountValue,
+        startDate,
+        endDate,
+        status,
+      },
+    };
+
+    // Log the admin action with both original and updated data
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated discount",
         req.headers["user-agent"],
-        JSON.stringify({
-          discountId: id,
-          productId,
-          description,
-          discountType,
-          discountValue,
-        }),
+        JSON.stringify(logData),
       ]
     );
 
@@ -865,7 +879,6 @@ async function updateDiscount(req, res) {
     res.status(500).json({ message: "Failed to update discount" });
   }
 }
-
 // Delete a discount
 async function deleteDiscount(req, res) {
   try {
