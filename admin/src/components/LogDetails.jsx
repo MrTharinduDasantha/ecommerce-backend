@@ -111,6 +111,7 @@ const LogDetails = () => {
               "Updated product": "Product Changes",
               "Updated customer": "Customer Changes",
               "Updated subcategory": "Subcategory Changes",
+              "Updated discount": "Discount Changes",
               "Toggled category status": "Category Status Changes",
             }[log.action] || "Changes Made";
 
@@ -119,7 +120,7 @@ const LogDetails = () => {
               <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E]">Changes Made</h3>
+                  <h3 className="font-semibold text-[#1D372E]">{title}</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white p-4 rounded-lg">
@@ -142,19 +143,20 @@ const LogDetails = () => {
                     )}
                   </div>
                   <div className="bg-white p-4 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-600 mb-3">
-                      Updated Data
-                    </h4>
-                    {Object.entries(details.updatedData || {}).map(
-                      ([key, value]) => (
-                        <div key={key} className="mb-2 text-[#1D372E]">
-                          <span className="text-sm font-medium capitalize">
-                            {key}:{" "}
-                          </span>
-                          <span className="text-sm">{value}</span>
-                        </div>
-                      )
-                    )}
+                    <h4 className="text-sm font-medium text-gray-600 mb-3">Updated Data</h4>
+                     {Object.entries(details.updatedData || {}).map(([key, value]) => {
+                      const originalValue = details.originalData?.[key];
+    
+                      // Check for difference and highlight accordingly
+                      const isDifferent = originalValue !== value;
+    
+                     return (
+                  <div key={key} className={`mb-2 ${isDifferent ? 'bg-red-100' : ''}`}> 
+                     <span className="text-sm font-medium capitalize">{key}: </span>
+                     <span className="text-sm">{Array.isArray(value) ? JSON.stringify(value) : value}</span>
+                   </div>
+                     );
+                     })}
                   </div>
                 </div>
               </div>
@@ -168,6 +170,7 @@ const LogDetails = () => {
             "Created product": "Newly Created Product",
             "Created brand": "Newly Created Brand",
             "Created subcategory": "Newly Created Subcategory",
+            "Created discount": "Newly Created Discount",
           }[log.action];
 
           detailsContent.push(
@@ -198,6 +201,7 @@ const LogDetails = () => {
             "Deleted subcategory": "Deleted Subcategory Details",
             "Deleted product": "Deleted Product Details",
             "Deleted category": "Deleted Category Details",
+            "Deleted discount": "Deleted Discount Details",
           }[log.action];
 
           detailsContent.push(
@@ -292,16 +296,19 @@ const getActionStyle = (action) => {
     case "Updated category":
     case "Updated product":
     case "Updated subcategory":
+    case "Updated discount":
       return "bg-yellow-100 text-yellow-800";
     case "Deleted customer":
     case "Deleted category":
     case "Deleted subcategory":
     case "Deleted product":
+    case "Deleted discount":
       return "bg-red-100 text-red-800";
     case "Created category":
     case "Created subcategory":
     case "Created product":
     case "Created brand":
+    case "Created discount":
       return "bg-emerald-100 text-emerald-800";
     case "Toggled category status":
       return "bg-amber-100 text-amber-800";
