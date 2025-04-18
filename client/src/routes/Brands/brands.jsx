@@ -1,100 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaSearch, FaTimes } from "react-icons/fa";
-import prada from "./prada.webp";
-import ck from "./ck.png";
-import loreal from "./loreal.jpg";
-import gucci from "./gucci.jpg";
-import lv from "./lv.jpg";
-import nike from "./nike.jpg";
+import { getBrands } from "../../api/product"; // Adjust import based on your file structure
 
 const Brands = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const brands = [
-    {
-      name: "PRADA",
-      description:
-        "Prada is an iconic luxury fashion house known for its handbags, shoes, and accessories. Founded in 1913 by Mario Prada, it is one of the leading brands in the global fashion industry.",
-      logo: prada,
-    },
-    {
-      name: "LOREAL PARIS",
-      description:
-        "L'Oréal Paris is a French multinational cosmetics and beauty company founded in 1909. It is known for its skincare, haircare, make-up, and fragrance products, being one of the largest beauty brands in the world.",
-      logo: loreal,
-    },
-    {
-      name: "CALVIN KLEIN",
-      description:
-        "Calvin Klein is a renowned American fashion brand founded in 1968, recognized for its minimalist aesthetic and iconic collections, including fragrances, clothing, and accessories.",
-      logo: ck,
-    },
-    {
-      name: "GUCCI",
-      description:
-        "Gucci, founded in 1921 by Guccio Gucci, is an Italian luxury fashion brand known for its leather goods, clothing, and accessories. It’s one of the world's most valuable and recognized brands.",
-      logo: gucci,
-    },
-    {
-      name: "NIKE",
-      description:
-        "Nike is an American multinational corporation that designs, manufactures, and sells sportswear, footwear, and equipment. Founded in 1964 by Bill Bowerman and Phil Knight, it is the largest supplier of athletic shoes in the world.",
-      logo: nike,
-    },
-    {
-      name: "LOUIS VUITTON",
-      description:
-        "Louis Vuitton is a French luxury fashion house founded in 1854. It is best known for its high-end handbags, luggage, and fashion accessories. Louis Vuitton is one of the most valuable luxury brands globally.",
-      logo: lv,
-    },
-    {
-      name: "PRADA",
-      description:
-        "Prada is an iconic luxury fashion house known for its handbags, shoes, and accessories. Founded in 1913 by Mario Prada, it is one of the leading brands in the global fashion industry.",
-      logo: prada,
-    },
-    {
-      name: "LOREAL PARIS",
-      description:
-        "L'Oréal Paris is a French multinational cosmetics and beauty company founded in 1909. It is known for its skincare, haircare, make-up, and fragrance products, being one of the largest beauty brands in the world.",
-      logo: loreal,
-    },
-    {
-      name: "CALVIN KLEIN",
-      description:
-        "Calvin Klein is a renowned American fashion brand founded in 1968, recognized for its minimalist aesthetic and iconic collections, including fragrances, clothing, and accessories.",
-      logo: ck,
-    },
-    {
-      name: "GUCCI",
-      description:
-        "Gucci, founded in 1921 by Guccio Gucci, is an Italian luxury fashion brand known for its leather goods, clothing, and accessories. It’s one of the world's most valuable and recognized brands.",
-      logo: gucci,
-    },
-    {
-      name: "NIKE",
-      description:
-        "Nike is an American multinational corporation that designs, manufactures, and sells sportswear, footwear, and equipment. Founded in 1964 by Bill Bowerman and Phil Knight, it is the largest supplier of athletic shoes in the world.",
-      logo: nike,
-    },
-    {
-      name: "LOUIS VUITTON",
-      description:
-        "Louis Vuitton is a French luxury fashion house founded in 1854. It is best known for its high-end handbags, luggage, and fashion accessories. Louis Vuitton is one of the most valuable luxury brands globally.",
-      logo: lv,
-    },
-  ];
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const data = await getBrands();
+        setBrands(data.brands); // Adjust depending on your API response structure
+      } catch (error) {
+        setError(error.message || "Failed to load brands");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBrands();
+  }, []);
 
   const filteredBrands = brands.filter((brand) =>
-    brand.name.toUpperCase().includes(searchTerm.toUpperCase())
+    brand.Brand_Name.toUpperCase().includes(searchTerm.toUpperCase())
   );
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setIsPopupOpen(e.target.value.length > 0);
   };
+
+  if (loading) {
+    return <div className="text-center">Loading brands...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>;
+  }
 
   return (
     <div className="bg-white min-h-screen p-8 font-poppins relative">
@@ -118,18 +64,17 @@ const Brands = () => {
             <FaSearch className="text-[#FFFFFF]" />
           </button>
         </div>
-      
       </div>
       <br/>
 
       {/* Brands Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
-        {brands.map((brand, index) => (
-          <Link to={`/brand/${brand.name}`} key={index}>
+        {filteredBrands.map((brand, index) => (
+          <Link to={`/brand/${brand.Brand_Name}`} key={index}>
             <div className="bg-white border border-[#E8E8E8] rounded-md flex flex-col justify-between hover:shadow-lg transition-shadow duration-300 h-full p-4 text-center">
-              <img src={brand.logo} alt={brand.name} className="h-16 mx-auto" />
-              <h3 className="text-[16px] font-semibold text-[#1D372E] mt-2">{brand.name}</h3>
-              <p className="text-[13.33px] text-[#5E5E5E] text-center mt-2">{brand.description.substring(0, 100)}...</p>
+              <img src={brand.Brand_Image_Url || '/placeholder.svg'} alt={brand.Brand_Name} className="h-16 mx-auto" />
+              <h3 className="text-[16px] font-semibold text-[#1D372E] mt-2">{brand.Brand_Name}</h3>
+              <p className="text-[13.33px] text-[#5E5E5E] text-center mt-2">{brand.ShortDescription.substring(0, 100)}...</p>
             </div>
           </Link>
         ))}
@@ -149,10 +94,10 @@ const Brands = () => {
           {filteredBrands.length > 0 ? (
             <div className="grid gap-4">
               {filteredBrands.map((brand, index) => (
-                <Link to={`/brand/${brand.name}`} key={index} className="flex flex-col items-center border border-[#E8E8E8] p-2 rounded hover:shadow">
-                  <img src={brand.logo} alt={brand.name} className="h-10" />
-                  <span className="text-[#1D372E] font-medium">{brand.name}</span>
-                  <p className="text-[13.33px] text-[#5E5E5E] text-center">{brand.description.substring(0, 80)}...</p>
+                <Link to={`/brand/${brand.Brand_Name}`} key={index} className="flex flex-col items-center border border-[#E8E8E8] p-2 rounded hover:shadow">
+                  <img src={brand.Brand_Image_Url || '/placeholder.svg'} alt={brand.Brand_Name} className="h-10" />
+                  <span className="text-[#1D372E] font-medium">{brand.Brand_Name}</span>
+                  <p className="text-[13.33px] text-[#5E5E5E] text-center">{brand.ShortDescription.substring(0, 80)}...</p>
                 </Link>
               ))}
             </div>
