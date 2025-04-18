@@ -4,6 +4,7 @@ const userRoutes = require("./routes/admin/user.routes");
 const customerRoutes = require("./routes/admin/customer.routes");
 const productRoutes = require("./routes/admin/product.routes");
 const settingRoutes = require("./routes/admin/setting.routes");
+const cartRoutes = require("./routes/customer/cart.routes");
 const orderRoutes = require("./routes/admin/order.routes");
 
 require("dotenv").config(); // Load environment variables from .env file
@@ -20,6 +21,7 @@ app.use("/api/users", userRoutes); // Use the user routes
 app.use("/api/customers", customerRoutes); // Use the customer routes
 app.use("/api/products", productRoutes); // Use the product routes
 app.use("/api/settings", settingRoutes); // Use the setting routes
+app.use("/api/carts", cartRoutes); // Use the cart routes
 app.use("/admin/orders", orderRoutes); // Use the order routes
 
 const PORT = process.env.PORT || 9000;

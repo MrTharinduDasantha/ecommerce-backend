@@ -1,11 +1,11 @@
 const Product = require("../../models/product.model");
 const fs = require("fs");
 const path = require("path");
-const pool = require('../../config/database');
+const pool = require("../../config/database");
 
-// --------------------------------------------
+// -------------------------------------------
 // Category and Subcategory Related Functions
-// --------------------------------------------
+// -------------------------------------------
 
 // Fetch all categories with subcategories
 async function getAllCategories(req, res) {
@@ -67,22 +67,44 @@ async function updateCategory(req, res) {
       return res.status(400).json({ message: "Description is required" });
     }
 
+    // Get original category data for logging
+    const [originalCategory] = await pool.query(
+      "SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ?",
+      [id]
+    );
+
+    if (!originalCategory.length) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     let imageUrl = null;
     if (req.file) {
       imageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
         req.file.filename
       }`;
     }
+
     await Product.updateCategory(id, description, imageUrl);
 
-    // Log the admin action
+    // Log the admin action with original and updated data
+    const logData = {
+      originalData: {
+        description: originalCategory[0].Description,
+        image_url: originalCategory[0].Image_Icon_Url,
+      },
+      updatedData: {
+        description: description,
+        image_url: imageUrl || originalCategory[0].Image_Icon_Url,
+      },
+    };
+
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated category",
         req.headers["user-agent"],
-        JSON.stringify({ description }),
+        JSON.stringify(logData),
       ]
     );
 
@@ -102,16 +124,37 @@ async function toggleCategoryStatus(req, res) {
       return res.status(400).json({ message: "Status is required" });
     }
 
+    // Get original category data for logging
+    const [originalCategory] = await pool.query(
+      "SELECT Description, Status FROM Product_Category WHERE idProduct_Category = ?",
+      [id]
+    );
+
+    if (!originalCategory.length) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     await Product.toggleCategoryStatus(id, status);
 
-    // Log the admin action
+    // Log the admin action with original and updated data
+    const logData = {
+      originalData: {
+        description: originalCategory[0].Description,
+        status: originalCategory[0].Status,
+      },
+      updatedData: {
+        description: originalCategory[0].Description,
+        status: status,
+      },
+    };
+
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
         req.user.userId,
         "Toggled category status",
         req.headers["user-agent"],
-        JSON.stringify({ status }),
+        JSON.stringify(logData),
       ]
     );
 
@@ -216,6 +259,19 @@ async function createProduct(req, res) {
       }`;
     }
 
+    let variationData;
+    try {
+      variationData = JSON.parse(variations);
+      if (!Array.isArray(variationData) || variationData.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "Variations must be a non-empty array" });
+      }
+    } catch (error) {
+      console.error("Error parsing variations:", error);
+      return res.status(400).json({ message: "Invalid variations format" });
+    }
+
     const productData = {
       Description,
       Product_Brand_idProduct_Brand,
@@ -223,16 +279,20 @@ async function createProduct(req, res) {
       Selling_Price,
       Main_Image_Url: mainImageUrl,
       Long_Description,
+      SIH: 0, // Initialize SIH
     };
 
-    if (variations) {
-      const variationData = JSON.parse(variations);
-      let totalQty = 0;
-      for (const variation of variationData) {
-        totalQty += Number(variation.quantity);
+    // Calculate total SIH from variations
+    let totalQty = 0;
+    for (const variation of variationData) {
+      if (!variation.colorCode || !variation.size || !variation.quantity) {
+        return res.status(400).json({
+          message: "Each variation must have colorCode, size, and quantity",
+        });
       }
-      productData.SIH = totalQty;
+      totalQty += Number(variation.quantity);
     }
+    productData.SIH = totalQty;
 
     const result = await Product.createProduct(productData);
     const productId = result.insertId;
@@ -246,11 +306,9 @@ async function createProduct(req, res) {
       }
     }
 
-    if (variations) {
-      const variationData = JSON.parse(variations);
-      for (const variation of variationData) {
-        await Product.createProductVariant(productId, variation);
-      }
+    // Insert variations
+    for (const variation of variationData) {
+      await Product.createProductVariant(productId, variation);
     }
 
     if (faqs) {
@@ -370,56 +428,19 @@ async function updateProduct(req, res) {
       subCategoryIds,
     } = req.body;
 
+    // Get the original product data for logging
     const existingProduct = await Product.getProductById(id);
-
-    let totalQty = 0;
-    let variationData = [];
-    if (variations) {
-      variationData = JSON.parse(variations);
-      for (const variation of variationData) {
-        totalQty += Number(variation.quantity);
-      }
+    if (!existingProduct) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
     let mainImageUrl = null;
     if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
-      if (existingProduct && existingProduct.Main_Image_Url) {
-        const oldPath = existingProduct.Main_Image_Url.replace(
-          `${req.protocol}://${req.get("host")}/`,
-          ""
-        );
-        fs.unlink(oldPath, (err) => {
-          if (err) console.error("Error removing old main image:", err);
-        });
-      }
       mainImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
         req.files.mainImage[0].filename
       }`;
     } else {
-      mainImageUrl = existingProduct ? existingProduct.Main_Image_Url : null;
-    }
-
-    let imagesArray = null;
-    if (req.files && req.files.subImages && req.files.subImages.length > 0) {
-      if (
-        existingProduct &&
-        existingProduct.images &&
-        existingProduct.images.length > 0
-      ) {
-        existingProduct.images.forEach((img) => {
-          const oldPath = img.Image_Url.replace(
-            `${req.protocol}://${req.get("host")}/`,
-            ""
-          );
-          fs.unlink(oldPath, (err) => {
-            if (err) console.error("Error removing old sub image:", err);
-          });
-        });
-      }
-      imagesArray = req.files.subImages.map(
-        (file) =>
-          `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
-      );
+      mainImageUrl = existingProduct.Main_Image_Url;
     }
 
     const productData = {
@@ -429,29 +450,101 @@ async function updateProduct(req, res) {
       Selling_Price,
       Main_Image_Url: mainImageUrl,
       Long_Description,
-      SIH: totalQty,
+      SIH: 0, // Initialize SIH
     };
 
-    const associatedData = {
-      images: imagesArray,
+    // Calculate total SIH from variations if provided
+    let variationData = null;
+    if (variations) {
+      try {
+        variationData = JSON.parse(variations);
+        if (!Array.isArray(variationData)) {
+          return res
+            .status(400)
+            .json({ message: "Variations must be an array" });
+        }
+        let totalQty = 0;
+        for (const variation of variationData) {
+          if (!variation.colorCode || !variation.size || !variation.quantity) {
+            return res.status(400).json({
+              message: "Each variation must have colorCode, size, and quantity",
+            });
+          }
+          totalQty += Number(variation.quantity);
+        }
+        productData.SIH = totalQty;
+      } catch (error) {
+        console.error("Error parsing variations:", error);
+        return res.status(400).json({ message: "Invalid variations format" });
+      }
+    }
+
+    // Get brand names for logging
+    const [oldBrand] = await pool.query(
+      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
+      [existingProduct.Product_Brand_idProduct_Brand]
+    );
+    const [newBrand] = await pool.query(
+      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
+      [Product_Brand_idProduct_Brand]
+    );
+
+    // Prepare associated data
+    const subImages =
+      req.files?.subImages?.map(
+        (file) =>
+          `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
+      ) || [];
+
+    await Product.updateProduct(id, productData, {
+      images: subImages.length > 0 ? subImages : null,
       variations: variationData,
       faqs: faqs ? JSON.parse(faqs) : null,
       subCategoryIds: subCategoryIds ? JSON.parse(subCategoryIds) : null,
+    });
+
+    // Prepare logging data
+    const logData = {
+      originalData: {
+        description: existingProduct.Description,
+        brand: oldBrand[0]?.Brand_Name,
+        market_price: existingProduct.Market_Price,
+        selling_price: existingProduct.Selling_Price,
+        long_description: existingProduct.Long_Description,
+        main_image: existingProduct.Main_Image_Url,
+        sub_images: existingProduct.images?.map((img) => img.Image_Url) || [],
+      },
+      updatedData: {
+        description: Description,
+        brand: newBrand[0]?.Brand_Name,
+        market_price: Market_Price,
+        selling_price: Selling_Price,
+        long_description: Long_Description,
+        main_image: mainImageUrl,
+        sub_images: subImages,
+      },
     };
 
-    await Product.updateProduct(id, productData, associatedData);
-
-    // Log the admin action
+    // Log updated fields
     const updatedFields = [];
-    if (Description !== existingProduct.Description) updatedFields.push('description');
-    if (Market_Price !== existingProduct.Market_Price) updatedFields.push('market price');
-    if (Selling_Price !== existingProduct.Selling_Price) updatedFields.push('selling price');
-    if (Long_Description !== existingProduct.Long_Description) updatedFields.push('long description');
-    if (mainImageUrl !== existingProduct.Main_Image_Url) updatedFields.push('main image');
-    if (imagesArray) updatedFields.push('sub images');
-    if (variations) updatedFields.push('variations');
-    if (faqs) updatedFields.push('FAQs');
-    if (subCategoryIds) updatedFields.push('sub categories');
+    if (Description !== existingProduct.Description)
+      updatedFields.push("description");
+    if (Market_Price !== existingProduct.Market_Price)
+      updatedFields.push("market price");
+    if (Selling_Price !== existingProduct.Selling_Price)
+      updatedFields.push("selling price");
+    if (Long_Description !== existingProduct.Long_Description)
+      updatedFields.push("long description");
+    if (mainImageUrl !== existingProduct.Main_Image_Url)
+      updatedFields.push("main image");
+    if (
+      subImages.length > 0 ||
+      (existingProduct.images && existingProduct.images.length > 0)
+    )
+      updatedFields.push("sub images");
+    if (variations) updatedFields.push("variations");
+    if (faqs) updatedFields.push("FAQs");
+    if (subCategoryIds) updatedFields.push("sub categories");
 
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
@@ -459,10 +552,7 @@ async function updateProduct(req, res) {
         req.user.userId,
         "Updated product",
         req.headers["user-agent"],
-        JSON.stringify({
-          description: Description,
-          updatedFields,
-        }),
+        JSON.stringify(logData),
       ]
     );
 
@@ -482,6 +572,48 @@ async function getAllProducts(req, res) {
       .json({ message: "Products fetched successfully", products });
   } catch (error) {
     console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+}
+
+// Get products by sub-category
+async function getProductsBySubCategory(req, res) {
+  try {
+    const { subId } = req.params;
+    const products = await Product.getProductsBySubCategory(subId);
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found for this sub-category" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Products fetched successfully", products });
+  } catch (error) {
+    console.error("Error fetching products by sub-category:", error);
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+}
+
+// Get products by brand
+async function getProductsByBrand(req, res) {
+  try {
+    const { brandId } = req.params;
+    const products = await Product.getProductsByBrand(brandId);
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found for this brand" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Products fetched successfully", products });
+  } catch (error) {
+    console.error("Error fetching products by brand:", error);
     res.status(500).json({ message: "Failed to fetch products" });
   }
 }
@@ -565,6 +697,241 @@ async function deleteProduct(req, res) {
   }
 }
 
+// ---------------------------
+// Discount Related Functions
+// ---------------------------
+
+// Get all discounts
+async function getAllDiscounts(req, res) {
+  try {
+    const discounts = await Product.getAllDiscounts();
+
+    res
+      .status(200)
+      .json({ message: "Discounts fetched successfully", discounts });
+  } catch (error) {
+    console.error("Error fetching discounts:", error);
+    res.status(500).json({ message: "Failed to fetch discounts" });
+  }
+}
+
+// Get discounts for a specific product
+async function getDiscountsByProductId(req, res) {
+  try {
+    const { productId } = req.params;
+    const discounts = await Product.getDiscountsByProductId(productId);
+
+    res
+      .status(200)
+      .json({ message: "Product discounts fetched successfully", discounts });
+  } catch (error) {
+    console.error("Error fetching product discounts:", error);
+    res.status(500).json({ message: "Failed to fetch product discounts" });
+  }
+}
+
+// Create a new discount
+async function createDiscount(req, res) {
+  try {
+    const {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status,
+    } = req.body;
+
+    if (
+      !productId ||
+      !description ||
+      !discountType ||
+      !discountValue ||
+      !startDate ||
+      !endDate
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if product exists
+    const product = await Product.getProductById(productId);
+    if (!product) {
+      return res.status(400).json({ message: "Product not found" });
+    }
+
+    const discountData = {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status: status || "active",
+    };
+
+    const result = await Product.createDiscount(discountData);
+
+    // Log the admin action
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Created discount",
+        req.headers["user-agent"],
+        JSON.stringify({
+          productId,
+          description,
+          discountType,
+          discountValue,
+        }),
+      ]
+    );
+
+    res.status(201).json({
+      message: "Discount created successfully",
+      discountId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error creating discount:", error);
+    res.status(500).json({ message: "Failed to create discount" });
+  }
+}
+
+// Update an existing discount
+async function updateDiscount(req, res) {
+  try {
+    const { id } = req.params;
+    const {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status,
+    } = req.body;
+
+    if (
+      !productId ||
+      !description ||
+      !discountType ||
+      !discountValue ||
+      !startDate ||
+      !endDate ||
+      !status
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if discount exists and get original data
+    const existingDiscount = await Product.getDiscountById(id);
+    if (!existingDiscount) {
+      return res.status(400).json({ message: "Discount not found" });
+    }
+
+    const discountData = {
+      productId,
+      description,
+      discountType,
+      discountValue,
+      startDate,
+      endDate,
+      status,
+    };
+
+    await Product.updateDiscount(id, discountData);
+
+    // Prepare logging data with original and updated values
+    const logData = {
+      originalData: {
+        description: existingDiscount.Description,
+        discountType: existingDiscount.Dicaunt_Type,
+        discountValue: existingDiscount.Discount_Value,
+        startDate: existingDiscount.Start_Date,
+        endDate: existingDiscount.End_Date,
+        status: existingDiscount.Status,
+      },
+      updatedData: {
+        description,
+        discountType,
+        discountValue,
+        startDate,
+        endDate,
+        status,
+      },
+    };
+
+    // Log the admin action with both original and updated data
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Updated discount",
+        req.headers["user-agent"],
+        JSON.stringify(logData),
+      ]
+    );
+
+    res.status(200).json({ message: "Discount updated successfully" });
+  } catch (error) {
+    console.error("Error updating discount:", error);
+    res.status(500).json({ message: "Failed to update discount" });
+  }
+}
+// Delete a discount
+async function deleteDiscount(req, res) {
+  try {
+    const { id } = req.params;
+
+    // Check if discount exists
+    const discount = await Product.getDiscountById(id);
+    if (!discount) {
+      return res.status(404).json({ message: "Discount not found" });
+    }
+
+    // Log the admin action before deletion
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Deleted discount",
+        req.headers["user-agent"],
+        JSON.stringify({
+          discountId: id,
+          productId: discount.Product_idProduct,
+          description: discount.Description,
+        }),
+      ]
+    );
+
+    await Product.deleteDiscount(id);
+    res.status(200).json({ message: "Discount deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting discount:", error);
+    res.status(500).json({ message: "Failed to delete discount" });
+  }
+}
+
+// Get a single discount by id
+async function getDiscountById(req, res) {
+  try {
+    const { id } = req.params;
+    const discount = await Product.getDiscountById(id);
+
+    if (!discount) {
+      return res.status(404).json({ message: "Discount not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Discount fetched successfully", discount });
+  } catch (error) {
+    console.error("Error fetching discount:", error);
+    res.status(500).json({ message: "Failed to fetch discount" });
+  }
+}
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -577,6 +944,14 @@ module.exports = {
   getBrands,
   updateProduct,
   getAllProducts,
+  getProductsBySubCategory,
+  getProductsByBrand,
   getProductById,
   deleteProduct,
+  getAllDiscounts,
+  getDiscountsByProductId,
+  createDiscount,
+  updateDiscount,
+  deleteDiscount,
+  getDiscountById,
 };

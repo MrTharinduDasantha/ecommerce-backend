@@ -167,18 +167,32 @@ const ProductList = () => {
                           <FaEye />
                         </button>
                         <button
-                          onClick={() =>
-                            navigate(
-                              `/dashboard/products/edit-product/${product.idProduct}`
-                            )
-                          }
+                          onClick={() => {
+                            if (product.hasOrders) {
+                              toast.error(
+                                "This product cannot be edited since it has already been ordered"
+                              );
+                            } else {
+                              navigate(
+                                `/dashboard/products/edit-product/${product.idProduct}`
+                              );
+                            }
+                          }}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="Edit Product"
                         >
                           <FaEdit />
                         </button>
                         <button
-                          onClick={() => setDeleteProductId(product.idProduct)}
+                          onClick={() => {
+                            if (product.hasOrders) {
+                              toast.error(
+                                "This product cannot be deleted since it has already been ordered"
+                              );
+                            } else {
+                              setDeleteProductId(product.idProduct);
+                            }
+                          }}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="Delete Product"
                         >

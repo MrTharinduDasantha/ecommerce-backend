@@ -70,7 +70,4 @@ router.post(
 router.get("/brands", productController.getBrands);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
 router.get("/", productController.getAllProducts);
-router.get("/:id", productController.getProductById);
-router.delete("/:id", authenticate, productController.deleteProduct);
 
-module.exports = router;

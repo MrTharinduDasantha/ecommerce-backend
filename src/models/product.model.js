@@ -1,8 +1,8 @@
 const pool = require("../config/database");
 
-// --------------------------------------------
+// -------------------------------------------
 // Category and Subcategory Related Functions
-// --------------------------------------------
+// -------------------------------------------
 
 // Fetch all categories with subcategories
 async function getAllCategories() {
@@ -110,9 +110,9 @@ async function deleteSubCategory(subCategoryId) {
   ]);
 }
 
-// ---------------------------
+// --------------------------
 // Product Related Functions
-// ---------------------------
+// --------------------------
 
 // Insert main product record into product table
 async function createProduct(productData) {
@@ -275,12 +275,14 @@ async function updateProduct(productId, productData, associatedData) {
 
 // Get all products
 async function getAllProducts() {
-  // Join product table with product brand table
   const query = `
     SELECT P.*, 
       B.Brand_Name,
       B.Brand_Image_Url,
-      B.ShortDescription
+      B.ShortDescription,
+      (SELECT COUNT(*) FROM order_has_product_variations ohpv
+       JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+       WHERE pv.Product_idProduct = P.idProduct) > 0 as hasOrders
     FROM Product P
     LEFT JOIN Product_Brand B 
       ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
@@ -320,6 +322,51 @@ async function getAllProducts() {
       [product.idProduct]
     );
     product.subcategories = subCats;
+  }
+
+  return products;
+}
+
+// Get all products by subcategory id
+async function getProductsBySubCategory(subCategoryId) {
+  const query = `
+    SELECT P.*, B.Brand_Name
+    FROM Product P
+    JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct
+    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    WHERE PS.Sub_Category_idSub_Category = ?
+  `;
+  const [products] = await pool.query(query, [subCategoryId]);
+
+  // Fetch additional data like images for each product
+  for (const product of products) {
+    const [images] = await pool.query(
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
+      [product.idProduct]
+    );
+    product.images = images;
+  }
+
+  return products;
+}
+
+// Get all products by brand id
+async function getProductsByBrand(brandId) {
+  const query = `
+    SELECT P.*, B.Brand_Name
+    FROM Product P
+    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    WHERE P.Product_Brand_idProduct_Brand = ?
+  `;
+  const [products] = await pool.query(query, [brandId]);
+
+  // Fetch additional data like images for each product
+  for (const product of products) {
+    const [images] = await pool.query(
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
+      [product.idProduct]
+    );
+    product.images = images;
   }
 
   return products;
@@ -402,6 +449,109 @@ async function deleteProduct(productId) {
   await pool.query("DELETE FROM Product WHERE idProduct = ?", [productId]);
 }
 
+// ---------------------------
+// Discount Related Functions
+// ---------------------------
+
+// Get all discounts
+async function getAllDiscounts() {
+  const query = `
+    SELECT d.*, p.Description as ProductName
+    FROM Discounts d
+    JOIN Product p ON d.Product_idProduct = p.idProduct
+    ORDER BY d.created_at DESC
+  `;
+  const [discounts] = await pool.query(query);
+  return discounts;
+}
+
+// Get discounts for a specific product
+async function getDiscountsByProductId(productId) {
+  const query = `
+    SELECT * FROM Discounts
+    WHERE Product_idProduct = ?
+    ORDER BY created_at DESC
+  `;
+  const [discounts] = await pool.query(query, [productId]);
+  return discounts;
+}
+
+// Create a new discount
+async function createDiscount(discountData) {
+  const query = `
+    INSERT INTO Discounts (
+      Product_idProduct,
+      Description,
+      Dicaunt_Type,
+      Discount_Value,
+      Start_Date,
+      End_Date,
+      Status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const [result] = await pool.query(query, [
+    discountData.productId,
+    discountData.description,
+    discountData.discountType,
+    discountData.discountValue,
+    discountData.startDate,
+    discountData.endDate,
+    discountData.status || "active",
+  ]);
+
+  return result;
+}
+
+// Update an existing discount
+async function updateDiscount(discountId, discountData) {
+  const query = `
+    UPDATE Discounts
+    SET
+      Product_idProduct = ?,
+      Description = ?,
+      Dicaunt_Type = ?,
+      Discount_Value = ?,
+      Start_Date = ?,
+      End_Date = ?,
+      Status = ?
+    WHERE idDiscounts = ?
+  `;
+
+  const [result] = await pool.query(query, [
+    discountData.productId,
+    discountData.description,
+    discountData.discountType,
+    discountData.discountValue,
+    discountData.startDate,
+    discountData.endDate,
+    discountData.status,
+    discountId,
+  ]);
+}
+
+// Delete a discount
+async function deleteDiscount(discountId) {
+  const query = `
+    DELETE FROM Discounts
+    WHERE idDiscounts = ?
+  `;
+  const [result] = await pool.query(query, [discountId]);
+  return result;
+}
+
+// Get a single discount by id
+async function getDiscountById(discountId) {
+  const query = `
+    SELECT d.*, p.Description as ProductName
+    FROM Discounts d
+    JOIN Product p ON d.Product_idProduct = p.idProduct
+    WHERE d.idDiscounts = ?
+  `;
+  const [rows] = await pool.query(query, [discountId]);
+  return rows.length > 0 ? rows[0] : null;
+}
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -418,6 +568,14 @@ module.exports = {
   createProductSubCategory,
   updateProduct,
   getAllProducts,
+  getProductsBySubCategory,
+  getProductsByBrand,
   getProductById,
   deleteProduct,
+  getAllDiscounts,
+  getDiscountsByProductId,
+  createDiscount,
+  updateDiscount,
+  deleteDiscount,
+  getDiscountById,
 };

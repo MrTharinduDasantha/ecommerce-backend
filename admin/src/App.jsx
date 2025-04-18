@@ -10,6 +10,8 @@ import ProductForm from "./components/ProductForm";
 import ProductCategorySubCategoryForm from "./components/ProductCategorySubCategoryForm";
 import ProductList from "./components/ProductList";
 import ProductDetails from "./components/ProductDetails";
+import DiscountList from "./components/DiscountList";
+import DiscountForm from "./components/DiscountForm";
 import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
@@ -18,7 +20,9 @@ import Settings from "./components/Settings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
 import AdminLogs from "./components/AdminLogs";
- 
+import CustomerDetails from "./components/CustomerDetails";
+import LogDetails from "./components/LogDetails"; 
+
 const App = () => {
   return (
     <>
@@ -60,6 +64,9 @@ const App = () => {
             path="products/view-product/:id"
             element={<ProductDetails />}
           />
+          <Route path="discounts/add-discount" element={<DiscountForm />} />
+          <Route path="discounts/add-discount/:id" element={<DiscountForm />} />
+          <Route path="discounts/all-discounts" element={<DiscountList />} />
           <Route path="users_managed-form" element={<UsersManagedForm />} />
           <Route path="admin-logs" element={<AdminLogs />} />
           <Route
@@ -69,6 +76,8 @@ const App = () => {
           <Route path="settings" element={<Settings />} />
           <Route path="orders" element={<OrderList />} />
           <Route path="orders/:orderId" element={<OrderDetails />} />
+          <Route path="customer/view-customer/:id" element={<CustomerDetails />} />
+          <Route path="log/view-adminlogs/:id" element={<LogDetails />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
