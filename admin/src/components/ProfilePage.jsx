@@ -29,21 +29,31 @@ const ProfilePage = () => {
           <div class="space-y-4 mt-6">
             <div>
               <label class="block text-sm font-medium text-left mb-2">Full Name:</label>
-              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${user.Full_Name}" placeholder="Enter Name" required />
+              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${
+                user.Full_Name
+              }" placeholder="Enter Name" required />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Email Address:</label>
-              <input id="email" class="w-full px-3 py-2 border rounded-md" value="${user.Email}" placeholder="Enter Email" type="email" required />
+              <input id="email" class="w-full px-3 py-2 border rounded-md" value="${
+                user.Email
+              }" placeholder="Enter Email" type="email" required />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
-              <input id="phonenumber" class="w-full px-3 py-2 border rounded-md" value="${user.Phone_No}" placeholder="Enter Phone Number" required />
+              <input id="phonenumber" class="w-full px-3 py-2 border rounded-md" value="${
+                user.Phone_No
+              }" placeholder="Enter Phone Number" required />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Status:</label>
               <select id="status" class="w-full px-3 py-2 border rounded-md">
-                <option value="Active" ${user.Status === "Active" ? "selected" : ""}>Active</option>
-                <option value="Inactive" ${user.Status === "Inactive" ? "selected" : ""}>Inactive</option>
+                <option value="Active" ${
+                  user.Status === "Active" ? "selected" : ""
+                }>Active</option>
+                <option value="Inactive" ${
+                  user.Status === "Inactive" ? "selected" : ""
+                }>Inactive</option>
               </select>
             </div>
           </div>
@@ -61,7 +71,7 @@ const ProfilePage = () => {
         const status = document.getElementById("status").value;
 
         const errors = [];
-        
+
         // Validation rules
         if (!name) errors.push("Full Name is required.");
         if (!email) {
@@ -86,14 +96,16 @@ const ProfilePage = () => {
         };
       },
     });
-    
+
     if (formValues) {
       try {
         await api.updateUser(user.idUser, formValues);
         toast.success("Your profile has been updated.");
 
         if (formValues.email !== user.Email) {
-          toast("A confirmation email has been sent to your new email address.");
+          toast(
+            "A confirmation email has been sent to your new email address."
+          );
         }
 
         setUser((prevUser) => ({
@@ -108,8 +120,8 @@ const ProfilePage = () => {
 
   const handleChangePassword = async () => {
     const { value: formValues } = await Swal.fire({
-      maxWidth: '600px',
-      height: '200px',
+      maxWidth: "600px",
+      height: "200px",
       html: `
         <div class="relative max-h-[80vh] overflow-y-auto p-4">
           <h3 class="pt-5 text-xl font-bold text-left">Change Your Password</h3>
@@ -132,7 +144,8 @@ const ProfilePage = () => {
       cancelButtonColor: "#5CAF90",
       preConfirm: () => {
         const newPassword = document.getElementById("new_password").value;
-        const confirmPassword = document.getElementById("confirm_password").value;
+        const confirmPassword =
+          document.getElementById("confirm_password").value;
 
         if (!newPassword) {
           Swal.showValidationMessage("New Password is required.");
@@ -142,11 +155,11 @@ const ProfilePage = () => {
           Swal.showValidationMessage("Passwords do not match.");
           return false;
         }
-        
+
         return { newPassword };
       },
     });
-    
+
     if (formValues) {
       try {
         await api.updateUserPassword(user.idUser, formValues.newPassword);
@@ -166,9 +179,9 @@ const ProfilePage = () => {
   }
 
   return (
-    <section className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    <section className="min-h-screen">
+      <div>
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="p-4 sm:p-6 md:p-8">
             {/* Profile Header */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
@@ -187,13 +200,19 @@ const ProfilePage = () => {
                   {user ? user.Full_Name : "Loading..."}
                 </h2>
                 <div className="space-y-1">
-                  <p className="text-gray-600">{user ? user.Email : "Loading..."}</p>
-                  <p className="text-gray-600">{user ? user.Phone_No : "Loading..."}</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user?.Status === "Active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}>
+                  <p className="text-gray-600">
+                    {user ? user.Email : "Loading..."}
+                  </p>
+                  <p className="text-gray-600">
+                    {user ? user.Phone_No : "Loading..."}
+                  </p>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      user?.Status === "Active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
                     {user ? user.Status : "Loading..."}
                   </span>
                 </div>
@@ -203,13 +222,13 @@ const ProfilePage = () => {
             {/* Action Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
-                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-2xl hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium"
+                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-sm hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium cursor-pointer"
                 onClick={handleEditProfile}
               >
                 Edit Profile
               </button>
               <button
-                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-2xl hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium"
+                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-sm hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium cursor-pointer"
                 onClick={handleChangePassword}
               >
                 Change Password

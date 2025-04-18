@@ -92,22 +92,26 @@ const UsersManagedForm = () => {
           const response = await api.addUser(newUser);
 
           try {
-            await api.logAdminAction('Added new user', navigator.userAgent, JSON.stringify(newUser));
+            await api.logAdminAction(
+              "Added new user",
+              navigator.userAgent,
+              JSON.stringify(newUser)
+            );
           } catch (logError) {
             console.warn("Admin action logging failed:", logError);
           }
 
           setUsers([
             ...users,
-            { 
+            {
               idUser: response.id,
               Full_Name: newUser.full_name,
               Email: newUser.email,
               Phone_No: newUser.phone_no,
               Status: newUser.status,
               created_at: new Date(),
-              updated_at: new Date()
-            }
+              updated_at: new Date(),
+            },
           ]);
 
           toast.success("User has been added successfully!");
@@ -129,8 +133,8 @@ const UsersManagedForm = () => {
   });
 
   return (
-    <div className="px-1 py-5">
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
+    <div>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6">
           <div className="flex items-center gap-2">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
@@ -138,7 +142,7 @@ const UsersManagedForm = () => {
           </div>
           <button
             onClick={handleAddUser}
-            className="bg-[#5CAF90] text-white px-4 py-2 rounded-2xl flex items-center hover:bg-[#4a9277] transition-colors sm:ml-auto"
+            className="bg-[#5CAF90] text-white px-4 py-2 rounded-sm flex items-center hover:bg-[#4a9277] transition-colors sm:ml-auto"
           >
             <UserPlus className="w-5 h-5 mr-2" />
             <span className="text-sm sm:text-base">Add User</span>
@@ -158,7 +162,9 @@ const UsersManagedForm = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <button className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]">Search</button>
+              <button className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]">
+                Search
+              </button>
             </div>
           </div>
 
@@ -177,7 +183,10 @@ const UsersManagedForm = () => {
                 </thead>
                 <tbody className="text-[#1D372E]">
                   {filteredUsers.map((user) => (
-                    <tr key={user.idUser} className="border-b border-[#B7B7B7] bg-[#F7FDFF]">
+                    <tr
+                      key={user.idUser}
+                      className="border-b border-[#B7B7B7] bg-[#F7FDFF]"
+                    >
                       <td className="p-5">{user.Full_Name}</td>
                       <td className="p-5">{user.Email}</td>
                       <td className="p-5">{user.Phone_No}</td>
@@ -192,7 +201,9 @@ const UsersManagedForm = () => {
                           {user.Status}
                         </span>
                       </td>
-                      <td className="p-5">{new Date(user.created_at).toLocaleDateString()}</td>
+                      <td className="p-5">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </td>
                       <td>{new Date(user.updated_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
@@ -200,31 +211,42 @@ const UsersManagedForm = () => {
               </table>
             </div>
             <div className="sm:hidden space-y-4">
-  {filteredUsers.map((user) => (
-    <div key={user.idUser} className="bg-[#F7FDFF] p-4 rounded-lg border border-[#B7B7B7]">
-      <div className="flex justify-between items-start mb-3">
-        <div className="space-y-1">
-          <div className="font-medium text-[#1D372E]">{user.Full_Name}</div>
-          <div className="text-sm text-gray-600">{user.Email}</div>
-        </div>
-        <span
-          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300  ${
-            user.Status === "Active"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-                }`}
-           >
-          {user.Status}
-           </span>
-              </div>
-                <div className="text-sm text-gray-600 mb-2">{user.Phone_No}</div>
-                 <div className="text-xs text-gray-500 space-y-1">
-                  <div>Created: {new Date(user.created_at).toLocaleDateString()}</div>
-                   <div>Updated: {new Date(user.updated_at).toLocaleDateString()}</div>
+              {filteredUsers.map((user) => (
+                <div
+                  key={user.idUser}
+                  className="bg-[#F7FDFF] p-4 rounded-lg border border-[#B7B7B7]"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="space-y-1">
+                      <div className="font-medium text-[#1D372E]">
+                        {user.Full_Name}
+                      </div>
+                      <div className="text-sm text-gray-600">{user.Email}</div>
+                    </div>
+                    <span
+                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300  ${
+                        user.Status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {user.Status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 mb-2">
+                    {user.Phone_No}
+                  </div>
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <div>
+                      Created: {new Date(user.created_at).toLocaleDateString()}
+                    </div>
+                    <div>
+                      Updated: {new Date(user.updated_at).toLocaleDateString()}
+                    </div>
+                  </div>
                 </div>
-             </div>
-             ))}
-          </div>   
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -67,6 +67,13 @@ router.post(
   upload.single("brandImage"),
   productController.createBrand
 );
+router.put(
+  "/brands/:id",
+  authenticate,
+  upload.single("brandImage"),
+  productController.updateBrand
+);
+router.delete("/brands/:id", authenticate, productController.deleteBrand);
 router.get("/brands", productController.getBrands);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
 router.get("/", productController.getAllProducts);

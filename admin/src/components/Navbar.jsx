@@ -74,7 +74,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
             <div className="relative">
               <button
                 onClick={toggleNotifications}
-                className="btn btn-ghost btn-circle text-white"
+                className="btn btn-circle bg-[#1D372E] border-[#1D372E] hover:bg-[#5CAF90] hover:border-[#1D372E] text-white"
               >
                 <div className="indicator">
                   <IoNotifications className="h-5 w-5" />
@@ -84,7 +84,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                 </div>
               </button>
               {isNotificationsOpen && (
-                <div className="absolute right-0 z-10 mt-4 w-56 bg-[#1D372E] rounded-lg shadow-lg">
+                <div className="absolute right-0 z-10 mt-3.5 w-56 bg-[#1D372E] border border-white rounded-lg shadow-lg">
                   <div className="px-4 py-3 border-b border-white">
                     <h3 className="font-medium text-white text-sm">
                       Notifications
@@ -112,7 +112,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
             <div className="relative">
               <button
                 onClick={toggleDropdown}
-                className="flex items-center gap-2 btn btn-ghost btn-sm"
+                className="flex items-center gap-2 btn btn-ghost btn-sm bg-[#1D372E] border-[#1D372E] hover:bg-[#5CAF90] hover:border-[#1D372E]"
               >
                 <img
                   src={profile}
@@ -126,7 +126,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 z-10 mt-4 w-48 bg-[#1D372E] rounded-lg shadow-lg">
+                <div className="absolute right-0 z-10 mt-4 w-48 bg-[#1D372E] border border-white rounded-lg shadow-lg">
                   <ul className="py-2">
                     <li>
                       <Link

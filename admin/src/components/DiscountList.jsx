@@ -131,7 +131,7 @@ const DiscountList = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="table min-w-[700px] text-center border border-[#1D372E]">
+            <table className="table min-w-[1000px] text-center border border-[#1D372E]">
               <thead className="bg-[#EAFFF7] text-[#1D372E]">
                 <tr className="border-b border-[#1D372E]">
                   <th className="font-semibold">Product</th>
