@@ -25,6 +25,8 @@ const cpUpload = upload.fields([
 // ----------------
 // Category Routes
 // ----------------
+// New routes
+
 router.get("/categories", productController.getAllCategories);
 router.post(
   "/categories",
@@ -75,6 +77,8 @@ router.get(
   productController.getProductsBySubCategory
 );
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
+// In your product routes file
+router.get("/count", productController.getProductTotal);
 router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
 

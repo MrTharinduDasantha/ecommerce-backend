@@ -60,3 +60,11 @@ export const getCustomerHistory = async (customerId) => {
     throw error.response ? error.response.data : error.message;
   }
 };
+export const fetchCustomerCount = async () => {
+  try {
+    const response = await api.get("/api/customers/count");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};

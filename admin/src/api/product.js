@@ -25,12 +25,13 @@ api.interceptors.request.use((config) => {
 // --------------------------------------------
 
 // Get all categories
+
 export const getCategories = async () => {
   try {
     const response = await api.get("/api/products/categories");
-    return response.data;
+    return response.data; // This will be the array of categories with subcategories
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data || error; // Handle errors appropriately
   }
 };
 
@@ -272,5 +273,14 @@ export const deleteDiscount = async (id) => {
     return response.data;
   } catch (error) {
     throw error.response.data;
+  }
+};
+// Add this function to your API calls file
+export const getProductTotal = async () => {
+  try {
+    const response = await api.get("/api/products/count"); // Ensure the endpoint matches your backend
+    return response.data; // Return data as needed
+  } catch (error) {
+    throw error.response?.data || error; // Handle errors appropriately
   }
 };

@@ -9,6 +9,7 @@ router.use(authenticateToken);
 
 // Admin Customer Routes
 router.get('/', customerController.getCustomers);
+router.get('/count', customerController.getCustomerCount);
 router.get('/:id', customerController.getCustomer);
 router.post('/', customerController.createCustomer);
 router.put('/:id', customerController.updateCustomer);

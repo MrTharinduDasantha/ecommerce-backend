@@ -73,3 +73,21 @@ export const updateOrderStatus = async (orderId, status, customerName, orderTota
     throw error.response?.data || { message: 'Failed to update order status' };
   }
 };
+// Get order counts by status
+export const getOrderCountByStatus = async () => {
+  try {
+    const token = getToken();
+    console.log('Using token for getOrderCountByStatus:', token);
+    
+    const response = await axios.get(`${API_URL}/status/count`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order counts by status:', error);
+    throw error.response?.data || { message: 'Failed to fetch order counts by status' };
+  }
+};

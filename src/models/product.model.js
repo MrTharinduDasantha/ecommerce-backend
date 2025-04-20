@@ -7,20 +7,19 @@ const pool = require("../config/database");
 // Fetch all categories with subcategories
 async function getAllCategories() {
   const [categories] = await pool.query("SELECT * FROM Product_Category");
-  const [subcategories] = await pool.query("SELECT * FROM Sub_Category");
-
-  // Map subcategories into each category
-  const categoryList = categories.map((cat) => {
-    // Filter subcategories that belong to this category
-    const relatedSubs = subcategories.filter(
-      (sub) =>
-        sub.Product_Category_idProduct_Category === cat.idProduct_Category
+  
+  // Prepare an array with subcategories nested
+  const categoryList = await Promise.all(categories.map(async (cat) => {
+    const [subcategories] = await pool.query(
+      "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
+      [cat.idProduct_Category]
     );
+
     return {
       ...cat,
-      subcategories: relatedSubs,
+      subcategories // Attach subcategories to the category
     };
-  });
+  }));
 
   return categoryList;
 }
@@ -552,6 +551,12 @@ async function getDiscountById(discountId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
+async function getProductCount() {
+  const query = `SELECT COUNT(*) AS totalProducts FROM Product`;
+  const [result] = await pool.query(query);
+  return result[0].totalProducts; // Return the count value
+}
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -578,4 +583,5 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
+  getProductCount,
 };

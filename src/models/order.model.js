@@ -202,6 +202,14 @@ class Order {
 
     return salesData;
   }
+  // Inside Order class in models/order.model.js
+
+static async countByStatus() {
+  const [result] = await pool.query(
+    "SELECT Status, COUNT(*) as count FROM `Order` GROUP BY Status"
+  );
+  return result;
+}
 }
 
 module.exports = Order;
