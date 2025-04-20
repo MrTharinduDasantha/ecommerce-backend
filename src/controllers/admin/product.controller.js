@@ -1,3 +1,6 @@
+const express = require("express");
+const multer = require("multer");
+const authenticate = require("../../middleware/authMiddleware");
 const Product = require("../../models/product.model");
 const fs = require("fs");
 const path = require("path");
@@ -8,12 +11,28 @@ const pool = require("../../config/database");
 // -------------------------------------------
 
 // Fetch all categories with subcategories
+// Fetch all categories with subcategories count
 async function getAllCategories(req, res) {
   try {
-    const categories = await Product.getAllCategories();
-    res
-      .status(200)
-      .json({ message: "Categories fetched successfully", categories });
+    // Fetch all categories along with their respective subcategories
+    const [categories] = await pool.query("SELECT * FROM Product_Category");
+
+    // Prepare an array to hold the categories with their subcategory counts
+    const categoryList = await Promise.all(categories.map(async (cat) => {
+      // Get subcategories for the current category
+      const [subcategories] = await pool.query(
+        "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
+        [cat.idProduct_Category]
+      );
+
+      return {
+        ...cat,
+        subcategories: subcategories,
+        subCategoriesCount: subcategories.length, // Count of subcategories
+      };
+    }));
+
+    res.status(200).json({ message: "Categories fetched successfully", categories: categoryList });
   } catch (error) {
     console.error("Error fetching categories:", error);
     res.status(500).json({ message: "Failed to fetch categories" });
@@ -279,10 +298,9 @@ async function createProduct(req, res) {
       Selling_Price,
       Main_Image_Url: mainImageUrl,
       Long_Description,
-      SIH: 0, // Initialize SIH
+      SIH: 0,
     };
 
-    // Calculate total SIH from variations
     let totalQty = 0;
     for (const variation of variationData) {
       if (!variation.colorCode || !variation.size || !variation.quantity) {
@@ -306,7 +324,6 @@ async function createProduct(req, res) {
       }
     }
 
-    // Insert variations
     for (const variation of variationData) {
       await Product.createProductVariant(productId, variation);
     }
@@ -326,13 +343,11 @@ async function createProduct(req, res) {
       }
     }
 
-    // Get brand name for logging
     const [brand] = await pool.query(
       "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
       [Product_Brand_idProduct_Brand]
     );
 
-    // Log the admin action
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
@@ -343,6 +358,9 @@ async function createProduct(req, res) {
           description: Description,
           brand: brand[0]?.Brand_Name,
           price: Selling_Price,
+          variations: variationData,
+          faqs: JSON.parse(faqs),
+          subCategoryIds: JSON.parse(subCategoryIds)
         }),
       ]
     );
@@ -539,11 +557,20 @@ async function updateProduct(req, res) {
       subCategoryIds,
     } = req.body;
 
-    // Get the original product data for logging
     const existingProduct = await Product.getProductById(id);
     if (!existingProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    const [originalVariations] = await pool.query(
+      "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
+      [id]
+    );
+
+    const [originalFaqs] = await pool.query(
+      "SELECT * FROM FAQ WHERE Product_idProduct = ?",
+      [id]
+    );
 
     let mainImageUrl = null;
     if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
@@ -561,10 +588,9 @@ async function updateProduct(req, res) {
       Selling_Price,
       Main_Image_Url: mainImageUrl,
       Long_Description,
-      SIH: 0, // Initialize SIH
+      SIH: 0,
     };
 
-    // Calculate total SIH from variations if provided
     let variationData = null;
     if (variations) {
       try {
@@ -590,7 +616,6 @@ async function updateProduct(req, res) {
       }
     }
 
-    // Get brand names for logging
     const [oldBrand] = await pool.query(
       "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
       [existingProduct.Product_Brand_idProduct_Brand]
@@ -600,7 +625,6 @@ async function updateProduct(req, res) {
       [Product_Brand_idProduct_Brand]
     );
 
-    // Prepare associated data
     const subImages =
       req.files?.subImages?.map(
         (file) =>
@@ -614,7 +638,8 @@ async function updateProduct(req, res) {
       subCategoryIds: subCategoryIds ? JSON.parse(subCategoryIds) : null,
     });
 
-    // Prepare logging data
+    const parsedVariations = variationData || [];
+    
     const logData = {
       originalData: {
         description: existingProduct.Description,
@@ -624,6 +649,8 @@ async function updateProduct(req, res) {
         long_description: existingProduct.Long_Description,
         main_image: existingProduct.Main_Image_Url,
         sub_images: existingProduct.images?.map((img) => img.Image_Url) || [],
+        variations: originalVariations || [],
+        faqs: originalFaqs || []
       },
       updatedData: {
         description: Description,
@@ -633,10 +660,11 @@ async function updateProduct(req, res) {
         long_description: Long_Description,
         main_image: mainImageUrl,
         sub_images: subImages,
+        variations: parsedVariations,
+        faqs: faqs ? JSON.parse(faqs) : []
       },
     };
 
-    // Log updated fields
     const updatedFields = [];
     if (Description !== existingProduct.Description)
       updatedFields.push("description");
@@ -673,7 +701,6 @@ async function updateProduct(req, res) {
     res.status(500).json({ message: "Failed to update product" });
   }
 }
-
 // Fetch all products
 async function getAllProducts(req, res) {
   try {
@@ -752,7 +779,16 @@ async function deleteProduct(req, res) {
     const product = await Product.getProductById(id);
 
     if (product) {
-      // Log the admin action before deletion
+      const [variations] = await pool.query(
+        "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
+        [id]
+      );
+
+      const [faqs] = await pool.query(
+        "SELECT * FROM FAQ WHERE Product_idProduct = ?",
+        [id]
+      );
+
       await pool.query(
         "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
         [
@@ -762,11 +798,12 @@ async function deleteProduct(req, res) {
           JSON.stringify({
             productId: id,
             description: product.Description,
+            variations: variations || [],
+            faqs: faqs || []
           }),
         ]
       );
 
-      // Remove main image file if it exists
       if (product.Main_Image_Url) {
         const mainImagePath = path.join(
           __dirname,
@@ -781,7 +818,6 @@ async function deleteProduct(req, res) {
         });
       }
 
-      // Remove sub images files if they exist
       if (product.images && product.images.length > 0) {
         product.images.forEach((img) => {
           if (img.Image_Url) {
@@ -797,7 +833,6 @@ async function deleteProduct(req, res) {
         });
       }
 
-      // Delete product and associated data
       await Product.deleteProduct(id);
     }
 
@@ -1043,6 +1078,20 @@ async function getDiscountById(req, res) {
   }
 }
 
+async function getProductTotal(req, res) {
+  try {
+    const totalProducts = await Product.getProductCount();
+
+    res.status(200).json({
+      message: "Total products fetched successfully",
+      totalProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching total products:", error);
+    res.status(500).json({ message: "Failed to fetch total products" });
+  }
+}
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -1067,4 +1116,5 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
+  getProductTotal,
 };

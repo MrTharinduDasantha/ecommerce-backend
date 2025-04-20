@@ -165,11 +165,21 @@ const getCustomerHistory = async (req, res) => {
   }
 };
 
+const getCustomerCount = async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT COUNT(*) as total FROM Customer');
+    res.json({ total: rows[0].total }); // Return total count
+  } catch (error) {
+    console.error('Error fetching customer count:', error);
+    res.status(500).json({ error: 'Database error', details: error.message });
+  }
+};
 module.exports = {
   getCustomers,
   getCustomer,
   createCustomer,
   updateCustomer,
   deleteCustomer,
-  getCustomerHistory
+  getCustomerHistory,
+  getCustomerCount
 };
