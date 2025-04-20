@@ -249,6 +249,7 @@ const LogDetails = () => {
                   <div className="w-1 h-6 bg-[#EAFFF7]"></div>
                   <h3 className="font-semibold text-[#1D372E]">{title}</h3>
                 </div>
+
                 
                 {/* Update Product with special handling for variations and FAQs */}
                 {log.action === "Updated product" ? (
@@ -510,6 +511,13 @@ const LogDetails = () => {
                     {Object.entries(details)
                       .filter(([key]) => !['variations', 'faqs'].includes(key))
                       .map(([key, value]) => (
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white p-4 text-gray-600 rounded-lg">
+                    <h4 className="text-sm font-medium mb-3">Original Data</h4>
+                    {Object.entries(details.originalData || {}).map(
+                      ([key, value]) => (
+
                         <div key={key} className="mb-2 text-[#1D372E]">
                           <span className="text-sm font-medium capitalize">
                             {key}:{" "}
@@ -520,7 +528,41 @@ const LogDetails = () => {
                               : value}
                           </span>
                         </div>
+
                       ))}
+
+                      )
+                    )}
+                  </div>
+                  <div className="bg-white p-4 text-gray-600 rounded-lg">
+                    <h4 className="text-sm font-medium mb-3">Updated Data</h4>
+                    {Object.entries(details.updatedData || {}).map(
+                      ([key, value]) => {
+                        const originalValue = details.originalData?.[key];
+
+                        // Check for difference and highlight accordingly
+                        const isDifferent = originalValue !== value;
+
+                        return (
+                          <div
+                            key={key}
+                            className={`mb-2 ${
+                              isDifferent ? "bg-red-100" : ""
+                            }`}
+                          >
+                            <span className="text-sm font-medium capitalize">
+                              {key}:{" "}
+                            </span>
+                            <span className="text-sm">
+                              {Array.isArray(value)
+                                ? JSON.stringify(value)
+                                : value}
+                            </span>
+                          </div>
+                        );
+                      }
+                    )}
+
                   </div>
                   
                   {/* Product Variations if available */}
@@ -713,9 +755,9 @@ const LogDetails = () => {
   };
 
   return (
-    <div className="w-full sm:w-500px mx-auto p-3 sm:p-6">
+    <div className="w-full sm:w-500px mx-auto">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-        <div className="flex items-center gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/dashboard/admin-logs")}
             className="inline-flex items-center text-[#5CAF90] hover:text-[#4a9277] transition-colors mb-6"

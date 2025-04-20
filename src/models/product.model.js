@@ -150,6 +150,74 @@ async function createBrand(brandName, brandImageUrl, shortDescription, userId) {
   return result;
 }
 
+// Update an existing brand
+async function updateBrand(
+  brandId,
+  brandName,
+  brandImageUrl,
+  shortDescription,
+  userId
+) {
+  if (!brandName) throw new Error("Brand name is required");
+
+  // Check if brand exists
+  const [existingBrand] = await pool.query(
+    "SELECT * FROM Product_Brand WHERE idProduct_Brand = ?",
+    [brandId]
+  );
+  if (existingBrand.length === 0) {
+    throw new Error("Brand not found");
+  }
+
+  // If image URL is provided, update it; otherwise, keep the existing one
+  if (brandImageUrl) {
+    const query = `
+      UPDATE Product_Brand 
+      SET Brand_Name = ?, Brand_Image_Url = ?, ShortDescription = ?
+      WHERE idProduct_Brand = ?
+    `;
+    await pool.query(query, [
+      brandName,
+      brandImageUrl,
+      shortDescription,
+      brandId,
+    ]);
+  } else {
+    const query = `
+      UPDATE Product_Brand 
+      SET Brand_Name = ?, ShortDescription = ?
+      WHERE idProduct_Brand = ?
+    `;
+    await pool.query(query, [brandName, shortDescription, brandId]);
+  }
+}
+
+// Delete a brand
+async function deleteBrand(brandId) {
+  // Check if brand exists
+  const [existingBrand] = await pool.query(
+    "SELECT * FROM Product_Brand WHERE idProduct_Brand = ?",
+    [brandId]
+  );
+  if (existingBrand.length === 0) {
+    throw new Error("Brand not found");
+  }
+
+  // Check if brand is used in any products
+  const [products] = await pool.query(
+    "SELECT COUNT(*) as count FROM Product WHERE Product_Brand_idProduct_Brand = ?",
+    [brandId]
+  );
+  if (products[0].count > 0) {
+    throw new Error("Cannot delete brand as it is used in products");
+  }
+
+  // Delete the brand
+  await pool.query("DELETE FROM Product_Brand WHERE idProduct_Brand = ?", [
+    brandId,
+  ]);
+}
+
 // Get all brands
 async function getBrands() {
   const [brands] = await pool.query("SELECT * FROM Product_Brand");
@@ -566,6 +634,8 @@ module.exports = {
   deleteSubCategory,
   createProduct,
   createBrand,
+  updateBrand,
+  deleteBrand,
   getBrands,
   createProductImages,
   createProductVariant,

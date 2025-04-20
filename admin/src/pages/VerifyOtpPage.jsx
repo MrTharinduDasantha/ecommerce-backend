@@ -120,7 +120,6 @@ const VerifyOtpPage = () => {
                 onPaste={index === 0 ? handlePaste : undefined}
                 ref={(el) => (inputRef.current[index] = el)}
                 className="input input-bordered w-12 h-12 text-center text-xl bg-white border-[#1D372E] text-[#1D372E]"
-                required
               />
             ))}
           </div>

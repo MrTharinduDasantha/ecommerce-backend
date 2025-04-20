@@ -35,7 +35,7 @@ const ProductDetails = () => {
 
   if (loading) {
     return (
-      <div className="card bg-base-100 shadow-md">
+      <div className="card bg-white">
         <div className="card-body">
           <div className="flex justify-center items-center h-40">
             <span className="loading loading-spinner loading-lg text-primary"></span>
