@@ -118,6 +118,19 @@ class OrderController {
       res.status(500).json({ message: 'Failed to update order status', error: error.message });
     }
   }
+  // Inside OrderController class in controllers/admin/order.controller.js
+
+async getOrderCountByStatus(req, res) {
+  try {
+      const orderCountByStatus = await Order.countByStatus();
+      res.json(orderCountByStatus);
+  } catch (error) {
+      console.error('Error in getOrderCountByStatus:', error);
+      res.status(500).json({ message: 'Failed to fetch order counts by status', error: error.message });
+  }
 }
+}
+
+
 
 module.exports = new OrderController();
