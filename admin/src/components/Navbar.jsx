@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 import { RiSidebarUnfoldFill, RiSidebarFoldFill } from "react-icons/ri";
 import { IoMdArrowDropdownCircle } from "react-icons/io";
 import { IoNotifications } from "react-icons/io5";
@@ -10,6 +11,7 @@ import profile from "../assets/userprofile.png";
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   const text = "Admin Panel".split("");
   const { user } = useContext(AuthContext);
+  const { unreadCount } = useNotifications();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -72,17 +74,19 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
           <div className="flex items-center gap-3">
             {/* Notifications */}
             <div className="relative">
-              <button
-                onClick={toggleNotifications}
-                className="btn btn-circle bg-[#1D372E] border-[#1D372E] hover:bg-[#5CAF90] hover:border-[#1D372E] text-white"
+              <Link
+                to="/dashboard/notifications"
+                className="btn btn-circle bg-[#1D372E] border-[#1D372E] hover:bg-[#5CAF90] hover:border-[#1D372E] text-white relative"
               >
                 <div className="indicator">
                   <IoNotifications className="h-5 w-5" />
-                  <span className="badge badge-sm badge-primary indicator-item">
-                    3
-                  </span>
+                  {unreadCount > 0 && (
+                    <span className="badge badge-sm badge-primary indicator-item">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </div>
-              </button>
+              </Link>
               {isNotificationsOpen && (
                 <div className="absolute right-0 z-10 mt-3.5 w-56 bg-[#1D372E] border border-white rounded-lg shadow-lg">
                   <div className="px-4 py-3 border-b border-white">
@@ -93,15 +97,15 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                   <div className="p-2">
                     <div className="p-2 rounded-lg transition-colors">
                       <p className="text-sm font-medium text-white">
-                        New order received
+                        You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
                       </p>
-                      <p className="text-xs text-gray-300">2 minutes ago</p>
-                    </div>
-                    <div className="p-2 rounded-lg transition-colors">
-                      <p className="text-sm font-medium text-white">
-                        New user registered
-                      </p>
-                      <p className="text-xs text-gray-300">1 hour ago</p>
+                      <Link
+                        to="/dashboard/notifications"
+                        className="text-xs text-blue-400 hover:text-blue-300 mt-1 block"
+                        onClick={() => setIsNotificationsOpen(false)}
+                      >
+                        View all notifications
+                      </Link>
                     </div>
                   </div>
                 </div>

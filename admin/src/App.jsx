@@ -21,7 +21,8 @@ import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
 import AdminLogs from "./components/AdminLogs";
 import CustomerDetails from "./components/CustomerDetails";
-import LogDetails from "./components/LogDetails"; 
+import LogDetails from "./components/LogDetails";
+import NotificationPage from "./components/NotificationPage";
 
 const App = () => {
   return (
@@ -78,6 +79,7 @@ const App = () => {
           <Route path="orders/:orderId" element={<OrderDetails />} />
           <Route path="customer/view-customer/:id" element={<CustomerDetails />} />
           <Route path="log/view-adminlogs/:id" element={<LogDetails />} />
+          <Route path="notifications" element={<NotificationPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
