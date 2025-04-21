@@ -27,6 +27,7 @@ const Sidebar = ({ isSidebarOpen }) => {
     location.pathname.includes("customer-managed-form") ||
     location.pathname.includes("admin-logs");
   const isManageOrdersActive = location.pathname.includes("orders");
+  const isNotificationsActive = location.pathname.includes("notifications");
 
   // Toggle submenu functions
   const toggleProductSubMenu = () => {
@@ -264,15 +265,18 @@ const Sidebar = ({ isSidebarOpen }) => {
             </NavLink>
           </li>
 
-          {/* Notifications */}
+          {/* Notifications - Moved below Manage Orders */}
           <li>
             <NavLink
-              to="#"
-              className="flex items-center gap-3 py-2 hover:bg-[#5CAF90] transition-colors"
+              to="notifications"
+              className={({ isActive }) =>
+                `flex items-center gap-3 py-2 hover:bg-[#5CAF90] transition-colors ${
+                  isActive || isNotificationsActive ? "bg-[#5CAF90] text-white font-medium" : ""
+                }`
+              }
             >
               <IoNotifications className="w-4 h-4" />
-              <span>Notifications</span>
-              <span className="badge badge-sm badge-primary ml-auto">3</span>
+              Notifications
             </NavLink>
           </li>
 

@@ -6,6 +6,8 @@ const productRoutes = require("./routes/admin/product.routes");
 const settingRoutes = require("./routes/admin/setting.routes");
 const cartRoutes = require("./routes/customer/cart.routes");
 const orderRoutes = require("./routes/admin/order.routes");
+const adminRoutes = require("./routes/admin"); // Import centralized admin routes
+const notificationRoutes = require("./routes/admin/notification.routes"); // Import notification routes
 
 require("dotenv").config(); // Load environment variables from .env file
 
@@ -23,6 +25,7 @@ app.use("/api/products", productRoutes); // Use the product routes
 app.use("/api/settings", settingRoutes); // Use the setting routes
 app.use("/api/carts", cartRoutes); // Use the cart routes
 app.use("/admin/orders", orderRoutes); // Use the order routes
+app.use("/admin/notifications", notificationRoutes); // Register the notification routes
 
 const PORT = process.env.PORT || 9000;
 app.listen(PORT, () => {
