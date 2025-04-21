@@ -79,18 +79,22 @@ router.delete("/brands/:id", authenticate, productController.deleteBrand);
 router.get("/brands", productController.getBrands);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
 router.get("/", productController.getAllProducts);
+router.get(
+  "/sub-categories/:subId/products",
+  productController.getProductsBySubCategory
+);
+router.get("/brands/:brandId/products", productController.getProductsByBrand);
+router.get("/:id", productController.getProductById);
+router.delete("/:id", authenticate, productController.deleteProduct);
 
 router.get(
   "/sub-categories/:subId/products",
   productController.getProductsBySubCategory
 );
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
-// In your product routes file
 router.get("/count", productController.getProductTotal);
 router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
-
-module.exports = router;
 
 // ----------------
 // Discount Routes
@@ -105,5 +109,4 @@ router.post("/discounts", authenticate, productController.createDiscount);
 router.put("/discounts/:id", authenticate, productController.updateDiscount);
 router.delete("/discounts/:id", authenticate, productController.deleteDiscount);
 
-
-
+module.exports = router;
