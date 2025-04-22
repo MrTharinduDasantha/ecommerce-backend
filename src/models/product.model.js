@@ -7,19 +7,21 @@ const pool = require("../config/database");
 // Fetch all categories with subcategories
 async function getAllCategories() {
   const [categories] = await pool.query("SELECT * FROM Product_Category");
-  
-  // Prepare an array with subcategories nested
-  const categoryList = await Promise.all(categories.map(async (cat) => {
-    const [subcategories] = await pool.query(
-      "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
-      [cat.idProduct_Category]
-    );
 
-    return {
-      ...cat,
-      subcategories // Attach subcategories to the category
-    };
-  }));
+  // Prepare an array with subcategories nested
+  const categoryList = await Promise.all(
+    categories.map(async (cat) => {
+      const [subcategories] = await pool.query(
+        "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
+        [cat.idProduct_Category]
+      );
+
+      return {
+        ...cat,
+        subcategories, // Attach subcategories to the category
+      };
+    })
+  );
 
   return categoryList;
 }
@@ -394,6 +396,13 @@ async function getAllProducts() {
   return products;
 }
 
+// Get the total number of products
+async function getProductCount() {
+  const query = `SELECT COUNT(*) AS totalProducts FROM Product`;
+  const [result] = await pool.query(query);
+  return result[0].totalProducts; // Return the count value
+}
+
 // Get all products by subcategory id
 async function getProductsBySubCategory(subCategoryId) {
   const query = `
@@ -619,12 +628,6 @@ async function getDiscountById(discountId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
-async function getProductCount() {
-  const query = `SELECT COUNT(*) AS totalProducts FROM Product`;
-  const [result] = await pool.query(query);
-  return result[0].totalProducts; // Return the count value
-}
-
 module.exports = {
   getAllCategories,
   createCategory,
@@ -643,6 +646,7 @@ module.exports = {
   createProductSubCategory,
   updateProduct,
   getAllProducts,
+  getProductCount,
   getProductsBySubCategory,
   getProductsByBrand,
   getProductById,
@@ -653,5 +657,4 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
-  getProductCount,
 };

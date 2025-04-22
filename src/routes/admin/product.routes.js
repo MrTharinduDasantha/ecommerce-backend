@@ -25,8 +25,6 @@ const cpUpload = upload.fields([
 // ----------------
 // Category Routes
 // ----------------
-// New routes
-
 router.get("/categories", productController.getAllCategories);
 router.post(
   "/categories",
@@ -79,6 +77,7 @@ router.delete("/brands/:id", authenticate, productController.deleteBrand);
 router.get("/brands", productController.getBrands);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
 router.get("/", productController.getAllProducts);
+router.get("/count", productController.getProductTotal);
 router.get(
   "/sub-categories/:subId/products",
   productController.getProductsBySubCategory
@@ -86,13 +85,11 @@ router.get(
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
-
 router.get(
   "/sub-categories/:subId/products",
   productController.getProductsBySubCategory
 );
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
-router.get("/count", productController.getProductTotal);
 router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
 

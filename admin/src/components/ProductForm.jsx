@@ -392,12 +392,6 @@ const ProductForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
-    if (!description.trim() || !selectedBrand) {
-      toast.error("Description and brand are required");
-      return;
-    }
-
     try {
       setIsLoading(true);
 
