@@ -272,14 +272,14 @@ const ProductCategorySubCategoryForm = () => {
           </div>
         ) : categories.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="table min-w-[700px] text-center border border-[#1D372E]">
+            <table className="table table-fixed min-w-[750px] text-center border border-[#1D372E]">
               <thead className="bg-[#EAFFF7] text-[#1D372E]">
                 <tr className="border-b border-[#1D372E]">
-                  <th className="font-semibold">Category</th>
-                  <th className="font-semibold">Image</th>
-                  <th className="font-semibold">Sub Categories</th>
-                  <th className="font-semibold">Status</th>
-                  <th className="font-semibold">Actions</th>
+                  <th className="font-semibold w-[125px]">Category</th>
+                  <th className="font-semibold w-[100px]">Image</th>
+                  <th className="font-semibold w-[325px]">Sub Categories</th>
+                  <th className="font-semibold w-[100px]">Status</th>
+                  <th className="font-semibold w-[100px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-[#1D372E]">
@@ -366,7 +366,7 @@ const ProductCategorySubCategoryForm = () => {
       {/* Sub Category Popup */}
       {showSubCategoryPopup && (
         <div className="modal modal-open">
-          <div className="modal-box bg-white text-[#1D372E]">
+          <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
             <h3 className="font-bold text-lg mb-4">Add Sub Category</h3>
             <button
               onClick={closeSubCategoryPopup}

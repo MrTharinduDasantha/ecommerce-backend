@@ -18,21 +18,26 @@ async function getAllCategories(req, res) {
     const [categories] = await pool.query("SELECT * FROM Product_Category");
 
     // Prepare an array to hold the categories with their subcategory counts
-    const categoryList = await Promise.all(categories.map(async (cat) => {
-      // Get subcategories for the current category
-      const [subcategories] = await pool.query(
-        "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
-        [cat.idProduct_Category]
-      );
+    const categoryList = await Promise.all(
+      categories.map(async (cat) => {
+        // Get subcategories for the current category
+        const [subcategories] = await pool.query(
+          "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
+          [cat.idProduct_Category]
+        );
 
-      return {
-        ...cat,
-        subcategories: subcategories,
-        subCategoriesCount: subcategories.length, // Count of subcategories
-      };
-    }));
+        return {
+          ...cat,
+          subcategories: subcategories,
+          subCategoriesCount: subcategories.length, // Count of subcategories
+        };
+      })
+    );
 
-    res.status(200).json({ message: "Categories fetched successfully", categories: categoryList });
+    res.status(200).json({
+      message: "Categories fetched successfully",
+      categories: categoryList,
+    });
   } catch (error) {
     console.error("Error fetching categories:", error);
     res.status(500).json({ message: "Failed to fetch categories" });
@@ -360,7 +365,7 @@ async function createProduct(req, res) {
           price: Selling_Price,
           variations: variationData,
           faqs: JSON.parse(faqs),
-          subCategoryIds: JSON.parse(subCategoryIds)
+          subCategoryIds: JSON.parse(subCategoryIds),
         }),
       ]
     );
@@ -639,7 +644,7 @@ async function updateProduct(req, res) {
     });
 
     const parsedVariations = variationData || [];
-    
+
     const logData = {
       originalData: {
         description: existingProduct.Description,
@@ -650,7 +655,7 @@ async function updateProduct(req, res) {
         main_image: existingProduct.Main_Image_Url,
         sub_images: existingProduct.images?.map((img) => img.Image_Url) || [],
         variations: originalVariations || [],
-        faqs: originalFaqs || []
+        faqs: originalFaqs || [],
       },
       updatedData: {
         description: Description,
@@ -661,7 +666,7 @@ async function updateProduct(req, res) {
         main_image: mainImageUrl,
         sub_images: subImages,
         variations: parsedVariations,
-        faqs: faqs ? JSON.parse(faqs) : []
+        faqs: faqs ? JSON.parse(faqs) : [],
       },
     };
 
@@ -701,6 +706,7 @@ async function updateProduct(req, res) {
     res.status(500).json({ message: "Failed to update product" });
   }
 }
+
 // Fetch all products
 async function getAllProducts(req, res) {
   try {
@@ -711,6 +717,21 @@ async function getAllProducts(req, res) {
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ message: "Failed to fetch products" });
+  }
+}
+
+// Get total number of products
+async function getProductTotal(req, res) {
+  try {
+    const totalProducts = await Product.getProductCount();
+
+    res.status(200).json({
+      message: "Total products fetched successfully",
+      totalProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching total products:", error);
+    res.status(500).json({ message: "Failed to fetch total products" });
   }
 }
 
@@ -799,7 +820,7 @@ async function deleteProduct(req, res) {
             productId: id,
             description: product.Description,
             variations: variations || [],
-            faqs: faqs || []
+            faqs: faqs || [],
           }),
         ]
       );
@@ -1078,20 +1099,6 @@ async function getDiscountById(req, res) {
   }
 }
 
-async function getProductTotal(req, res) {
-  try {
-    const totalProducts = await Product.getProductCount();
-
-    res.status(200).json({
-      message: "Total products fetched successfully",
-      totalProducts,
-    });
-  } catch (error) {
-    console.error("Error fetching total products:", error);
-    res.status(500).json({ message: "Failed to fetch total products" });
-  }
-}
-
 module.exports = {
   getAllCategories,
   createCategory,
@@ -1106,6 +1113,7 @@ module.exports = {
   getBrands,
   updateProduct,
   getAllProducts,
+  getProductTotal,
   getProductsBySubCategory,
   getProductsByBrand,
   getProductById,
@@ -1116,5 +1124,4 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
-  getProductTotal,
 };
