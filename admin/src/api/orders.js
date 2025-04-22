@@ -73,6 +73,27 @@ export const updateOrderStatus = async (orderId, status, customerName, orderTota
     throw error.response?.data || { message: 'Failed to update order status' };
   }
 };
+
+// Update payment status
+export const updatePaymentStatus = async (orderId, paymentStatus, customerName, orderTotal) => {
+  try {
+    const token = getToken();
+    
+    const response = await axios.put(`${API_URL}/${orderId}/payment-status`, 
+      { paymentStatus, customerName, orderTotal },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating payment status:', error);
+    throw error.response?.data || { message: 'Failed to update payment status' };
+  }
+};
+
 // Get order counts by status
 export const getOrderCountByStatus = async () => {
   try {
