@@ -360,14 +360,14 @@ const LogDetails = () => {
                                     key={key}
                                     className={`mb-2 ${
                                       isDifferent
-                                        ? "bg-red-100 p-1 rounded"
+                                        ? "bg-red-100 text-[#1D372E] p-1 rounded"
                                         : ""
                                     }`}
                                   >
-                                    <span className="text-sm font-medium capitalize">
+                                    <span className="text-sm text-[#1D372E] font-medium capitalize">
                                       {key}:{" "}
                                     </span>
-                                    <span className="text-sm">
+                                    <span className="text-sm text-[#1D372E]">
                                       {typeof value === "object"
                                         ? JSON.stringify(value)
                                         : value}
@@ -627,10 +627,10 @@ const LogDetails = () => {
                                 isDifferent ? "bg-red-100 p-1 rounded" : ""
                               }`}
                             >
-                              <span className="text-sm font-medium capitalize">
+                              <span className="text-sm text-[#1D372E] font-medium capitalize">
                                 {key}:{" "}
                               </span>
-                              <span className="text-sm">
+                              <span className="text-sm text-[#1D372E]">
                                 {Array.isArray(value)
                                   ? JSON.stringify(value)
                                   : value}

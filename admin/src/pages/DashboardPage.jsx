@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar";
 
 const DashboardPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -14,6 +15,8 @@ const DashboardPage = () => {
 
   // Handle responsive sidebar behavior
   useEffect(() => {
+    setIsMounted(true);
+
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setIsSidebarOpen(false);
@@ -28,17 +31,20 @@ const DashboardPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  if (!isMounted) {
+    return null; // Prevent layout shift during hydration
+  }
+
   return (
     <div className="min-h-screen bg-[#1D372E]">
       <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar isSidebarOpen={isSidebarOpen} />
 
       <main
-        className={`pt-14 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? "md:ml-56 lg:ml-60" : ""
-        }`}
+        className={`pt-16 transition-all duration-300 ease-in-out min-h-screen
+          ${isSidebarOpen ? "pl-64" : ""}`}
       >
-        <div className="p-4 md:p-6">
+        <div className="p-4 md:p-6 max-w-7xl mx-auto">
           <Outlet />
         </div>
       </main>

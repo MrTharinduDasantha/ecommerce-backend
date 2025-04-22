@@ -469,7 +469,7 @@ const ProductForm = () => {
 
   return (
     <div className="card bg-white shadow-md">
-      <div className="card-body p-4 md:p-6">
+      <div className="card-body p-6 md:p-6">
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-[#5CAF90]"></div>
