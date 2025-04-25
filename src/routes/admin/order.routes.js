@@ -12,5 +12,7 @@ router.get('/', orderController.getAllOrders.bind(orderController));
 router.get('/status/count', orderController.getOrderCountByStatus.bind(orderController));
 router.get('/:id', orderController.getOrderById.bind(orderController));
 router.put('/:id/status', orderController.updateOrderStatus.bind(orderController));
+// Inside the router file (e.g., routes/admin/order.routes.js)
+router.get('/delivery/pending/count', orderController.getPendingDeliveryCount.bind(orderController));
 
 module.exports = router;

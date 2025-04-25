@@ -240,8 +240,8 @@ const CustomerManagedForm = () => {
     <div>
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4 md:p-6">
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-1 h-6 bg-[#5CAF90]"></div>
-          <h2 className="text-xl font-bold text-[#1D372E]">Customer Details</h2>
+          <div className="w-1 h-5 bg-[#5CAF90]"></div>
+          <h2 className="text-base  font-bold text-[#1D372E]">Customer Details</h2>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 mb-6">
           <div className="relative flex w-full md:max-w-xl md:mx-auto">
@@ -266,14 +266,14 @@ const CustomerManagedForm = () => {
             <table className="table min-w-[700px] text-center border border-[#B7B7B7]">
               <thead className="bg-[#EAFFF7] text-[#1D372E]">
                 <tr className="border-b border-[#B7B7B7]">
-                  <th className="font-semibold p-3 w-[20%]">ID</th>
-                  <th className="font-semibold p-3 w-[50%]">Name</th>
-                  <th className="font-semibold p-3 w-[50%]">Email</th>
-                  <th className="font-semibold p-3 w-[20%]">Phone</th>
-                  <th className="font-semibold p-3 w-[20%]">Status</th>
-                  <th className="font-semibold p-3 w-[20%]">Created</th>
-                  <th className="font-semibold p-3 w-[20%]">Updated</th>
-                  <th className="font-semibold p-3 w-[10%]">Actions</th>
+                  <th className="font-semibold p-3 w-[20%] text-sm">ID</th>
+                  <th className="font-semibold p-3 w-[50%] text-sm">Name</th>
+                  <th className="font-semibold p-3 w-[50%] text-sm">Email</th>
+                  <th className="font-semibold p-3 w-[20%] text-sm">Phone</th>
+                  <th className="font-semibold p-3 w-[20%] text-sm">Status</th>
+                  <th className="font-semibold p-3 w-[20%] text-sm">Created</th>
+                  <th className="font-semibold p-3 w-[20%] text-sm">Updated</th>
+                  <th className="font-semibold p-3 w-[10%] text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-[#1D372E]">
@@ -282,11 +282,11 @@ const CustomerManagedForm = () => {
                     key={customer.idCustomer}
                     className="border-b border-[#B7B7B7] bg-[#F7FDFF]"
                   >
-                    <td className="p-5">{customer.idCustomer}</td>
-                    <td className="p-5">{customer.Full_Name}</td>
-                    <td className="p-5">{customer.Email}</td>
-                    <td className="p-5">{customer.Mobile_No}</td>
-                    <td className="p-5">
+                    <td className="p-5 text-xs">{customer.idCustomer}</td>
+                    <td className="p-5 text-xs">{customer.Full_Name}</td>
+                    <td className="p-5 text-xs">{customer.Email}</td>
+                    <td className="p-5 text-xs">{customer.Mobile_No}</td>
+                    <td className="p-5 text-xs">
                       <span
                         className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                           customer.Status === "Active"
@@ -297,13 +297,13 @@ const CustomerManagedForm = () => {
                         {customer.Status}
                       </span>
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 text-xs">
                       {new Date(customer.created_at).toLocaleDateString()}
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 text-xs">
                       {new Date(customer.updated_at).toLocaleDateString()}
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 text-xs">
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => handleViewDetails(customer.idCustomer)}

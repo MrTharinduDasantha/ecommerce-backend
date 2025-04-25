@@ -18,21 +18,26 @@ async function getAllCategories(req, res) {
     const [categories] = await pool.query("SELECT * FROM Product_Category");
 
     // Prepare an array to hold the categories with their subcategory counts
-    const categoryList = await Promise.all(categories.map(async (cat) => {
-      // Get subcategories for the current category
-      const [subcategories] = await pool.query(
-        "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
-        [cat.idProduct_Category]
-      );
+    const categoryList = await Promise.all(
+      categories.map(async (cat) => {
+        // Get subcategories for the current category
+        const [subcategories] = await pool.query(
+          "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
+          [cat.idProduct_Category]
+        );
 
-      return {
-        ...cat,
-        subcategories: subcategories,
-        subCategoriesCount: subcategories.length, // Count of subcategories
-      };
-    }));
+        return {
+          ...cat,
+          subcategories: subcategories,
+          subCategoriesCount: subcategories.length, // Count of subcategories
+        };
+      })
+    );
 
-    res.status(200).json({ message: "Categories fetched successfully", categories: categoryList });
+    res.status(200).json({
+      message: "Categories fetched successfully",
+      categories: categoryList,
+    });
   } catch (error) {
     console.error("Error fetching categories:", error);
     res.status(500).json({ message: "Failed to fetch categories" });
@@ -315,12 +320,14 @@ async function createProduct(req, res) {
     const result = await Product.createProduct(productData);
     const productId = result.insertId;
 
+    let subImageUrls = [];
     if (req.files && req.files.subImages) {
       for (const file of req.files.subImages) {
         const imageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
           file.filename
         }`;
         await Product.createProductImages(productId, imageUrl);
+        subImageUrls.push(imageUrl);
       }
     }
 
@@ -328,18 +335,32 @@ async function createProduct(req, res) {
       await Product.createProductVariant(productId, variation);
     }
 
+    let faqData = [];
     if (faqs) {
-      const faqData = JSON.parse(faqs);
+      faqData = JSON.parse(faqs);
       for (const faq of faqData) {
         await Product.createProductFaq(productId, faq);
       }
     }
 
+    let subCategoryData = [];
+    let subCategoryDescriptions = [];
     if (subCategoryIds) {
-      const subCategoryData = JSON.parse(subCategoryIds);
+      subCategoryData = JSON.parse(subCategoryIds);
       for (const subCat of subCategoryData) {
         const subCatId = subCat.idSub_Category ? subCat.idSub_Category : subCat;
         await Product.createProductSubCategory(productId, subCatId);
+        // Fetch subcategory description
+        const [subCategory] = await pool.query(
+          "SELECT Description FROM Sub_Category WHERE idSub_Category = ?",
+          [subCatId]
+        );
+        if (subCategory.length) {
+          subCategoryDescriptions.push({
+            idSub_Category: subCatId,
+            Description: subCategory[0].Description,
+          });
+        }
       }
     }
 
@@ -348,20 +369,27 @@ async function createProduct(req, res) {
       [Product_Brand_idProduct_Brand]
     );
 
+    // Enhanced log data
+    const logData = {
+      description: Description,
+      brand: brand[0]?.Brand_Name || "Unknown",
+      market_price: Market_Price,
+      selling_price: Selling_Price,
+      long_description: Long_Description,
+      main_image: mainImageUrl,
+      sub_images: subImageUrls,
+      variations: variationData,
+      faqs: faqData,
+      sub_categories: subCategoryDescriptions,
+    };
+
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
       [
         req.user.userId,
         "Created product",
         req.headers["user-agent"],
-        JSON.stringify({
-          description: Description,
-          brand: brand[0]?.Brand_Name,
-          price: Selling_Price,
-          variations: variationData,
-          faqs: JSON.parse(faqs),
-          subCategoryIds: JSON.parse(subCategoryIds)
-        }),
+        JSON.stringify(logData),
       ]
     );
 
@@ -572,6 +600,11 @@ async function updateProduct(req, res) {
       [id]
     );
 
+    const [originalSubCategories] = await pool.query(
+      "SELECT sc.idSub_Category, sc.Description FROM Sub_Category sc JOIN Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category WHERE phsc.Product_idProduct = ?",
+      [id]
+    );
+
     let mainImageUrl = null;
     if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
       mainImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
@@ -579,6 +612,14 @@ async function updateProduct(req, res) {
       }`;
     } else {
       mainImageUrl = existingProduct.Main_Image_Url;
+    }
+
+    let subImageUrls = [];
+    if (req.files && req.files.subImages) {
+      subImageUrls = req.files.subImages.map(
+        (file) =>
+          `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
+      );
     }
 
     const productData = {
@@ -616,6 +657,42 @@ async function updateProduct(req, res) {
       }
     }
 
+    let faqData = null;
+    if (faqs) {
+      try {
+        faqData = JSON.parse(faqs);
+      } catch (error) {
+        console.error("Error parsing FAQs:", error);
+        return res.status(400).json({ message: "Invalid FAQs format" });
+      }
+    }
+
+    let subCategoryData = [];
+    let subCategoryDescriptions = [];
+    if (subCategoryIds) {
+      try {
+        subCategoryData = JSON.parse(subCategoryIds);
+        for (const subCat of subCategoryData) {
+          const subCatId = subCat.idSub_Category ? subCat.idSub_Category : subCat;
+          const [subCategory] = await pool.query(
+            "SELECT Description FROM Sub_Category WHERE idSub_Category = ?",
+            [subCatId]
+          );
+          if (subCategory.length) {
+            subCategoryDescriptions.push({
+              idSub_Category: subCatId,
+              Description: subCategory[0].Description,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing subCategoryIds:", error);
+        return res
+          .status(400)
+          .json({ message: "Invalid subCategoryIds format" });
+      }
+    }
+
     const [oldBrand] = await pool.query(
       "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
       [existingProduct.Product_Brand_idProduct_Brand]
@@ -625,65 +702,39 @@ async function updateProduct(req, res) {
       [Product_Brand_idProduct_Brand]
     );
 
-    const subImages =
-      req.files?.subImages?.map(
-        (file) =>
-          `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
-      ) || [];
-
     await Product.updateProduct(id, productData, {
-      images: subImages.length > 0 ? subImages : null,
+      images: subImageUrls.length > 0 ? subImageUrls : null,
       variations: variationData,
-      faqs: faqs ? JSON.parse(faqs) : null,
-      subCategoryIds: subCategoryIds ? JSON.parse(subCategoryIds) : null,
+      faqs: faqData,
+      subCategoryIds: subCategoryData,
     });
 
-    const parsedVariations = variationData || [];
-    
     const logData = {
       originalData: {
         description: existingProduct.Description,
-        brand: oldBrand[0]?.Brand_Name,
+        brand: oldBrand[0]?.Brand_Name || "Unknown",
         market_price: existingProduct.Market_Price,
         selling_price: existingProduct.Selling_Price,
         long_description: existingProduct.Long_Description,
         main_image: existingProduct.Main_Image_Url,
         sub_images: existingProduct.images?.map((img) => img.Image_Url) || [],
         variations: originalVariations || [],
-        faqs: originalFaqs || []
+        faqs: originalFaqs || [],
+        sub_categories: originalSubCategories || [],
       },
       updatedData: {
         description: Description,
-        brand: newBrand[0]?.Brand_Name,
+        brand: newBrand[0]?.Brand_Name || "Unknown",
         market_price: Market_Price,
         selling_price: Selling_Price,
         long_description: Long_Description,
         main_image: mainImageUrl,
-        sub_images: subImages,
-        variations: parsedVariations,
-        faqs: faqs ? JSON.parse(faqs) : []
+        sub_images: subImageUrls.length > 0 ? subImageUrls : (existingProduct.images?.map((img) => img.Image_Url) || []),
+        variations: variationData || [],
+        faqs: faqData || [],
+        sub_categories: subCategoryDescriptions || [],
       },
     };
-
-    const updatedFields = [];
-    if (Description !== existingProduct.Description)
-      updatedFields.push("description");
-    if (Market_Price !== existingProduct.Market_Price)
-      updatedFields.push("market price");
-    if (Selling_Price !== existingProduct.Selling_Price)
-      updatedFields.push("selling price");
-    if (Long_Description !== existingProduct.Long_Description)
-      updatedFields.push("long description");
-    if (mainImageUrl !== existingProduct.Main_Image_Url)
-      updatedFields.push("main image");
-    if (
-      subImages.length > 0 ||
-      (existingProduct.images && existingProduct.images.length > 0)
-    )
-      updatedFields.push("sub images");
-    if (variations) updatedFields.push("variations");
-    if (faqs) updatedFields.push("FAQs");
-    if (subCategoryIds) updatedFields.push("sub categories");
 
     await pool.query(
       "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
@@ -705,12 +756,25 @@ async function updateProduct(req, res) {
 async function getAllProducts(req, res) {
   try {
     const products = await Product.getAllProducts();
-    res
-      .status(200)
-      .json({ message: "Products fetched successfully", products });
+    res.status(200).json({ message: "Products fetched successfully", products });
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ message: "Failed to fetch products" });
+  }
+}
+
+// Get total number of products
+async function getProductTotal(req, res) {
+  try {
+    const totalProducts = await Product.getProductCount();
+
+    res.status(200).json({
+      message: "Total products fetched successfully",
+      totalProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching total products:", error);
+    res.status(500).json({ message: "Failed to fetch total products" });
   }
 }
 
@@ -799,7 +863,7 @@ async function deleteProduct(req, res) {
             productId: id,
             description: product.Description,
             variations: variations || [],
-            faqs: faqs || []
+            faqs: faqs || [],
           }),
         ]
       );
@@ -1077,18 +1141,47 @@ async function getDiscountById(req, res) {
     res.status(500).json({ message: "Failed to fetch discount" });
   }
 }
-
-async function getProductTotal(req, res) {
+async function getProductsSoldQty(req, res) {
+  console.log("Called getProductsSoldQty");
   try {
-    const totalProducts = await Product.getProductCount();
+    const limit = parseInt(req.query.limit) || 5; // Default to 5 if no limit is provided
+    if (limit < 1 || limit > 100) {
+      return res.status(400).json({ message: "Limit must be between 1 and 100" });
+    }
 
+    const query = `
+      SELECT idProduct, Description, Sold_Qty
+      FROM Product
+      WHERE Sold_Qty > 0
+      ORDER BY Sold_Qty DESC
+      LIMIT ?
+    `;
+    const [products] = await pool.query(query, [limit]);
     res.status(200).json({
-      message: "Total products fetched successfully",
-      totalProducts,
+      message: `Top ${limit} most sold products fetched successfully`,
+      products,
     });
   } catch (error) {
-    console.error("Error fetching total products:", error);
-    res.status(500).json({ message: "Failed to fetch total products" });
+    console.error("Error fetching sold quantities:", error);
+    res.status(500).json({ message: "Failed to fetch sold quantities" });
+  }
+}
+
+async function getProductSoldQty(req, res) {
+  console.log("Called getProductSoldQty", req.params.id);
+  try {
+    const { id } = req.params;
+    const product = await Product.getProductSoldQty(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json({
+      message: "Sold quantity fetched successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Error fetching sold quantity:", error);
+    res.status(500).json({ message: "Failed to fetch sold quantity" });
   }
 }
 
@@ -1106,6 +1199,7 @@ module.exports = {
   getBrands,
   updateProduct,
   getAllProducts,
+  getProductTotal,
   getProductsBySubCategory,
   getProductsByBrand,
   getProductById,
@@ -1116,5 +1210,6 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
-  getProductTotal,
+  getProductsSoldQty,
+  getProductSoldQty,
 };

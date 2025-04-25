@@ -210,6 +210,15 @@ static async countByStatus() {
   );
   return result;
 }
+// Inside Order class in models/order.model.js
+static async countPendingDelivery() {
+  const [result] = await pool.query(
+    "SELECT COUNT(*) as count FROM `Order` WHERE Delivery_Status = ?",
+    ['pending']
+  );
+  return result[0].count;
 }
+}
+
 
 module.exports = Order;
