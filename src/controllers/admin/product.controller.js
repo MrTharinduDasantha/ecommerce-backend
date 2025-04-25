@@ -389,7 +389,18 @@ async function createProduct(req, res) {
         req.user.userId,
         "Created product",
         req.headers["user-agent"],
+
         JSON.stringify(logData),
+
+        JSON.stringify({
+          description: Description,
+          brand: brand[0]?.Brand_Name,
+          price: Selling_Price,
+          variations: variationData,
+          faqs: JSON.parse(faqs),
+          subCategoryIds: JSON.parse(subCategoryIds),
+        }),
+
       ]
     );
 
@@ -709,6 +720,9 @@ async function updateProduct(req, res) {
       subCategoryIds: subCategoryData,
     });
 
+
+    const parsedVariations = variationData || [];
+
     const logData = {
       originalData: {
         description: existingProduct.Description,
@@ -720,7 +734,9 @@ async function updateProduct(req, res) {
         sub_images: existingProduct.images?.map((img) => img.Image_Url) || [],
         variations: originalVariations || [],
         faqs: originalFaqs || [],
+
         sub_categories: originalSubCategories || [],
+
       },
       updatedData: {
         description: Description,
@@ -729,10 +745,16 @@ async function updateProduct(req, res) {
         selling_price: Selling_Price,
         long_description: Long_Description,
         main_image: mainImageUrl,
+
         sub_images: subImageUrls.length > 0 ? subImageUrls : (existingProduct.images?.map((img) => img.Image_Url) || []),
         variations: variationData || [],
         faqs: faqData || [],
         sub_categories: subCategoryDescriptions || [],
+
+        sub_images: subImages,
+        variations: parsedVariations,
+        faqs: faqs ? JSON.parse(faqs) : [],
+
       },
     };
 
@@ -752,6 +774,7 @@ async function updateProduct(req, res) {
     res.status(500).json({ message: "Failed to update product" });
   }
 }
+
 // Fetch all products
 async function getAllProducts(req, res) {
   try {
@@ -1141,6 +1164,7 @@ async function getDiscountById(req, res) {
     res.status(500).json({ message: "Failed to fetch discount" });
   }
 }
+
 async function getProductsSoldQty(req, res) {
   console.log("Called getProductsSoldQty");
   try {
@@ -1185,6 +1209,7 @@ async function getProductSoldQty(req, res) {
   }
 }
 
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -1210,6 +1235,10 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
+
   getProductsSoldQty,
   getProductSoldQty,
 };
+
+};
+

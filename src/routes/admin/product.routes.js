@@ -49,7 +49,8 @@ router.get("/brands", productController.getBrands);
 router.post("/", authenticate, cpUpload, productController.createProduct);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
 
-// ⚠️ Specific routes FIRST to avoid conflict
+
+//  Specific routes FIRST to avoid conflict
 router.get("/sold-qty", productController.getProductsSoldQty);
 router.get("/:id/sold-qty", productController.getProductSoldQty);
 
@@ -58,7 +59,23 @@ router.get("/sub-categories/:subId/products", productController.getProductsBySub
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/", productController.getAllProducts);
 
-// ⚠️ Dynamic routes LAST
+//  Dynamic routes LAST
+
+router.get("/", productController.getAllProducts);
+router.get("/count", productController.getProductTotal);
+router.get(
+  "/sub-categories/:subId/products",
+  productController.getProductsBySubCategory
+);
+router.get("/brands/:brandId/products", productController.getProductsByBrand);
+router.get("/:id", productController.getProductById);
+router.delete("/:id", authenticate, productController.deleteProduct);
+router.get(
+  "/sub-categories/:subId/products",
+  productController.getProductsBySubCategory
+);
+router.get("/brands/:brandId/products", productController.getProductsByBrand);
+
 router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
 

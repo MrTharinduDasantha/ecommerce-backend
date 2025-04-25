@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getOrderById, updateOrderStatus } from "../api/orders";
+import { getOrderById, updateOrderStatus, updatePaymentStatus } from "../api/orders";
 import { FiArrowLeft } from "react-icons/fi";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 const OrderDetails = () => {
   const { orderId } = useParams();
@@ -10,9 +12,13 @@ const OrderDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [updatingPaymentStatus, setUpdatingPaymentStatus] = useState(false);
   const [statusError, setStatusError] = useState(null);
+  const [paymentStatusError, setPaymentStatusError] = useState(null);
   const [statusUpdateSuccess, setStatusUpdateSuccess] = useState(false);
+  const [paymentStatusUpdateSuccess, setPaymentStatusUpdateSuccess] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState(null);
 
   useEffect(() => {
     if (orderId) {
@@ -40,6 +46,7 @@ const OrderDetails = () => {
 
       setOrderDetails(data);
       setSelectedStatus(data.order.Status);
+      setSelectedPaymentStatus(data.order.Payment_Stats);
       setLoading(false);
     } catch (err) {
       console.error("Error in OrderDetails.fetchOrderDetails:", err);
@@ -53,37 +60,147 @@ const OrderDetails = () => {
       return;
     }
 
-    try {
-      setUpdatingStatus(true);
-      setStatusError(null);
-      setStatusUpdateSuccess(false);
-      
-      await updateOrderStatus(
-        orderId, 
-        selectedStatus,
-        orderDetails.order.Full_Name,
-        orderDetails.order.Total_Amount
-      );
-      
-      // Re-fetch the order details to get the updated status
-      await fetchOrderDetails();
+    const currentStatus = orderDetails.order.Status;
 
-      setStatusUpdateSuccess(true);
-      setUpdatingStatus(false);
+    Swal.fire({
+      title: 'Confirm Status Change',
+      html: `
+        <div class="text-center">
+          <p class="mb-2">Are you sure you want to change the order status?</p>
+          <div class="flex justify-between items-center mb-4 mx-auto max-w-xs">
+            <div>
+              <p class="font-semibold mb-1">From:</p>
+              <span class="px-2 py-1 rounded-full text-xs ${getStatusColor(currentStatus)} border border-gray-200">
+                ${currentStatus}
+              </span>
+            </div>
+            <div class="text-2xl">→</div>
+            <div>
+              <p class="font-semibold mb-1">To:</p>
+              <span class="px-2 py-1 rounded-full text-xs ${getStatusColor(selectedStatus)} border border-gray-200">
+                ${selectedStatus}
+              </span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600">This action will update the status of Order #${orderId}</p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, update it!',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#5CAF90',
+      cancelButtonColor: '#6B7280',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          setUpdatingStatus(true);
+          setStatusError(null);
+          setStatusUpdateSuccess(false);
+          
+          await updateOrderStatus(
+            orderId, 
+            selectedStatus,
+            orderDetails.order.Full_Name,
+            orderDetails.order.Total_Amount
+          );
+          
+          // Re-fetch the order details to get the updated status
+          await fetchOrderDetails();
 
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setStatusUpdateSuccess(false);
-      }, 3000);
-    } catch (err) {
-      setStatusError(err.message || "Failed to update order status");
-      setUpdatingStatus(false);
-    }
+          setStatusUpdateSuccess(true);
+          toast.success("Order status updated successfully");
+          setUpdatingStatus(false);
+
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            setStatusUpdateSuccess(false);
+          }, 3000);
+        } catch (err) {
+          setStatusError(err.message || "Failed to update order status");
+          toast.error("Failed to update order status");
+          setUpdatingStatus(false);
+        }
+      }
+    });
   };
-  
+
+  const handlePaymentStatusChange = async () => {
+    if (!selectedPaymentStatus || selectedPaymentStatus === orderDetails.order.Payment_Stats) {
+      return;
+    }
+
+    const currentPaymentStatus = orderDetails.order.Payment_Stats;
+
+    Swal.fire({
+      title: 'Confirm Payment Status Change',
+      html: `
+        <div class="text-center">
+          <p class="mb-2">Are you sure you want to change the payment status?</p>
+          <div class="flex justify-between items-center mb-4 mx-auto max-w-xs">
+            <div>
+              <p class="font-semibold mb-1">From:</p>
+              <span class="px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(currentPaymentStatus)} border border-gray-200">
+                ${currentPaymentStatus}
+              </span>
+            </div>
+            <div class="text-2xl">→</div>
+            <div>
+              <p class="font-semibold mb-1">To:</p>
+              <span class="px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(selectedPaymentStatus)} border border-gray-200">
+                ${selectedPaymentStatus}
+              </span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600">This action will update the payment status of Order #${orderId}</p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, update it!',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#5CAF90',
+      cancelButtonColor: '#6B7280',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          setUpdatingPaymentStatus(true);
+          setPaymentStatusError(null);
+          setPaymentStatusUpdateSuccess(false);
+          
+          await updatePaymentStatus(
+            orderId, 
+            selectedPaymentStatus,
+            orderDetails.order.Full_Name,
+            orderDetails.order.Total_Amount
+          );
+          
+          // Re-fetch the order details to get the updated status
+          await fetchOrderDetails();
+
+          setPaymentStatusUpdateSuccess(true);
+          toast.success("Payment status updated successfully");
+          setUpdatingPaymentStatus(false);
+
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            setPaymentStatusUpdateSuccess(false);
+          }, 3000);
+        } catch (err) {
+          setPaymentStatusError(err.message || "Failed to update payment status");
+          toast.error("Failed to update payment status");
+          setUpdatingPaymentStatus(false);
+        }
+      }
+    });
+  };
 
   const handleStatusSelect = (status) => {
     setSelectedStatus(status);
+  };
+
+  const handlePaymentStatusSelect = (status) => {
+    setSelectedPaymentStatus(status);
   };
 
   const getStatusColor = (status) => {
@@ -98,6 +215,23 @@ const OrderDetails = () => {
         return "bg-purple-100 text-purple-800";
       case "Delivered":
         return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getPaymentStatusColor = (status) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "paid":
+        return "bg-green-100 text-green-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
+      case "cancelled":
+        return "bg-gray-100 text-gray-800";
+      case "refunded":
+        return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -164,6 +298,18 @@ const OrderDetails = () => {
       {statusError && (
         <div className="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">
           {statusError}
+        </div>
+      )}
+
+      {paymentStatusUpdateSuccess && (
+        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded text-sm">
+          Payment status updated successfully
+        </div>
+      )}
+
+      {paymentStatusError && (
+        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">
+          {paymentStatusError}
         </div>
       )}
 
@@ -303,6 +449,65 @@ const OrderDetails = () => {
                 Status will be updated from{" "}
                 <span className="font-medium">{order.Status}</span> to{" "}
                 <span className="font-medium">{selectedStatus}</span>
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 mb-4 sm:mb-6">
+        <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">
+          Update Payment Status
+        </h2>
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex flex-wrap gap-1 sm:gap-2">
+            {[
+              "pending",
+              "paid",
+              "failed",
+              "cancelled",
+              "refunded",
+            ].map((status) => (
+              <button
+                key={status}
+                onClick={() => handlePaymentStatusSelect(status)}
+                disabled={updatingPaymentStatus}
+                className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm capitalize ${
+                  selectedPaymentStatus === status
+                    ? "bg-gray-100 text-[#1D372E] border-2 border-[#5CAF90]"
+                    : "bg-white text-[#1D372E] border border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center">
+            <button
+              onClick={handlePaymentStatusChange}
+              disabled={updatingPaymentStatus || selectedPaymentStatus === order.Payment_Stats}
+              className={`px-4 py-1 sm:px-6 sm:py-2 rounded text-xs sm:text-sm font-medium mb-2 sm:mb-0 ${
+                updatingPaymentStatus || selectedPaymentStatus === order.Payment_Stats
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-[#5CAF90] text-white hover:bg-opacity-90"
+              }`}
+            >
+              Update
+            </button>
+
+            {updatingPaymentStatus && (
+              <span className="ml-0 sm:ml-3 text-[#1D372E] flex items-center text-xs sm:text-sm">
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-t-2 border-b-2 border-[#5CAF90] mr-2"></div>
+                Updating...
+              </span>
+            )}
+
+            {selectedPaymentStatus !== order.Payment_Stats && !updatingPaymentStatus && (
+              <span className="ml-0 sm:ml-3 text-[#1D372E] text-xs sm:text-sm">
+                Payment status will be updated from{" "}
+                <span className="font-medium">{order.Payment_Stats}</span> to{" "}
+                <span className="font-medium">{selectedPaymentStatus}</span>
               </span>
             )}
           </div>

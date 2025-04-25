@@ -118,6 +118,7 @@ class OrderController {
       res.status(500).json({ message: 'Failed to update order status', error: error.message });
     }
   }
+
   // Inside OrderController class in controllers/admin/order.controller.js
 
 async getOrderCountByStatus(req, res) {
@@ -142,5 +143,76 @@ async getPendingDeliveryCount(req, res) {
 }
 
 
+
+  // Update payment status
+  async updatePaymentStatus(req, res) {
+    try {
+      const { paymentStatus, customerName, orderTotal } = req.body;
+      const orderId = req.params.id;
+      
+      if (!['pending', 'paid', 'failed', 'cancelled', 'refunded'].includes(paymentStatus)) {
+        return res.status(400).json({ message: 'Invalid payment status' });
+      }
+
+      // Get the current order details
+      const [currentOrder] = await pool.query(
+        'SELECT Payment_Stats, Total_Amount, Date_Time FROM `Order` WHERE idOrder = ?',
+        [orderId]
+      );
+
+      if (!currentOrder.length) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+
+      // Update the payment status
+      const affectedRows = await Order.updatePaymentStatus(orderId, paymentStatus);
+      
+      if (affectedRows === 0) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+
+      // Log the admin action with original and updated data
+      const logData = {
+        originalData: {
+          paymentStatus: currentOrder[0].Payment_Stats,
+          total_amount: currentOrder[0].Total_Amount,
+          order_date: currentOrder[0].Date_Time,
+          customer_name: customerName
+        },
+        updatedData: {
+          paymentStatus: paymentStatus,
+          total_amount: orderTotal,
+          order_date: currentOrder[0].Date_Time,
+          customer_name: customerName
+        }
+      };
+
+      await pool.query(
+        'INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)',
+        [
+          req.user.userId,
+          'Updated payment status',
+          req.headers['user-agent'],
+          JSON.stringify(logData)
+        ]
+      );
+      
+      res.json({ message: 'Payment status updated successfully' });
+    } catch (error) {
+      console.error('Error in updatePaymentStatus:', error);
+      res.status(500).json({ message: 'Failed to update payment status', error: error.message });
+    }
+  }
+
+  async getOrderCountByStatus(req, res) {
+    try {
+        const orderCountByStatus = await Order.countByStatus();
+        res.json(orderCountByStatus);
+    } catch (error) {
+        console.error('Error in getOrderCountByStatus:', error);
+        res.status(500).json({ message: 'Failed to fetch order counts by status', error: error.message });
+    }
+  }
+}
 
 module.exports = new OrderController();

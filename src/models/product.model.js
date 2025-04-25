@@ -641,7 +641,6 @@ async function getProductSoldQty(productId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
-
 module.exports = {
   getAllCategories,
   createCategory,
@@ -671,6 +670,10 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
+
   getProductsSoldQty,
   getProductSoldQty,
 };
+
+};
+

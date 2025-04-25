@@ -166,6 +166,15 @@ class Order {
     return result.affectedRows;
   }
 
+  static async updatePaymentStatus(id, paymentStatus) {
+    const [result] = await pool.query(
+      "UPDATE `Order` SET Payment_Stats = ? WHERE idOrder = ?",
+      [paymentStatus, id]
+    );
+
+    return result.affectedRows;
+  }
+
   static async count() {
     const [result] = await pool.query("SELECT COUNT(*) as count FROM `Order`");
     return result[0].count;
