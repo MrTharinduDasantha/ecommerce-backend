@@ -310,3 +310,14 @@ export const getProductTotal = async () => {
     throw error.response?.data || error; // Handle errors appropriately
   }
 };
+
+// Add this function to your existing product.js file
+export const getTopSoldProducts = async (limit = 5) => {
+  try {
+    const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top sold products:", error);
+    throw error.response?.data || error;
+  }
+};

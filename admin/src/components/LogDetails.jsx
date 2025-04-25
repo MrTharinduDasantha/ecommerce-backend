@@ -22,7 +22,6 @@ const LogDetails = () => {
     );
   }
 
-  // Toggle section expansion
   const toggleSection = (sectionId) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -30,7 +29,6 @@ const LogDetails = () => {
     }));
   };
 
-  // Check if a section is expanded
   const isSectionExpanded = (sectionId) => {
     return expandedSections[sectionId] === true;
   };
@@ -50,26 +48,31 @@ const LogDetails = () => {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex items-center gap-2">
+
+            <div className="w-1 h-5 bg-[#5CAF90]"></div>
+            <h2 className="text-base font-bold text-[#1D372E]">Admin Action</h2>
+
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
             <h2 className="text-xl font-bold text-[#1D372E]">Admin Action</h2>
+
           </div>
         </div>
         <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-            <h3 className="font-semibold text-[#1D372E]">Admin Information</h3>
+            <div className="w-1 h-5 bg-[#EAFFF7]"></div>
+            <h3 className=" text-base font-semibold text-[#1D372E]">Admin Information</h3>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-gray-600 p-2">
               Admin Name:{" "}
-              <span className="font-medium p-2">{log.Admin_Name || "N/A"}</span>
+              <span className="font-medium p-2 text-xs">{log.Admin_Name || "N/A"}</span>
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-gray-600 p-2">
               Action:
               <span
-                className={`items-center px-2.5 py-0.5 rounded-full w-45 text-sm font-medium p-2 ${getActionStyle(
+                className={`items-center px-2.5 py-0.5 rounded-full w-45 text-sm font-medium p-2 text-xs ${getActionStyle(
                   log.action
                 )}`}
               >
@@ -79,8 +82,8 @@ const LogDetails = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-gray-600 p-2">
-              Timestamp:{" "}
-              <span className="font-medium p-2">
+              Date and Time:{" "}
+              <span className="font-medium p-2 text-xs">
                 {new Date(log.timestamp).toLocaleString()}
               </span>
             </span>
@@ -94,42 +97,13 @@ const LogDetails = () => {
       try {
         const details = JSON.parse(log.new_user_info);
 
-        // Handle Add New Admin Action
-        if (log.action === "Added new user") {
-          detailsContent.push(
-            <div key="new-admin" className="px-1 py-5">
-              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E]">
-                    New Admin Details
-                  </h3>
-                </div>
-                <div className="bg-white p-4 rounded-lg">
-                  {Object.entries(details).map(([key, value]) => (
-                    <div key={key} className="mb-2">
-                      <span className="text-sm font-medium capitalize">
-                        {key}:{" "}
-                      </span>
-                      <span className="text-sm">
-                        {typeof value === "object"
-                          ? JSON.stringify(value)
-                          : value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        }
         // Handle Create Product Action
-        else if (log.action === "Created product") {
+        if (log.action === "Created product") {
           detailsContent.push(
             <div key="product-creation" className="px-1 py-5">
               <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
+                  <div className="w-1 h-5 bg-[#EAFFF7]"></div>
                   <h3 className="font-semibold text-[#1D372E]">
                     Product Creation Details
                   </h3>
@@ -138,19 +112,34 @@ const LogDetails = () => {
                   <div className="grid grid-cols-1 gap-4">
                     {/* Basic Product Information */}
                     <div className="p-3 border border-[#E5E7EB] rounded-md">
+
+                      <h4 className=" font-medium text-[#1D372E] mb-2 text-sm">
+
                       <h4 className="font-medium text-[#1D372E] mb-2">
+
                         Basic Information
                       </h4>
                       {Object.entries(details)
                         .filter(
+
+                          ([key]) =>
+                            ![
+                              "variations",
+                              "faqs",
+                              "sub_images",
+                              "sub_categories",
+                              "main_image",
+                            ].includes(key)
+
                           ([key]) => !["variations", "faqs"].includes(key)
+
                         )
                         .map(([key, value]) => (
                           <div key={key} className="mb-2 text-[#1D372E]">
                             <span className="text-sm font-medium capitalize">
-                              {key}:{" "}
+                              {key.replace("_", " ")}:{" "}
                             </span>
-                            <span className="text-sm">
+                            <span className="text-xs">
                               {typeof value === "object"
                                 ? JSON.stringify(value)
                                 : value}
@@ -159,8 +148,115 @@ const LogDetails = () => {
                         ))}
                     </div>
 
+
+                    {/* Images Section */}
+                    {(details.main_image || details.sub_images?.length > 0) && (
+                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                        <div
+                          className="flex items-center cursor-pointer"
+                          onClick={() => toggleSection("createdImages")}
+                        >
+                          {isSectionExpanded("createdImages") ? (
+                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          )}
+                          <h4 className="font-medium text-[#1D372E] text-sm">Images</h4>
+                        </div>
+                        {isSectionExpanded("createdImages") && (
+                          <div className="mt-2">
+                            {details.main_image && (
+                              <div className="mb-4">
+                                <h5 className="text-xs font-medium text-gray-600">
+                                  Main Image
+                                </h5>
+                                <img
+                                  src={details.main_image}
+                                  alt="Main Image"
+                                  className="w-32 h-32 object-cover rounded-md mt-2"
+                                  onError={(e) =>
+                                    (e.target.src = "/placeholder.svg")
+                                  }
+                                />
+                              </div>
+                            )}
+                            {details.sub_images?.length > 0 && (
+                              <div>
+                                <h5 className="text-xs font-medium text-gray-600">
+                                  Sub Images
+                                </h5>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {details.sub_images.map((img, index) => (
+                                    <img
+                                      key={index}
+                                      src={img}
+                                      alt={`Sub Image ${index + 1}`}
+                                      className="w-24 h-24 object-cover rounded-md"
+                                      onError={(e) =>
+                                        (e.target.src = "/placeholder.svg")
+                                      }
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Subcategories Section */}
+                    {details.sub_categories?.length > 0 && (
+                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                        <div
+                          className="flex items-center cursor-pointer"
+                          onClick={() => toggleSection("createdSubCategories")}
+                        >
+                          {isSectionExpanded("createdSubCategories") ? (
+                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          )}
+                          <h4 className="font-medium text-[#1D372E] text-sm">
+                            Subcategories
+                          </h4>
+                        </div>
+                        {isSectionExpanded("createdSubCategories") && (
+                          <div className="mt-2">
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
+                                <thead className="bg-[#EAFFF7]">
+                                  <tr>
+                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                      ID
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                      Description
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {details.sub_categories.map((subCat, index) => (
+                                    <tr key={index}>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {subCat.idSub_Category}
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {subCat.Description}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+
                     {/* Product Variations Section */}
-                    {details.variations && (
+                    {details.variations?.length > 0 && (
                       <div className="p-3 border border-[#E5E7EB] rounded-md">
                         <div
                           className="flex items-center cursor-pointer"
@@ -171,6 +267,12 @@ const LogDetails = () => {
                           ) : (
                             <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                           )}
+
+                          <h4 className="font-medium text-[#1D372E] text-sm">
+                            Product Variations
+                          </h4>
+                        </div>
+
                           <h4 className="font-medium text-[#1D372E]">
                             Product Variations
                           </h4>
@@ -182,6 +284,15 @@ const LogDetails = () => {
                               <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
                                 <thead className="bg-[#EAFFF7]">
                                   <tr>
+
+                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                      Color
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                      Size
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+
                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
                                       Color
                                     </th>
@@ -189,11 +300,36 @@ const LogDetails = () => {
                                       Size
                                     </th>
                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
+
                                       Quantity
                                     </th>
                                   </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
+
+                                  {details.variations.map((variation, index) => (
+                                    <tr key={index}>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        <div className="flex items-center">
+                                          <div
+                                            className="w-4 h-4 rounded-full mr-2"
+                                            style={{
+                                              backgroundColor:
+                                                variation.colorCode,
+                                            }}
+                                          />
+                                          {variation.colorCode}
+                                        </div>
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {variation.size}
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {variation.quantity}
+                                      </td>
+                                    </tr>
+                                  ))}
+
                                   {details.variations.map(
                                     (variation, index) => (
                                       <tr key={index}>
@@ -218,6 +354,7 @@ const LogDetails = () => {
                                       </tr>
                                     )
                                   )}
+
                                 </tbody>
                               </table>
                             </div>
@@ -227,7 +364,7 @@ const LogDetails = () => {
                     )}
 
                     {/* FAQs Section */}
-                    {details.faqs && (
+                    {details.faqs?.length > 0 && (
                       <div className="p-3 border border-[#E5E7EB] rounded-md">
                         <div
                           className="flex items-center cursor-pointer"
@@ -238,11 +375,16 @@ const LogDetails = () => {
                           ) : (
                             <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                           )}
-                          <h4 className="font-medium text-[#1D372E]">
+
+                          <h4 className="font-medium text-[#1D372E] text-sm">
                             Product FAQs
                           </h4>
                         </div>
 
+                          <h4 className="font-medium text-[#1D372E]">
+                            Product FAQs
+                          </h4>
+                        </div
                         {isSectionExpanded("createdFaqs") && (
                           <div className="mt-2 space-y-3">
                             {details.faqs.map((faq, index) => (
@@ -250,10 +392,17 @@ const LogDetails = () => {
                                 key={index}
                                 className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
                               >
+
+                                <h5 className="font-medium text-[#1D372E] mb-1 text-xs">
+                                  Q: {faq.question}
+                                </h5>
+                                <p className="text-sm text-gray-600 text-xs">
+
                                 <h5 className="font-medium text-[#1D372E] mb-1">
                                   Q: {faq.question}
                                 </h5>
                                 <p className="text-sm text-gray-600">
+
                                   A: {faq.answer}
                                 </p>
                               </div>
@@ -268,28 +417,71 @@ const LogDetails = () => {
             </div>
           );
         }
-        // Handle Update Actions (for products and product variations)
-        else if (
-          log.action.startsWith("Updated") ||
-          log.action === "Toggled category status"
-        ) {
-          const title =
-            {
-              "Updated category": "Category Changes",
-              "Updated product": "Product Changes",
-              "Updated customer": "Customer Changes",
-              "Updated subcategory": "Subcategory Changes",
-              "Updated discount": "Discount Changes",
-              "Toggled category status": "Category Status Changes",
-            }[log.action] || "Changes Made";
-
+        // Handle Update Product Action
+        else if (log.action === "Updated product") {
           detailsContent.push(
-            <div key="changes" className="px-1 py-5">
+            <div key="product-update" className="px-1 py-5">
               <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E]">{title}</h3>
+                  <h3 className="text-base font-semibold text-[#1D372E]">
+                    Product Update Details
+                  </h3>
                 </div>
+                <div className="space-y-4">
+                  {/* Basic Information Changes */}
+                  <div className="bg-white p-4 rounded-lg">
+                    <div
+                      className="flex items-center cursor-pointer mb-3"
+                      onClick={() => toggleSection("basicChanges")}
+                    >
+                      {isSectionExpanded("basicChanges") ? (
+                        <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                      )}
+                      <h4 className="font-medium text-[#1D372E] text-sm">
+                        Basic Information
+                      </h4>
+                    </div>
+                    {isSectionExpanded("basicChanges") && (
+                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                        {Object.entries(details.updatedData || {})
+                          .filter(
+                            ([key]) =>
+                              ![
+                                "variations",
+                                "sub_images",
+                                "faqs",
+                                "sub_categories",
+                                "main_image",
+                              ].includes(key)
+                          )
+                          .map(([key, value]) => (
+                            <div key={key} className="mb-2 text-[#1D372E]">
+                              <span className="text-sm font-medium capitalize">
+                                {key.replace("_", " ")}:{" "}
+                              </span>
+                              <span className="text-xs">
+                                {typeof value === "object"
+                                  ? JSON.stringify(value)
+                                  : value}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Images Changes */}
+                  {details.updatedData?.main_image ||
+                  details.updatedData?.sub_images?.length > 0 ? (
+                    <div className="bg-white p-4 rounded-lg">
+                      <div
+                        className="flex items-center cursor-pointer mb-3"
+                        onClick={() => toggleSection("imageChanges")}
+                      >
+                        {isSectionExpanded("imageChanges") ? (
 
                 {/* Update Product with special handling for variations and FAQs */}
                 {log.action === "Updated product" ? (
@@ -301,10 +493,72 @@ const LogDetails = () => {
                         onClick={() => toggleSection("basicChanges")}
                       >
                         {isSectionExpanded("basicChanges") ? (
+
                           <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         )}
+
+                        <h4 className="font-medium text-[#1D372E] text-sm">
+                          Images
+                        </h4>
+                      </div>
+                      {isSectionExpanded("imageChanges") && (
+                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                          {details.updatedData?.main_image && (
+                            <div className="mb-4">
+                              <h6 className="text-xs font-medium text-gray-600 ">
+                                Main Image
+                              </h6>
+                              <img
+                                src={details.updatedData.main_image}
+                                alt="Updated Main Image"
+                                className="w-32 h-32 object-cover rounded-md mt-2"
+                                onError={(e) =>
+                                  (e.target.src = "/placeholder.svg")
+                                }
+                              />
+                            </div>
+                          )}
+                          {details.updatedData?.sub_images?.length > 0 && (
+                            <div>
+                              <h6 className="text-xs font-medium text-gray-600">
+                                Sub Images
+                              </h6>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {details.updatedData.sub_images.map(
+                                  (img, index) => (
+                                    <img
+                                      key={index}
+                                      src={img}
+                                      alt={`Updated Sub Image ${index + 1}`}
+                                      className="w-24 h-24 object-cover rounded-md"
+                                      onError={(e) =>
+                                        (e.target.src = "/placeholder.svg")
+                                      }
+                                    />
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {/* Subcategories Changes */}
+                  {details.updatedData?.sub_categories?.length > 0 && (
+                    <div className="bg-white p-4 rounded-lg">
+                      <div
+                        className="flex items-center cursor-pointer mb-3"
+                        onClick={() => toggleSection("subCategoryChanges")}
+                      >
+                        {isSectionExpanded("subCategoryChanges") ? (
+                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+
                         <h4 className="font-medium text-[#1D372E]">
                           Basic Information Changes
                         </h4>
@@ -510,8 +764,43 @@ const LogDetails = () => {
                               </div>
                             )}
                           </div>
+
                         )}
+                        <h4 className="font-medium text-[#1D372E] text-sm">
+                          Subcategories
+                        </h4>
                       </div>
+
+                      {isSectionExpanded("subCategoryChanges") && (
+                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
+                              <thead className="bg-[#EAFFF7]">
+                                <tr>
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                    ID
+                                  </th>
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                    Description
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {details.updatedData.sub_categories.map(
+                                  (subCat, index) => (
+                                    <tr key={index}>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {subCat.idSub_Category}
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {subCat.Description}
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
+                              </tbody>
+                            </table>
+
                     )}
 
                     {/* FAQs Changes */}
@@ -585,34 +874,117 @@ const LogDetails = () => {
                                 </div>
                               </div>
                             )}
+
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // Regular diff view for non-product updates
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white p-4 rounded-lg">
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">
-                        Original Data
-                      </h4>
-                      {Object.entries(details.originalData || {}).map(
-                        ([key, value]) => (
-                          <div key={key} className="mb-2 text-[#1D372E]">
-                            <span className="text-sm font-medium capitalize">
-                              {key}:{" "}
-                            </span>
-                            <span className="text-sm">
-                              {typeof value === "object"
-                                ? JSON.stringify(value)
-                                : value}
-                            </span>
-                          </div>
-                        )
+                        </div>
                       )}
                     </div>
+                  )}
+
+                  {/* Variations Changes */}
+                  {details.updatedData?.variations?.length > 0 && (
                     <div className="bg-white p-4 rounded-lg">
+                      <div
+                        className="flex items-center cursor-pointer mb-3"
+                        onClick={() => toggleSection("variationChanges")}
+                      >
+                        {isSectionExpanded("variationChanges") ? (
+                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                        )}
+                        <h4 className="font-medium text-[#1D372E] text-sm">
+                          Product Variations
+                        </h4>
+                      </div>
+                      {isSectionExpanded("variationChanges") && (
+                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
+                              <thead className="bg-[#EAFFF7]">
+                                <tr>
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider ">
+                                    Color
+                                  </th>
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                    Size
+                                  </th>
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                    Quantity
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {details.updatedData.variations.map(
+                                  (variation, index) => (
+                                    <tr key={index}>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        <div className="flex items-center">
+                                          <div
+                                            className="w-4 h-4 rounded-full mr-2"
+                                            style={{
+                                              backgroundColor:
+                                                variation.Colour ||
+                                                variation.colorCode,
+                                            }}
+                                          />
+                                          {variation.Colour ||
+                                            variation.colorCode}
+                                        </div>
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {variation.Size || variation.size}
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        {variation.Qty || variation.quantity}
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* FAQs Changes */}
+                  {details.updatedData?.faqs?.length > 0 && (
+                    <div className="bg-white p-4 rounded-lg">
+
+                      <div
+                        className="flex items-center cursor-pointer mb-3"
+                        onClick={() => toggleSection("faqChanges")}
+                      >
+                        {isSectionExpanded("faqChanges") ? (
+                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                        )}
+                        <h4 className="font-medium text-[#1D372E] text-sm">
+                          FAQs
+                        </h4>
+                      </div>
+                      {isSectionExpanded("faqChanges") && (
+                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                          <div className="space-y-3">
+                            {details.updatedData.faqs.map((faq, index) => (
+                              <div
+                                key={index}
+                                className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
+                              >
+                                <h6 className="font-medium text-[#1D372E] mb-1 text-xs">
+                                  Q: {faq.Question || faq.question}
+                                </h6>
+                                <p className="text-sm text-gray-600 text-xs">
+                                  A: {faq.Answer || faq.answer}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
                       <h4 className="text-sm font-medium text-gray-600 mb-3">
                         Updated Data
                       </h4>
@@ -638,10 +1010,11 @@ const LogDetails = () => {
                             </div>
                           );
                         }
+
                       )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -653,14 +1026,22 @@ const LogDetails = () => {
               <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-1 h-6 bg-[#EAFFF7]"></div>
+
+                  <h3 className="font-semibold text-[#1D372E] text-base">
+
                   <h3 className="font-semibold text-[#1D372E]">
+
                     Deleted Product Details
                   </h3>
                 </div>
                 <div className="bg-white p-4 rounded-lg">
                   {/* Basic Product Information */}
                   <div className="p-3 border border-[#E5E7EB] rounded-md mb-4">
+
+                    <h4 className="font-medium text-[#1D372E] mb-2 text-sm">
+
                     <h4 className="font-medium text-[#1D372E] mb-2">
+
                       Basic Information
                     </h4>
                     {Object.entries(details)
@@ -668,9 +1049,9 @@ const LogDetails = () => {
                       .map(([key, value]) => (
                         <div key={key} className="mb-2 text-[#1D372E]">
                           <span className="text-sm font-medium capitalize">
-                            {key}:{" "}
+                            {key.replace("_", " ")}:{" "}
                           </span>
-                          <span className="text-sm">
+                          <span className="text-xs">
                             {typeof value === "object" && !Array.isArray(value)
                               ? JSON.stringify(value)
                               : value}
@@ -679,8 +1060,12 @@ const LogDetails = () => {
                       ))}
                   </div>
 
+                  {/* Product Variations */}
+                  {details.variations?.length > 0 && (
+
                   {/* Product Variations if available */}
                   {details.variations && (
+
                     <div className="p-3 border border-[#E5E7EB] rounded-md mb-4">
                       <div
                         className="flex items-center cursor-pointer"
@@ -691,6 +1076,12 @@ const LogDetails = () => {
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         )}
+
+                        <h4 className="font-medium text-[#1D372E] text-sm">
+                          Deleted Product Variations
+                        </h4>
+                      </div>
+
                         <h4 className="font-medium text-[#1D372E]">
                           Deleted Product Variations
                         </h4>
@@ -702,6 +1093,15 @@ const LogDetails = () => {
                             <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
                               <thead className="bg-[#EAFFF7]">
                                 <tr>
+
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                    Color
+                                  </th>
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                    Size
+                                  </th>
+                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+
                                   <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
                                     Color
                                   </th>
@@ -709,6 +1109,7 @@ const LogDetails = () => {
                                     Size
                                   </th>
                                   <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
+
                                     Quantity
                                   </th>
                                 </tr>
@@ -716,7 +1117,7 @@ const LogDetails = () => {
                               <tbody className="bg-white divide-y divide-gray-200">
                                 {details.variations.map((variation, index) => (
                                   <tr key={index}>
-                                    <td className="px-3 py-2 whitespace-nowrap">
+                                    <td className="px-3 py-2 whitespace-nowrap text-xs">
                                       <div className="flex items-center">
                                         <div
                                           className="w-4 h-4 rounded-full mr-2"
@@ -730,10 +1131,17 @@ const LogDetails = () => {
                                           variation.colorCode}
                                       </div>
                                     </td>
+
+                                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                      {variation.Size || variation.size}
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+
                                     <td className="px-3 py-2 whitespace-nowrap">
                                       {variation.Size || variation.size}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap">
+
                                       {variation.Qty || variation.quantity}
                                     </td>
                                   </tr>
@@ -746,8 +1154,8 @@ const LogDetails = () => {
                     </div>
                   )}
 
-                  {/* Deleted FAQs if available */}
-                  {details.faqs && (
+                  {/* Deleted FAQs */}
+                  {details.faqs?.length > 0 && (
                     <div className="p-3 border border-[#E5E7EB] rounded-md">
                       <div
                         className="flex items-center cursor-pointer"
@@ -758,10 +1166,17 @@ const LogDetails = () => {
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         )}
+
+                        <h4 className="font-medium text-[#1D372E] text-sm">
+                          Deleted Product FAQs
+                        </h4>
+                      </div>
+
                         <h4 className="font-medium text-[#1D372E]">
                           Deleted Product FAQs
                         </h4>
                       </div>
+
 
                       {isSectionExpanded("deletedFaqs") && (
                         <div className="mt-2 space-y-3">
@@ -770,10 +1185,14 @@ const LogDetails = () => {
                               key={index}
                               className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
                             >
+
+                              <h5 className="font-medium text-[#1D372E] mb-1 text-xs">
+
                               <h5 className="font-medium text-[#1D372E] mb-1">
+
                                 Q: {faq.Question || faq.question}
                               </h5>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-gray-600 text-xs">
                                 A: {faq.Answer || faq.answer}
                               </p>
                             </div>
@@ -787,61 +1206,101 @@ const LogDetails = () => {
             </div>
           );
         }
-        // Handle other Create Actions (admin addition not included)
-        else if (log.action.startsWith("Created")) {
+        // Handle Other Actions (Generic Handling)
+        else if (log.action.startsWith("Created") || log.action.startsWith("Updated") || log.action.startsWith("Deleted")) {
           const title = {
             "Created category": "Newly Created Category",
             "Created product": "Newly Created Product",
             "Created brand": "Newly Created Brand",
             "Created subcategory": "Newly Created Subcategory",
             "Created discount": "Newly Created Discount",
-          }[log.action];
-
-          detailsContent.push(
-            <div key="creation" className="px-1 py-5">
-              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E]">{title}</h3>
-                </div>
-                <div className="bg-white text-[#1D372E] p-4 rounded-lg">
-                  {Object.entries(details).map(([key, value]) => (
-                    <div key={key} className="mb-2">
-                      <span className="text-sm font-medium capitalize">
-                        {key}:{" "}
-                      </span>
-                      <span className="text-sm">{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        }
-        // Handle Delete Actions
-        else if (log.action.startsWith("Deleted")) {
-          const title = {
+            "Updated category": "Category Changes",
+            "Updated product": "Product Changes",
+            "Updated customer": "Customer Changes",
+            "Updated subcategory": "Subcategory Changes",
+            "Updated discount": "Discount Changes",
+            "Toggled category status": "Category Status Changes",
             "Deleted customer": "Delete Customer Details",
             "Deleted subcategory": "Deleted Subcategory Details",
             "Deleted product": "Deleted Product Details",
             "Deleted category": "Deleted Category Details",
             "Deleted discount": "Deleted Discount Details",
-          }[log.action];
+          }[log.action] || "Action Details";
 
           detailsContent.push(
-            <div key="deletion" className="px-1 py-5">
+            <div key="generic-action" className="px-1 py-5">
               <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-1 h-6 bg-[#EAFFF7]"></div>
                   <h3 className="font-semibold text-[#1D372E]">{title}</h3>
                 </div>
                 <div className="bg-white p-4 rounded-lg">
+                  {details.originalData || details.updatedData ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      
+                      {details.updatedData && (
+                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                          <h5 className="text-sm font-medium text-gray-600 mb-3">
+                            Updated Data
+                          </h5>
+                          {Object.entries(details.updatedData).map(
+                            ([key, value]) => (
+                              <div key={key} className="mb-2 text-[#1D372E]">
+                                <span className="text-sm font-medium capitalize">
+                                  {key.replace("_", " ")}:{" "}
+                                </span>
+                                <span className="text-xs">
+                                  {typeof value === "object"
+                                    ? JSON.stringify(value)
+                                    : value}
+                                </span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    Object.entries(details).map(([key, value]) => (
+                      <div key={key} className="mb-2 text-[#1D372E]">
+                        <span className="text-sm font-medium capitalize">
+                          {key.replace("_", " ")}:{" "}
+                        </span>
+                        <span className="text-sm">
+                          {typeof value === "object"
+                            ? JSON.stringify(value)
+                            : value}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+        // Handle Other Actions (e.g., Added new user)
+        else {
+          detailsContent.push(
+            <div key="other-action" className="px-1 py-5">
+              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
+                  <h3 className="font-semibold text-[#1D372E]">
+                    Additional Information
+                  </h3>
+                </div>
+                <div className="bg-white p-4 rounded-lg">
                   {Object.entries(details).map(([key, value]) => (
-                    <div key={key} className="mb-2">
+                    <div key={key} className="mb-2 text-[#1D372E]">
                       <span className="text-sm font-medium capitalize">
-                        {key}:{" "}
+                        {key.replace("_", " ")}:{" "}
                       </span>
-                      <span className="text-sm">{value}</span>
+                      <span className="text-sm">
+                        {typeof value === "object"
+                          ? JSON.stringify(value)
+                          : value}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -877,12 +1336,12 @@ const LogDetails = () => {
           <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
             <div className="flex items-center gap-2 mb-6">
               <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-              <h3 className="font-semibold text-[#1D372E]">
+              <h3 className="test-base font-semibold text-[#1D372E]">
                 Device Information
               </h3>
             </div>
             <div className="bg-white p-4 rounded-lg">
-              <p className="text-sm text-gray-600">{log.device_info}</p>
+              <p className="text-sm text-gray-600 text-xs">{log.device_info}</p>
             </div>
           </div>
         </div>
@@ -893,8 +1352,13 @@ const LogDetails = () => {
   };
 
   return (
+
+    <div className="w-315 mx-auto p-6 sm:p-6">
+    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+
     <div className="w-full sm:w-500px">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+
         {getDetailsContent()}
       </div>
     </div>

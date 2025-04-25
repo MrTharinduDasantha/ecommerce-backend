@@ -112,3 +112,21 @@ export const getOrderCountByStatus = async () => {
     throw error.response?.data || { message: 'Failed to fetch order counts by status' };
   }
 };
+
+export const getPendingDeliveryCount = async () => {
+  try {
+    const token = getToken();
+    console.log('Using token for getPendingDeliveryCount:', token);
+    
+    const response = await axios.get(`${API_URL}/delivery/pending/count`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pending delivery count:', error);
+    throw error.response?.data || { message: 'Failed to fetch pending delivery count' };
+  }
+};

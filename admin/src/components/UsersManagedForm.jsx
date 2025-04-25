@@ -137,8 +137,8 @@ const UsersManagedForm = () => {
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-xl font-bold text-[#1D372E]">Admin Details</h2>
+            <div className="w-1 h-5 bg-[#5CAF90]"></div>
+            <h2 className="text-base  font-bold text-[#1D372E]">Admin Details</h2>
           </div>
           <button
             onClick={handleAddUser}
@@ -187,10 +187,10 @@ const UsersManagedForm = () => {
                       key={user.idUser}
                       className="border-b border-[#B7B7B7] bg-[#F7FDFF]"
                     >
-                      <td className="p-5">{user.Full_Name}</td>
-                      <td className="p-5">{user.Email}</td>
-                      <td className="p-5">{user.Phone_No}</td>
-                      <td className="p-5">
+                      <td className="p-5 text-xs">{user.Full_Name}</td>
+                      <td className="p-5 text-xs">{user.Email}</td>
+                      <td className="p-5 text-xs">{user.Phone_No}</td>
+                      <td className="p-5 text-xs">
                         <span
                           className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                             user.Status === "Active"
@@ -201,10 +201,10 @@ const UsersManagedForm = () => {
                           {user.Status}
                         </span>
                       </td>
-                      <td className="p-5">
+                      <td className="p-5 text-xs">
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
-                      <td>{new Date(user.updated_at).toLocaleDateString()}</td>
+                      <td className="p-5 text-xs">{new Date(user.updated_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -358,30 +358,25 @@ async function getAllProducts() {
   `;
   const [products] = await pool.query(query);
 
-  // For each product, fetch all images, variations, faqs, and subcategories
   for (const product of products) {
-    // Get all sub images
     const [images] = await pool.query(
       "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
       [product.idProduct]
     );
     product.images = images;
 
-    // Get all variations
     const [variations] = await pool.query(
       "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
       [product.idProduct]
     );
     product.variations = variations;
 
-    // Get all faqs
     const [faqs] = await pool.query(
       "SELECT * FROM FAQ WHERE Product_idProduct = ?",
       [product.idProduct]
     );
     product.faqs = faqs;
 
-    // Get all subcategories
     const [subCats] = await pool.query(
       `SELECT SC.*
        FROM Sub_Category SC
@@ -450,7 +445,6 @@ async function getProductsByBrand(brandId) {
 
 // Get a single product by id
 async function getProductById(productId) {
-  // Fetch main product record with brand info
   const query = `
     SELECT P.*, 
       B.Brand_Name,
@@ -465,28 +459,24 @@ async function getProductById(productId) {
   if (rows.length === 0) return null;
   const product = rows[0];
 
-  // Get all sub images
   const [images] = await pool.query(
     "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
     [product.idProduct]
   );
   product.images = images;
 
-  // Get all variations
   const [variations] = await pool.query(
     "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
     [product.idProduct]
   );
   product.variations = variations;
 
-  // Get all faqs
   const [faqs] = await pool.query(
     "SELECT * FROM FAQ WHERE Product_idProduct = ?",
     [product.idProduct]
   );
   product.faqs = faqs;
 
-  // Get all subcategories
   const [subCats] = await pool.query(
     `SELECT SC.*
      FROM Sub_Category SC
@@ -628,6 +618,29 @@ async function getDiscountById(discountId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
+async function getProductsSoldQty() {
+  const query = `
+    SELECT idProduct, Description, Sold_Qty
+    FROM Product
+    WHERE Sold_Qty > 0
+    ORDER BY Sold_Qty DESC
+    LIMIT 5
+  `;
+  console.log("Executing getProductsSoldQty query");
+  const [products] = await pool.query(query);
+  console.log("Query result:", products);
+  return products;
+}
+async function getProductSoldQty(productId) {
+  const query = `
+    SELECT idProduct, Description, Sold_Qty
+    FROM Product
+    WHERE idProduct = ?
+  `;
+  const [rows] = await pool.query(query, [productId]);
+  return rows.length > 0 ? rows[0] : null;
+}
+
 module.exports = {
   getAllCategories,
   createCategory,
@@ -657,4 +670,10 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
+
+  getProductsSoldQty,
+  getProductSoldQty,
 };
+
+};
+
