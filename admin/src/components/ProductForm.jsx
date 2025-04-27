@@ -84,6 +84,7 @@ const ProductForm = () => {
   const [subImages, setSubImages] = useState([]);
   const [subImagesPreview, setSubImagesPreview] = useState([]);
   const subImagesRef = useRef(null);
+  const [deletedSubImages, setDeletedSubImages] = useState([]);
 
   // Brands
   const [brands, setBrands] = useState([]);
@@ -105,11 +106,13 @@ const ProductForm = () => {
   const [size, setSize] = useState("");
   const [colorQuantity, setColorQuantity] = useState("");
   const [variations, setVariations] = useState([]);
+  const [editingVariationIndex, setEditingVariationIndex] = useState(null);
 
   // FAQ states
   const [faqQuestion, setFaqQuestion] = useState("");
   const [faqAnswer, setFaqAnswer] = useState("");
   const [faqs, setFaqs] = useState([]);
+  const [editingFaqIndex, setEditingFaqIndex] = useState(null);
 
   // Update the brand image preview whenever the new brand image changes
   useEffect(() => {
@@ -138,7 +141,11 @@ const ProductForm = () => {
   const loadSubCategories = async () => {
     try {
       const data = await getCategories();
-      setAvailableSubCategories(data.categories);
+      // get only categories whose status is "active"
+      const activeCategories = data.categories.filter(
+        (category) => category.Status === "active"
+      );
+      setAvailableSubCategories(activeCategories);
     } catch (error) {
       toast.error(error.message || "Failed to load subcategories");
     }
@@ -166,15 +173,18 @@ const ProductForm = () => {
           if (product.variations) {
             setVariations(
               product.variations.map((variant) => ({
+                id: variant.idProduct_Variations,
                 colorCode: variant.Colour,
                 size: variant.Size,
-                quantity: variant.Qty,
+                quantity: String(variant.Qty),
+                hasOrders: variant.hasOrders,
               }))
             );
           }
           if (product.faqs) {
             setFaqs(
               product.faqs.map((faq) => ({
+                id: faq.idFAQ,
                 question: faq.Question,
                 answer: faq.Answer,
               }))
@@ -228,8 +238,12 @@ const ProductForm = () => {
   };
 
   const removeSubImage = (index) => {
-    setSubImages((prev) => prev.filter((_, i) => i !== index));
+    // If it's an existing image (has URL), add to deleted list
+    if (typeof subImagesPreview[index] === "string") {
+      setDeletedSubImages((prev) => [...prev, subImagesPreview[index]]);
+    }
     setSubImagesPreview((prev) => prev.filter((_, i) => i !== index));
+    setSubImages((prev) => prev.filter((_, i) => i !== index));
     if (subImagesRef.current) subImagesRef.current.value = "";
   };
 
@@ -346,10 +360,10 @@ const ProductForm = () => {
 
   // Add variation (color/size/quantity) to table
   const handleAddVariation = () => {
-    if (size.trim() && colorQuantity.trim()) {
+    if (colorQuantity.trim()) {
       const newVar = {
         colorCode: isColorLocked ? colorPickerValue : "No color selected",
-        size: size,
+        size: size || "No size selected",
         quantity: colorQuantity,
       };
       setVariations((prev) => [...prev, newVar]);
@@ -359,13 +373,78 @@ const ProductForm = () => {
       setIsColorLocked(false);
       setColorName("");
     } else {
-      toast.error("Size and quantity are required");
+      toast.error("Quantity is required");
     }
   };
 
-  // Remove variation row
+  // Edit variation (color/size/quantity)
+  const handleEditVariation = (index) => {
+    const variation = variations[index];
+
+    if (variation.colorCode === "No color selected") {
+      // clear out the color inputs
+      setColorName("");
+      setColorPickerValue("#ffffff");
+      setIsColorLocked(false);
+    } else {
+      // populate with the saved hex
+      setColorName(variation.colorCode);
+      setColorPickerValue(variation.colorCode);
+      setIsColorLocked(true);
+    }
+
+    // size and quantity as before
+    setSize(variation.size === "No size selected" ? "" : variation.size);
+    setColorQuantity(variation.quantity);
+    setEditingVariationIndex(index);
+  };
+
+  // Update variation (color/size/quantity)
+  const handleUpdateVariation = () => {
+    if (!colorQuantity.trim()) {
+      toast.error("Quantity is required");
+      return;
+    }
+
+    setVariations((prev) => {
+      return prev.map((v, i) => {
+        if (i !== editingVariationIndex) return v;
+        return {
+          id: v.id,
+          colorCode: isColorLocked ? colorPickerValue : "No color selected",
+          size: size || "No size selected",
+          quantity: colorQuantity,
+        };
+      });
+    });
+
+    setColorName("");
+    setColorPickerValue("#ffffff");
+    setIsColorLocked(false);
+    setSize("");
+    setColorQuantity("");
+    setEditingVariationIndex(null);
+  };
+
+  // Remove variation row (If you delete the variation you're editing, drop back to “Add” and clear all fields)
   const removeVariation = (index) => {
+    // if the variation has orders, prevent deletion
+    if (variations[index].hasOrders) {
+      toast.error("Cannot delete variation as it has been ordered");
+      return;
+    }
+
     setVariations((prev) => prev.filter((_, i) => i !== index));
+
+    // if we were editing this row, reset all inputs & exit edit mode
+    if (editingVariationIndex !== null && editingVariationIndex === index) {
+      setColorName("");
+      setColorPickerValue("#ffffff");
+      setIsColorLocked(false);
+      setSize("");
+      setColorQuantity("");
+      setEditingVariationIndex(null);
+    }
   };
 
   // Add FAQ to table
@@ -383,14 +462,65 @@ const ProductForm = () => {
     }
   };
 
-  // Remove FAQ row
+  // Edit FAQ (question/answer)
+  const handleEditFaq = (index) => {
+    const faq = faqs[index];
+    setFaqQuestion(faq.question);
+    setFaqAnswer(faq.answer);
+    setEditingFaqIndex(index);
+  };
+
+  // Update FAQ (question/answer)
+  const handleUpdateFaq = () => {
+    if (!faqQuestion.trim() || !faqAnswer.trim()) {
+      toast.error("Question and answer are required");
+      return;
+    }
+
+    setFaqs((prev) =>
+      prev.map((f, i) =>
+        i === editingFaqIndex
+          ? { id: f.id, question: faqQuestion, answer: faqAnswer }
+          : f
+      )
+    );
+
+    setFaqQuestion("");
+    setFaqAnswer("");
+    setEditingFaqIndex(null);
+  };
+
+  // Remove FAQ row (If you delete the FAQ you're editing, drop back to “Add” and clear all fields)
   const removeFaq = (index) => {
     setFaqs((prev) => prev.filter((_, i) => i !== index));
+
+    // if we were editing this row, reset all inputs & exit edit mode
+    if (editingFaqIndex !== null && editingFaqIndex === index) {
+      setFaqQuestion("");
+      setFaqAnswer("");
+      setEditingFaqIndex(null);
+    }
   };
 
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (
+      !description ||
+      !selectedBrand ||
+      !marketPrice ||
+      !sellingPrice ||
+      selectedSubCategories.length === 0 ||
+      (!isEditMode && !mainImage) ||
+      variations.length === 0 ||
+      variations.some((v) => !v.quantity)
+    ) {
+      toast.error(
+        "Please fill all required fields: Main Description, Brand, Market Price, Selling Price, Sub Categories, Main Image, and Quantity"
+      );
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -409,9 +539,29 @@ const ProductForm = () => {
       subImages.forEach((file) => {
         formData.append("subImages", file);
       });
+      formData.append("deletedSubImages", JSON.stringify(deletedSubImages));
       // Append JSON stringified arrays
-      formData.append("variations", JSON.stringify(variations));
-      formData.append("faqs", JSON.stringify(faqs));
+      formData.append(
+        "variations",
+        JSON.stringify(
+          variations.map((v) => ({
+            id: v.id,
+            colorCode: v.colorCode,
+            size: v.size,
+            quantity: v.quantity,
+          }))
+        )
+      );
+      formData.append(
+        "faqs",
+        JSON.stringify(
+          faqs.map((f) => ({
+            id: f.id,
+            question: f.question,
+            answer: f.answer,
+          }))
+        )
+      );
       formData.append("subCategoryIds", JSON.stringify(selectedSubCategories));
 
       if (isEditMode && id) {
@@ -835,10 +985,14 @@ const ProductForm = () => {
                     />
                     <button
                       type="button"
-                      onClick={handleAddVariation}
+                      onClick={
+                        editingVariationIndex !== null
+                          ? handleUpdateVariation
+                          : handleAddVariation
+                      }
                       className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
-                      Add
+                      {editingVariationIndex !== null ? "Edit" : "Add"}
                     </button>
                   </div>
                 </div>
@@ -873,13 +1027,35 @@ const ProductForm = () => {
                           <td>{item.size}</td>
                           <td>{item.quantity}</td>
                           <td>
-                            <button
-                              type="button"
-                              onClick={() => removeVariation(index)}
-                              className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
-                            >
-                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleEditVariation(index)}
+                                className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                title="Edit Variation"
+                              >
+                                <FaEdit className="w-3.5 h-3.5" />
+                              </button>
+                              {item.hasOrders ? (
+                                <button
+                                  type="button"
+                                  onClick={() => removeVariation(index)}
+                                  className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                  title="Cannot delete as it has orders"
+                                >
+                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => removeVariation(index)}
+                                  className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                  title="Delete Variation"
+                                >
+                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -929,10 +1105,12 @@ const ProductForm = () => {
                 <div className="md:col-span-2 flex justify-end">
                   <button
                     type="button"
-                    onClick={handleAddFaq}
+                    onClick={
+                      editingFaqIndex !== null ? handleUpdateFaq : handleAddFaq
+                    }
                     className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                   >
-                    Add
+                    {editingFaqIndex !== null ? "Edit" : "Add"}
                   </button>
                 </div>
               </div>
@@ -948,19 +1126,30 @@ const ProductForm = () => {
                       <div className="card-body p-4">
                         <div className="flex justify-between">
                           <div className="flex items-start gap-2 flex-1">
-                            <FaQuestionCircle className="mt-1 text-[#5CAF90]" />
+                            <FaQuestionCircle className="mt-1 text-[#5CAF90] w-4 h-4" />
                             <div>
                               <h4 className="font-medium">{faq.question}</h4>
                               <p className="text-sm mt-1">{faq.answer}</p>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeFaq(index)}
-                            className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square self-start"
-                          >
-                            <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditFaq(index)}
+                              className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                              title="Edit FAQ"
+                            >
+                              <FaEdit className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeFaq(index)}
+                              className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                              title="Delete FAQ"
+                            >
+                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

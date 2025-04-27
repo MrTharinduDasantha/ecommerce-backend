@@ -1,5 +1,3 @@
-"use client";
-
 import { useRef, useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill } from "react-icons/ri";
@@ -13,8 +11,10 @@ import {
   getCategories,
   createCategory,
   updateCategory,
+  deleteCategory,
   toggleCategoryStatus,
   createSubCategory,
+  updateSubCategory,
   deleteSubCategory,
 } from "../api/product";
 import toast from "react-hot-toast";
@@ -30,6 +30,8 @@ const ProductCategorySubCategoryForm = () => {
   const [subCategoryDescription, setSubCategoryDescription] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState(null);
+  const [subCategoryToEdit, setSubCategoryToEdit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -138,10 +140,36 @@ const ProductCategorySubCategoryForm = () => {
     }
   };
 
+  // Handle deleting a category
+  const handleDeleteCategory = async (categoryId) => {
+    try {
+      await deleteCategory(categoryId);
+      toast.success("Category deleted successfully");
+      setDeleteConfirmationId(null);
+      fetchCategories();
+    } catch (error) {
+      if (
+        error.message &&
+        error.message.includes(
+          "subcategory has already been added to a product"
+        )
+      ) {
+        toast.error(
+          "Cannot delete category as one of its subcategories is used in a product"
+        );
+      } else {
+        toast.error(error.message || "Failed to delete category");
+      }
+      setDeleteConfirmationId(null);
+    }
+  };
+
   // Open subcategory popup
   const openSubCategoryPopup = (index) => {
     setSelectedCategoryIndex(index);
     setShowSubCategoryPopup(true);
+    setSubCategoryToEdit(null);
+    setSubCategoryDescription("");
   };
 
   // Close subcategory popup
@@ -151,8 +179,14 @@ const ProductCategorySubCategoryForm = () => {
     setSubCategoryDescription("");
   };
 
-  // Handle adding a subcategory
-  const handleAddSubCategory = async () => {
+  // Handle editing a subcategory
+  const handleEditSubCategory = (subCategory) => {
+    setSubCategoryToEdit(subCategory);
+    setSubCategoryDescription(subCategory.Description);
+  };
+
+  // Handle adding or updating a subcategory
+  const handleAddOrUpdateSubCategory = async () => {
     if (!subCategoryDescription.trim()) {
       toast.error("Subcategory description is required");
       return;
@@ -161,28 +195,42 @@ const ProductCategorySubCategoryForm = () => {
     try {
       setIsSubmitting(true);
       const categoryId = categories[selectedCategoryIndex].idProduct_Category;
-      await createSubCategory(categoryId, subCategoryDescription);
-      toast.success("Subcategory added successfully");
+
+      if (subCategoryToEdit) {
+        // Update existing subcategory
+        await updateSubCategory(
+          categoryId,
+          subCategoryToEdit.idSub_Category,
+          subCategoryDescription
+        );
+        toast.success("Subcategory updated successfully");
+      } else {
+        // Create new subcategory
+        await createSubCategory(categoryId, subCategoryDescription);
+        toast.success("Subcategory added successfully");
+      }
+
       fetchCategories();
       setSubCategoryDescription("");
+      setSubCategoryToEdit(null);
     } catch (error) {
-      toast.error(error.message || "Failed to add subcategory");
+      toast.error(error.message || "Failed to process subcategory");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handle removing a subcategory
   const handleRemoveSubCategory = async (categoryIndex, subCategory) => {
     try {
-      await deleteSubCategory(
-        categories[categoryIndex].idProduct_Category,
-        subCategory.idSub_Category
-      );
-      toast.success("Subcategory removed successfully");
+      setIsSubmitting(true);
+      const categoryId = categories[categoryIndex].idProduct_Category;
+      await deleteSubCategory(categoryId, subCategory.idSub_Category);
+      toast.success("Subcategory deleted successfully");
       fetchCategories();
     } catch (error) {
-      toast.error(error.message || "Failed to remove subcategory");
+      toast.error(error.message || "Failed to delete subcategory");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -349,6 +397,15 @@ const ProductCategorySubCategoryForm = () => {
                         >
                           <FaPlus />
                         </button>
+                        <button
+                          onClick={() =>
+                            setDeleteConfirmationId(cat.idProduct_Category)
+                          }
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="Delete Category"
+                        >
+                          <RiDeleteBin5Fill />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -367,7 +424,9 @@ const ProductCategorySubCategoryForm = () => {
       {showSubCategoryPopup && (
         <div className="modal modal-open">
           <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
-            <h3 className="font-bold text-lg mb-4">Add Sub Category</h3>
+            <h3 className="font-bold text-lg mb-4">
+              {subCategoryToEdit ? "Edit Sub Category" : "Add Sub Category"}
+            </h3>
             <button
               onClick={closeSubCategoryPopup}
               className="absolute right-6 top-7 text-lg text-[#1D372E]"
@@ -390,7 +449,7 @@ const ProductCategorySubCategoryForm = () => {
 
             <div className="modal-action">
               <button
-                onClick={handleAddSubCategory}
+                onClick={handleAddOrUpdateSubCategory}
                 className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
                   isSubmitting ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
                 }`}
@@ -398,8 +457,10 @@ const ProductCategorySubCategoryForm = () => {
                 {isSubmitting ? (
                   <>
                     <span className="loading loading-spinner loading-xs"></span>
-                    Adding...
+                    {subCategoryToEdit ? "Updating..." : "Adding..."}
                   </>
+                ) : subCategoryToEdit ? (
+                  "Edit Sub Category"
                 ) : (
                   "Add Sub Category"
                 )}
@@ -428,18 +489,27 @@ const ProductCategorySubCategoryForm = () => {
                             >
                               <td>{sub.Description}</td>
                               <td>
-                                <button
-                                  onClick={() =>
-                                    handleRemoveSubCategory(
-                                      selectedCategoryIndex,
-                                      sub
-                                    )
-                                  }
-                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                                  title="Delete Sub Category"
-                                >
-                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                                </button>
+                                <div className="flex justify-center gap-2">
+                                  <button
+                                    onClick={() => handleEditSubCategory(sub)}
+                                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                    title="Edit Sub Category"
+                                  >
+                                    <FaEdit className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleRemoveSubCategory(
+                                        selectedCategoryIndex,
+                                        sub
+                                      )
+                                    }
+                                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                    title="Delete Sub Category"
+                                  >
+                                    <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           )
@@ -449,6 +519,41 @@ const ProductCategorySubCategoryForm = () => {
                   </div>
                 </div>
               )}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Category Confirmation Modal */}
+      {deleteConfirmationId && (
+        <div className="modal modal-open">
+          <div className="modal-box bg-white text-[#1D372E]">
+            <h3 className="font-bold text-lg mb-4">Delete Category</h3>
+            <button
+              onClick={() => setDeleteConfirmationId(null)}
+              className="absolute right-6 top-7 text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+
+            <p className="mb-6">
+              Are you sure you want to delete this category? This will also
+              delete all associated subcategories. This action cannot be undone.
+            </p>
+
+            <div className="modal-action">
+              <button
+                onClick={() => setDeleteConfirmationId(null)}
+                className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteCategory(deleteConfirmationId)}
+                className="btn btn-sm bg-[#5CAF90] border-[#5CAF90]"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

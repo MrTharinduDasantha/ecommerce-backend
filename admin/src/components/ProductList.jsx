@@ -1,9 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaEye, FaEdit, FaSearch } from "react-icons/fa";
+import {
+  FaEye,
+  FaEdit,
+  FaSearch,
+  FaCheckSquare,
+  FaRegCheckSquare,
+} from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IoClose } from "react-icons/io5";
-import { getProducts, deleteProduct } from "../api/product";
+import {
+  getProducts,
+  toggleProductStatus,
+  deleteProduct,
+} from "../api/product";
 import toast from "react-hot-toast";
 
 const ProductList = () => {
@@ -65,6 +75,18 @@ const ProductList = () => {
       document.body.style.overflow = "auto";
     }
   }, [deleteProductId]);
+
+  // Toggle product status
+  const handleToggleStatus = async (productId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
+      await toggleProductStatus(productId, newStatus);
+      toast.success("Product status updated");
+      loadProducts();
+    } catch (error) {
+      toast.error(error.message || "Failed to update product status");
+    }
+  };
 
   // Delete product
   const handleDeleteProduct = async () => {
@@ -130,6 +152,7 @@ const ProductList = () => {
                   <th className="font-semibold">Market Price</th>
                   <th className="font-semibold">Selling Price</th>
                   <th className="font-semibold">Main Image</th>
+                  <th className="font-semibold">Status</th>
                   <th className="font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -158,6 +181,26 @@ const ProductList = () => {
                       )}
                     </td>
                     <td>
+                      <div className="flex items-center justify-center gap-2">
+                        <span>Active</span>
+                        <button
+                          onClick={() =>
+                            handleToggleStatus(
+                              product.idProduct,
+                              product.Status
+                            )
+                          }
+                          className="text-[#5CAF90]"
+                        >
+                          {product.Status === "active" ? (
+                            <FaCheckSquare className="w-4 h-4" />
+                          ) : (
+                            <FaRegCheckSquare className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                    <td>
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => handleViewProduct(product.idProduct)}
@@ -167,17 +210,11 @@ const ProductList = () => {
                           <FaEye />
                         </button>
                         <button
-                          onClick={() => {
-                            if (product.hasOrders) {
-                              toast.error(
-                                "This product cannot be edited since it has already been ordered"
-                              );
-                            } else {
-                              navigate(
-                                `/dashboard/products/edit-product/${product.idProduct}`
-                              );
-                            }
-                          }}
+                          onClick={() =>
+                            navigate(
+                              `/dashboard/products/edit-product/${product.idProduct}`
+                            )
+                          }
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="Edit Product"
                         >

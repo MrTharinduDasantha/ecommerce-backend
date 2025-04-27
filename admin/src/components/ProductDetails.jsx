@@ -125,7 +125,7 @@ const ProductDetails = () => {
                         </div>
                       ))
                     ) : (
-                      <div className="col-span-3 aspect-square rounded-lg bg-base-200 flex items-center justify-center">
+                      <div className="col-span-3 aspect-square rounded-lg flex items-center justify-center">
                         <span className="text-sm opacity-70">
                           No sub images
                         </span>
@@ -169,7 +169,9 @@ const ProductDetails = () => {
 
                   <div className="md:col-span-2">
                     <h4 className="font-medium text-sm">Sub Description</h4>
-                    <p className="mt-1">{product.Long_Description || "N/A"}</p>
+                    <p className="mt-1">
+                      {product.Long_Description || "No sub description"}
+                    </p>
                   </div>
                 </div>
               </div>

@@ -6,10 +6,10 @@ import {
   TbLogout,
   TbUsers,
   TbTruck,
-  TbDiscount,
   TbBell,
   TbSettings,
 } from "react-icons/tb";
+import { MdOutlineDiscount } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -161,7 +161,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <TbDiscount className="w-4 h-4" />
+                  <MdOutlineDiscount className="w-4 h-4" />
                   <span>Manage Discounts</span>
                 </div>
               </summary>
