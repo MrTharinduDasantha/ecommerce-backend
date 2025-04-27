@@ -74,6 +74,40 @@ async function toggleCategoryStatus(categoryId, status) {
   await pool.query(query, [status, categoryId]);
 }
 
+// Delete a category and its subcategories
+async function deleteCategory(categoryId) {
+  // First check if any subcategories are used in products
+  const [subcategories] = await pool.query(
+    "SELECT idSub_Category FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
+    [categoryId]
+  );
+
+  for (const sub of subcategories) {
+    const [products] = await pool.query(
+      "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
+      [sub.idSub_Category]
+    );
+
+    if (products[0].count > 0) {
+      throw new Error(
+        "Cannot delete category as a subcategory has already been added to a product"
+      );
+    }
+  }
+
+  // Delete all subcategories first
+  await pool.query(
+    "DELETE FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
+    [categoryId]
+  );
+
+  // Then delete the category
+  await pool.query(
+    "DELETE FROM Product_Category WHERE idProduct_Category = ?",
+    [categoryId]
+  );
+}
+
 // Create a new subcategory
 async function createSubCategory(categoryId, description) {
   if (!description) {
@@ -96,8 +130,60 @@ async function createSubCategory(categoryId, description) {
   return result;
 }
 
+// Update a subcategory
+async function updateSubCategory(categoryId, subCategoryId, description) {
+  if (!description) {
+    throw new Error("Subcategory description is required");
+  }
+
+  // Ensure the category exists
+  const [categories] = await pool.query(
+    "SELECT * FROM Product_Category WHERE idProduct_Category = ?",
+    [categoryId]
+  );
+
+  if (categories.length === 0) {
+    throw new Error("Category does not exist");
+  }
+
+  // Ensure the subcategory exists
+  const [subcategories] = await pool.query(
+    "SELECT * FROM Sub_Category WHERE idSub_Category = ? AND Product_Category_idProduct_Category = ?",
+    [subCategoryId, categoryId]
+  );
+
+  if (subcategories.length === 0) {
+    throw new Error("Subcategory does not exist");
+  }
+
+  const query = `
+    UPDATE Sub_Category
+    SET Description = ?
+    WHERE idSub_Category = ?
+  `;
+
+  await pool.query(query, [description, subCategoryId]);
+}
+
+// Check if a subcategory is used in any products
+async function checkSubCategoryInUse(subCategoryId) {
+  const [products] = await pool.query(
+    "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
+    [subCategoryId]
+  );
+
+  return products[0].count > 0;
+}
+
 // Delete a sub category
 async function deleteSubCategory(subCategoryId) {
+  // Check if the subcategory is used in any products
+  const inUse = await checkSubCategoryInUse(subCategoryId);
+
+  if (inUse) {
+    throw new Error("Cannot delete subcategory as it is used in products");
+  }
+
   // If there's a linking table to Product (Product_has_Sub_Category),
   // remove references first:
   await pool.query(
@@ -111,29 +197,9 @@ async function deleteSubCategory(subCategoryId) {
   ]);
 }
 
-// --------------------------
-// Product Related Functions
-// --------------------------
-
-// Insert main product record into product table
-async function createProduct(productData) {
-  const query = `
-    INSERT INTO Product 
-      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH)
-      VALUES (?,?,?,?,?,?,?)
-  `;
-
-  const [result] = await pool.query(query, [
-    productData.Description,
-    productData.Product_Brand_idProduct_Brand,
-    productData.Market_Price,
-    productData.Selling_Price,
-    productData.Main_Image_Url,
-    productData.Long_Description,
-    productData.SIH,
-  ]);
-  return result;
-}
+// ------------------------
+// Brand Related Functions
+// ------------------------
 
 // Insert a new brand into product brand table
 async function createBrand(brandName, brandImageUrl, shortDescription, userId) {
@@ -226,6 +292,30 @@ async function getBrands() {
   return brands;
 }
 
+// --------------------------
+// Product Related Functions
+// --------------------------
+
+// Insert main product record into product table
+async function createProduct(productData) {
+  const query = `
+    INSERT INTO Product 
+      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH)
+      VALUES (?,?,?,?,?,?,?)
+  `;
+
+  const [result] = await pool.query(query, [
+    productData.Description,
+    productData.Product_Brand_idProduct_Brand,
+    productData.Market_Price,
+    productData.Selling_Price,
+    productData.Main_Image_Url,
+    productData.Long_Description,
+    productData.SIH,
+  ]);
+  return result;
+}
+
 // Insert each sub image into product images table
 async function createProductImages(productId, imageUrl) {
   const query = `
@@ -280,6 +370,7 @@ async function createProductSubCategory(productId, subCategoryId) {
 
 // Update a product
 async function updateProduct(productId, productData, associatedData) {
+  // Update main product details
   const query = `
     UPDATE Product
     SET Description = ?, Product_Brand_idProduct_Brand = ?, Market_Price = ?, Selling_Price = ?, Main_Image_Url = ?, Long_Description = ?, SIH = ?
@@ -298,33 +389,96 @@ async function updateProduct(productId, productData, associatedData) {
   ]);
 
   // Update product images: Delete existing images and insert new ones
-  if (associatedData.images) {
-    await pool.query("DELETE FROM Product_Images WHERE Product_idProduct = ?", [
-      productId,
-    ]);
-    for (const imageUrl of associatedData.images) {
-      await createProductImages(productId, imageUrl);
+  if (associatedData.images || associatedData.deletedImages) {
+    // Delete specified images first
+    if (associatedData.deletedImages) {
+      await pool.query(
+        "DELETE FROM Product_Images WHERE Product_idProduct = ? AND Image_Url IN (?)",
+        [productId, associatedData.deletedImages]
+      );
+    }
+
+    // Delete all images if new ones are provided
+    if (associatedData.images) {
+      await pool.query(
+        "DELETE FROM Product_Images WHERE Product_idProduct = ?",
+        [productId]
+      );
+      for (const imageUrl of associatedData.images) {
+        await createProductImages(productId, imageUrl);
+      }
     }
   }
 
-  // Update variations: Delete existing variations and insert new ones
+  // Update variations
   if (associatedData.variations) {
-    await pool.query(
-      "DELETE FROM Product_Variations WHERE Product_idProduct = ?",
+    const newVariations = associatedData.variations;
+    const [existingVariations] = await pool.query(
+      "SELECT idProduct_Variations FROM Product_Variations WHERE Product_idProduct = ?",
       [productId]
     );
-    for (const variation of associatedData.variations) {
-      await createProductVariant(productId, variation);
+    const existingIds = existingVariations.map((v) => v.idProduct_Variations);
+    const newIds = newVariations.filter((v) => v.id).map((v) => v.id);
+
+    const toDelete = existingIds.filter((id) => !newIds.includes(id));
+    for (const id of toDelete) {
+      const [orders] = await pool.query(
+        "SELECT COUNT(*) as count FROM order_has_product_variations WHERE Product_Variations_idProduct_Variations = ?",
+        [id]
+      );
+      if (orders[0].count > 0) {
+        throw new Error("Cannot delete variation as it has been ordered");
+      }
+    }
+    if (toDelete.length > 0) {
+      await pool.query(
+        "DELETE FROM Product_Variations WHERE idProduct_Variations IN (?)",
+        [toDelete]
+      );
+    }
+
+    for (const variation of newVariations) {
+      if (variation.id) {
+        await pool.query(
+          "UPDATE Product_Variations SET Colour = ?, Size = ?, Qty = ?, SIH = ? WHERE idProduct_Variations = ?",
+          [
+            variation.colorCode,
+            variation.size,
+            variation.quantity,
+            variation.quantity,
+            variation.id,
+          ]
+        );
+      } else {
+        await createProductVariant(productId, variation);
+      }
     }
   }
 
-  // Update faqs: Delete existing faqs and insert new ones
+  // Update faqs
   if (associatedData.faqs) {
-    await pool.query("DELETE FROM FAQ WHERE Product_idProduct = ?", [
-      productId,
-    ]);
-    for (const faq of associatedData.faqs) {
-      await createProductFaq(productId, faq);
+    const newFaqs = associatedData.faqs;
+    const [existingFaqs] = await pool.query(
+      "SELECT idFAQ FROM FAQ WHERE Product_idProduct = ?",
+      [productId]
+    );
+    const existingIds = existingFaqs.map((f) => f.idFAQ);
+    const newIds = newFaqs.filter((f) => f.id).map((f) => f.id);
+
+    const toDelete = existingIds.filter((id) => !newIds.includes(id));
+    if (toDelete.length > 0) {
+      await pool.query("DELETE FROM FAQ WHERE idFAQ IN (?)", [toDelete]);
+    }
+
+    for (const faq of newFaqs) {
+      if (faq.id) {
+        await pool.query(
+          "UPDATE FAQ SET Question = ?, Answer = ? WHERE idFAQ = ?",
+          [faq.question, faq.answer, faq.id]
+        );
+      } else {
+        await createProductFaq(productId, faq);
+      }
     }
   }
 
@@ -340,6 +494,21 @@ async function updateProduct(productId, productData, associatedData) {
       await createProductSubCategory(productId, subCatId);
     }
   }
+}
+
+// Toggle or update the status of a product
+async function toggleProductStatus(productId, status) {
+  if (!status) {
+    throw new Error("Status is required");
+  }
+
+  const query = `
+    UPDATE Product
+    SET Status = ?
+    WHERE idProduct = ?
+  `;
+
+  await pool.query(query, [status, productId]);
 }
 
 // Get all products
@@ -358,25 +527,30 @@ async function getAllProducts() {
   `;
   const [products] = await pool.query(query);
 
+  // For each product, fetch all images, variations, faqs, and subcategories
   for (const product of products) {
+    // Get all sub images
     const [images] = await pool.query(
       "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
       [product.idProduct]
     );
     product.images = images;
 
+    // Get all variations
     const [variations] = await pool.query(
       "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
       [product.idProduct]
     );
     product.variations = variations;
 
+    // Get all faqs
     const [faqs] = await pool.query(
       "SELECT * FROM FAQ WHERE Product_idProduct = ?",
       [product.idProduct]
     );
     product.faqs = faqs;
 
+    // Get all subcategories
     const [subCats] = await pool.query(
       `SELECT SC.*
        FROM Sub_Category SC
@@ -396,6 +570,32 @@ async function getProductCount() {
   const query = `SELECT COUNT(*) AS totalProducts FROM Product`;
   const [result] = await pool.query(query);
   return result[0].totalProducts; // Return the count value
+}
+
+// Get top sold products
+async function getProductsSoldQty() {
+  const query = `
+    SELECT idProduct, Description, Sold_Qty
+    FROM Product
+    WHERE Sold_Qty > 0
+    ORDER BY Sold_Qty DESC
+    LIMIT 5
+  `;
+  console.log("Executing getProductsSoldQty query");
+  const [products] = await pool.query(query);
+  console.log("Query result:", products);
+  return products;
+}
+
+// Get sold quantity of a product
+async function getProductSoldQty(productId) {
+  const query = `
+    SELECT idProduct, Description, Sold_Qty
+    FROM Product
+    WHERE idProduct = ?
+  `;
+  const [rows] = await pool.query(query, [productId]);
+  return rows.length > 0 ? rows[0] : null;
 }
 
 // Get all products by subcategory id
@@ -445,6 +645,7 @@ async function getProductsByBrand(brandId) {
 
 // Get a single product by id
 async function getProductById(productId) {
+  // Fetch main product record with brand info
   const query = `
     SELECT P.*, 
       B.Brand_Name,
@@ -459,24 +660,32 @@ async function getProductById(productId) {
   if (rows.length === 0) return null;
   const product = rows[0];
 
+  // Get all sub images
   const [images] = await pool.query(
     "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
     [product.idProduct]
   );
   product.images = images;
 
+  // Get all variations
   const [variations] = await pool.query(
-    "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
+    `SELECT PV.*, 
+      (SELECT COUNT(*) FROM order_has_product_variations ohpv 
+       WHERE ohpv.Product_Variations_idProduct_Variations = PV.idProduct_Variations) > 0 as hasOrders
+     FROM Product_Variations PV
+     WHERE PV.Product_idProduct = ?`,
     [product.idProduct]
   );
   product.variations = variations;
 
+  // Get all faqs
   const [faqs] = await pool.query(
     "SELECT * FROM FAQ WHERE Product_idProduct = ?",
     [product.idProduct]
   );
   product.faqs = faqs;
 
+  // Get all subcategories
   const [subCats] = await pool.query(
     `SELECT SC.*
      FROM Sub_Category SC
@@ -618,62 +827,43 @@ async function getDiscountById(discountId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
-async function getProductsSoldQty() {
-  const query = `
-    SELECT idProduct, Description, Sold_Qty
-    FROM Product
-    WHERE Sold_Qty > 0
-    ORDER BY Sold_Qty DESC
-    LIMIT 5
-  `;
-  console.log("Executing getProductsSoldQty query");
-  const [products] = await pool.query(query);
-  console.log("Query result:", products);
-  return products;
-}
-async function getProductSoldQty(productId) {
-  const query = `
-    SELECT idProduct, Description, Sold_Qty
-    FROM Product
-    WHERE idProduct = ?
-  `;
-  const [rows] = await pool.query(query, [productId]);
-  return rows.length > 0 ? rows[0] : null;
-}
-
 module.exports = {
+  // Category and Sub-Category related functions
   getAllCategories,
   createCategory,
   updateCategory,
   toggleCategoryStatus,
+  deleteCategory,
   createSubCategory,
+  updateSubCategory,
+  checkSubCategoryInUse,
   deleteSubCategory,
-  createProduct,
+  // Brand related functions
   createBrand,
   updateBrand,
   deleteBrand,
   getBrands,
+  // Product related functions
+  createProduct,
   createProductImages,
   createProductVariant,
   createProductFaq,
   createProductSubCategory,
   updateProduct,
+  toggleProductStatus,
   getAllProducts,
   getProductCount,
+  getProductsSoldQty,
+  getProductSoldQty,
   getProductsBySubCategory,
   getProductsByBrand,
   getProductById,
   deleteProduct,
+  // Discount related functions
   getAllDiscounts,
   getDiscountsByProductId,
   createDiscount,
   updateDiscount,
   deleteDiscount,
   getDiscountById,
-
-  getProductsSoldQty,
-  getProductSoldQty,
 };
-
-};
-
