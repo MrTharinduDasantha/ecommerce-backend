@@ -1,6 +1,6 @@
-const express = require('express');
-const orderController = require('../../controllers/admin/order.controller');
-const authenticateToken = require('../../middleware/authMiddleware');
+const express = require("express");
+const orderController = require("../../controllers/admin/order.controller");
+const authenticateToken = require("../../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -8,15 +8,23 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // Admin Order Routes
-router.get('/', orderController.getAllOrders.bind(orderController));
-router.get('/status/count', orderController.getOrderCountByStatus.bind(orderController));
-router.get('/:id', orderController.getOrderById.bind(orderController));
-router.put('/:id/status', orderController.updateOrderStatus.bind(orderController));
-
-// Inside the router file (e.g., routes/admin/order.routes.js)
-router.get('/delivery/pending/count', orderController.getPendingDeliveryCount.bind(orderController));
-
-router.put('/:id/payment-status', orderController.updatePaymentStatus.bind(orderController));
-
+router.get("/", orderController.getAllOrders.bind(orderController));
+router.get(
+  "/status/count",
+  orderController.getOrderCountByStatus.bind(orderController)
+);
+router.get("/:id", orderController.getOrderById.bind(orderController));
+router.put(
+  "/:id/status",
+  orderController.updateOrderStatus.bind(orderController)
+);
+router.get(
+  "/delivery/pending/count",
+  orderController.getPendingDeliveryCount.bind(orderController)
+);
+router.put(
+  "/:id/payment-status",
+  orderController.updatePaymentStatus.bind(orderController)
+);
 
 module.exports = router;
