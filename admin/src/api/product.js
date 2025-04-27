@@ -71,11 +71,34 @@ export const toggleCategoryStatus = async (id, status) => {
   }
 };
 
+// Delete a category
+export const deleteCategory = async (id) => {
+  try {
+    const response = await api.delete(`/api/products/categories/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // Create a subcategory
 export const createSubCategory = async (categoryId, description) => {
   try {
     const response = await api.post(
       `/api/products/categories/${categoryId}/sub-categories`,
+      { description }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// Update a subcategory
+export const updateSubCategory = async (categoryId, subId, description) => {
+  try {
+    const response = await api.put(
+      `/api/products/categories/${categoryId}/sub-categories/${subId}`,
       { description }
     );
     return response.data;
@@ -219,6 +242,16 @@ export const updateProduct = async (id, formData) => {
     return response.data;
   } catch (error) {
     console.error("Update product error:", error.response || error);
+    throw error.response?.data || error;
+  }
+};
+
+// Toggle product status
+export const toggleProductStatus = async (id, status) => {
+  try {
+    const response = await api.patch(`/api/products/${id}/status`, { status });
+    return response.data;
+  } catch (error) {
     throw error.response?.data || error;
   }
 };

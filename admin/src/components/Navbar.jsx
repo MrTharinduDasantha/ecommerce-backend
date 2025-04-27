@@ -83,7 +83,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {/* Notifications */}
           <div className="dropdown dropdown-end">
             <Link
@@ -91,7 +91,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               className="btn btn-ghost hover:bg-[#1D372E] btn-circle"
             >
               <div className="indicator">
-                <TbBell className="h-5 w-5" />
+                <TbBell className="h-6 w-6" />
                 {unreadCount > 0 && (
                   <span className="badge badge-sm badge-primary text-white indicator-item">
                     {unreadCount > 99 ? "99+" : unreadCount}

@@ -43,6 +43,11 @@ router.patch(
   authenticate,
   productController.toggleCategoryStatus
 );
+router.delete(
+  "/categories/:id",
+  authenticate,
+  productController.deleteCategory
+);
 
 // --------------------
 // Sub-Category Routes
@@ -52,16 +57,20 @@ router.post(
   authenticate,
   productController.createSubCategory
 );
+router.put(
+  "/categories/:id/sub-categories/:subId",
+  authenticate,
+  productController.updateSubCategory
+);
 router.delete(
   "/categories/:id/sub-categories/:subId",
   authenticate,
   productController.deleteSubCategory
 );
 
-// ---------------
-// Product Routes
-// ---------------
-router.post("/", authenticate, cpUpload, productController.createProduct);
+// -------------
+// Brand Routes
+// -------------
 router.post(
   "/brands",
   upload.single("brandImage"),
@@ -75,9 +84,21 @@ router.put(
 );
 router.delete("/brands/:id", authenticate, productController.deleteBrand);
 router.get("/brands", productController.getBrands);
+
+// ---------------
+// Product Routes
+// ---------------
+router.post("/", authenticate, cpUpload, productController.createProduct);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
+router.patch(
+  "/:id/status",
+  authenticate,
+  productController.toggleProductStatus
+);
 router.get("/", productController.getAllProducts);
 router.get("/count", productController.getProductTotal);
+router.get("/sold-qty", productController.getProductsSoldQty);
+router.get("/:id/sold-qty", productController.getProductSoldQty);
 router.get(
   "/sub-categories/:subId/products",
   productController.getProductsBySubCategory
