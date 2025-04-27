@@ -2,10 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import * as api from "../api/customer";
 import toast from "react-hot-toast";
-
-import { ArrowLeft, Eye } from 'lucide-react';
-
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye } from "lucide-react";
 
 const CustomerDetails = () => {
   const { id: customerId } = useParams();
@@ -39,9 +36,12 @@ const CustomerDetails = () => {
     navigate(`/dashboard/customer/order-details/${order.idOrder || order.id}`, {
       state: {
         order: order,
-        deliveryAddress: history.deliveryAddresses.length > 0 ? history.deliveryAddresses[0] : null,
-        customerId: customerId
-      }
+        deliveryAddress:
+          history.deliveryAddresses.length > 0
+            ? history.deliveryAddresses[0]
+            : null,
+        customerId: customerId,
+      },
     });
   };
 
@@ -60,13 +60,12 @@ const CustomerDetails = () => {
   }
 
   return (
-
     <div className="w-315 mx-auto p-6 sm:p-6">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
         <div className="p-4 md:p-6">
           {/* Back Button */}
           <button
-            onClick={() => navigate('/dashboard/customer-managed-form')}
+            onClick={() => navigate("/dashboard/customer-managed-form")}
             className="inline-flex items-center text-[#5CAF90] hover:text-[#4a9277] transition-colors mb-6"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
@@ -76,135 +75,68 @@ const CustomerDetails = () => {
           {/* Header */}
           <div className="flex items-center gap-2 mb-6">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-base font-bold text-[#1D372E]">Customer Details</h2>
+            <h2 className="text-base font-bold text-[#1D372E]">
+              Customer Details
+            </h2>
           </div>
 
           {/* Customer Info Card */}
           <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4 md:p-6 mb-6 w-285">
             <div className="bg-white rounded-lg p-4 shadow-sm w-270">
-            <h4 className="font-bold text-[#1D372E] text-sm mb-4">{customer.Full_Name}</h4>
-
-    <div>
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 md:p-6">
-          <div className="flex items-center gap-4 mb-6">
-            {/* Back Button */}
-            <button
-              onClick={() => navigate("/dashboard/customer-managed-form")}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-[#5CAF90] text-white hover:bg-[#4a9277] transition-colors cursor-pointer"
-              aria-label="Back to customers"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            {/* Heading */}
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-[#5CAF90]"></div>
-              <h2 className="text-xl font-bold text-[#1D372E]">
-                Customer Details
-              </h2>
-            </div>
-          </div>
-
-          {/* Customer Info Card */}
-          <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4 md:p-6 mb-6">
-            <h4 className="font-bold text-[#1D372E] text-lg mb-4">
-              {customer.Full_Name}
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 text-gray-600">
-                <p className="flex items-center">
-
-                  <span className="text-gray-600 w-24 text-sm">Email:</span>
-                  <span className="font-medium text-xs">{customer.Email}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="text-gray-600 w-24 text-sm">Phone:</span>
-                  <span className="font-medium text-xs">{customer.Mobile_No}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="text-gray-600 w-24 text-sm">Status:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    customer.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-
-                  <span className="w-24">Email:</span>
-                  <span className="font-medium">{customer.Email}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="w-24">Phone:</span>
-                  <span className="font-medium">{customer.Mobile_No}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="w-24">Status:</span>
-                  <span
-                    className={`px-2 py-1 rounded-full text-sm ${
-                      customer.Status === "Active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-
-                    {customer.Status}
-                  </span>
-                </p>
-              </div>
-              <div className="space-y-2 text-gray-600">
-                <p className="flex items-center">
-
-                  <span className="text-gray-600 w-24 text-sm">Address:</span>
-                  <span className="font-medium text-xs">{customer.Address}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="text-gray-600 w-24 text-sm">City:</span>
-                  <span className="font-medium text-xs">{customer.City}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="text-gray-600 w-24 text-sm">Country:</span>
-                  <span className="font-medium text-xs">{customer.Country}</span>
-
-                  <span className=" w-24">Address:</span>
-                  <span className="font-medium">{customer.Address}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="w-24">City:</span>
-                  <span className="font-medium">{customer.City}</span>
-                </p>
-                <p className="flex items-center">
-                  <span className="w-24">Country:</span>
-                  <span className="font-medium">{customer.Country}</span>
-
-                </p>
+              <h4 className="font-bold text-[#1D372E] text-sm mb-4">
+                {customer.Full_Name}
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-24 text-sm">Email:</span>
+                    <span className="font-medium text-xs">
+                      {customer.Email}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-24 text-sm">Phone:</span>
+                    <span className="font-medium text-xs">
+                      {customer.Mobile_No}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-24 text-sm">Status:</span>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        customer.Status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {customer.Status}
+                    </span>
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-24 text-sm">Address:</span>
+                    <span className="font-medium text-xs">
+                      {customer.Address}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-24 text-sm">City:</span>
+                    <span className="font-medium text-xs">{customer.City}</span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-24 text-sm">Country:</span>
+                    <span className="font-medium text-xs">
+                      {customer.Country}
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
           </div>
           {/* Orders Section */}
-
           <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4 md:p-6 mb-6 w-285">
-            <h4 className="font-bold text-[#1D372E] text-base mb-4">Orders Details</h4>
-            {history.orders.length > 0 ? (
-              <div className="grid gap-4">
-                {history.orders.map((order) => (
-                  <div key={order.idOrder || order.id} className="bg-white rounded-lg p-4 shadow-sm w-270">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div className="flex items-center">
-                        <span className="text-gray-600 mr-2 text-sm">Order ID:</span>
-                        <span className="font-medium text-xs">{order.idOrder || order.id}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-gray-600 mr-2 text-sm">Amount:</span>
-                        <span className="font-medium text-xs">${order.Total_Amount}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-gray-600 mr-2 text-sm">Status:</span>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          order.Status === 'Delivered' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {order.Status}
-
-          <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4 md:p-6 mb-6">
-            <h4 className="font-bold text-[#1D372E] text-lg mb-4">
+            <h4 className="font-bold text-[#1D372E] text-base mb-4">
               Orders Details
             </h4>
             {history.orders.length > 0 ? (
@@ -212,47 +144,62 @@ const CustomerDetails = () => {
                 {history.orders.map((order) => (
                   <div
                     key={order.idOrder || order.id}
-                    className="bg-white rounded-lg p-4 shadow-sm"
+                    className="bg-white rounded-lg p-4 shadow-sm w-270"
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center text-gray-600">
-                        <span className="mr-2">Order ID:</span>
-                        <span className="font-medium">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex items-center">
+                        <span className="text-gray-600 mr-2 text-sm">
+                          Order ID:
+                        </span>
+                        <span className="font-medium text-xs">
                           {order.idOrder || order.id}
                         </span>
                       </div>
-                      <div className="flex items-center text-gray-600">
-                        <span className="mr-2">Amount:</span>
-                        <span className="font-medium">
+                      <div className="flex items-center">
+                        <span className="text-gray-600 mr-2 text-sm">
+                          Amount:
+                        </span>
+                        <span className="font-medium text-xs">
                           ${order.Total_Amount}
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <span className="text-gray-600 mr-2">Status:</span>
+                        <span className="text-gray-600 mr-2 text-sm">
+                          Status:
+                        </span>
                         <span
-                          className={`px-2 py-1 rounded-full text-sm ${
-                            order.Delivery_Status === "Delivered"
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            order.Status === "Delivered"
                               ? "bg-green-100 text-green-800"
                               : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
-                          {order.Delivery_Status}
-
+                          {order.Status}
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <span className="text-gray-600 mr-2 text-sm">Date And Time:</span>
-                        <span className="font-medium text-xs">{order.Date_Time}</span>
+                        <span className="text-gray-600 mr-2 text-sm">
+                          Date And Time:
+                        </span>
+                        <span className="font-medium text-xs">
+                          {order.Date_Time}
+                        </span>
                       </div>
                       {history.deliveryAddresses.length > 0 && (
                         <div className="flex items-center">
-                          <span className="text-gray-600 mr-2 text-sm">Delivery Address:</span>
-                          <span className="font-medium text-xs">{history.deliveryAddresses[0].Address}, {history.deliveryAddresses[0].City}, {history.deliveryAddresses[0].Country}</span>
+                          <span className="text-gray-600 mr-2 text-sm">
+                            Delivery Address:
+                          </span>
+                          <span className="font-medium text-xs">
+                            {history.deliveryAddresses[0].Address},{" "}
+                            {history.deliveryAddresses[0].City},{" "}
+                            {history.deliveryAddresses[0].Country}
+                          </span>
                         </div>
                       )}
                       <div className="flex items-center">
-                        <button 
-                          onClick={() => handleEyeClick(order)} 
+                        <button
+                          onClick={() => handleEyeClick(order)}
                           className="text-[#5CAF90] hover:text-[#4a9277] ml-4"
                           title="View Order Details"
                         >
@@ -264,50 +211,16 @@ const CustomerDetails = () => {
                 ))}
               </div>
             ) : (
-
-              <p className="text-gray-600 text-center py-4 text-lg">No orders found for this customer.</p>
-
-              <p className="text-gray-600 text-center py-4">
+              <p className="text-gray-600 text-center py-4 text-lg">
                 No orders found for this customer.
               </p>
-
             )}
           </div>
 
           {/* Delivery Addresses Section */}
           {history.deliveryAddresses.length > 0 ? (
-
             <div className="grid gap-4 md:grid-cols-2">
               {/* You can expand this section later if needed */}
-
-            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4 md:p-6">
-              <h4 className="font-bold text-[#1D372E] text-lg mb-4">
-                Delivery Addresses
-              </h4>
-              <div className="grid gap-4 md:grid-cols-2">
-                {history.deliveryAddresses.map((address) => (
-                  <div
-                    key={address.id || address.AddressID}
-                    className="bg-white rounded-lg p-4 shadow-sm"
-                  >
-                    <div className="space-y-2 text-gray-600">
-                      <p className="flex items-center">
-                        <span className="w-20">Address:</span>
-                        <span className="font-medium">{address.Address}</span>
-                      </p>
-                      <p className="flex items-center">
-                        <span className="w-20">City:</span>
-                        <span className="font-medium">{address.City}</span>
-                      </p>
-                      <p className="flex items-center">
-                        <span className="w-20">Country:</span>
-                        <span className="font-medium">{address.Country}</span>
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
             </div>
           ) : (
             <p className="text-gray-600 text-center py-4">
