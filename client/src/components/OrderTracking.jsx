@@ -1,19 +1,19 @@
 import React from "react";
 import { FaSearch } from "react-icons/fa";
 import { useParams } from "react-router-dom";
-import { products } from "./Products";
+import allProducts from "./Products";
 import Map from "../assets/map.png";
 import OrderDetails from "./OrderDetails";
 
 const OrderTracking = () => {
   const { id } = useParams();
-  console.log(products.filter(x => x.orderId == id))
+  console.log(allProducts.filter(x => x.orderId == id))
   // Sample order with multiple products (in a real app, this would come from an API)
   const order = {
     orderNo: id,
     deliveryDate: "2025/01/24",
     address: "106/A, Piliyandala, Moratuwa",
-    items: products.filter(x => x.orderId == id),
+    items: allProducts.filter(x => x.orderId == id),
     // [
     //   {
     //     ...products[0],

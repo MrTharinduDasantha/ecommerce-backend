@@ -46,7 +46,6 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/seasonal-offers" element={<SeasonalOffers />} />
-        <Route path="/ramadan" element={<SeasonalOffers />} />
         <Route path="/for-you" element={<ForYou />} />
         <Route path="/on-sale" element={<OnSale />} />
         <Route path="/AllCategories" element={<AllCategories />} />
