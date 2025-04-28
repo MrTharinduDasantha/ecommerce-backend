@@ -21,13 +21,9 @@ import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
 import AdminLogs from "./components/AdminLogs";
 import CustomerDetails from "./components/CustomerDetails";
-
-import LogDetails from "./components/LogDetails"; 
-import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
-
 import LogDetails from "./components/LogDetails";
+import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
 import NotificationPage from "./components/NotificationPage";
-
 
 const App = () => {
   return (
@@ -82,15 +78,17 @@ const App = () => {
           <Route path="settings" element={<Settings />} />
           <Route path="orders" element={<OrderList />} />
           <Route path="orders/:orderId" element={<OrderDetails />} />
-          <Route path="customer/view-customer/:id" element={<CustomerDetails />} />
-          <Route path="customer/order-details/:orderId" element={<CustomerorderDetailsPage />} />
+          <Route
+            path="customer/view-customer/:id"
+            element={<CustomerDetails />}
+          />
+          <Route
+            path="customer/order-details/:orderId"
+            element={<CustomerorderDetailsPage />}
+          />
           <Route path="log/view-adminlogs/:id" element={<LogDetails />} />
-
           <Route path="order/view-adminlogs/:id" element={<LogDetails />} />
-
-
           <Route path="notifications" element={<NotificationPage />} />
-
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
