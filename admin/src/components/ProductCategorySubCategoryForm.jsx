@@ -271,6 +271,7 @@ const ProductCategorySubCategoryForm = () => {
                   onChange={handleCategoryImageChange}
                   ref={categoryImageRef}
                   className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  accept="image/*"
                 />
                 {categoryImagePreview && (
                   <div className="relative mt-2 w-24 h-24 rounded-lg overflow-hidden">

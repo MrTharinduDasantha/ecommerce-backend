@@ -270,6 +270,18 @@ export const updateProduct = async (id, formData) => {
   }
 };
 
+// Toggle product history status
+export const toggleProductHistoryStatus = async (id, historyStatus) => {
+  try {
+    const response = await api.patch(`/api/products/${id}/history-status`, {
+      historyStatus,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // Toggle product status
 export const toggleProductStatus = async (id, status) => {
   try {
