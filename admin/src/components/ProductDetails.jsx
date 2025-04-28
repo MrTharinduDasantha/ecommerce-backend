@@ -154,7 +154,7 @@ const ProductDetails = () => {
 
                   <div>
                     <h4 className="font-medium text-sm">Brand</h4>
-                    <p className="mt-1">{product.Brand_Name}</p>
+                    <p className="mt-1">{product.Brand_Name || "Other"}</p>
                   </div>
 
                   <div>

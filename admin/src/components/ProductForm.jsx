@@ -161,7 +161,11 @@ const ProductForm = () => {
           const product = data.product;
           // Set product fields
           setDescription(product.Description);
-          setSelectedBrand(product.Product_Brand_idProduct_Brand);
+          setSelectedBrand(
+            product.Product_Brand_idProduct_Brand
+              ? product.Product_Brand_idProduct_Brand
+              : "other"
+          );
           setMarketPrice(product.Market_Price);
           setSellingPrice(product.Selling_Price);
           setSubDescription(product.Long_Description);
@@ -517,7 +521,7 @@ const ProductForm = () => {
       variations.some((v) => !v.quantity)
     ) {
       toast.error(
-        "Please fill all required fields: Main Description, Brand, Market Price, Selling Price, Sub Categories, Main Image, and Quantity"
+        "Main Description, Brand, Market Price, Selling Price, Sub Categories, Main Image, and Quantity are required"
       );
       return;
     }
@@ -528,7 +532,9 @@ const ProductForm = () => {
       // Build FormData
       const formData = new FormData();
       formData.append("Description", description);
-      formData.append("Product_Brand_idProduct_Brand", selectedBrand);
+      if (selectedBrand !== "other") {
+        formData.append("Product_Brand_idProduct_Brand", selectedBrand);
+      }
       formData.append("Market_Price", marketPrice);
       formData.append("Selling_Price", sellingPrice);
       formData.append("Long_Description", subDescription);
@@ -661,22 +667,31 @@ const ProductForm = () => {
                   <div className="flex gap-2 text-[#1D372E]">
                     <Select
                       value={
-                        brands
-                          .map((brand) => ({
-                            value: brand.idProduct_Brand,
-                            label: brand.Brand_Name,
-                          }))
-                          .find((option) => option.value === selectedBrand) ||
-                        null
+                        selectedBrand === "other"
+                          ? { value: "other", label: "Other" }
+                          : brands
+                              .map((brand) => ({
+                                value: brand.idProduct_Brand,
+                                label: brand.Brand_Name,
+                              }))
+                              .find(
+                                (option) => option.value === selectedBrand
+                              ) || null
                       }
-                      onChange={(selected) => setSelectedBrand(selected.value)}
-                      options={brands.map((brand) => ({
-                        value: brand.idProduct_Brand,
-                        label: brand.Brand_Name,
-                      }))}
+                      onChange={(selected) =>
+                        setSelectedBrand(selected ? selected.value : null)
+                      }
+                      options={[
+                        { value: "other", label: "Other" },
+                        ...brands.map((brand) => ({
+                          value: brand.idProduct_Brand,
+                          label: brand.Brand_Name,
+                        })),
+                      ]}
                       styles={customStyles}
                       placeholder="Select Brand"
                       className="flex-1"
+                      isClearable={false}
                     />
                     <button
                       type="button"
@@ -827,6 +842,7 @@ const ProductForm = () => {
                     onChange={handleMainImageChange}
                     ref={mainImageRef}
                     className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    accept="image/*"
                   />
                   {mainImagePreview && (
                     <div className="relative mt-2 w-24 h-24 rounded-lg overflow-hidden">
@@ -857,6 +873,7 @@ const ProductForm = () => {
                     onChange={handleSubImagesChange}
                     ref={subImagesRef}
                     className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    accept="image/*"
                   />
                   {subImagesPreview.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -1235,7 +1252,7 @@ const ProductForm = () => {
               {newBrandImagePreview && (
                 <div className="relative mt-2 w-24 h-24 border border-base-300 rounded-lg overflow-hidden">
                   <img
-                    src={newBrandImagePreview || "/placeholder.svg"}
+                    src={newBrandImagePreview}
                     alt="Brand Preview"
                     className="object-cover w-full h-full"
                   />

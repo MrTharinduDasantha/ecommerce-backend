@@ -48,31 +48,30 @@ const LogDetails = () => {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex items-center gap-2">
-
             <div className="w-1 h-5 bg-[#5CAF90]"></div>
             <h2 className="text-base font-bold text-[#1D372E]">Admin Action</h2>
-
-            <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-xl font-bold text-[#1D372E]">Admin Action</h2>
-
           </div>
         </div>
         <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
           <div className="flex items-center gap-2 mb-6">
             <div className="w-1 h-5 bg-[#EAFFF7]"></div>
-            <h3 className=" text-base font-semibold text-[#1D372E]">Admin Information</h3>
+            <h3 className=" text-base font-semibold text-[#1D372E]">
+              Admin Information
+            </h3>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-gray-600 p-2">
               Admin Name:{" "}
-              <span className="font-medium p-2 text-xs">{log.Admin_Name || "N/A"}</span>
+              <span className="font-medium p-2 text-xs">
+                {log.Admin_Name || "N/A"}
+              </span>
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-gray-600 p-2">
               Action:
               <span
-                className={`items-center px-2.5 py-0.5 rounded-full w-45 text-sm font-medium p-2 text-xs ${getActionStyle(
+                className={`items-center px-2.5 py-0.5 rounded-full w-45 font-medium p-2 text-xs ${getActionStyle(
                   log.action
                 )}`}
               >
@@ -112,16 +111,11 @@ const LogDetails = () => {
                   <div className="grid grid-cols-1 gap-4">
                     {/* Basic Product Information */}
                     <div className="p-3 border border-[#E5E7EB] rounded-md">
-
                       <h4 className=" font-medium text-[#1D372E] mb-2 text-sm">
-
-                      <h4 className="font-medium text-[#1D372E] mb-2">
-
                         Basic Information
                       </h4>
                       {Object.entries(details)
                         .filter(
-
                           ([key]) =>
                             ![
                               "variations",
@@ -130,9 +124,6 @@ const LogDetails = () => {
                               "sub_categories",
                               "main_image",
                             ].includes(key)
-
-                          ([key]) => !["variations", "faqs"].includes(key)
-
                         )
                         .map(([key, value]) => (
                           <div key={key} className="mb-2 text-[#1D372E]">
@@ -148,7 +139,6 @@ const LogDetails = () => {
                         ))}
                     </div>
 
-
                     {/* Images Section */}
                     {(details.main_image || details.sub_images?.length > 0) && (
                       <div className="p-3 border border-[#E5E7EB] rounded-md">
@@ -161,7 +151,9 @@ const LogDetails = () => {
                           ) : (
                             <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                           )}
-                          <h4 className="font-medium text-[#1D372E] text-sm">Images</h4>
+                          <h4 className="font-medium text-[#1D372E] text-sm">
+                            Images
+                          </h4>
                         </div>
                         {isSectionExpanded("createdImages") && (
                           <div className="mt-2">
@@ -236,16 +228,18 @@ const LogDetails = () => {
                                   </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                  {details.sub_categories.map((subCat, index) => (
-                                    <tr key={index}>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                        {subCat.idSub_Category}
-                                      </td>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                        {subCat.Description}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                  {details.sub_categories.map(
+                                    (subCat, index) => (
+                                      <tr key={index}>
+                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                          {subCat.idSub_Category}
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                          {subCat.Description}
+                                        </td>
+                                      </tr>
+                                    )
+                                  )}
                                 </tbody>
                               </table>
                             </div>
@@ -253,7 +247,6 @@ const LogDetails = () => {
                         )}
                       </div>
                     )}
-
 
                     {/* Product Variations Section */}
                     {details.variations?.length > 0 && (
@@ -267,24 +260,16 @@ const LogDetails = () => {
                           ) : (
                             <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                           )}
-
                           <h4 className="font-medium text-[#1D372E] text-sm">
                             Product Variations
                           </h4>
                         </div>
-
-                          <h4 className="font-medium text-[#1D372E]">
-                            Product Variations
-                          </h4>
-                        </div>
-
                         {isSectionExpanded("createdVariations") && (
                           <div className="mt-2">
                             <div className="overflow-x-auto">
                               <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
                                 <thead className="bg-[#EAFFF7]">
                                   <tr>
-
                                     <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
                                       Color
                                     </th>
@@ -292,48 +277,15 @@ const LogDetails = () => {
                                       Size
                                     </th>
                                     <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-
-                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                      Color
-                                    </th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                      Size
-                                    </th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-
                                       Quantity
                                     </th>
                                   </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-
-                                  {details.variations.map((variation, index) => (
-                                    <tr key={index}>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                        <div className="flex items-center">
-                                          <div
-                                            className="w-4 h-4 rounded-full mr-2"
-                                            style={{
-                                              backgroundColor:
-                                                variation.colorCode,
-                                            }}
-                                          />
-                                          {variation.colorCode}
-                                        </div>
-                                      </td>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                        {variation.size}
-                                      </td>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                        {variation.quantity}
-                                      </td>
-                                    </tr>
-                                  ))}
-
                                   {details.variations.map(
                                     (variation, index) => (
                                       <tr key={index}>
-                                        <td className="px-3 py-2 whitespace-nowrap">
+                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
                                           <div className="flex items-center">
                                             <div
                                               className="w-4 h-4 rounded-full mr-2"
@@ -345,16 +297,15 @@ const LogDetails = () => {
                                             {variation.colorCode}
                                           </div>
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap">
+                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
                                           {variation.size}
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap">
+                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
                                           {variation.quantity}
                                         </td>
                                       </tr>
                                     )
                                   )}
-
                                 </tbody>
                               </table>
                             </div>
@@ -375,16 +326,10 @@ const LogDetails = () => {
                           ) : (
                             <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                           )}
-
                           <h4 className="font-medium text-[#1D372E] text-sm">
                             Product FAQs
                           </h4>
                         </div>
-
-                          <h4 className="font-medium text-[#1D372E]">
-                            Product FAQs
-                          </h4>
-                        </div
                         {isSectionExpanded("createdFaqs") && (
                           <div className="mt-2 space-y-3">
                             {details.faqs.map((faq, index) => (
@@ -392,17 +337,10 @@ const LogDetails = () => {
                                 key={index}
                                 className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
                               >
-
                                 <h5 className="font-medium text-[#1D372E] mb-1 text-xs">
                                   Q: {faq.question}
                                 </h5>
-                                <p className="text-sm text-gray-600 text-xs">
-
-                                <h5 className="font-medium text-[#1D372E] mb-1">
-                                  Q: {faq.question}
-                                </h5>
-                                <p className="text-sm text-gray-600">
-
+                                <p className="text-gray-600 text-xs">
                                   A: {faq.answer}
                                 </p>
                               </div>
@@ -482,23 +420,10 @@ const LogDetails = () => {
                         onClick={() => toggleSection("imageChanges")}
                       >
                         {isSectionExpanded("imageChanges") ? (
-
-                {/* Update Product with special handling for variations and FAQs */}
-                {log.action === "Updated product" ? (
-                  <div className="space-y-4">
-                    {/* Basic Info Changes */}
-                    <div className="bg-white p-4 rounded-lg">
-                      <div
-                        className="flex items-center cursor-pointer mb-3"
-                        onClick={() => toggleSection("basicChanges")}
-                      >
-                        {isSectionExpanded("basicChanges") ? (
-
                           <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         )}
-
                         <h4 className="font-medium text-[#1D372E] text-sm">
                           Images
                         </h4>
@@ -558,219 +483,11 @@ const LogDetails = () => {
                           <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
-
-                        <h4 className="font-medium text-[#1D372E]">
-                          Basic Information Changes
-                        </h4>
-                      </div>
-
-                      {isSectionExpanded("basicChanges") && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-white p-3 border border-[#E5E7EB] rounded-md">
-                            <h5 className="text-sm font-medium text-gray-600 mb-3">
-                              Original Data
-                            </h5>
-                            {Object.entries(details.originalData || {})
-                              .filter(
-                                ([key]) =>
-                                  ![
-                                    "variations",
-                                    "sub_images",
-                                    "faqs",
-                                  ].includes(key)
-                              )
-                              .map(([key, value]) => (
-                                <div key={key} className="mb-2 text-[#1D372E]">
-                                  <span className="text-sm font-medium capitalize">
-                                    {key}:{" "}
-                                  </span>
-                                  <span className="text-sm">
-                                    {typeof value === "object"
-                                      ? JSON.stringify(value)
-                                      : value}
-                                  </span>
-                                </div>
-                              ))}
-                          </div>
-                          <div className="bg-white p-3 border border-[#E5E7EB] rounded-md">
-                            <h5 className="text-sm font-medium text-gray-600 mb-3">
-                              Updated Data
-                            </h5>
-                            {Object.entries(details.updatedData || {})
-                              .filter(
-                                ([key]) =>
-                                  ![
-                                    "variations",
-                                    "sub_images",
-                                    "faqs",
-                                  ].includes(key)
-                              )
-                              .map(([key, value]) => {
-                                const originalValue =
-                                  details.originalData?.[key];
-                                const isDifferent = originalValue !== value;
-                                return (
-                                  <div
-                                    key={key}
-                                    className={`mb-2 ${
-                                      isDifferent
-                                        ? "bg-red-100 text-[#1D372E] p-1 rounded"
-                                        : ""
-                                    }`}
-                                  >
-                                    <span className="text-sm text-[#1D372E] font-medium capitalize">
-                                      {key}:{" "}
-                                    </span>
-                                    <span className="text-sm text-[#1D372E]">
-                                      {typeof value === "object"
-                                        ? JSON.stringify(value)
-                                        : value}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Variations Changes */}
-                    {(details.originalData?.variations ||
-                      details.updatedData?.variations) && (
-                      <div className="bg-white p-4 rounded-lg">
-                        <div
-                          className="flex items-center cursor-pointer mb-3"
-                          onClick={() => toggleSection("variationChanges")}
-                        >
-                          {isSectionExpanded("variationChanges") ? (
-                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
-                          )}
-                          <h4 className="font-medium text-[#1D372E]">
-                            Product Variations Changes
-                          </h4>
-                        </div>
-
-                        {isSectionExpanded("variationChanges") && (
-                          <div className="grid grid-cols-1 gap-4">
-                            {/* Original Variations */}
-                            {details.originalData?.variations && (
-                              <div className="p-3 border border-[#E5E7EB] rounded-md">
-                                <h5 className="text-sm font-medium text-gray-600 mb-3">
-                                  Original Variations
-                                </h5>
-                                <div className="overflow-x-auto">
-                                  <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
-                                    <thead className="bg-[#EAFFF7]">
-                                      <tr>
-                                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                          Color
-                                        </th>
-                                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                          Size
-                                        </th>
-                                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                          Quantity
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                      {details.originalData.variations.map(
-                                        (variation, index) => (
-                                          <tr key={index}>
-                                            <td className="px-3 py-2 whitespace-nowrap">
-                                              <div className="flex items-center">
-                                                <div
-                                                  className="w-4 h-4 rounded-full mr-2"
-                                                  style={{
-                                                    backgroundColor:
-                                                      variation.Colour ||
-                                                      variation.colorCode,
-                                                  }}
-                                                />
-                                                {variation.Colour ||
-                                                  variation.colorCode}
-                                              </div>
-                                            </td>
-                                            <td className="px-3 py-2 whitespace-nowrap">
-                                              {variation.Size || variation.size}
-                                            </td>
-                                            <td className="px-3 py-2 whitespace-nowrap">
-                                              {variation.Qty ||
-                                                variation.quantity}
-                                            </td>
-                                          </tr>
-                                        )
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Updated Variations */}
-                            {details.updatedData?.variations && (
-                              <div className="p-3 border border-[#E5E7EB] rounded-md">
-                                <h5 className="text-sm font-medium text-gray-600 mb-3">
-                                  Updated Variations
-                                </h5>
-                                <div className="overflow-x-auto">
-                                  <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
-                                    <thead className="bg-[#EAFFF7]">
-                                      <tr>
-                                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                          Color
-                                        </th>
-                                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                          Size
-                                        </th>
-                                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                          Quantity
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                      {details.updatedData.variations.map(
-                                        (variation, index) => (
-                                          <tr key={index}>
-                                            <td className="px-3 py-2 whitespace-nowrap">
-                                              <div className="flex items-center">
-                                                <div
-                                                  className="w-4 h-4 rounded-full mr-2"
-                                                  style={{
-                                                    backgroundColor:
-                                                      variation.Colour ||
-                                                      variation.colorCode,
-                                                  }}
-                                                />
-                                                {variation.Colour ||
-                                                  variation.colorCode}
-                                              </div>
-                                            </td>
-                                            <td className="px-3 py-2 whitespace-nowrap">
-                                              {variation.Size || variation.size}
-                                            </td>
-                                            <td className="px-3 py-2 whitespace-nowrap">
-                                              {variation.Qty ||
-                                                variation.quantity}
-                                            </td>
-                                          </tr>
-                                        )
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
                         )}
                         <h4 className="font-medium text-[#1D372E] text-sm">
                           Subcategories
                         </h4>
                       </div>
-
                       {isSectionExpanded("subCategoryChanges") && (
                         <div className="p-3 border border-[#E5E7EB] rounded-md">
                           <div className="overflow-x-auto">
@@ -800,81 +517,6 @@ const LogDetails = () => {
                                 )}
                               </tbody>
                             </table>
-
-                    )}
-
-                    {/* FAQs Changes */}
-                    {(details.originalData?.faqs ||
-                      details.updatedData?.faqs) && (
-                      <div className="bg-white p-4 rounded-lg">
-                        <div
-                          className="flex items-center cursor-pointer mb-3"
-                          onClick={() => toggleSection("faqChanges")}
-                        >
-                          {isSectionExpanded("faqChanges") ? (
-                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
-                          )}
-                          <h4 className="font-medium text-[#1D372E]">
-                            FAQ Changes
-                          </h4>
-                        </div>
-
-                        {isSectionExpanded("faqChanges") && (
-                          <div className="grid grid-cols-1 gap-4">
-                            {/* Original FAQs */}
-                            {details.originalData?.faqs && (
-                              <div className="p-3 border border-[#E5E7EB] rounded-md">
-                                <h5 className="text-sm font-medium text-gray-600 mb-3">
-                                  Original FAQs
-                                </h5>
-                                <div className="space-y-3">
-                                  {details.originalData.faqs.map(
-                                    (faq, index) => (
-                                      <div
-                                        key={index}
-                                        className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
-                                      >
-                                        <h6 className="font-medium text-[#1D372E] mb-1">
-                                          Q: {faq.Question || faq.question}
-                                        </h6>
-                                        <p className="text-sm text-gray-600">
-                                          A: {faq.Answer || faq.answer}
-                                        </p>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Updated FAQs */}
-                            {details.updatedData?.faqs && (
-                              <div className="p-3 border border-[#E5E7EB] rounded-md">
-                                <h5 className="text-sm font-medium text-gray-600 mb-3">
-                                  Updated FAQs
-                                </h5>
-                                <div className="space-y-3">
-                                  {details.updatedData.faqs.map(
-                                    (faq, index) => (
-                                      <div
-                                        key={index}
-                                        className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
-                                      >
-                                        <h6 className="font-medium text-[#1D372E] mb-1">
-                                          Q: {faq.Question || faq.question}
-                                        </h6>
-                                        <p className="text-sm text-gray-600">
-                                          A: {faq.Answer || faq.answer}
-                                        </p>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
                           </div>
                         </div>
                       )}
@@ -952,7 +594,6 @@ const LogDetails = () => {
                   {/* FAQs Changes */}
                   {details.updatedData?.faqs?.length > 0 && (
                     <div className="bg-white p-4 rounded-lg">
-
                       <div
                         className="flex items-center cursor-pointer mb-3"
                         onClick={() => toggleSection("faqChanges")}
@@ -977,40 +618,13 @@ const LogDetails = () => {
                                 <h6 className="font-medium text-[#1D372E] mb-1 text-xs">
                                   Q: {faq.Question || faq.question}
                                 </h6>
-                                <p className="text-sm text-gray-600 text-xs">
+                                <p className="text-gray-600 text-xs">
                                   A: {faq.Answer || faq.answer}
                                 </p>
                               </div>
                             ))}
                           </div>
                         </div>
-
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">
-                        Updated Data
-                      </h4>
-                      {Object.entries(details.updatedData || {}).map(
-                        ([key, value]) => {
-                          const originalValue = details.originalData?.[key];
-                          const isDifferent = originalValue !== value;
-                          return (
-                            <div
-                              key={key}
-                              className={`mb-2 ${
-                                isDifferent ? "bg-red-100 p-1 rounded" : ""
-                              }`}
-                            >
-                              <span className="text-sm text-[#1D372E] font-medium capitalize">
-                                {key}:{" "}
-                              </span>
-                              <span className="text-sm text-[#1D372E]">
-                                {Array.isArray(value)
-                                  ? JSON.stringify(value)
-                                  : value}
-                              </span>
-                            </div>
-                          );
-                        }
-
                       )}
                     </div>
                   )}
@@ -1026,22 +640,14 @@ const LogDetails = () => {
               <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-
                   <h3 className="font-semibold text-[#1D372E] text-base">
-
-                  <h3 className="font-semibold text-[#1D372E]">
-
                     Deleted Product Details
                   </h3>
                 </div>
                 <div className="bg-white p-4 rounded-lg">
                   {/* Basic Product Information */}
                   <div className="p-3 border border-[#E5E7EB] rounded-md mb-4">
-
                     <h4 className="font-medium text-[#1D372E] mb-2 text-sm">
-
-                    <h4 className="font-medium text-[#1D372E] mb-2">
-
                       Basic Information
                     </h4>
                     {Object.entries(details)
@@ -1062,10 +668,6 @@ const LogDetails = () => {
 
                   {/* Product Variations */}
                   {details.variations?.length > 0 && (
-
-                  {/* Product Variations if available */}
-                  {details.variations && (
-
                     <div className="p-3 border border-[#E5E7EB] rounded-md mb-4">
                       <div
                         className="flex items-center cursor-pointer"
@@ -1076,24 +678,16 @@ const LogDetails = () => {
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         )}
-
                         <h4 className="font-medium text-[#1D372E] text-sm">
                           Deleted Product Variations
                         </h4>
                       </div>
-
-                        <h4 className="font-medium text-[#1D372E]">
-                          Deleted Product Variations
-                        </h4>
-                      </div>
-
                       {isSectionExpanded("deletedVariations") && (
                         <div className="mt-2">
                           <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
                               <thead className="bg-[#EAFFF7]">
                                 <tr>
-
                                   <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
                                     Color
                                   </th>
@@ -1101,15 +695,6 @@ const LogDetails = () => {
                                     Size
                                   </th>
                                   <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-
-                                  <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                    Color
-                                  </th>
-                                  <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-                                    Size
-                                  </th>
-                                  <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">
-
                                     Quantity
                                   </th>
                                 </tr>
@@ -1131,17 +716,10 @@ const LogDetails = () => {
                                           variation.colorCode}
                                       </div>
                                     </td>
-
                                     <td className="px-3 py-2 whitespace-nowrap text-xs">
                                       {variation.Size || variation.size}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-xs">
-
-                                    <td className="px-3 py-2 whitespace-nowrap">
-                                      {variation.Size || variation.size}
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap">
-
                                       {variation.Qty || variation.quantity}
                                     </td>
                                   </tr>
@@ -1166,18 +744,10 @@ const LogDetails = () => {
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
                         )}
-
                         <h4 className="font-medium text-[#1D372E] text-sm">
                           Deleted Product FAQs
                         </h4>
                       </div>
-
-                        <h4 className="font-medium text-[#1D372E]">
-                          Deleted Product FAQs
-                        </h4>
-                      </div>
-
-
                       {isSectionExpanded("deletedFaqs") && (
                         <div className="mt-2 space-y-3">
                           {details.faqs.map((faq, index) => (
@@ -1185,14 +755,10 @@ const LogDetails = () => {
                               key={index}
                               className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
                             >
-
                               <h5 className="font-medium text-[#1D372E] mb-1 text-xs">
-
-                              <h5 className="font-medium text-[#1D372E] mb-1">
-
                                 Q: {faq.Question || faq.question}
                               </h5>
-                              <p className="text-sm text-gray-600 text-xs">
+                              <p className="text-gray-600 text-xs">
                                 A: {faq.Answer || faq.answer}
                               </p>
                             </div>
@@ -1207,25 +773,30 @@ const LogDetails = () => {
           );
         }
         // Handle Other Actions (Generic Handling)
-        else if (log.action.startsWith("Created") || log.action.startsWith("Updated") || log.action.startsWith("Deleted")) {
-          const title = {
-            "Created category": "Newly Created Category",
-            "Created product": "Newly Created Product",
-            "Created brand": "Newly Created Brand",
-            "Created subcategory": "Newly Created Subcategory",
-            "Created discount": "Newly Created Discount",
-            "Updated category": "Category Changes",
-            "Updated product": "Product Changes",
-            "Updated customer": "Customer Changes",
-            "Updated subcategory": "Subcategory Changes",
-            "Updated discount": "Discount Changes",
-            "Toggled category status": "Category Status Changes",
-            "Deleted customer": "Delete Customer Details",
-            "Deleted subcategory": "Deleted Subcategory Details",
-            "Deleted product": "Deleted Product Details",
-            "Deleted category": "Deleted Category Details",
-            "Deleted discount": "Deleted Discount Details",
-          }[log.action] || "Action Details";
+        else if (
+          log.action.startsWith("Created") ||
+          log.action.startsWith("Updated") ||
+          log.action.startsWith("Deleted")
+        ) {
+          const title =
+            {
+              "Created category": "Newly Created Category",
+              "Created product": "Newly Created Product",
+              "Created brand": "Newly Created Brand",
+              "Created subcategory": "Newly Created Subcategory",
+              "Created discount": "Newly Created Discount",
+              "Updated category": "Category Changes",
+              "Updated product": "Product Changes",
+              "Updated customer": "Customer Changes",
+              "Updated subcategory": "Subcategory Changes",
+              "Updated discount": "Discount Changes",
+              "Toggled category status": "Category Status Changes",
+              "Deleted customer": "Delete Customer Details",
+              "Deleted subcategory": "Deleted Subcategory Details",
+              "Deleted product": "Deleted Product Details",
+              "Deleted category": "Deleted Category Details",
+              "Deleted discount": "Deleted Discount Details",
+            }[log.action] || "Action Details";
 
           detailsContent.push(
             <div key="generic-action" className="px-1 py-5">
@@ -1237,7 +808,6 @@ const LogDetails = () => {
                 <div className="bg-white p-4 rounded-lg">
                   {details.originalData || details.updatedData ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
                       {details.updatedData && (
                         <div className="p-3 border border-[#E5E7EB] rounded-md">
                           <h5 className="text-sm font-medium text-gray-600 mb-3">
@@ -1341,7 +911,7 @@ const LogDetails = () => {
               </h3>
             </div>
             <div className="bg-white p-4 rounded-lg">
-              <p className="text-sm text-gray-600 text-xs">{log.device_info}</p>
+              <p className="text-gray-600 text-xs">{log.device_info}</p>
             </div>
           </div>
         </div>
@@ -1352,13 +922,8 @@ const LogDetails = () => {
   };
 
   return (
-
     <div className="w-315 mx-auto p-6 sm:p-6">
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-
-    <div className="w-full sm:w-500px">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-
         {getDetailsContent()}
       </div>
     </div>

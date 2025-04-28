@@ -25,13 +25,12 @@ api.interceptors.request.use((config) => {
 // --------------------------------------------
 
 // Get all categories
-
 export const getCategories = async () => {
   try {
     const response = await api.get("/api/products/categories");
-    return response.data; // This will be the array of categories with subcategories
+    return response.data;
   } catch (error) {
-    throw error.response?.data || error; // Handle errors appropriately
+    throw error.response?.data || error;
   }
 };
 
@@ -119,21 +118,9 @@ export const deleteSubCategory = async (categoryId, subId) => {
   }
 };
 
-// --------------------------
-// Product Related Api Calls
-// --------------------------
-
-// Create a new product
-export const createProduct = async (formData) => {
-  try {
-    const response = await api.post("/api/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error;
-  }
-};
+// ------------------------
+// Brand Related Api Calls
+// ------------------------
 
 // Create a new brand
 export const createBrand = async (formData) => {
@@ -183,6 +170,22 @@ export const getBrands = async () => {
   }
 };
 
+// --------------------------
+// Product Related Api Calls
+// --------------------------
+
+// Create a new product
+export const createProduct = async (formData) => {
+  try {
+    const response = await api.post("/api/products", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // Get all products
 export const getProducts = async () => {
   try {
@@ -199,6 +202,27 @@ export const getProduct = async (id) => {
     const response = await api.get(`/api/products/${id}`);
     return response.data;
   } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// Get total number of products
+export const getProductTotal = async () => {
+  try {
+    const response = await api.get("/api/products/count");
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// Get top sold products
+export const getTopSoldProducts = async (limit = 5) => {
+  try {
+    const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top sold products:", error);
     throw error.response?.data || error;
   }
 };
@@ -242,6 +266,18 @@ export const updateProduct = async (id, formData) => {
     return response.data;
   } catch (error) {
     console.error("Update product error:", error.response || error);
+    throw error.response?.data || error;
+  }
+};
+
+// Toggle product history status
+export const toggleProductHistoryStatus = async (id, historyStatus) => {
+  try {
+    const response = await api.patch(`/api/products/${id}/history-status`, {
+      historyStatus,
+    });
+    return response.data;
+  } catch (error) {
     throw error.response?.data || error;
   }
 };
@@ -332,25 +368,5 @@ export const deleteDiscount = async (id) => {
     return response.data;
   } catch (error) {
     throw error.response.data;
-  }
-};
-// Add this function to your API calls file
-export const getProductTotal = async () => {
-  try {
-    const response = await api.get("/api/products/count"); // Ensure the endpoint matches your backend
-    return response.data; // Return data as needed
-  } catch (error) {
-    throw error.response?.data || error; // Handle errors appropriately
-  }
-};
-
-// Add this function to your existing product.js file
-export const getTopSoldProducts = async (limit = 5) => {
-  try {
-    const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching top sold products:", error);
-    throw error.response?.data || error;
   }
 };
