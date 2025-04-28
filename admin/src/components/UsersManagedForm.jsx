@@ -138,7 +138,7 @@ const UsersManagedForm = () => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6">
           <div className="flex items-center gap-2">
             <div className="w-1 h-5 bg-[#5CAF90]"></div>
-            <h2 className="text-base  font-bold text-[#1D372E]">Admin Details</h2>
+            <h2 className="text-base font-bold text-[#1D372E]">Admin Details</h2>
           </div>
           <button
             onClick={handleAddUser}
@@ -173,12 +173,12 @@ const UsersManagedForm = () => {
               <table className="table min-w-[700px] text-center border border-[#B7B7B7]">
                 <thead className="bg-[#EAFFF7] text-[#1D372E]">
                   <tr className="border-b border-[#B7B7B7]">
-                    <th className="font-semibold p-3 w-[20%]">Name</th>
-                    <th className="font-semibold p-3 w-[20%]">Email</th>
-                    <th className="font-semibold p-3 w-[20%]">Phone</th>
-                    <th className="font-semibold p-3 w-[20%]">Status</th>
-                    <th className="font-semibold p-3 w-[20%]">Created At</th>
-                    <th className="font-semibold p-3 w-[20%]">Updated At</th>
+                    <th className="font-semibold py-2 px-3 text-xs">Name</th>
+                    <th className="font-semibold py-2 px-3 text-xs">Email</th>
+                    <th className="font-semibold py-2 px-3 text-xs">Phone</th>
+                    <th className="font-semibold py-2 px-3 text-xs">Status</th>
+                    <th className="font-semibold py-2 px-3 text-xs">Created At</th>
+                    <th className="font-semibold py-2 px-3 text-xs">Updated At</th>
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
@@ -187,10 +187,10 @@ const UsersManagedForm = () => {
                       key={user.idUser}
                       className="border-b border-[#B7B7B7] bg-[#F7FDFF]"
                     >
-                      <td className="p-5 text-xs">{user.Full_Name}</td>
-                      <td className="p-5 text-xs">{user.Email}</td>
-                      <td className="p-5 text-xs">{user.Phone_No}</td>
-                      <td className="p-5 text-xs">
+                      <td className="py-2 px-3 text-xs">{user.Full_Name}</td>
+                      <td className="py-2 px-3 text-xs">{user.Email}</td>
+                      <td className="py-2 px-3 text-xs">{user.Phone_No}</td>
+                      <td className="py-2 px-3 text-xs">
                         <span
                           className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                             user.Status === "Active"
@@ -201,30 +201,32 @@ const UsersManagedForm = () => {
                           {user.Status}
                         </span>
                       </td>
-                      <td className="p-5 text-xs">
+                      <td className="py-2 px-3 text-xs">
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
-                      <td className="p-5 text-xs">{new Date(user.updated_at).toLocaleDateString()}</td>
+                      <td className="py-2 px-3 text-xs">
+                        {new Date(user.updated_at).toLocaleDateString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="sm:hidden space-y-4">
+            <div className="sm:hidden space-y-3">
               {filteredUsers.map((user) => (
                 <div
                   key={user.idUser}
-                  className="bg-[#F7FDFF] p-4 rounded-lg border border-[#B7B7B7]"
+                  className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
                 >
-                  <div className="flex justify-between items-start mb-3">
+                  <div className="flex justify-between items-start mb-2">
                     <div className="space-y-1">
-                      <div className="font-medium text-[#1D372E]">
+                      <div className="font-medium text-[#1D372E] text-xs">
                         {user.Full_Name}
                       </div>
-                      <div className="text-sm text-gray-600">{user.Email}</div>
+                      <div className="text-xs text-gray-600">{user.Email}</div>
                     </div>
                     <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300  ${
+                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                         user.Status === "Active"
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
@@ -233,7 +235,7 @@ const UsersManagedForm = () => {
                       {user.Status}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600 mb-2">
+                  <div className="text-xs text-gray-600 mb-2">
                     {user.Phone_No}
                   </div>
                   <div className="text-xs text-gray-500 space-y-1">

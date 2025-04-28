@@ -590,11 +590,11 @@ async function getProductCount() {
 // Get top sold products
 async function getProductsSoldQty() {
   const query = `
-    SELECT idProduct, Description, Sold_Qty
+    SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty
     FROM Product
     WHERE Sold_Qty > 0
     ORDER BY Sold_Qty DESC
-    LIMIT 5
+    LIMIT 6
   `;
   console.log("Executing getProductsSoldQty query");
   const [products] = await pool.query(query);

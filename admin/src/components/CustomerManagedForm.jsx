@@ -3,14 +3,14 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FaEye, FaEdit, FaSearch, FaHistory } from "react-icons/fa";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import * as api from "../api/customer"; // Adjust the import path as necessary
+import { useNavigate } from "react-router-dom";
+import * as api from "../api/customer";
 
 const CustomerManagedForm = () => {
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Use useNavigate hook for navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCustomers();
@@ -29,8 +29,8 @@ const CustomerManagedForm = () => {
   };
 
   const handleViewDetails = (customerId) => {
-    console.log("Viewing details for customer ID:", customerId); // Debugging line
-    navigate(`/dashboard/customer/view-customer/${customerId}`); // Navigate to detail view
+    console.log("Viewing details for customer ID:", customerId);
+    navigate(`/dashboard/customer/view-customer/${customerId}`);
   };
 
   const handleEdit = (customerId) => {
@@ -47,31 +47,21 @@ const CustomerManagedForm = () => {
           <div class="space-y-4 mt-6">
             <div>
               <label class="block text-sm font-medium text-left mb-2">Customer Name:</label>
-              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${
-                customer.Full_Name || ""
-              }" placeholder="Enter Name" />
+              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${customer.Full_Name || ""}" placeholder="Enter Name" />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Customer Email:</label>
-              <input id="email" type="email" class="w-full px-3 py-2 border rounded-md" value="${
-                customer.Email || ""
-              }" placeholder="Enter Email" />
+              <input id="email" type="email" class="w-full px-3 py-2 border rounded-md" value="${customer.Email || ""}" placeholder="Enter Email" />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
-              <input id="phone" type="tel" class="w-full px-3 py-2 border rounded-md" value="${
-                customer.Mobile_No || ""
-              }" placeholder="Enter Phone Number" />
+              <input id="phone" type="tel" class="w-full px-3 py-2 border rounded-md" value="${customer.Mobile_No || ""}" placeholder="Enter Phone Number" />
             </div>
             <div>
               <label class="block text-sm font-medium text-left mb-2">Status:</label>
               <select id="status" class="w-full px-3 py-2 border rounded-md">
-                <option value="Active" ${
-                  customer.Status === "Active" ? "selected" : ""
-                }>Active</option>
-                <option value="Inactive" ${
-                  customer.Status === "Inactive" ? "selected" : ""
-                }>Inactive</option>
+                <option value="Active" ${customer.Status === "Active" ? "selected" : ""}>Active</option>
+                <option value="Inactive" ${customer.Status === "Inactive" ? "selected" : ""}>Inactive</option>
               </select>
             </div>
           </div>
@@ -125,7 +115,6 @@ const CustomerManagedForm = () => {
               c.idCustomer === customerId ? { ...c, ...updatedCustomer } : c
             )
           );
-
           toast.success("Customer updated successfully");
         } catch (error) {
           console.error("Error updating customer:", error);
@@ -241,7 +230,7 @@ const CustomerManagedForm = () => {
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4 md:p-6">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-5 bg-[#5CAF90]"></div>
-          <h2 className="text-base  font-bold text-[#1D372E]">Customer Details</h2>
+          <h2 className="text-base font-bold text-[#1D372E]">Customer Details</h2>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 mb-6">
           <div className="relative flex w-full md:max-w-xl md:mx-auto">
@@ -266,14 +255,14 @@ const CustomerManagedForm = () => {
             <table className="table min-w-[700px] text-center border border-[#B7B7B7]">
               <thead className="bg-[#EAFFF7] text-[#1D372E]">
                 <tr className="border-b border-[#B7B7B7]">
-                  <th className="font-semibold p-3 w-[20%] text-sm">ID</th>
-                  <th className="font-semibold p-3 w-[50%] text-sm">Name</th>
-                  <th className="font-semibold p-3 w-[50%] text-sm">Email</th>
-                  <th className="font-semibold p-3 w-[20%] text-sm">Phone</th>
-                  <th className="font-semibold p-3 w-[20%] text-sm">Status</th>
-                  <th className="font-semibold p-3 w-[20%] text-sm">Created</th>
-                  <th className="font-semibold p-3 w-[20%] text-sm">Updated</th>
-                  <th className="font-semibold p-3 w-[10%] text-sm">Actions</th>
+                  <th className="py-2 px-3 font-semibold text-xs">ID</th>
+                  <th className="py-2 px-3 font-semibold text-xs">Name</th>
+                  <th className="py-2 px-3 font-semibold text-xs">Email</th>
+                  <th className="py-2 px-3 font-semibold text-xs">Phone</th>
+                  <th className="py-2 px-3 font-semibold text-xs">Status</th>
+                  <th className="py-2 px-3 font-semibold text-xs">Created</th>
+                  <th className="py-2 px-3 font-semibold text-xs">Updated</th>
+                  <th className="py-2 px-3 font-semibold text-xs">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-[#1D372E]">
@@ -282,11 +271,11 @@ const CustomerManagedForm = () => {
                     key={customer.idCustomer}
                     className="border-b border-[#B7B7B7] bg-[#F7FDFF]"
                   >
-                    <td className="p-5 text-xs">{customer.idCustomer}</td>
-                    <td className="p-5 text-xs">{customer.Full_Name}</td>
-                    <td className="p-5 text-xs">{customer.Email}</td>
-                    <td className="p-5 text-xs">{customer.Mobile_No}</td>
-                    <td className="p-5 text-xs">
+                    <td className="py-2 px-3 text-xs">{customer.idCustomer}</td>
+                    <td className="py-2 px-3 text-xs">{customer.Full_Name}</td>
+                    <td className="py-2 px-3 text-xs">{customer.Email}</td>
+                    <td className="py-2 px-3 text-xs">{customer.Mobile_No}</td>
+                    <td className="py-2 px-3 text-xs">
                       <span
                         className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                           customer.Status === "Active"
@@ -297,38 +286,33 @@ const CustomerManagedForm = () => {
                         {customer.Status}
                       </span>
                     </td>
-                    <td className="p-5 text-xs">
+                    <td className="py-2 px-3 text-xs">
                       {new Date(customer.created_at).toLocaleDateString()}
                     </td>
-                    <td className="p-5 text-xs">
+                    <td className="py-2 px-3 text-xs">
                       {new Date(customer.updated_at).toLocaleDateString()}
                     </td>
-                    <td className="p-5 text-xs">
-                      <div className="flex items-center space-x-3">
+                    <td className="py-2 px-3 text-xs">
+                      <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleViewDetails(customer.idCustomer)}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                           title="View Details"
                         >
-                          <FaEye />
+                          <FaEye className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => handleEdit(customer.idCustomer)}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                         >
-                          <FaEdit />
+                          <FaEdit className="w-3 h-3" />
                         </button>
-                        <button
-                          onClick={() => handleHistory(customer.idCustomer)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                        >
-                          <FaHistory />
-                        </button>
+                      
                         <button
                           onClick={() => handleDelete(customer.idCustomer)}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                         >
-                          <RiDeleteBin5Fill />
+                          <RiDeleteBin5Fill className="w-3 h-3" />
                         </button>
                       </div>
                     </td>
@@ -341,13 +325,13 @@ const CustomerManagedForm = () => {
           {/* Mobile view */}
           <div className="sm:hidden">
             {filteredCustomers.map((customer) => (
-              <div key={customer.idCustomer} className="bg-white p-4 border-b">
+              <div key={customer.idCustomer} className="bg-white p-3 border-b">
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <div className="text-sm font-medium text-gray-900">
                       {customer.Full_Name}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs text-gray-500">
                       ID: {customer.idCustomer}
                     </div>
                   </div>
@@ -361,40 +345,35 @@ const CustomerManagedForm = () => {
                     {customer.Status}
                   </span>
                 </div>
-                <div className="text-sm text-gray-500 mb-1">
+                <div className="text-xs text-gray-500 mb-1">
                   {customer.Email}
                 </div>
-                <div className="text-sm text-gray-500 mb-2">
+                <div className="text-xs text-gray-500 mb-2">
                   {customer.Mobile_No}
                 </div>
-                <div className="text-xs text-gray-400 mb-3">
+                <div className="text-xs text-gray-400 mb-2">
                   Created: {new Date(customer.created_at).toLocaleDateString()}
                 </div>
-                <div className="flex justify-end space-x-3">
+                <div className="flex justify-end space-x-2">
                   <button
                     onClick={() => handleViewDetails(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                     title="View Details"
                   >
-                    <FaEye className="w-4 h-4" />
+                    <FaEye className="w-3 h-3" />
                   </button>
                   <button
                     onClick={() => handleEdit(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                   >
-                    <FaEdit className="w-4 h-4" />
+                    <FaEdit className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={() => handleHistory(customer.idCustomer)}
-                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                  >
-                    <FaHistory className="w-4 h-4" />
-                  </button>
+                
                   <button
                     onClick={() => handleDelete(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                   >
-                    <RiDeleteBin5Fill className="w-4 h-4" />
+                    <RiDeleteBin5Fill className="w-3 h-3" />
                   </button>
                 </div>
               </div>
