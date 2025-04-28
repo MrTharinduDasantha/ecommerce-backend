@@ -25,7 +25,7 @@ import CustomerDetails from "./components/CustomerDetails";
 import LogDetails from "./components/LogDetails"; 
 import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
 
-import LogDetails from "./components/LogDetails";
+
 import NotificationPage from "./components/NotificationPage";
 
 

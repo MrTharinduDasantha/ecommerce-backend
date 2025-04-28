@@ -217,7 +217,7 @@ export const getProductTotal = async () => {
 };
 
 // Get top sold products
-export const getTopSoldProducts = async (limit = 5) => {
+export const getTopSoldProducts = async (limit = 6) => {
   try {
     const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
     return response.data;
@@ -226,6 +226,7 @@ export const getTopSoldProducts = async (limit = 5) => {
     throw error.response?.data || error;
   }
 };
+
 
 // Update a product
 export const updateProduct = async (id, formData) => {

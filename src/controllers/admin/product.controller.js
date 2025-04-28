@@ -941,7 +941,7 @@ async function getProductsSoldQty(req, res) {
   console.log("Called getProductsSoldQty");
   try {
     // Default to 5 if no limit is provided
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 6;
     if (limit < 1 || limit > 100) {
       return res
         .status(400)
@@ -949,7 +949,7 @@ async function getProductsSoldQty(req, res) {
     }
 
     const query = `
-      SELECT idProduct, Description, Sold_Qty
+      SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty
       FROM Product
       WHERE Sold_Qty > 0
       ORDER BY Sold_Qty DESC
