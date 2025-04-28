@@ -1,19 +1,9 @@
 import React, { useState } from 'react';
-import GiftBundle from '../../assets/RushDelivery/GiftBundle.jpg';
-import MacaronsTreat from '../../assets/RushDelivery/MacaronsTreat.jpg';
-import RosyTreats from '../../assets/RushDelivery/RosyTreats.jpg';
-import LovelySpringBouquet from '../../assets/RushDelivery/LovelySpringBouquet.jpg';
-import SweetDelight from '../../assets/RushDelivery/SweetDelight.jpg';
-import CartierWatch from '../../assets/RushDelivery/CartierWatch.jpg';
-import ChanelPerfume from '../../assets/RushDelivery/ChanelPerfume.jpg';
-import CupidsKissesBox from '../../assets/RushDelivery/CupidsKissesBox.jpg';
-import ReindeerCup from '../../assets/RushDelivery/ReindeerCup.jpg';
-import SummerMistBouquet from '../../assets/RushDelivery/SummerMistBouquet.jpg';
 import { useCart } from '../../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import RushDeliveryBanner from '../RushDeliveryBanner';
-import ProductCard from '../ProductCard';
+import { rushDeliveryProducts } from '../Products';
 
 const RushDelivery = () => {
   const { addToCart } = useCart();
@@ -21,13 +11,13 @@ const RushDelivery = () => {
   const [addedProducts, setAddedProducts] = useState([]);
 
   const handleProductClick = (product) => {
-    // Add the product to cart
-    addToCart(product);
-    
-    // Add to the list of added products
-    setAddedProducts(prev => [...prev, product]);
-    
-    // Show a success message or notification here if desired
+    // Navigate to product page
+    navigate(`/product-page/${product.id}`, {
+      state: { 
+        product: product,
+        source: 'rush-delivery'
+      }
+    });
   };
 
   const handleViewCart = () => {
@@ -40,94 +30,9 @@ const RushDelivery = () => {
     });
   };
 
-  const products = [
-    // First Row
-    {
-      id: 1,
-      name: 'Gift Bundle',
-      image: GiftBundle,
-      price: 'Rs. 4,000',
-      weight: '1.5 kg',
-      oldPrice: 'Rs. 5,000'
-    },
-    {
-      id: 2,
-      name: 'Macarons Treat',
-      image: MacaronsTreat,
-      price: 'Rs. 3,500',
-      weight: '500 g',
-      oldPrice: 'Rs. 4,500'
-    },
-    {
-      id: 3,
-      name: 'Rosy Treats',
-      image: RosyTreats,
-      price: 'Rs. 5,000',
-      weight: '500 g',
-      oldPrice: 'Rs. 6,000'
-    },
-    {
-      id: 4,
-      name: 'Lovely Spring Bouquet',
-      image: LovelySpringBouquet,
-      price: 'Rs. 7,500',
-      weight: '1.5 kg',
-      oldPrice: 'Rs. 8,500'
-    },
-    {
-      id: 5,
-      name: 'Sweet Delight',
-      image: SweetDelight,
-      price: 'Rs. 4,800',
-      weight: '250 g',
-      oldPrice: 'Rs. 5,800'
-    },
-    // Second Row
-    {
-      id: 6,
-      name: 'Cartier Watch',
-      image: CartierWatch,
-      price: 'Rs. 50,000',
-      weight: '450 g',
-      oldPrice: 'Rs. 55,000'
-    },
-    {
-      id: 7,
-      name: 'Chanel Perfume',
-      image: ChanelPerfume,
-      price: 'Rs. 30,000',
-      weight: '550 g',
-      oldPrice: 'Rs. 35,000'
-    },
-    {
-      id: 8,
-      name: 'Cupids Kisses Box',
-      image: CupidsKissesBox,
-      price: 'Rs. 5,000',
-      weight: '500 g',
-      oldPrice: 'Rs. 6,000'
-    },
-    {
-      id: 9,
-      name: 'Reindeer Cup',
-      image: ReindeerCup,
-      price: 'Rs. 3,500',
-      weight: '300 g',
-      oldPrice: 'Rs. 4,500'
-    },
-    {
-      id: 10,
-      name: 'Summer Mist Bouquet',
-      image: SummerMistBouquet,
-      price: 'Rs. 7,850',
-      weight: '1.5 kg',
-      oldPrice: 'Rs. 8,850'
-    }
-  ];
-
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="container mx-auto px-4 py-8 flex-grow">
+      <div className="container mx-auto px-2 py-8 flex-grow">
         <div className="flex gap-8">
           {/* Sidebar */}
           <Sidebar />
@@ -146,23 +51,57 @@ const RushDelivery = () => {
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
-              {products.map((product) => (
-                <div 
-                  key={product.id} 
-                  className="cursor-pointer hover:scale-105 hover:shadow-lg transform transition-all duration-300"
-                  onClick={() => handleProductClick(product)}
-                >
-                  <ProductCard 
-                    image={product.image}
-                    category="Rush Delivery"
-                    title={product.name}
-                    price={product.price}
-                    oldPrice={product.oldPrice}
-                    weight={product.weight}
-                  />
-                </div>
-              ))}
+
+            {/* Products Section */}
+            <div className="mt-12">
+              <h3 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-left">Products</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {rushDeliveryProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow"
+                    style={{ width: '220px', height: '290px' }}
+                    onClick={() => handleProductClick(product)}
+                  >
+                    <div className="relative">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-[220px] h-[170px] object-cover"
+                      />
+                      <span className="absolute top-4 right-3 bg-[#5CAF90] text-white text-[11.11px] px-2 py-0.5 rounded">
+                        New
+                      </span>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-[11.11px] text-gray-400 mb-1 text-[#7A7A7A] pl-4">
+                        Rush Delivery
+                      </p>
+                      <h3 className="text-[13.33px] font-medium text-gray-700 leading-snug text-[#1D372E] pl-4">
+                        {product.name}
+                      </h3>
+                      <div className="mt-2 flex items-center space-x-2">
+                        <span className="text-[16px] font-semibold text-[#5E5E5E] pl-4">
+                          Rs. {product.sellingPrice.toLocaleString()}
+                        </span>
+                        {product.marketPrice > product.sellingPrice && (
+                          <span className="text-[13.33px] text-gray-400 line-through text-[#CCCCCC]">
+                            Rs. {product.marketPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 pl-4">
+                        <span className="text-[12px] text-[#5CAF90] font-medium">
+                          {product.discountName || 'Rush Discounts'}
+                        </span>
+                        <span className="text-[12px] text-[#5CAF90] ml-2">
+                          Save Rs. {(product.marketPrice - product.sellingPrice).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

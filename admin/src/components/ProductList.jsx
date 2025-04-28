@@ -11,6 +11,7 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IoClose } from "react-icons/io5";
 import {
   getProducts,
+  toggleProductHistoryStatus,
   toggleProductStatus,
   deleteProduct,
 } from "../api/product";
@@ -75,6 +76,19 @@ const ProductList = () => {
       document.body.style.overflow = "auto";
     }
   }, [deleteProductId]);
+
+  // Toggle product history status
+  const handleToggleHistoryStatus = async (productId, currentHistoryStatus) => {
+    try {
+      const newHistoryStatus =
+        currentHistoryStatus === "new arrivals" ? "old" : "new arrivals";
+      await toggleProductHistoryStatus(productId, newHistoryStatus);
+      toast.success("Product history status updated");
+      loadProducts();
+    } catch (error) {
+      toast.error(error.message || "Failed to update product history status");
+    }
+  };
 
   // Toggle product status
   const handleToggleStatus = async (productId, currentStatus) => {
@@ -149,8 +163,8 @@ const ProductList = () => {
                 <tr className="border-b border-[#1D372E]">
                   <th className="font-semibold">Main Description</th>
                   <th className="font-semibold">Brand</th>
-                  <th className="font-semibold">Market Price</th>
                   <th className="font-semibold">Selling Price</th>
+                  <th className="font-semibold">History Status</th>
                   <th className="font-semibold">Main Image</th>
                   <th className="font-semibold">Status</th>
                   <th className="font-semibold">Actions</th>
@@ -163,9 +177,28 @@ const ProductList = () => {
                     className="border-b border-[#1D372E]"
                   >
                     <td>{product.Description}</td>
-                    <td>{product.Brand_Name}</td>
-                    <td>Rs. {product.Market_Price}</td>
+                    <td>{product.Brand_Name || "Other"}</td>
                     <td>Rs. {product.Selling_Price}</td>
+                    <td>
+                      <div className="flex items-center justify-center gap-2">
+                        <span>New Arrivals</span>
+                        <button
+                          onClick={() =>
+                            handleToggleHistoryStatus(
+                              product.idProduct,
+                              product.History_Status
+                            )
+                          }
+                          className="text-[#5CAF90]"
+                        >
+                          {product.History_Status === "new arrivals" ? (
+                            <FaCheckSquare className="w-4 h-4" />
+                          ) : (
+                            <FaRegCheckSquare className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
                     <td>
                       {product.Main_Image_Url ? (
                         <div className="avatar">
