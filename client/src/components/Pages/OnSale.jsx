@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import ProductCard from '../ProductCard';
 import OnSaleBanner from '../OnSaleBanner';
-import { onSaleProducts } from '../Products';
+import { onSaleProducts, seasonalOffersProducts, rushDeliveryProducts, ForYouProducts } from '../Products';
 
 const OnSale = () => {
   const { addToCart } = useCart();
@@ -70,24 +70,32 @@ const OnSale = () => {
             
             {/* Products Grid */}
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-              {onSaleProducts.map((product) => (
-                <div 
-                  key={product.id} 
-                  className="cursor-pointer hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                  onClick={() => handleProductClick(product)}
-                >
-                  <ProductCard 
-                    image={product.image}
-                    category={product.category}
-                    title={product.name}
-                    price={`Rs. ${product.sellingPrice.toLocaleString()}`}
-                    oldPrice={`Rs. ${product.marketPrice.toLocaleString()}`}
-                    discountName={product.discountName || 'Sale Discounts'}
-                    discountAmount={`Save Rs. ${(product.marketPrice - product.sellingPrice).toLocaleString()}`}
-                    className="h-full"
-                  />
-                </div>
-              ))}
+              {[...onSaleProducts, ...seasonalOffersProducts, ...rushDeliveryProducts, ...ForYouProducts].map((product) => {
+                const hasDiscount = product.marketPrice > product.sellingPrice;
+                return (
+                  <div 
+                    key={product.id} 
+                    className="cursor-pointer hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                    onClick={() => handleProductClick(product)}
+                  >
+                    <ProductCard 
+                      image={product.image}
+                      category={product.category}
+                      title={product.name}
+                      price={`Rs. ${product.sellingPrice.toLocaleString()}`}
+                      oldPrice={hasDiscount ? `Rs. ${product.marketPrice.toLocaleString()}` : ''}
+                      discountName={product.discountName || (
+                        product.category === 'Seasonal Offers' ? 'Seasonal Discounts' :
+                        product.category === 'Rush Delivery' ? 'Rush Discounts' :
+                        product.category === 'For You' ? 'For You Discounts' :
+                        'Sale Discounts'
+                      )}
+                      discountAmount={hasDiscount ? `Save Rs. ${(product.marketPrice - product.sellingPrice).toLocaleString()}` : ''}
+                      className="h-full"
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
