@@ -25,6 +25,15 @@ export const fetchCustomers = async () => {
   }
 };
 
+export const getCustomerById = async (id) => {
+  try {
+    const response = await api.get(`/api/customers/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
 export const deleteCustomer = async (customerId) => {
   try {
     const response = await api.delete(`/api/customers/${customerId}`);
@@ -42,12 +51,20 @@ export const updateCustomer = async (customerId, updatedCustomer) => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
 export const getCustomerHistory = async (customerId) => {
-    try {
-      const response = await api.get(`/api/customers/${customerId}/history`);
-      return response.data;
-    } catch (error) {
-      throw error.response ? error.response.data : error.message;
-    }
-  };
-  
+  try {
+    const response = await api.get(`/api/customers/${customerId}/history`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+export const fetchCustomerCount = async () => {
+  try {
+    const response = await api.get("/api/customers/count");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};

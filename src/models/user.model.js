@@ -8,6 +8,7 @@ const getAllUsers = async () => {
   return rows;
 };
 
+// Get user by ID
 const getUserById = async (id) => {
   console.log("Fetching user with ID:", id); // Log the ID being queried
   const [rows] = await pool.query("SELECT * FROM User WHERE idUser = ?", [id]);
@@ -15,7 +16,7 @@ const getUserById = async (id) => {
   return rows[0]; // Return the first row if found
 };
 
-// Add user
+// Add user to database
 const addUser = async (full_name, email, password, phone_no, status) => {
   const [result] = await pool.query(
     "INSERT INTO User (Full_Name, Email, Password, Phone_No, Status) VALUES (?, ?, ?, ?, ?)",
@@ -32,11 +33,6 @@ const updateUser = async (id, full_name, email, phone_no, status) => {
   );
 };
 
-// Delete user
-const deleteUser = async (id) => {
-  await pool.query("DELETE FROM User WHERE idUser = ?", [id]);
-};
-
 // Get user by email
 const getUserByEmail = async (email) => {
   console.log("Attempting to fetch user with email:", email); // Log the email being searched
@@ -47,7 +43,37 @@ const getUserByEmail = async (email) => {
   return rows[0]; // Return the user record
 };
 
+// Delete user
+const deleteUser = async (id) => {
+  await pool.query("DELETE FROM User WHERE idUser = ?", [id]);
+};
 
+// Save OTP for password reset
+const saveOtp = async (email, otp) => {
+  await pool.query("UPDATE User SET OTP = ? WHERE Email = ?", [otp, email]);
+};
+
+// Verify OTP for password reset
+const verifyOtp = async (email, otp) => {
+  const [rows] = await pool.query(
+    "SELECT * FROM User WHERE Email = ? AND OTP = ?",
+    [email, otp]
+  );
+  return rows[0];
+};
+
+// Clear OTP after verification
+const clearOtp = async (email) => {
+  await pool.query("UPDATE User SET OTP = NULL WHERE Email = ?", [email]);
+};
+
+// Update password
+const updatePassword = async (email, password) => {
+  await pool.query("UPDATE User SET Password = ? WHERE Email = ?", [
+    password,
+    email,
+  ]);
+};
 
 module.exports = {
   getAllUsers,
@@ -56,5 +82,8 @@ module.exports = {
   updateUser,
   getUserByEmail,
   deleteUser,
- 
+  saveOtp,
+  verifyOtp,
+  clearOtp,
+  updatePassword,
 };

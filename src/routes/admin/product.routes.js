@@ -25,7 +25,7 @@ const cpUpload = upload.fields([
 // ----------------
 // Category Routes
 // ----------------
-router.get("/categories", authenticate, productController.getAllCategories);
+router.get("/categories", productController.getAllCategories);
 router.post(
   "/categories",
   authenticate,
@@ -43,6 +43,11 @@ router.patch(
   authenticate,
   productController.toggleCategoryStatus
 );
+router.delete(
+  "/categories/:id",
+  authenticate,
+  productController.deleteCategory
+);
 
 // --------------------
 // Sub-Category Routes
@@ -52,25 +57,74 @@ router.post(
   authenticate,
   productController.createSubCategory
 );
+router.put(
+  "/categories/:id/sub-categories/:subId",
+  authenticate,
+  productController.updateSubCategory
+);
 router.delete(
   "/categories/:id/sub-categories/:subId",
   authenticate,
   productController.deleteSubCategory
 );
 
-// ---------------
-// Product Routes
-// ---------------
-router.post("/", authenticate, cpUpload, productController.createProduct);
+// -------------
+// Brand Routes
+// -------------
 router.post(
   "/brands",
   upload.single("brandImage"),
   productController.createBrand
 );
-router.get("/brands", authenticate, productController.getBrands);
+router.put(
+  "/brands/:id",
+  authenticate,
+  upload.single("brandImage"),
+  productController.updateBrand
+);
+router.delete("/brands/:id", authenticate, productController.deleteBrand);
+router.get("/brands", productController.getBrands);
+
+// ---------------
+// Product Routes
+// ---------------
+router.post("/", authenticate, cpUpload, productController.createProduct);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
-router.get("/", authenticate, productController.getAllProducts);
-router.get("/:id", authenticate, productController.getProductById);
+router.patch(
+  "/:id/status",
+  authenticate,
+  productController.toggleProductStatus
+);
+router.get("/", productController.getAllProducts);
+router.get("/count", productController.getProductTotal);
+router.get("/sold-qty", productController.getProductsSoldQty);
+router.get("/:id/sold-qty", productController.getProductSoldQty);
+router.get(
+  "/sub-categories/:subId/products",
+  productController.getProductsBySubCategory
+);
+router.get("/brands/:brandId/products", productController.getProductsByBrand);
+router.get("/:id", productController.getProductById);
 router.delete("/:id", authenticate, productController.deleteProduct);
+router.get(
+  "/sub-categories/:subId/products",
+  productController.getProductsBySubCategory
+);
+router.get("/brands/:brandId/products", productController.getProductsByBrand);
+router.get("/:id", productController.getProductById);
+router.delete("/:id", authenticate, productController.deleteProduct);
+
+// ----------------
+// Discount Routes
+// ----------------
+router.get("/discounts/all", productController.getAllDiscounts);
+router.get("/discounts/:id", productController.getDiscountById);
+router.get(
+  "/products/:productId/discounts",
+  productController.getDiscountsByProductId
+);
+router.post("/discounts", authenticate, productController.createDiscount);
+router.put("/discounts/:id", authenticate, productController.updateDiscount);
+router.delete("/discounts/:id", authenticate, productController.deleteDiscount);
 
 module.exports = router;

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -7,38 +5,44 @@ import Sidebar from "../components/Sidebar";
 
 const DashboardPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Effect to handle sidebar visibility on screen size change
+  // Handle responsive sidebar behavior
   useEffect(() => {
+    setIsMounted(true);
+
     const handleResize = () => {
-      if (window.innerWidth >= 640) {
-        setIsSidebarOpen(true);
-      } else {
+      if (window.innerWidth < 768) {
         setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
       }
     };
 
-    // Add event listener for window resize
     window.addEventListener("resize", handleResize);
-
-    // Call handleResize initially to set the correct state
     handleResize();
 
-    // Cleanup event listener on component unmount
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  if (!isMounted) {
+    return null; // Prevent layout shift during hydration
+  }
+
   return (
-    <div>
+    <div className="min-h-screen bg-[#1D372E]">
       <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar isSidebarOpen={isSidebarOpen} />
-      <div className="p-3 sm:p-4 md:p-5 lg:p-6 sm:ml-56 md:ml-60 lg:ml-64 mt-8 md:mt-9 lg:mt-12 bg-[#1D372E] min-h-screen">
-        <Outlet />
-      </div>
+
+      <main className="pt-16 md:pl-64 transition-all duration-300 ease-in-out min-h-screen">
+        <div className="p-4 md:p-6 max-w-7xl mx-auto">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 };

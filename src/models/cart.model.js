@@ -1,87 +1,450 @@
-const pool = require('../config/database');
+const pool = require("../config/database");
 
-class Cart {
-  static async findByCustomerId(customerId) {
-    const [cart] = await pool.query('SELECT * FROM Cart WHERE Customer_idCustomer = ?', [customerId]);
-    
-    if (cart.length === 0) {
-      return null;
-    }
-    
-    const [items] = await pool.query(`
-      SELECT cp.*, pv.*, p.Description as product_name 
-      FROM Cart_has_Product cp
-      JOIN Product_Variations pv ON cp.Product_Variations_idProduct_Variations = pv.idProduct_Variations
-      JOIN Product p ON pv.Product_idProduct = p.idProduct
-      WHERE cp.Cart_idCart = ?
-    `, [cart[0].idCart]);
-    
-    return { 
-      cart: cart[0], 
-      items 
-    };
-  }
+// ------------------------
+// Cart Related Functions
+// ------------------------
 
-  static async getOrCreate(customerId) {
-    const [cart] = await pool.query('SELECT * FROM Cart WHERE Customer_idCustomer = ?', [customerId]);
-    
-    if (cart.length === 0) {
-      const [newCart] = await pool.query(
-        'INSERT INTO Cart (Customer_idCustomer, Total_Items, Total_Amount) VALUES (?, ?, ?)',
-        [customerId, 0, 0]
-      );
-      
-      return newCart.insertId;
-    }
-    
-    return cart[0].idCart;
-  }
+// Create a new cart for a customer
+async function createCart(customerId) {
+  const query = `
+    INSERT INTO Cart (Customer_idCustomer, Total_Items, Total_Amount)
+    VALUES (?, 0, 0.00)
+  `;
 
-  static async addItem(cartId, productVariationId, rate, qty) {
-    const totalAmount = parseFloat(rate) * parseInt(qty);
-    
-    // Check if item already exists in cart
-    const [existingItem] = await pool.query(
-      'SELECT * FROM Cart_has_Product WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?',
-      [cartId, productVariationId]
-    );
-    
-    if (existingItem.length > 0) {
-      // Update existing item
-      await pool.query(
-        'UPDATE Cart_has_Product SET Qty = ?, Total_Amount = ? WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?',
-        [qty, totalAmount, cartId, productVariationId]
-      );
-    } else {
-      // Add new item
-      await pool.query(
-        'INSERT INTO Cart_has_Product (Cart_idCart, Product_Variations_idProduct_Variations, Rate, Qty, Total_Amount) VALUES (?, ?, ?, ?, ?)',
-        [cartId, productVariationId, rate, qty, totalAmount]
-      );
-    }
-    
-    return this.updateCartTotals(cartId);
-  }
-
-  static async updateCartTotals(cartId) {
-    // Get all items in the cart
-    const [items] = await pool.query('SELECT * FROM Cart_has_Product WHERE Cart_idCart = ?', [cartId]);
-    const totalItems = items.length;
-    const cartTotal = items.reduce((sum, item) => sum + parseFloat(item.Total_Amount || 0), 0);
-    
-    // Update cart totals
-    await pool.query(
-      'UPDATE Cart SET Total_Items = ?, Total_Amount = ? WHERE idCart = ?',
-      [totalItems, cartTotal, cartId]
-    );
-    
-    return { totalItems, cartTotal };
-  }
-
-  static async clearCart(cartId) {
-    await pool.query('DELETE FROM Cart_has_Product WHERE Cart_idCart = ?', [cartId]);
-    await pool.query('UPDATE Cart SET Total_Items = 0, Total_Amount = 0 WHERE idCart = ?', [cartId]);
-  }
+  const [result] = await pool.query(query, [customerId]);
+  return result.insertId;
 }
 
-module.exports = Cart; 
+// Get cart by customer id
+async function getCartByCustomerId(customerId) {
+  const query = `
+    SELECT * FROM Cart WHERE Customer_idCustomer = ?
+  `;
+
+  const [rows] = await pool.query(query, [customerId]);
+  if (rows.length === 0) return null;
+
+  const cart = rows[0];
+
+  // Get cart items with product details
+  const [cartItems] = await pool.query(
+    `
+      SELECT
+        cp.*,
+        pv.*,
+        p.Description as ProductName,
+        p.Main_Image_Url as ProductImage,
+        d.Discount_Value,
+        d.Dicaunt_Type as DiscountType
+      FROM Cart_has_Product cp
+      JOIN Product_Variations pv ON 
+      cp.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+      JOIN Product p ON pv.Product_idProduct = p.idProduct
+      LEFT JOIN Discounts d ON cp.Discounts_idDiscounts = d.idDiscounts
+      WHERE cp.Cart_idCart = ?
+    `,
+    [cart.idCart]
+  );
+
+  cart.items = cartItems;
+
+  return cart;
+}
+
+// Add product to cart
+async function addProductToCart(cartId, productVariationId, qty, rate) {
+  // Check if product variation exists in cart
+  const [existingItem] = await pool.query(
+    `
+      SELECT * FROM Cart_has_Product
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    `,
+    [cartId, productVariationId]
+  );
+
+  // Get product variation details to calculate amount
+  const [productVariation] = await pool.query(
+    `
+      SELECT * FROM Product_Variations WHERE idProduct_Variations = ?
+    `,
+    [productVariationId]
+  );
+
+  if (productVariation.length === 0) {
+    throw new Error("Product variation not found");
+  }
+
+  // Get product details to check for discounts
+  const [product] = await pool.query(
+    `
+      SELECT * FROM Product WHERE idProduct = ?
+    `,
+    [productVariation[0].Product_idProduct]
+  );
+
+  // Check for active discounts
+  const [discounts] = await pool.query(
+    `
+      SELECT * FROM Discounts 
+      WHERE Product_idProduct = ? 
+      AND Status = 'active' 
+      AND (Start_Date <= CURRENT_DATE() AND End_Date >= CURRENT_DATE())
+    `,
+    [product[0].idProduct]
+  );
+
+  let discountId = null;
+  let discountPercentage = 0;
+  let discountAmount = 0;
+
+  // Calculate discount amount if applicable
+  if (discounts.length > 0) {
+    discountId = discounts[0].idDiscounts;
+    if (discounts[0].Dicaunt_Type === "percentage") {
+      discountPercentage = discounts[0].Discount_Value;
+      discountAmount = (rate * qty * discountPercentage) / 100;
+    } else {
+      discountAmount = discounts[0].Discount_Value * qty;
+    }
+  }
+
+  const totalAmount = rate * qty;
+  const netAmount = totalAmount - discountAmount;
+
+  if (existingItem.length > 0) {
+    // Update existing cart item
+    const query = `
+      UPDATE Cart_has_Product
+      SET Qty = ?, Rate = ?, Total_Amount = ?, Discount_Percentage = ?, Discount_Amount = ?, NetAmount = ?, Discounts_idDiscounts = ?
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    `;
+    await pool.query(query, [
+      qty,
+      rate,
+      totalAmount,
+      discountPercentage,
+      discountAmount,
+      netAmount,
+      discountId,
+      cartId,
+      productVariationId,
+    ]);
+  } else {
+    // Add new cart item
+    const query = `
+      INSERT INTO Cart_has_Product(
+        Cart_idCart, 
+        Product_Variations_idProduct_Variations, 
+        Rate, 
+        Qty, 
+        Total_Amount, 
+        Discount_Percentage, 
+        Discount_Amount, 
+        NetAmount, 
+        Discounts_idDiscounts
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    await pool.query(query, [
+      cartId,
+      productVariationId,
+      rate,
+      qty,
+      totalAmount,
+      discountPercentage,
+      discountAmount,
+      netAmount,
+      discountId,
+    ]);
+  }
+
+  await pool.query(
+    `
+    UPDATE Product_Variations
+    SET Qty = Qty - ?, SIH = SIH - ?
+    WHERE idProduct_Variations = ?
+  `,
+    [qty, qty, productVariationId]
+  );
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Update product quantity in cart
+async function updateCartItemQuantity(cartId, productVariationId, qty) {
+  // Get current cart item
+  const [cartItem] = await pool.query(
+    `
+      SELECT * FROM Cart_has_Product
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    `,
+    [cartId, productVariationId]
+  );
+
+  if (cartItem.length === 0) {
+    throw new Error("Cart item not found");
+  }
+
+  // Save the old quantity from the cart item
+  const oldQty = cartItem[0].Qty;
+
+  const rate = cartItem[0].Rate;
+  const totalAmount = rate * qty;
+  let discountAmount = 0;
+  let discountPercentage = 0;
+
+  // Recalculate discount if applicable
+  if (cartItem[0].Discounts_idDiscounts) {
+    const [discount] = await pool.query(
+      `
+        SELECT * FROM Discounts WHERE idDiscounts = ?
+      `,
+      [cartItem[0].Discounts_idDiscounts]
+    );
+
+    if (discount.length > 0) {
+      if (discount[0].Dicaunt_Type === "percentage") {
+        discountPercentage = discount[0].Discount_Value;
+        discountAmount = (totalAmount * discountPercentage) / 100;
+      } else {
+        discountAmount = discount[0].Discount_Value * qty;
+      }
+    }
+  }
+
+  const netAmount = totalAmount - discountAmount;
+
+  // Update cart item
+  const query = `
+    UPDATE Cart_has_Product
+    SET Qty = ?, Total_Amount = ?, Discount_Amount = ?, NetAmount = ?
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+  `;
+  await pool.query(query, [
+    qty,
+    totalAmount,
+    discountAmount,
+    netAmount,
+    cartId,
+    productVariationId,
+  ]);
+
+  // Determine the difference between the new quantity and the old quantity
+  const qtyDifference = qty - oldQty;
+
+  if (qtyDifference !== 0) {
+    await pool.query(
+      `
+      UPDATE Product_Variations
+      SET Qty = Qty - ?, SIH = SIH - ?
+      WHERE idProduct_Variations = ?
+    `,
+      [qtyDifference, qtyDifference, productVariationId]
+    );
+  }
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Remove product from cart
+async function removeProductFromCart(cartId, productVariationId) {
+  const query = `
+    DELETE FROM Cart_has_Product
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+  `;
+  await pool.query(query, [cartId, productVariationId]);
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Cleart cart
+async function clearCart(cartId) {
+  const query = `
+    DELETE FROM Cart_has_Product
+    WHERE Cart_idCart = ?
+  `;
+  await pool.query(query, [cartId]);
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Update cart totals
+async function updateCartTotals(cartId) {
+  // Calculate total items and total amount
+  const [result] = await pool.query(
+    `
+      SELECT SUM(Qty) as TotalItems, SUM(NetAmount) as TotalAmount
+      FROM Cart_has_Product
+      WHERE Cart_idCart = ?
+    `,
+    [cartId]
+  );
+
+  const totalItems = result[0].TotalItems || 0;
+  const totalAmount = result[0].TotalAmount || 0;
+
+  // Update cart
+  const query = `
+    UPDATE Cart
+    SET Total_Items = ?, Total_Amount = ?
+    WHERE idCart = ?
+  `;
+  await pool.query(query, [totalItems, totalAmount, cartId]);
+}
+
+// Add note to cart item
+async function addNoteToCartItem(cartId, productVariationId, note) {
+  const query = `
+    UPDATE Cart_has_Product
+    SET Note = ?
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+  `;
+  await pool.query(query, [note, cartId, productVariationId]);
+
+  return { success: true };
+}
+
+// Convert cart to order
+async function convertCartToOrder(
+  cartId,
+  deliveryAddressId,
+  deliveryType,
+  paymentType
+) {
+  // Get cart details
+  const [cart] = await pool.query(
+    `
+      SELECT * FROM Cart WHERE idCart = ?
+    `,
+    [cartId]
+  );
+
+  if (cart.length === 0) {
+    throw new Error("Cart not found");
+  }
+
+  // Get cart items
+  const [cartItems] = await pool.query(
+    `
+      SELECT * FROM Cart_has_Product WHERE Cart_idCart = ?
+    `,
+    [cartId]
+  );
+
+  if (cartItems.length === 0) {
+    throw new Error("Cart id empty");
+  }
+
+  // Calculate delivery charges based on delivery type
+  let deliveryCharges = 0;
+  if (deliveryType === "home_delivery") {
+    deliveryCharges = 40.0;
+  } else if (deliveryType === "express_delivery") {
+    deliveryCharges = 70.0;
+  } else if (deliveryType === "standard_delivery") {
+    deliveryCharges = 30.0;
+  } else {
+    throw new Error("Invalid delivery type");
+  }
+
+  // Create order
+  const query = `
+    INSERT INTO \`Order\` (
+      Date_Time,
+      Delivery_Address_idDelivery_Address,
+      Total_Amount,
+      Delivery_Type,
+      Delivery_Charges,
+      Net_Amount,
+      Payment_Type,
+      Payment_Stats,
+      Delivery_Status,
+      Status
+    )
+    VALUES (
+      NOW(),
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      'pending',
+      'processing', 
+      'active' 
+    )
+  `;
+
+  const netAmount = Number.parseFloat(cart[0].Total_Amount) + deliveryCharges;
+
+  const [orderResult] = await pool.query(query, [
+    deliveryAddressId,
+    cart[0].Total_Amount,
+    deliveryType,
+    deliveryCharges,
+    netAmount,
+    paymentType,
+  ]);
+
+  const orderId = orderResult.insertId;
+
+  // Add order items
+  for (const item of cartItems) {
+    const query = `
+      INSERT INTO Order_has_Product_Variations (
+        Order_idOrder,
+        Product_Variations_idProduct_Variations,
+        Rate,
+        Qty,
+        Total,
+        Discount_Percentage,
+        Discount_Amount,
+        Total_Amount,
+        Note,
+        Discounts_idDiscounts
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    await pool.query(query, [
+      orderId,
+      item.Product_Variations_idProduct_Variations,
+      item.Rate,
+      item.Qty,
+      item.Total_Amount,
+      item.Discount_Percentage,
+      item.Discount_Amount,
+      item.NetAmount,
+      item.Note,
+      item.Discounts_idDiscounts,
+    ]);
+  }
+
+  // Clear cart
+  await clearCart(cartId);
+
+  return { orderId };
+}
+
+module.exports = {
+  createCart,
+  getCartByCustomerId,
+  addProductToCart,
+  updateCartItemQuantity,
+  removeProductFromCart,
+  clearCart,
+  addNoteToCartItem,
+  convertCartToOrder,
+};

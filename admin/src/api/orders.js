@@ -54,13 +54,13 @@ export const getOrderById = async (orderId) => {
 };
 
 // Update order status
-export const updateOrderStatus = async (orderId, status) => {
+export const updateOrderStatus = async (orderId, status, customerName, orderTotal) => {
   try {
     const token = getToken();
     console.log('Using token for updateOrderStatus:', token);
     
     const response = await axios.put(`${API_URL}/${orderId}/status`, 
-      { status },
+      { status, customerName, orderTotal },
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -72,4 +72,61 @@ export const updateOrderStatus = async (orderId, status) => {
     console.error('Error updating order status:', error);
     throw error.response?.data || { message: 'Failed to update order status' };
   }
-}; 
+};
+
+// Update payment status
+export const updatePaymentStatus = async (orderId, paymentStatus, customerName, orderTotal) => {
+  try {
+    const token = getToken();
+    
+    const response = await axios.put(`${API_URL}/${orderId}/payment-status`, 
+      { paymentStatus, customerName, orderTotal },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating payment status:', error);
+    throw error.response?.data || { message: 'Failed to update payment status' };
+  }
+};
+
+// Get order counts by status
+export const getOrderCountByStatus = async () => {
+  try {
+    const token = getToken();
+    console.log('Using token for getOrderCountByStatus:', token);
+    
+    const response = await axios.get(`${API_URL}/status/count`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order counts by status:', error);
+    throw error.response?.data || { message: 'Failed to fetch order counts by status' };
+  }
+};
+
+export const getPendingDeliveryCount = async () => {
+  try {
+    const token = getToken();
+    console.log('Using token for getPendingDeliveryCount:', token);
+    
+    const response = await axios.get(`${API_URL}/delivery/pending/count`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pending delivery count:', error);
+    throw error.response?.data || { message: 'Failed to fetch pending delivery count' };
+  }
+};

@@ -1,168 +1,171 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import flower from './flower.webp';
+import { getCategories } from '../../api/product';
 
 export default function CategoryDropdown() {
   const [showCategories, setShowCategories] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null); 
-  const buttonRef = useRef(null); 
-  const modalRef = useRef(null);
-  const navigate = useNavigate(); 
+  const [showSubcategories, setShowSubcategories] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  const buttonRef = useRef(null);
+  const categoryModalRef = useRef(null);
+  const subcategoryModalRef = useRef(null);
+  const navigate = useNavigate();
 
-  const categories = [
-    { 
-      name: "Cakes", 
-      image: flower,  
-      subcategories: [
-        { name: "Birthday Cakes", image: flower },
-        { name: "Wedding Cakes", image: flower },
-        { name: "Cupcakes", image: flower }
-      ]
-    },
-    { 
-      name: "Chocolates", 
-      image: flower, 
-      subcategories: [
-        { name: "Dark Chocolate", image: flower },
-        { name: "Milk Chocolate", image: flower },
-        { name: "White Chocolate", image: flower }
-      ]
-    },
-    { 
-      name: "Cookies", 
-      image: flower, 
-      subcategories: [
-        { name: "Chocolate Chip", image: flower },
-        { name: "Oatmeal Raisin", image: flower },
-        { name: "Sugar Cookies", image: flower }
-      ]
-    },
-    { 
-      name: "Brownies", 
-      image: flower, 
-      subcategories: [
-        { name: "Fudge Brownies", image: flower },
-        { name: "Blondies", image: flower },
-        { name: "Cheesecake Brownies", image: flower }
-      ]
-    }
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategories();
+        if (data && data.categories) {
+          setCategories(data.categories);
+        } else {
+          setError("Unexpected data structure: " + JSON.stringify(data));
+        }
+      } catch (error) {
+        console.error("Failed to load categories:", error.message);
+        setError(error.message || "Failed to load categories");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Open and Close Modal
+    fetchCategories();
+  }, []);
+
   const handleCategoryModal = () => {
-    if (selectedCategory) {
-      // If a category is selected, it means we're already in subcategory view. We want to go back to categories.
+    if (showSubcategories) {
+      setShowSubcategories(false);
       setSelectedCategory(null);
     } else {
       setShowCategories(!showCategories);
     }
   };
 
-  const handleCategoryClick = (categoryName) => {
-    if (selectedCategory === categoryName) {
-      setSelectedCategory(null); 
-    } else {
-      setSelectedCategory(categoryName); 
-    }
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    setShowCategories(false);
+    setShowSubcategories(true);
   };
 
   const handleSubcategoryClick = (subcategoryName) => {
     navigate(`/subcategory/${subcategoryName.toLowerCase().replace(/\s+/g, '-')}`);
-    setShowCategories(false); 
-    setSelectedCategory(null); // Reset selected category when navigating to subcategory
+    setShowSubcategories(false);
+    setSelectedCategory(null);
   };
 
-  // Close modal on outside click
+  const handleBackToCategories = () => {
+    setShowSubcategories(false);
+    setShowCategories(true);
+    setSelectedCategory(null);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target) && buttonRef.current && !buttonRef.current.contains(event.target)) {
+      if (showCategories && 
+          categoryModalRef.current && 
+          !categoryModalRef.current.contains(event.target) && 
+          buttonRef.current && 
+          !buttonRef.current.contains(event.target)) {
         setShowCategories(false);
-        setSelectedCategory(null); // Reset to categories when clicking outside
+      }
+
+      if (showSubcategories && 
+          subcategoryModalRef.current && 
+          !subcategoryModalRef.current.contains(event.target) && 
+          buttonRef.current && 
+          !buttonRef.current.contains(event.target)) {
+        setShowSubcategories(false);
+        setSelectedCategory(null);
       }
     };
 
-    if (showCategories || selectedCategory) {
+    if (showCategories || showSubcategories) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showCategories, selectedCategory]);
+  }, [showCategories, showSubcategories]);
+
+  if (loading) return <div>Loading categories...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="relative font-poppins">
       <button
         ref={buttonRef}
         onClick={handleCategoryModal}
-        className="flex items-center space-x-2 bg-[#5CAF90] text-white text-[13.33px] px-4 py-2 rounded "
+        className="flex items-center space-x-2 bg-[#5CAF90] text-white text-[13.33px] px-4 py-2 rounded"
       >
         <span>All Categories</span>
         <span className="text-[13.33px]">▼</span>
       </button>
 
-      {showCategories && 
-        createPortal(
-          <div
-            ref={modalRef}
-            className="absolute left-0 mt-2 bg-white w-[300px] max-h-[70vh] overflow-y-auto rounded-md shadow-lg p-6 z-50"
-            style={{
-              top: buttonRef.current.getBoundingClientRect().bottom + window.scrollY, // Position it just below the button
-            }}
-          >
-            {/* Categories List */}
-            {!selectedCategory ? (
-              <div className="w-full">
-                <ul className="text-black">
-                  {categories.map((category) => (
-                    <li
-                      key={category.name}
-                      className="px-4 py-2 cursor-pointer"
-                    >
-                      <div 
-                        className="flex items-center space-x-2 text-[13.33px]"
-                        onClick={() => handleCategoryClick(category.name)}
-                      >
-                        <img
-                          src={category.image}  
-                          alt={category.name}
-                          className="w-6 h-6 rounded-full "
-                        />
-                        <span>{category.name}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div>
-                <h3 className="text-[16px] font-semibold mb-2">{selectedCategory}</h3>
-                <ul className="text-[13.3px] text-black">
-                  {categories
-                    .find((category) => category.name === selectedCategory)
-                    ?.subcategories.map((subcategory, index) => (
-                      <li
-                        key={index}
-                        className="px-4 py-1 cursor-pointer"
-                        onClick={() => handleSubcategoryClick(subcategory.name)}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <img
-                            src={subcategory.image}  
-                            alt={subcategory.name}
-                            className="w-6 h-6 rounded-full"
-                          />
-                          <span>{subcategory.name}</span>
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            )}
-          </div>,
-          document.body
-        )}
+      {showCategories && createPortal(
+        <div
+          ref={categoryModalRef}
+          className="absolute left-0 mt-2 bg-white w-[300px] max-h-[70vh] overflow-y-auto rounded-md shadow-lg p-6 z-50"
+          style={{
+            top: buttonRef.current.getBoundingClientRect().bottom + window.scrollY,
+          }}
+        >
+          <div className="w-full">
+            <ul className="text-black">
+              {categories.map((category) => (
+                <li
+                  key={category.idProduct_Category}
+                  className="px-4 py-2 cursor-pointer hover:bg-gray-100 rounded-md"
+                  onClick={() => handleCategoryClick(category)}
+                >
+                  <div className="flex items-center space-x-2 text-[13.33px]">
+                    <img
+                      src={category.Image_Icon_Url || flower}
+                      alt={category.Description}
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <span>{category.Description}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showSubcategories && selectedCategory && createPortal(
+        <div
+          ref={subcategoryModalRef}
+          className="absolute left-0 mt-2 bg-white w-[300px] max-h-[70vh] overflow-y-auto rounded-md shadow-lg p-6 z-50"
+          style={{
+            top: buttonRef.current.getBoundingClientRect().bottom + window.scrollY,
+          }}
+        >
+          <div className="w-full">
+            <div className="flex items-center mb-4 pb-2 bg-[#5CAF90]">
+            </div>
+            <h3 className="text-[15px] font-medium mb-3">{selectedCategory.Description}</h3>
+            <ul className="text-black">
+              {selectedCategory.subcategories && selectedCategory.subcategories.map((subcategory) => (
+                <li
+                  key={subcategory.idSub_Category}
+                  className="px-4 py-2 cursor-pointer hover:bg-gray-100 rounded-md"
+                  onClick={() => handleSubcategoryClick(subcategory.Description)}
+                >
+                  <span className="text-[13.33px]">{subcategory.Description}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 const User = require("../../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Importing JWT
-const sendConfirmationEmail = require("../../utils/mailer");
+const { sendConfirmationEmail, sendOtpEmail } = require("../../utils/mailer");
 const pool = require("../../config/database");
 
 // Get all users
@@ -44,12 +44,22 @@ const createUser = async (req, res) => {
       status || "Active"
     );
 
+    // Log admin action with user details
+    const newUserInfo = { full_name, email, phone_no }; // Construct the new user info as an object
+    await logAdminAction(
+      req.user.userId,
+      "Added new user",
+      req.headers["user-agent"],
+      JSON.stringify(newUserInfo)
+    );
+
     res.status(201).json({ id: userId, message: "User added successfully" });
   } catch (error) {
     res.status(500).json({ error: "Database error", details: error.message });
   }
 };
 
+// Update user
 const updateUser = async (req, res) => {
   try {
     const { full_name, email, phone_no, status } = req.body;
@@ -71,6 +81,7 @@ const updateUser = async (req, res) => {
   }
 };
 
+// Validate email format
 const validateEmail = (email) => {
   const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
   return re.test(email);
@@ -86,52 +97,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log("Received login attempt for:", email); // Add logging for email
-
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Please provide both email and password." });
-    }
-
-    // Fetch user by email
-    const user = await User.getUserByEmail(email);
-    console.log("User fetched from DB:", user); // Log user from DB
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // Compare the password with the stored hashed password
-    const isMatch = await bcrypt.compare(password, user.Password);
-    if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.idUser }, "your-secret-key", {
-      expiresIn: "1d",
-    });
-
-    // Send the response with the token
-    res.json({
-      message: "Login successful",
-      userId: user.idUser,
-      fullName: user.Full_Name,
-      email: user.Email,
-      phoneNo: user.Phone_No,
-      status: user.Status,
-      token: token,
-    });
-  } catch (error) {
-    console.error("Error during login:", error); // Log any unexpected errors
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
+// Get user profile
 const getProfile = async (req, res) => {
   try {
     console.log("User info from JWT:", req.user); // This should print user info like { userId: 2 }
@@ -144,6 +110,7 @@ const getProfile = async (req, res) => {
   }
 };
 
+// Update user status
 const updateUserStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -166,6 +133,7 @@ const updateUserStatus = async (req, res) => {
     res.status(500).json({ error: "Error updating status" });
   }
 };
+
 // Update user password
 const updateUserPassword = async (req, res) => {
   const { id } = req.params;
@@ -188,14 +156,193 @@ const updateUserPassword = async (req, res) => {
   }
 };
 
+// Log admin action
+const logAdminAction = async (
+  adminId,
+  action,
+  deviceInfo,
+  newUserInfo = null
+) => {
+  console.log("Logging action", { adminId, action, deviceInfo, newUserInfo }); // Add this line
+  const query =
+    "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)";
+  await pool.query(query, [adminId, action, deviceInfo, newUserInfo]);
+};
+const getAdminLogs = async (req, res) => {
+  try {
+    const [logs] = await pool.query(
+      `
+          SELECT admin_logs.*, User.Full_Name AS Admin_Name,
+          admin_logs.new_user_info AS User_Details
+          FROM admin_logs
+          JOIN User ON admin_logs.admin_id = User.idUser
+          ORDER BY timestamp DESC
+          `
+    );
+    console.log("Admin Logs:", logs); // Log what you retrieve from the database
+    res.json(logs);
+  } catch (error) {
+    console.error("Error fetching admin logs:", error);
+    res.status(500).json({ error: "Database error" });
+  }
+};
+
+// Login user
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.getUserByEmail(email);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const isMatch = await bcrypt.compare(password, user.Password);
+    if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
+
+    const token = jwt.sign(
+      { userId: user.idUser },
+      process.env.JWT_SECRET || "your-secret-key",
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    // Log the login action
+    await logAdminAction(user.idUser, "Logged In", req.headers["user-agent"]);
+
+    res.json({
+      message: "Login successful",
+      userId: user.idUser,
+      fullName: user.Full_Name,
+      email: user.Email,
+      phoneNo: user.Phone_No,
+      status: user.Status,
+      token: token,
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Generate a 6-digit OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// Request password reset
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    // Check if user exists
+    const user = await User.getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+
+    // Save OTP in the database
+    await User.saveOtp(email, otp);
+
+    // Send OTP via email
+    await sendOtpEmail(email, otp);
+
+    res.status(200).json({ message: "OTP sent to your email" });
+  } catch (error) {
+    console.error("Error in forgot password:", error);
+    res.status(500).json({ error: "Failed to process request" });
+  }
+};
+
+// Verify OTP
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: "Email and OTP are required" });
+    }
+
+    // Check if OTP is valid
+    const user = await User.verifyOtp(email, otp);
+    if (!user) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    res.status(200).json({ message: "OTP verified successfully" });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({ error: "Failed to verify OTP" });
+  }
+};
+
+// Reset password
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res
+        .status(400)
+        .json({ error: "Email, OTP and new password are required" });
+    }
+
+    // Verify OTP again
+    const user = await User.verifyOtp(email, otp);
+    if (!user) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await User.updatePassword(email, hashedPassword);
+
+    // Clear OTP
+    await User.clearOtp(email);
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ error: "Failed to reset password" });
+  }
+};
+
+// Logout function (optional, if you support logout)
+const logoutAdmin = async (adminId) => {
+  await logAdminAction(adminId, "Logged Out", "Logout");
+};
+const deleteLog = async (req, res) => {
+  try {
+    const logId = req.params.id;
+    await pool.query('DELETE FROM admin_logs WHERE log_id = ?', [logId]);
+    res.json({ message: 'Log deleted successfully' });
+  } catch (error) {
+    console.error("Error deleting log:", error);
+    res.status(500).json({ error: "Database error" });
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
   createUser,
   updateUser,
   loginUser,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
   deleteUser,
   getProfile,
   updateUserStatus,
   updateUserPassword,
+  getAdminLogs,
+  logoutAdmin,
+  deleteLog
 };

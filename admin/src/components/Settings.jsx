@@ -13,6 +13,7 @@ const Settings = () => {
   const [logoPreview, setLogoPreview] = useState(null);
   const [copyrightText, setCopyrightText] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const logoInputRef = useRef(null);
 
@@ -20,6 +21,7 @@ const Settings = () => {
   useEffect(() => {
     async function loadHeaderFooterSetting() {
       try {
+        setIsLoading(true);
         const data = await fetchHeaderFooterSetting();
         if (data) {
           setHeaderFooterSetting(data);
@@ -28,6 +30,8 @@ const Settings = () => {
         toast.error(
           error.message || "Failed to load header and footer settings"
         );
+      } finally {
+        setIsLoading(false);
       }
     }
     loadHeaderFooterSetting();
@@ -47,7 +51,7 @@ const Settings = () => {
     if (logoInputRef.current) logoInputRef.current.value = "";
   };
 
-  // When edit is clicked, oad the stored settings into the input fields
+  // When edit is clicked, load the stored settings into the input fields
   const handleEdit = () => {
     setIsEditing(true);
     if (headerFooterSetting) {
@@ -63,15 +67,16 @@ const Settings = () => {
       return;
     }
 
-    // Build form data
-    const formData = new FormData();
-    // Append the file only if a new one is provided
-    if (logo) {
-      formData.append("navbarLogo", logo);
-    }
-    formData.append("footerCopyright", copyrightText);
-
     try {
+      setIsLoading(true);
+      // Build form data
+      const formData = new FormData();
+      // Append the file only if a new one is provided
+      if (logo) {
+        formData.append("navbarLogo", logo);
+      }
+      formData.append("footerCopyright", copyrightText);
+
       const updatedSetting = await updateHeaderFooterSetting(formData);
       toast.success("Settings saved successfully");
       setHeaderFooterSetting(updatedSetting);
@@ -79,99 +84,141 @@ const Settings = () => {
 
       // Reset the form
       setLogo(null);
-      setLogoPreview(null);
-      setCopyrightText("");
       if (logoInputRef.current) logoInputRef.current.value = "";
     } catch (error) {
       toast.error(error.message || "Failed to save settings");
+    } finally {
+      setIsLoading(false);
     }
   };
-  return (
-    <div className="max-w-5xl mx-auto my-5 p-6 md:p-8 bg-white rounded-md shadow-md">
-      {/* Heading */}
-      <h2 className="text-xl md:text-2xl font-bold text-[#1D372E] mb-4 md:mb-5 lg:mb-6">
-        Manage Settings
-      </h2>
 
-      {/* Header and Footer Settings */}
-      <div className="flex items-center justify-between mb-4 md:mb-5 lg:mb-6">
-        <div className="flex items-center">
-          <div className="w-1 h-6 md:h-7 lg:h-8 bg-[#5CAF90] mr-2 md:mr-3"></div>
-          <h3 className="text-lg md:text-xl font-semibold text-[#1D372E]">
-            Header and Footer
-          </h3>
+  const handleCancel = () => {
+    setIsEditing(false);
+    setLogo(null);
+    setLogoPreview(null);
+    setCopyrightText("");
+    if (logoInputRef.current) logoInputRef.current.value = "";
+  };
+
+  if (isLoading && !headerFooterSetting) {
+    return (
+      <div className="card bg-base-100 shadow-md">
+        <div className="card-body">
+          <div className="flex justify-center items-center h-40">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+          </div>
         </div>
-        {/* When in edit mode, show edit button if not editing already */}
-        {!isEditing && (
-          <button
-            onClick={handleEdit}
-            className="flex items-center bg-[#5CAF90] text-white px-4 py-2 rounded-2xl cursor-pointer text-xs md:text-sm lg:text-base"
-          >
-            <FaEdit className="mr-1 md:mr-2 w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />{" "}
-            Edit
-          </button>
-        )}
       </div>
+    );
+  }
 
-      {/* Form */}
-      <form onSubmit={handleSave}>
-        <div className="flex flex-wrap gap-3 md:gap-4 lg:gap-5">
-          {/* Navbar Logo Input */}
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Navbar Logo
-            </label>
-            <input
-              type="file"
-              onChange={handleLogoChange}
-              ref={logoInputRef}
-              className="file-input file-input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-            />
-            {logoPreview && (
-              <div className="relative mt-3 md:mt-4 w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border border-gray-300 rounded-2xl">
-                <img
-                  src={logoPreview}
-                  alt="Logo Preview"
-                  className="object-cover w-full h-full rounded-2xl"
+  return (
+    <div className="card bg-white shadow-md">
+      <div className="card-body">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-6 bg-[#5CAF90]"></div>
+            <h2 className="text-xl font-bold text-[#1D372E]">
+              Manage Settings
+            </h2>
+          </div>
+          {!isEditing && (
+            <button
+              onClick={handleEdit}
+              className="btn btn-primary btn-sm gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            >
+              <FaEdit className="w-4 h-4" /> Edit
+            </button>
+          )}
+        </div>
+
+        <form onSubmit={handleSave}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Navbar Logo Input */}
+            <div className="form-control">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Navbar Logo</span>
+              </label>
+              <input
+                type="file"
+                onChange={handleLogoChange}
+                ref={logoInputRef}
+                className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E] disabled:bg-white disabled:border-[#1D372E] disabled:text-[#1D372E]"
+                disabled={!isEditing}
+              />
+              {logoPreview && (
+                <div className="relative mt-4 w-24 h-24 rounded-lg overflow-hidden">
+                  <img
+                    src={logoPreview}
+                    alt="Logo Preview"
+                    className="object-contain w-full h-full"
+                  />
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={removeLogo}
+                      className="btn btn-xs bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-square absolute top-1.5 right-1 text-white"
+                    >
+                      <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Copyright Input */}
+            <div className="form-control">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Footer Copyright</span>
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={copyrightText}
+                  onChange={(e) => setCopyrightText(e.target.value)}
+                  placeholder="Enter copyright text"
+                  className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
                 />
-                {isEditing && (
-                  <button
-                    type="button"
-                    onClick={removeLogo}
-                    className="absolute top-1 right-1 bg-[#5CAF90] p-1 md:p-1.5 cursor-pointer rounded-2xl"
-                  >
-                    <RiDeleteBin5Fill className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                  </button>
+              ) : (
+                <div className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E] flex items-center">
+                  {copyrightText || (
+                    <span className="text-gray-400">Enter copyright text</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          {isEditing && (
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className={`btn btn-sm bg-[#5CAF90] border-none text-white ${
+                  isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+                }`}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="loading loading-spinner loading-xs"></span>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
                 )}
-              </div>
-            )}
-          </div>
-
-          {/* Copyright Input */}
-          <div className="flex-1 min-w-[250px] text-[#1D372E]">
-            <label className="block font-medium text-sm md:text-base mb-1">
-              Footer Copyright
-            </label>
-            <input
-              type="text"
-              value={copyrightText}
-              onChange={(e) => setCopyrightText(e.target.value)}
-              placeholder="Enter copyright text"
-              className="input input-bordered w-full text-sm md:text-base bg-white border-2 border-[#1D372E] rounded-2xl"
-            />
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end mt-4 md:mt-5 lg:mt-6">
-          <button
-            type="submit"
-            className="btn bg-[#5CAF90] border-none font-medium text-sm md:text-base py-2 px-3 md:px-4 h-auto min-h-0 rounded-2xl"
-          >
-            Save
-          </button>
-        </div>
-      </form>
+              </button>
+            </div>
+          )}
+        </form>
+      </div>
     </div>
   );
 };

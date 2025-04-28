@@ -1,133 +1,166 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { RiSidebarUnfoldFill, RiSidebarFoldFill } from "react-icons/ri";
-import { IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
 import { AuthContext } from "../context/AuthContext";
-import logo from "../assets/logo.png";
+import { useNotifications } from "../context/NotificationContext";
+import {
+  TbMenu2,
+  TbX,
+  TbBell,
+  TbChevronDown,
+  TbUser,
+  TbLogout,
+  TbPackage,
+  TbSettings,
+} from "react-icons/tb";
 import profile from "../assets/userprofile.png";
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
-  const { user } = useContext(AuthContext);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const text = "Admin Panel".split("");
+  const { user } = useContext(AuthContext);
+  const { unreadCount } = useNotifications();
+  const [scrolled, setScrolled] = useState(false);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 z-50 w-full bg-[#1D372E] border-b border-white">
+    <header
+      className={`fixed top-0 left-0 right-0 z-40 border-b border-emerald-950 bg-[#1D372E] transition-shadow duration-200 ${
+        scrolled ? "shadow-sm" : ""
+      }`}
+    >
       <style>{`
         @keyframes colorWave {
           0%, 100% { color: white; }
           50% { color: #5CAF90; }
         }
       `}</style>
+      <div className="px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            className="btn btn-ghost btn-sm md:hidden"
+            onClick={toggleSidebar}
+            aria-label="Toggle sidebar"
+          >
+            {isSidebarOpen ? (
+              <TbX className="h-5 w-5" />
+            ) : (
+              <TbMenu2 className="h-5 w-5" />
+            )}
+          </button>
 
-      <div className="px-2 py-2 md:px-3 md:py-3 lg:px-5 lg:pl-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center justify-start">
-            <button
-              onClick={toggleSidebar}
-              type="button"
-              className="inline-flex items-center p-1 text-sm rounded-lg border-2 sm:hidden hover:bg-gray-100 hover:text-[#1D372E] transition-colors duration-300 ease-in-out"
-            >
-              {isSidebarOpen ? (
-                <RiSidebarFoldFill className="w-5 h-5 md:w-6 md:h-6" />
-              ) : (
-                <RiSidebarUnfoldFill className="w-5 h-5 md:w-6 md:h-6" />
-              )}
-            </button>
+          <Link
+            to="/dashboard/dashboard-private"
+            className="flex items-center gap-2"
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-[#5CAF90] text-primary-content">
+              <TbPackage className="h-4 w-4" />
+            </div>
+            <span className="font-semibold text-lg hidden sm:inline-block">
+              {text.map((char, index) => (
+                <span
+                  key={index}
+                  style={{
+                    animation: `colorWave 2s ease-in-out infinite`,
+                    animationDelay: `${index * 0.15}s`,
+                  }}
+                >
+                  {char}
+                </span>
+              ))}
+            </span>
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {/* Notifications */}
+          <div className="dropdown dropdown-end">
             <Link
-              to="/dashboard/dashboard-private"
-              className="flex ms-2 md:me-24"
+              to="/dashboard/notifications"
+              className="btn btn-ghost hover:bg-[#1D372E] btn-circle"
             >
-              <img
-                src={logo}
-                className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 me-2 md:me-3"
-                alt="Logo"
-              />
-              <div className="self-center flex space-x-[0.05em]">
-                {text.map((char, index) => (
-                  <span
-                    key={index}
-                    className="text-lg md:text-xl lg:text-2xl font-semibold"
-                    style={{
-                      animation: `colorWave 2s ease-in-out infinite`,
-                      animationDelay: `${index * 0.15}s`,
-                    }}
-                  >
-                    {char}
+              <div className="indicator">
+                <TbBell className="h-6 w-6" />
+                {unreadCount > 0 && (
+                  <span className="badge badge-sm badge-primary text-white indicator-item">
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
-                ))}
+                )}
               </div>
             </Link>
           </div>
 
-          <div className="flex items-center">
-            <div className="flex items-center ms-3">
-              <div>
-                <button
-                  onClick={toggleDropdown}
-                  type="button"
-                  className="flex text-sm items-center"
-                  aria-expanded="false"
-                >
-                  <span className="sr-only">Open user menu</span>
+          {/* User menu */}
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost hover:bg-[#1D372E] btn-sm flex items-center gap-2 rounded-full pr-2 pl-0"
+            >
+              <div className="avatar">
+                <div className="w-8 h-8 rounded-full">
                   <img
                     src={profile}
-                    className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8"
+                    className="w-7 h-7 rounded-full"
                     alt="Profile"
                   />
-                  {isDropdownOpen ? (
-                    <IoMdArrowDropdownCircle className="w-4 h-4 md:w-5 md:h-5 ml-1 md:ml-2" />
-                  ) : (
-                    <IoMdArrowDropupCircle className="w-4 h-4 md:w-5 md:h-5 ml-1 md:ml-2" />
-                  )}
-                </button>
-              </div>
-
-              {isDropdownOpen && (
-                <div
-                  className="z-50 absolute right-0 mt-[170px] md:mt-[198px] lg:mt-[202px] w-40 md:w-44 lg:w-48 text-base list-none bg-[#1D372E] divide-y divide-white rounded-sm shadow-sm"
-                  id="dropdown-user"
-                >
-                  <div className="px-4 py-3" role="none">
-                    <p className="text-sm" role="none">
-                      {user ? user.fullName : "Admin"}
-                    </p>
-                    <p className="text-sm font-medium" role="none">
-                      {user ? user.email : "admin@gmail.com"}
-                    </p>
-                  </div>
-
-                  <ul className="py-1" role="none">
-                    <li>
-                      <Link
-                        to="profile"
-                        className="block px-3 py-1 md:px-4 md:py-2 text-xs md:text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-                        role="menuitem"
-                      >
-                        User Profile
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/logout"
-                        className="block px-3 py-1 md:px-4 md:py-2 text-xs md:text-sm hover:bg-gray-100 hover:text-[#2d2d2d] transition-colors duration-300 ease-in-out group"
-                        role="menuitem"
-                      >
-                        Logout
-                      </Link>
-                    </li>
-                  </ul>
                 </div>
-              )}
+              </div>
+              <span className="hidden md:inline-block text-sm font-medium">
+                {user ? user.fullName : "Admin"}
+              </span>
+              <TbChevronDown className="h-4 w-4 opacity-50" />
             </div>
+            <ul
+              tabIndex={0}
+              className="dropdown-content z-[1] menu p-2 shadow bg-[#1D372E] border border-emerald-950 rounded-box w-56 mt-4"
+            >
+              <li className="menu-title text-white">My Account</li>
+              <div className="divider my-1"></div>
+              <li>
+                <Link
+                  to="/dashboard/profile"
+                  className="flex items-center gap-2 hover:bg-[#5CAF90]"
+                >
+                  <TbUser className="h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/dashboard/settings"
+                  className="flex items-center gap-2 hover:bg-[#5CAF90]"
+                >
+                  <TbSettings className="h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </li>
+              <div className="divider my-1"></div>
+              <li>
+                <Link
+                  to="/logout"
+                  className="flex items-center gap-2 hover:bg-error"
+                >
+                  <TbLogout className="h-4 w-4" />
+                  <span>Logout</span>
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 

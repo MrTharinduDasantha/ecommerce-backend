@@ -30,7 +30,7 @@ export const getCategories = async () => {
     const response = await api.get("/api/products/categories");
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -42,7 +42,7 @@ export const createCategory = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -54,7 +54,7 @@ export const updateCategory = async (id, formData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -66,7 +66,17 @@ export const toggleCategoryStatus = async (id, status) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
+  }
+};
+
+// Delete a category
+export const deleteCategory = async (id) => {
+  try {
+    const response = await api.delete(`/api/products/categories/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
 };
 
@@ -79,7 +89,20 @@ export const createSubCategory = async (categoryId, description) => {
     );
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
+  }
+};
+
+// Update a subcategory
+export const updateSubCategory = async (categoryId, subId, description) => {
+  try {
+    const response = await api.put(
+      `/api/products/categories/${categoryId}/sub-categories/${subId}`,
+      { description }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
 };
 
@@ -91,25 +114,13 @@ export const deleteSubCategory = async (categoryId, subId) => {
     );
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
-// ---------------------------
-// Product Related Api Calls
-// ---------------------------
-
-// Create a new product
-export const createProduct = async (formData) => {
-  try {
-    const response = await api.post("/api/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
+// ------------------------
+// Brand Related Api Calls
+// ------------------------
 
 // Create a new brand
 export const createBrand = async (formData) => {
@@ -119,7 +130,33 @@ export const createBrand = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
+  }
+};
+
+// Update an existing brand
+export const updateBrand = async (brandId, formData) => {
+  try {
+    const response = await api.put(
+      `/api/products/brands/${brandId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// Delete a brand
+export const deleteBrand = async (brandId) => {
+  try {
+    const response = await api.delete(`/api/products/brands/${brandId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
 };
 
@@ -129,7 +166,23 @@ export const getBrands = async () => {
     const response = await api.get("/api/products/brands");
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
+  }
+};
+
+// --------------------------
+// Product Related Api Calls
+// --------------------------
+
+// Create a new product
+export const createProduct = async (formData) => {
+  try {
+    const response = await api.post("/api/products", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
 };
 
@@ -139,7 +192,7 @@ export const getProducts = async () => {
     const response = await api.get("/api/products");
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -149,19 +202,81 @@ export const getProduct = async (id) => {
     const response = await api.get(`/api/products/${id}`);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
+  }
+};
+
+// Get total number of products
+export const getProductTotal = async () => {
+  try {
+    const response = await api.get("/api/products/count");
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// Get top sold products
+export const getTopSoldProducts = async (limit = 5) => {
+  try {
+    const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top sold products:", error);
+    throw error.response?.data || error;
   }
 };
 
 // Update a product
 export const updateProduct = async (id, formData) => {
   try {
-    const response = await api.put(`/api/products/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    // Create a new FormData instance if formData is a plain object
+    let data = formData;
+    if (!(formData instanceof FormData)) {
+      data = new FormData();
+      Object.keys(formData).forEach((key) => {
+        if (
+          key === "variations" ||
+          key === "faqs" ||
+          key === "subCategoryIds"
+        ) {
+          data.append(key, JSON.stringify(formData[key]));
+        } else if (key === "mainImage" && formData[key]) {
+          data.append("mainImage", formData[key]);
+        } else if (key === "subImages" && formData[key]) {
+          Array.from(formData[key]).forEach((file) => {
+            data.append("subImages", file);
+          });
+        } else {
+          data.append(key, formData[key]);
+        }
+      });
+    }
+
+    const response = await axios({
+      method: "put",
+      url: `${API_URL}/api/products/${id}`,
+      data: data,
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
+
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    console.error("Update product error:", error.response || error);
+    throw error.response?.data || error;
+  }
+};
+
+// Toggle product status
+export const toggleProductStatus = async (id, status) => {
+  try {
+    const response = await api.patch(`/api/products/${id}/status`, { status });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
 };
 
@@ -169,6 +284,75 @@ export const updateProduct = async (id, formData) => {
 export const deleteProduct = async (id) => {
   try {
     const response = await api.delete(`/api/products/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// ---------------------------
+// Discount Related Api Calls
+// ---------------------------
+
+// Get all discounts
+export const getDiscounts = async () => {
+  try {
+    const response = await api.get("/api/products/discounts/all");
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Get a single discount
+export const getDiscount = async (id) => {
+  try {
+    const response = await api.get(`/api/products/discounts/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Get discounts for a specific product
+export const getProductDiscounts = async (productId) => {
+  try {
+    const response = await api.get(
+      `/api/products/products/${productId}/discounts`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Create a new discount
+export const createDiscount = async (discountData) => {
+  try {
+    const response = await api.post("/api/products/discounts", discountData);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Update a discount
+export const updateDiscount = async (id, discountData) => {
+  try {
+    const response = await api.put(
+      `/api/products/discounts/${id}`,
+      discountData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Delete a discount
+export const deleteDiscount = async (id) => {
+  try {
+    const response = await api.delete(`/api/products/discounts/${id}`);
     return response.data;
   } catch (error) {
     throw error.response.data;
