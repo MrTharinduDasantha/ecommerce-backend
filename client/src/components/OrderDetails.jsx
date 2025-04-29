@@ -1,22 +1,43 @@
 import { FaShoppingCart } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // Helper function to format numbers with commas
 const formatPrice = (price) => {
   return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-const OrderDetails = ({ cartItems, deliveryFee, orderInfo }) => {
-  const navigate = useNavigate();
+// Helper function to parse price strings
+const parsePrice = (str) => {
+  if (!str) return 0;
+  try {
+    return parseFloat(str.replace(/[^\d.]/g, '')) || 0;
+  } catch (error) {
+    console.error('Error parsing price:', error);
+    return 0;
+  }
+};
 
-  // Calculate subtotal and discount for single quantity
-  const subtotal = cartItems.reduce((sum, product) => sum + product.variants[0].price, 0);
-  const discount = cartItems.reduce((sum, product) => {
-    if (product.marketPrice > product.variants[0].price) {
-      return sum + (product.marketPrice - product.variants[0].price);
+const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectedItems = location.state?.selectedItems || [];
+
+  // Calculate subtotal and discount for selected items
+  const subtotal = selectedItems.reduce((sum, item) => {
+    const price = parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''));
+    return sum + (price * item.quantity);
+  }, 0);
+
+  const discount = selectedItems.reduce((sum, item) => {
+    const price = parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''));
+    const marketPrice = parseFloat(item.marketPrice?.replace('Rs. ', '').replace(/,/g, '') || 0);
+    if (marketPrice > price) {
+      return sum + ((marketPrice - price) * item.quantity);
     }
     return sum;
   }, 0);
+
+  // Calculate total after discount
   const total = subtotal - discount + deliveryFee;
 
   return (
@@ -29,46 +50,64 @@ const OrderDetails = ({ cartItems, deliveryFee, orderInfo }) => {
         
         {/* Order Items */}
         <div className="mt-4 space-y-4">
-          {cartItems.map((product) => (
+          {selectedItems.map((item) => (
             <div
-              key={`${product.id}-${product.variants.colorName || ''}-${product.variants.size ? product.variants.size[0] : ''}`}
+              key={`${item.id}-${item.color || ''}-${item.size || ''}`}
               className="flex items-center space-x-4 bg-gray-100 rounded-lg p-3 cursor-pointer border border-[#E8E8E8]"
-              onClick={() => navigate(`/product-page/${product.id}`)}
+              onClick={() => navigate(`/product-page/${item.id}`)}
             >
               <img
-                src={product.image}
+                src={item.image}
                 alt="Product"
                 className="w-24 h-24 rounded object-cover" 
               />
               <div className="min-w-0 flex-1">
-                <p className="font-medium truncate">{product.name}</p>
+                <p className="font-medium truncate">{item.name}</p>
                 <div className="mt-1 space-y-1">
-                  {product.variants.size && (
+                  {item.size && (
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Size:</span>{" "}
-                      {product.variants.size[0]}
+                      {item.size}
                     </p>
                   )}
-                  {product.variants.colorName && (
+                  {item.color && (
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Color:</span>{" "}
-                      {product.variants.colorName}
+                      {item.color}
                     </p>
                   )}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
-                  Qty: 1
+                  Qty: {item.quantity}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-black font-semibold">
-                    {formatPrice(product.variants[0].price)} LKR
+                    Rs. {parseFloat(item.price.replace('Rs. ', '').replace(/,/g, '')).toLocaleString()}
                   </p>
-                  {product.marketPrice > product.variants[0].price && (
+                  {item.marketPrice && (
                     <p className="text-gray-500 line-through text-sm">
-                      {formatPrice(product.marketPrice)} LKR
+                      Rs. {parseFloat(item.marketPrice.replace('Rs. ', '').replace(/,/g, '')).toLocaleString()}
                     </p>
                   )}
                 </div>
+                {item.marketPrice && (
+                  <div className="mt-1">
+                    <span className="text-[12px] text-[#5CAF90] font-medium">
+                      {item.discountName || (
+                        item.category === 'Seasonal Offers' ? 'Seasonal Discounts' :
+                        item.category === 'Rush Delivery' ? 'Rush Discounts' :
+                        item.category === 'For You' ? 'For You Discounts' :
+                        'Sale Discounts'
+                      )}
+                    </span>
+                    <span className="text-[12px] text-[#5CAF90] ml-2">
+                      Save Rs. {(
+                        parseFloat(item.marketPrice.replace('Rs. ', '').replace(/,/g, '')) - 
+                        parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''))
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -78,19 +117,21 @@ const OrderDetails = ({ cartItems, deliveryFee, orderInfo }) => {
         <div className="space-y-3 border-t border-[#E8E8E8] pt-4 mt-4">
           <div className="flex justify-between">
             <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">{formatPrice(subtotal)} LKR</span>
+            <span className="font-medium">Rs. {formatPrice(subtotal)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Discount</span>
-            <span className="text-[#5CAF90]">-{formatPrice(discount)} LKR</span>
-          </div>
+          {discount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Discount</span>
+              <span className="text-[#5CAF90]">-Rs. {formatPrice(discount)}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-gray-600">Delivery Fee</span>
-            <span className="font-medium">{formatPrice(deliveryFee)} LKR</span>
+            <span className="font-medium">Rs. {formatPrice(deliveryFee)}</span>
           </div>
           <div className="flex justify-between pt-3 border-t border-[#E8E8E8] mt-2">
             <span className="font-semibold">Total</span>
-            <span className="font-bold text-lg">{formatPrice(total)} LKR</span>
+            <span className="font-bold text-lg">Rs. {formatPrice(total)}</span>
           </div>
         </div>
         
