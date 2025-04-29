@@ -47,8 +47,8 @@ const CustomerDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5CAF90]"></div>
+      <div className="flex justify-center items-center h-40">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
@@ -60,7 +60,7 @@ const CustomerDetails = () => {
   }
 
   return (
-    <div className="w-315 mx-auto p-6 sm:p-6">
+    <div className="w-310 mx-auto p-6 sm:p-6">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
         <div className="p-4 md:p-6">
           {/* Back Button */}

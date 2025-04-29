@@ -8,16 +8,20 @@ import toast from "react-hot-toast";
 const AdminLogs = () => {
   const [logs, setLogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
+        setLoading(true);
         const logData = await fetchAdminLogs();
         setLogs(logData);
       } catch (error) {
         console.error("Error fetching logs:", error);
         toast.error("Failed to fetch logs");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -55,6 +59,14 @@ const AdminLogs = () => {
 
     return adminName.includes(lowerSearchTerm) || timestamp.includes(lowerSearchTerm);
   });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <div>

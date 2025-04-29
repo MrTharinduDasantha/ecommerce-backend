@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import * as api from "../api/customer";
@@ -59,8 +58,8 @@ const CustomerorderDetailsPage = () => {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-        <div style={{ animation: "spin 1s linear infinite", borderRadius: "50%", width: "48px", height: "48px", border: "2px solid #5CAF90", borderTopColor: "transparent", borderBottomColor: "transparent" }}></div>
+      <div className="flex justify-center items-center h-40">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
@@ -74,9 +73,9 @@ const CustomerorderDetailsPage = () => {
   }
 
   return (
-    <div className="w-315 mx-auto p-6 sm:p-6">
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-      <div className="p-4 md:p-6">
+    <div className="w-300 mx-auto p-6 sm:p-6">
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="p-4 md:p-6">
           {/* Back Button */}
           <button
             onClick={handleBack}

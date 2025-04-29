@@ -192,6 +192,7 @@ export const getTopSoldProducts = async (limit = 10) => {
     console.error("Error fetching top sold products:", error);
     throw error.response?.data || error;
   }
+
 };
 
 // Inside your API file
@@ -212,4 +213,5 @@ export const getProductsBySubCategoryId = async (subCategoryId) => {
   } catch (error) {
     throw error.response.data;
   }
+
 };
