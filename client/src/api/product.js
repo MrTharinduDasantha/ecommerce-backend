@@ -173,3 +173,23 @@ export const deleteProduct = async (id) => {
     throw error.response.data;
   }
 };
+
+//  Get top 6 selling categories
+export const getTopSellingCategories = async () => {
+  try {
+    const response = await api.get("/api/products/categories/top-selling");
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getTopSoldProducts = async (limit = 6) => {
+  try {
+    const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top sold products:", error);
+    throw error.response?.data || error;
+  }
+};
