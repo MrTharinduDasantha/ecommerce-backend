@@ -530,7 +530,7 @@ async function createProduct(req, res) {
   try {
     const {
       Description,
-      Product_Brand_idProduct_Brand = null,
+      Product_Brand_idProduct_Brand,
       Market_Price,
       Selling_Price,
       Long_Description,
@@ -561,7 +561,7 @@ async function createProduct(req, res) {
 
     const productData = {
       Description,
-      Product_Brand_idProduct_Brand: Product_Brand_idProduct_Brand || null,
+      Product_Brand_idProduct_Brand,
       Market_Price,
       Selling_Price,
       Main_Image_Url: mainImageUrl,
@@ -721,7 +721,7 @@ async function updateProduct(req, res) {
 
     const productData = {
       Description,
-      Product_Brand_idProduct_Brand: Product_Brand_idProduct_Brand || null,
+      Product_Brand_idProduct_Brand,
       Market_Price,
       Selling_Price,
       Main_Image_Url: mainImageUrl,
@@ -854,61 +854,6 @@ async function updateProduct(req, res) {
   } catch (error) {
     console.error("Error updating product:", error);
     res.status(500).json({ message: "Failed to update product" });
-  }
-}
-
-// Toggle the history status of a product (new arrivals/old)
-async function toggleProductHistoryStatus(req, res) {
-  try {
-    const { id } = req.params;
-    const { historyStatus } = req.body;
-
-    if (!historyStatus) {
-      return res.status(400).json({ message: "History status is required" });
-    }
-
-    // Get original product data for logging
-    const [originalProduct] = await pool.query(
-      "SELECT Description, History_Status FROM Product WHERE idProduct = ?",
-      [id]
-    );
-
-    if (!originalProduct.length) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    await Product.toggleProductHistoryStatus(id, historyStatus);
-
-    // Log the admin action with original and updated data
-    const logData = {
-      originalData: {
-        description: originalProduct[0].Description,
-        historyStatus: originalProduct[0].History_Status,
-      },
-      updatedData: {
-        description: originalProduct[0].Description,
-        historyStatus: historyStatus,
-      },
-    };
-
-    await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
-      [
-        req.user.userId,
-        "Toggled product history status",
-        req.headers["user-agent"],
-        JSON.stringify(logData),
-      ]
-    );
-
-    res
-      .status(200)
-      .json({ message: "Product history status updated successfully" });
-  } catch (error) {
-    console.error("Error toggling product history status:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to toggle product history status" });
   }
 }
 
@@ -1435,7 +1380,6 @@ module.exports = {
   // Product related functions
   createProduct,
   updateProduct,
-  toggleProductHistoryStatus,
   toggleProductStatus,
   getAllProducts,
   getProductTotal,

@@ -184,7 +184,7 @@ export const getTopSellingCategories = async () => {
   }
 };
 
-export const getTopSoldProducts = async (limit = 6) => {
+export const getTopSoldProducts = async (limit = 10) => {
   try {
     const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
     return response.data;
@@ -192,4 +192,26 @@ export const getTopSoldProducts = async (limit = 6) => {
     console.error("Error fetching top sold products:", error);
     throw error.response?.data || error;
   }
+
+};
+
+// Inside your API file
+
+export const getSubCategoriesByCategoryId = async (categoryId) => {
+  try {
+    const response = await api.get(`/api/products/categories/${categoryId}/subcategories`);
+    return response.data; // Adjust according to your server's response structure
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getProductsBySubCategoryId = async (subCategoryId) => {
+  try {
+    const response = await api.get(`/api/products/sub-categories/${subCategoryId}/products`);
+    return response.data; // Adjust according to your server's response structure
+  } catch (error) {
+    throw error.response.data;
+  }
+
 };

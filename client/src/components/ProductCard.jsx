@@ -21,6 +21,12 @@ const ProductCard = ({ image, category, title, price, oldPrice, weight, discount
         <span className="absolute top-4 right-4 bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded">
           New
         </span>
+        {/* Display the discount information here under the "New" label */}
+        {(discountName || discountAmount) && (
+          <div className="absolute top-4 left-4 bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded">
+            {discountName} {discountAmount}
+          </div>
+        )}
       </div>
       <div className="mt-4">
         <p className="text-[11.11px] text-gray-400 mb-1 text-[#7A7A7A] pl-4">{category}</p>
@@ -28,19 +34,13 @@ const ProductCard = ({ image, category, title, price, oldPrice, weight, discount
         {weight && <p className="text-[11.11px] text-gray-400 pl-4">{weight}</p>}
         <div className="mt-2 flex items-center space-x-2">
           <span className="text-[16px] font-semibold text-[#5E5E5E] pl-4">{price}</span>
-          <span className="text-[13.33px] text-gray-400 line-through text-[#CCCCCC]">{oldPrice}</span>
-        </div>
-        <div className="mt-0.5 pl-4">
-          <span className="text-[12px] text-[#5CAF90] font-medium">
-            {discountName}
-          </span>
-          <span className="text-[12px] text-[#5CAF90] ml-2">
-            {discountAmount}
-          </span>
+          {oldPrice && (
+              <span className="text-[13.33px] text-gray-400 line-through text-[#CCCCCC]">{oldPrice}</span>
+          )}
         </div>
       </div>
     </div>
   </Link>
 );
 
-export default ProductCard; 
+export default ProductCard;
