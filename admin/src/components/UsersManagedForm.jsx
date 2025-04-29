@@ -8,15 +8,19 @@ import * as api from "../api/auth";
 const UsersManagedForm = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoading(true);
         const data = await api.fetchUsers();
         setUsers(data);
       } catch (error) {
         console.error("Error fetching users:", error);
         toast.error("There was an issue fetching users.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -131,6 +135,14 @@ const UsersManagedForm = () => {
       (user.Phone_No && user.Phone_No.toLowerCase().includes(searchLower))
     );
   });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 
@@ -7,6 +7,24 @@ const LogDetails = () => {
   const navigate = useNavigate();
   const { log } = location.state || {};
   const [expandedSections, setExpandedSections] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading for consistency; set to false after checking log data
+    if (log) {
+      setLoading(false);
+    } else {
+      setLoading(false); // No log data, so no need to keep loading
+    }
+  }, [log]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   if (!log) {
     return (

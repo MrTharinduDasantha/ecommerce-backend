@@ -189,7 +189,7 @@ const CustomerManagedForm = () => {
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#5CAF90",
-      cancelButtonColor: "#6B7280",
+cancelButtonColor: "#6B7280",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -219,8 +219,8 @@ const CustomerManagedForm = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5CAF90]"></div>
+      <div className="flex justify-center items-center h-40">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
@@ -307,10 +307,16 @@ const CustomerManagedForm = () => {
                         >
                           <FaEdit className="w-3 h-3" />
                         </button>
-                      
+                        <button
+                          onClick={() => handleHistory(customer.idCustomer)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                        >
+                          <FaHistory className="w-3 h-3" />
+                        </button>
                         <button
                           onClick={() => handleDelete(customer.idCustomer)}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="Delete Customer"
                         >
                           <RiDeleteBin5Fill className="w-3 h-3" />
                         </button>
@@ -368,10 +374,16 @@ const CustomerManagedForm = () => {
                   >
                     <FaEdit className="w-3 h-3" />
                   </button>
-                
+                  <button
+                    onClick={() => handleHistory(customer.idCustomer)}
+                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                  >
+                    <FaHistory className="w-3 h-3" />
+                  </button>
                   <button
                     onClick={() => handleDelete(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                    title="Delete Customer"
                   >
                     <RiDeleteBin5Fill className="w-3 h-3" />
                   </button>
