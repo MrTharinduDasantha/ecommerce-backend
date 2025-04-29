@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../../api/product'; // Import the API function
 import Sidebar from '../Sidebar';
 import OnSaleBanner from '../OnSaleBanner';
-import { onSaleProducts } from '../Products';
+import ProductCard from '../ProductCard';
 
 const OnSale = () => {
   const { addToCart } = useCart();
@@ -112,21 +112,23 @@ const OnSale = () => {
             </div>
             
             {/* Products Grid */}
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-              {onSaleProducts.map((product) => (
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              {products.map((product) => (
                 <div 
                   key={product.id} 
-                  className="cursor-pointer hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300 cursor-pointer"
                   onClick={() => handleProductClick(product)}
                 >
                   <ProductCard 
                     image={product.image}
                     category="On Sale"
                     title={product.name}
-                    price={`Rs. ${product.sellingPrice.toLocaleString()}`}
-                    oldPrice={`Rs. ${product.marketPrice.toLocaleString()}`}
-                    // discountName={product.discountName || 'Sale Discounts'}
-                    // discountAmount={`Save Rs. ${(product.marketPrice - product.sellingPrice).toLocaleString()}`}
+                    price={product.price}
+                    oldPrice={product.oldPrice}
+                    weight={product.weight}
+                    id={product.id}
+                    // discountName={product.discountName}
+                    // discountAmount={`Save LKR ${product.discountAmount.toLocaleString()}`}
                     className="h-full"
                   />
                 </div>
