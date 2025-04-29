@@ -3,8 +3,7 @@ import { useCart } from '../../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import Banner from '../Banner';
-import ProductCard from '../ProductCard';
-import { seasonalProducts } from '../SeasonalProducts';
+import { seasonalOffersProducts } from '../Products';
 
 const SeasonalOffers = () => {
   const { addToCart } = useCart();
@@ -12,16 +11,13 @@ const SeasonalOffers = () => {
   const [addedProducts, setAddedProducts] = useState([]);
 
   const handleProductClick = (product) => {
-    // Navigate to product detail page
-    navigate(`/product/${product.id}`);
-  };
-
-  const handleAddToCart = (product) => {
-    // Add the product to cart
-    addToCart(product);
-    
-    // Add to the list of added products
-    setAddedProducts(prev => [...prev, product]);
+    // Navigate to product page
+    navigate(`/product-page/${product.id}`, {
+      state: { 
+        product: product,
+        source: 'seasonal-offers'
+      }
+    });
   };
 
   const handleViewCart = () => {
@@ -36,7 +32,7 @@ const SeasonalOffers = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="container mx-auto px-4 py-8 flex-grow">
+      <div className="container mx-auto px-2 py-8 flex-grow">
         <div className="flex gap-8">
           {/* Sidebar */}
           <Sidebar />
@@ -55,23 +51,57 @@ const SeasonalOffers = () => {
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
-              {seasonalProducts.map((product) => (
-                <div 
-                  key={product.id} 
-                  className="cursor-pointer hover:scale-105 hover:shadow-lg transform transition-all duration-300"
-                  onClick={() => handleProductClick(product)}
-                >
-                  <ProductCard 
-                    image={product.image}
-                    category={product.category}
-                    title={product.name}
-                    price={`Rs. ${product.sellingPrice.toLocaleString()}`}
-                    oldPrice={`Rs. ${product.marketPrice.toLocaleString()}`}
-                    weight={product.variants[0].size}
-                  />
-                </div>
-              ))}
+
+            {/* Products Section */}
+            <div className="mt-12">
+              <h3 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-left">Products</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {seasonalOffersProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow"
+                    style={{ width: '220px', height: '290px' }}
+                    onClick={() => handleProductClick(product)}
+                  >
+                    <div className="relative">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-[220px] h-[170px] object-cover"
+                      />
+                      <span className="absolute top-4 right-3 bg-[#5CAF90] text-white text-[11.11px] px-2 py-0.5 rounded">
+                        New
+                      </span>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-[11.11px] text-gray-400 mb-1 text-[#7A7A7A] pl-4">
+                        Seasonal Offers
+                      </p>
+                      <h3 className="text-[13.33px] font-medium text-gray-700 leading-snug text-[#1D372E] pl-4">
+                        {product.name}
+                      </h3>
+                      <div className="mt-2 flex items-center space-x-2">
+                        <span className="text-[16px] font-semibold text-[#5E5E5E] pl-4">
+                          Rs. {product.sellingPrice.toLocaleString()}
+                        </span>
+                        {product.marketPrice > product.sellingPrice && (
+                          <span className="text-[13.33px] text-gray-400 line-through text-[#CCCCCC]">
+                            Rs. {product.marketPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 pl-4">
+                        <span className="text-[12px] text-[#5CAF90] font-medium">
+                          {product.discountName || 'Seasonal Discounts'}
+                        </span>
+                        <span className="text-[12px] text-[#5CAF90] ml-2">
+                          Save Rs. {(product.marketPrice - product.sellingPrice).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

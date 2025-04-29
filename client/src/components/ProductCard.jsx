@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const ProductCard = ({ image, category, title, price, oldPrice, weight, id }) => (
+const ProductCard = ({ image, category, title, price, oldPrice, weight, discountName, discountAmount, id }) => (
   <Link to={`/product-page/${id}`} className="block">
     <div 
       className="bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow cursor-pointer"
@@ -29,6 +29,14 @@ const ProductCard = ({ image, category, title, price, oldPrice, weight, id }) =>
         <div className="mt-2 flex items-center space-x-2">
           <span className="text-[16px] font-semibold text-[#5E5E5E] pl-4">{price}</span>
           <span className="text-[13.33px] text-gray-400 line-through text-[#CCCCCC]">{oldPrice}</span>
+        </div>
+        <div className="mt-0.5 pl-4">
+          <span className="text-[12px] text-[#5CAF90] font-medium">
+            {discountName}
+          </span>
+          <span className="text-[12px] text-[#5CAF90] ml-2">
+            {discountAmount}
+          </span>
         </div>
       </div>
     </div>
