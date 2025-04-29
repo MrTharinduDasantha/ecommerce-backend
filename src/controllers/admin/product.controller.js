@@ -949,7 +949,7 @@ async function getProductsSoldQty(req, res) {
     }
 
     const query = `
-      SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty
+      SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty ,Market_Price , Selling_Price
       FROM Product
       WHERE Sold_Qty > 0
       ORDER BY Sold_Qty DESC
@@ -1348,6 +1348,19 @@ async function getDiscountById(req, res) {
     res.status(500).json({ message: "Failed to fetch discount" });
   }
 }
+// Get top 6 selling categories
+async function getTopSellingCategories(req, res) {
+  try {
+    const categories = await Product.getTopSellingCategories();
+    res.status(200).json({
+      message: "Top selling categories fetched successfully",
+      categories,
+    });
+  } catch (error) {
+    console.error("Error fetching top selling categories:", error);
+    res.status(500).json({ message: "Failed to fetch top selling categories" });
+  }
+}
 
 module.exports = {
   // Category and Sub-Category related functions
@@ -1383,4 +1396,6 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
+
+  getTopSellingCategories,
 };

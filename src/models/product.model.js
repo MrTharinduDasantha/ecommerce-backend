@@ -575,7 +575,7 @@ async function getProductCount() {
 // Get top sold products
 async function getProductsSoldQty() {
   const query = `
-    SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty
+    SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty,,Market_Price , Selling_Price
     FROM Product
     WHERE Sold_Qty > 0
     ORDER BY Sold_Qty DESC
@@ -827,6 +827,33 @@ async function getDiscountById(discountId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
+async function getTopSellingCategories() {
+  const query = `
+    SELECT 
+        pc.idProduct_Category,
+        pc.Description AS Category_Name,
+        pc.Image_Icon_Url,
+        pc.Description AS Category_Description,
+        COALESCE(SUM(p.Sold_Qty), 0) AS Total_Sold_Qty
+    FROM 
+        Product_Category pc
+    LEFT JOIN 
+        Sub_Category sc ON pc.idProduct_Category = sc.Product_Category_idProduct_Category
+    LEFT JOIN 
+        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category
+    LEFT JOIN 
+        Product p ON phsc.Product_idProduct = p.idProduct
+    GROUP BY 
+        pc.idProduct_Category, pc.Description, pc.Image_Icon_Url
+    ORDER BY 
+        Total_Sold_Qty DESC
+    LIMIT 6
+  `;
+  const [categories] = await pool.query(query);
+  return categories;
+}
+
+
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
@@ -866,4 +893,5 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
+  getTopSellingCategories
 };
