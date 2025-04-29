@@ -181,60 +181,6 @@ function Navbar() {
     </div>
   </Link>
 
-        <Link to="/ramadan">
-          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-              <FaGift />
-            </motion.span>
-            <span>Seasonal Offers</span>
-          </div>
-        </Link>
-
-        <Link to="/rush-delivery">
-          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-              <FaRocket />
-            </motion.span>
-            <span>Rush Delivery</span>
-          </div>
-        </Link>
-
-        <Link to="/on-sale">
-          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-              <FaTags />
-            </motion.span>
-            <span>On Sale</span>
-          </div>
-        </Link>
-
-        <Link to="/events">
-          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-              <FaCalendarAlt />
-            </motion.span>
-            <span>Events</span>
-          </div>
-        </Link>
-
-        <Link to="/brands">
-          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-              <FaNetworkWired />
-            </motion.span>
-            <span>Brands</span>
-          </div>
-        </Link>
-
-        <Link to="/for-you">
-          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-              <FaHeart />
-            </motion.span>
-            <span>For You</span>
-          </div>
-        </Link>
-
       </div>
 
       {isModalOpen && (
