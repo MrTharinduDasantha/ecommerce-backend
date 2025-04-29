@@ -52,8 +52,9 @@ export default function CategoryDropdown() {
     setShowSubcategories(true);
   };
 
-  const handleSubcategoryClick = (subcategoryName) => {
-    navigate(`/subcategory/${subcategoryName.toLowerCase().replace(/\s+/g, '-')}`);
+  const handleSubcategoryClick = (subcategory) => {
+    // Navigate to AllCategories with selected subcategory ID
+    navigate(`/all-categories`, { state: { selectedSubcategory: subcategory.idSub_Category } });
     setShowSubcategories(false);
     setSelectedCategory(null);
   };
@@ -156,7 +157,7 @@ export default function CategoryDropdown() {
                 <li
                   key={subcategory.idSub_Category}
                   className="px-4 py-2 cursor-pointer hover:bg-gray-100 rounded-md"
-                  onClick={() => handleSubcategoryClick(subcategory.Description)}
+                  onClick={() => handleSubcategoryClick(subcategory)}
                 >
                   <span className="text-[13.33px]">{subcategory.Description}</span>
                 </li>
