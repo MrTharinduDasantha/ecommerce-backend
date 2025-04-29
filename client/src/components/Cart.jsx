@@ -3,6 +3,7 @@ import {Link, useLocation, useNavigate} from 'react-router-dom';
 import ShareIcon from '@mui/icons-material/Share';
 import AppleIcon from '@mui/icons-material/Apple';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {useCart} from '../context/CartContext';
 import Sidebar from './Sidebar';
 import LovelySpringBouquet from '../assets/RushDelivery/LovelySpringBouquet.jpg';
@@ -25,10 +26,39 @@ import DELLLaptop from '../assets/OnSale/DELLLaptop.jpg';
 const Cart = () => {
     const {cartItems, removeFromCart, updateQuantity} = useCart();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [selectedItems, setSelectedItems] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
     const source = location.state?.source;
     const selectedProduct = location.state?.selectedProduct;
+
+    const handleItemSelect = (itemId) => {
+        setSelectedItems(prev => {
+            if (prev.includes(itemId)) {
+                return prev.filter(id => id !== itemId);
+            } else {
+                return [...prev, itemId];
+            }
+        });
+    };
+
+    const handleCheckout = () => {
+        const selectedCartItems = cartItems.filter(item => selectedItems.includes(item.id)).map(item => ({
+            ...item,
+            discountName: item.discountName || (
+                item.category === 'Seasonal Offers' ? 'Seasonal Discounts' :
+                item.category === 'Rush Delivery' ? 'Rush Discounts' :
+                item.category === 'For You' ? 'For You Discounts' :
+                'Sale Discounts'
+            )
+        }));
+        navigate('/checkout', { 
+            state: { 
+                selectedItems: selectedCartItems,
+                source: 'cart'
+            } 
+        });
+    };
 
     // Scroll to the selected product if it exists
     useEffect(() => {
@@ -47,13 +77,13 @@ const Cart = () => {
 
     const parsePrice = (priceString) => {
         if (!priceString) return 0;
-        const numericPrice = priceString.replace('LKR ', '').replace(/,/g, '');
+        const numericPrice = priceString.replace('Rs. ', '').replace(/,/g, '');
         return parseFloat(numericPrice) || 0;
     };
 
     const formatPrice = (price) => {
-        if (isNaN(price)) return 'LKR 0.00';
-        return `LKR ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        if (isNaN(price)) return 'Rs. 0';
+        return `Rs. ${price.toLocaleString()}`;
     };
 
     const calculateItemTotal = (item) => {
@@ -248,41 +278,51 @@ const Cart = () => {
                                             className={`grid grid-cols-6 text-center w-auto border-b-2 border-gray-200 pb-4 transition-all duration-500 ${selectedProduct && selectedProduct.id === item.id ? 'highlight-product' : ''}`}
                                         >
                                             <div className="col-span-2 flex items-center">
-                                                <Link 
-                                                    to={`/product-page/${item.id}`}
-                                                    state={{ fromCart: true, selectedVariant: item }}
-                                                    className="flex items-center space-x-4"
+                                                <div 
+                                                    className="flex items-center space-x-4 cursor-pointer"
+                                                    onClick={() => handleItemSelect(item.id)}
                                                 >
-                                                    <img 
-                                                        src={item.image} 
-                                                        alt={item.name} 
-                                                        className="w-20 h-20 object-cover rounded"
-                                                    />
-                                                    <div className="text-left">
-                                                        <h3 className="font-medium">{item.name}</h3>
-                                                        {item.color && (
-                                                            <div className="flex items-center space-x-2">
-                                                                <span className="text-sm text-gray-600">Color:</span>
-                                                                <span className="text-sm font-medium">{item.color}</span>
-                                                                {item.colorCode && (
-                                                                    <div 
-                                                                        className="w-4 h-4 rounded-full border border-gray-300" 
-                                                                        style={{ backgroundColor: item.colorCode }}
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                        {item.size && (
-                                                            <div className="flex items-center space-x-2">
-                                                                <span className="text-sm text-gray-600">Size:</span>
-                                                                <span className="text-sm font-medium">{item.size}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </Link>
+                                                    {selectedItems.includes(item.id) ? (
+                                                        <CheckCircleIcon className="text-[#5CAF90] text-xl" />
+                                                    ) : (
+                                                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+                                                    )}
+                                                    <Link 
+                                                        to={`/product-page/${item.id}`}
+                                                        state={{ fromCart: true, selectedVariant: item }}
+                                                        className="flex items-center space-x-4"
+                                                    >
+                                                        <img 
+                                                            src={item.image} 
+                                                            alt={item.name} 
+                                                            className="w-20 h-20 object-cover rounded"
+                                                        />
+                                                        <div className="text-left">
+                                                            <h3 className="font-medium">{item.name}</h3>
+                                                            {item.color && (
+                                                                <div className="flex items-center space-x-2">
+                                                                    <span className="text-sm text-gray-600">Color:</span>
+                                                                    <span className="text-sm font-medium">{item.color}</span>
+                                                                    {item.colorCode && (
+                                                                        <div 
+                                                                            className="w-4 h-4 rounded-full border border-gray-300" 
+                                                                            style={{ backgroundColor: item.colorCode }}
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            {item.size && (
+                                                                <div className="flex items-center space-x-2">
+                                                                    <span className="text-sm text-gray-600">Size:</span>
+                                                                    <span className="text-sm font-medium">{item.size}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </Link>
+                                                </div>
                                             </div>
                                             <div className="my-auto">
-                                                <p className="text-[#1D372E] font-medium">{formatItemPrice(item)}</p>
+                                                <p className="text-[#1D372E] font-medium">{formatPrice(parsePrice(item.price) * item.quantity)}</p>
                                             </div>
                                             <div className="my-auto">
                                                 <input
@@ -295,7 +335,7 @@ const Cart = () => {
                                             </div>
                                             <div className="my-auto">
                                                 <p className="text-[#1D372E] font-medium ml-auto">
-                                                    {formatItemPrice(item)}
+                                                    {formatPrice(parsePrice(item.price) * item.quantity)}
                                                 </p>
                                             </div>
                                             <div className="my-auto">
@@ -317,7 +357,7 @@ const Cart = () => {
                         <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto">
                             <div className="flex justify-between items-center mb-6">
                                 <span className="text-lg font-medium">Total</span>
-                                <span className="text-lg">{formatPrice(total)}</span>
+                                <span className="text-lg">{formatPrice(calculateTotal())}</span>
                             </div>
 
                             <Link to="/"
@@ -327,8 +367,14 @@ const Cart = () => {
 
                             {cartItems.length > 0 && (
                                 <button
-                                    className="w-full bg-[#5CAF90] text-white text-center py-3 rounded hover:bg-[#5CAF90] transition-colors mb-8">
-                                    Checkout
+                                    onClick={handleCheckout}
+                                    disabled={selectedItems.length === 0}
+                                    className={`w-full text-white text-center py-3 rounded transition-colors mb-8 ${
+                                        selectedItems.length > 0 
+                                            ? 'bg-[#5CAF90] hover:bg-[#5CAF90]' 
+                                            : 'bg-gray-400 cursor-not-allowed'
+                                    }`}>
+                                    Checkout {selectedItems.length > 0 ? `(${selectedItems.length} items)` : ''}
                                 </button>
                             )}
 
