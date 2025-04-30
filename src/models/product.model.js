@@ -26,6 +26,33 @@ async function getAllCategories() {
   return categoryList;
 }
 
+// Get top 6 selling categories
+async function getTopSellingCategories() {
+  const query = `
+    SELECT 
+        pc.idProduct_Category,
+        pc.Description AS Category_Name,
+        pc.Image_Icon_Url,
+        pc.Description AS Category_Description,
+        COALESCE(SUM(p.Sold_Qty), 0) AS Total_Sold_Qty
+    FROM 
+        Product_Category pc
+    LEFT JOIN 
+        Sub_Category sc ON pc.idProduct_Category = sc.Product_Category_idProduct_Category
+    LEFT JOIN 
+        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category
+    LEFT JOIN 
+        Product p ON phsc.Product_idProduct = p.idProduct
+    GROUP BY 
+        pc.idProduct_Category, pc.Description, pc.Image_Icon_Url
+    ORDER BY 
+        Total_Sold_Qty DESC
+    LIMIT 6
+  `;
+  const [categories] = await pool.query(query);
+  return categories;
+}
+
 // Create a new category
 async function createCategory(description, imageUrl) {
   if (!description) {
@@ -496,6 +523,21 @@ async function updateProduct(productId, productData, associatedData) {
   }
 }
 
+// Toggle or update the history status of a product
+async function toggleProductHistoryStatus(productId, historyStatus) {
+  if (!historyStatus) {
+    throw new Error("History status is required");
+  }
+
+  const query = `
+    UPDATE Product
+    SET History_Status = ?
+    WHERE idProduct = ?
+  `;
+
+  await pool.query(query, [historyStatus, productId]);
+}
+
 // Toggle or update the status of a product
 async function toggleProductStatus(productId, status) {
   if (!status) {
@@ -575,11 +617,11 @@ async function getProductCount() {
 // Get top sold products
 async function getProductsSoldQty() {
   const query = `
-    SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty,,Market_Price , Selling_Price
+    SELECT idProduct, Description, Sold_Qty
     FROM Product
     WHERE Sold_Qty > 0
     ORDER BY Sold_Qty DESC
-    LIMIT 6
+    LIMIT 5
   `;
   console.log("Executing getProductsSoldQty query");
   const [products] = await pool.query(query);
@@ -860,36 +902,10 @@ async function getDiscountById(discountId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
-async function getTopSellingCategories() {
-  const query = `
-    SELECT 
-        pc.idProduct_Category,
-        pc.Description AS Category_Name,
-        pc.Image_Icon_Url,
-        pc.Description AS Category_Description,
-        COALESCE(SUM(p.Sold_Qty), 0) AS Total_Sold_Qty
-    FROM 
-        Product_Category pc
-    LEFT JOIN 
-        Sub_Category sc ON pc.idProduct_Category = sc.Product_Category_idProduct_Category
-    LEFT JOIN 
-        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category
-    LEFT JOIN 
-        Product p ON phsc.Product_idProduct = p.idProduct
-    GROUP BY 
-        pc.idProduct_Category, pc.Description, pc.Image_Icon_Url
-    ORDER BY 
-        Total_Sold_Qty DESC
-    LIMIT 6
-  `;
-  const [categories] = await pool.query(query);
-  return categories;
-}
-
-
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
+  getTopSellingCategories,
   createCategory,
   updateCategory,
   toggleCategoryStatus,
@@ -910,6 +926,7 @@ module.exports = {
   createProductFaq,
   createProductSubCategory,
   updateProduct,
+  toggleProductHistoryStatus,
   toggleProductStatus,
   getAllProducts,
   getProductCount,
@@ -927,6 +944,4 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
-  getTopSellingCategories,
-
 };
