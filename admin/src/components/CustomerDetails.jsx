@@ -66,14 +66,14 @@ const CustomerDetails = () => {
           {/* Back Button */}
           <button
             onClick={() => navigate("/dashboard/customer-managed-form")}
-            className="inline-flex items-center text-[#5CAF90] hover:text-[#4a9277] transition-colors mb-6"
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-[#5CAF90] text-white hover:bg-[#4a9277] transition-colors cursor-pointer"
+            aria-label="Back to Customer page"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            <span className="text-sm font-medium">Back to Customers</span>
-          </button>
+            <ArrowLeft className="w-4 h-4" />
+                     </button>
 
           {/* Header */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 mt-3">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
             <h2 className="text-base font-bold text-[#1D372E]">
               Customer Details

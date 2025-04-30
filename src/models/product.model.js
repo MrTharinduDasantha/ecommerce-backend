@@ -853,6 +853,7 @@ async function getTopSellingCategories() {
   return categories;
 }
 
+
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
@@ -892,5 +893,6 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
-  getTopSellingCategories
+  getTopSellingCategories,
+
 };

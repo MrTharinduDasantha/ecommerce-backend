@@ -111,6 +111,9 @@ router.get(
   "/sub-categories/:subId/products",
   productController.getProductsBySubCategory
 );
+
+
+
 router.get("/categories/top-selling", productController.getTopSellingCategories);
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/:id", productController.getProductById);
