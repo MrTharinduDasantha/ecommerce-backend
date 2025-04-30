@@ -1202,7 +1202,7 @@ const ProductForm = () => {
       {/* Brand Popup */}
       {brandPopupVisible && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-md max-h-[70vh] bg-white text-[#1D372E]">
+          <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
             <h3 className="font-bold text-lg mb-4">
               {isEditingBrand ? "Edit Brand" : "Add Brand"}
             </h3>

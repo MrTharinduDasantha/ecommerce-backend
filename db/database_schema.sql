@@ -6,11 +6,23 @@ CREATE TABLE User (
     idUser INT AUTO_INCREMENT PRIMARY KEY,
     Full_Name VARCHAR(45),
     Email VARCHAR(45),
-    Password VARCHAR(45),
+    Password VARCHAR(255),
     Phone_No VARCHAR(45),
     Status VARCHAR(45),
+    Otp VARCHAR(6) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Admin Logs Table
+CREATE TABLE admin_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT,
+    action VARCHAR(255),
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    new_user_info MEDIUMTEXT,
+    device_info VARCHAR(255),
+    FOREIGN KEY (admin_id) REFERENCES User(idUser)
 );
 
 -- Customer Table
@@ -21,17 +33,21 @@ CREATE TABLE Customer (
     Address TEXT,
     City VARCHAR(45),
     Country VARCHAR(45),
-    Mobile_No VARCHAR(45),
+    Mobile_No VARCHAR(45) ,
     Status VARCHAR(45),
     Email VARCHAR(45),
-    Password VARCHAR(45)
+    Password VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Cities Table
 CREATE TABLE Cities (
     idCities INT AUTO_INCREMENT PRIMARY KEY,
     Country VARCHAR(45),
-    City VARCHAR(45)
+    City VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Delivery_Address Table
@@ -43,6 +59,8 @@ CREATE TABLE Delivery_Address (
     City VARCHAR(45),
     Country VARCHAR(45),
     Mobile_No VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Customer_idCustomer) REFERENCES Customer(idCustomer)
 );
 
@@ -50,6 +68,7 @@ CREATE TABLE Delivery_Address (
 CREATE TABLE Product_Brand (
     idProduct_Brand INT AUTO_INCREMENT PRIMARY KEY,
     Brand_Name VARCHAR(45),
+    Brand_Image_Url TEXT,
     ShortDescription TEXT,
     User_idUser INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -81,14 +100,16 @@ CREATE TABLE Sub_Category (
 CREATE TABLE Product (
     idProduct INT AUTO_INCREMENT PRIMARY KEY,
     Description VARCHAR(45),
-    Product_Brand_idProduct_Brand INT,
+    Product_Brand_idProduct_Brand INT NULL,
     Market_Price DECIMAL(10,2),
     Selling_Price DECIMAL(10,2),
     Main_Image_Url TEXT,
     Long_Description TEXT,
-    SKU VARCHAR(45),
-    Sold_Qty INT,
-    Latest_Rating DECIMAL(3,1),
+    SIH VARCHAR(45),
+    Sold_Qty INT DEFAULT 0,
+    Latest_Rating DECIMAL(3,1) DEFAULT 0,
+    History_Status VARCHAR(45) DEFAULT 'new arrivals',
+    Status VARCHAR(45) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_Brand_idProduct_Brand) REFERENCES Product_Brand(idProduct_Brand)
@@ -121,6 +142,8 @@ CREATE TABLE Cart (
     Customer_idCustomer INT,
     Total_Items INT,
     Total_Amount DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Customer_idCustomer) REFERENCES Customer(idCustomer)
 );
 
@@ -130,8 +153,9 @@ CREATE TABLE Product_Variations (
     Product_idProduct INT,
     Colour VARCHAR(45),
     Size VARCHAR(45),
-    Rate DECIMAL(10,2),
-    SKU VARCHAR(45),
+    Qty INT,
+    Rate DECIMAL(10,2) DEFAULT 0,
+    SIH VARCHAR(45),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
@@ -149,6 +173,8 @@ CREATE TABLE Cart_has_Product (
     NetAmount DECIMAL(10,2),
     Note TEXT,
     Discounts_idDiscounts INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (Cart_idCart, Product_Variations_idProduct_Variations),
     FOREIGN KEY (Cart_idCart) REFERENCES Cart(idCart),
     FOREIGN KEY (Product_Variations_idProduct_Variations) REFERENCES Product_Variations(idProduct_Variations)
@@ -164,6 +190,8 @@ CREATE TABLE Discounts (
     Start_Date VARCHAR(45),
     End_Date VARCHAR(45),
     Status VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
 
@@ -182,6 +210,8 @@ CREATE TABLE `Order` (
     Status VARCHAR(45),
     Customer_Note TEXT,
     Supplier_Note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Delivery_Address_idDelivery_Address) REFERENCES Delivery_Address(idDelivery_Address)
 );
 
@@ -197,6 +227,8 @@ CREATE TABLE Order_has_Product_Variations (
     Total_Amount DECIMAL(10,2),
     Note TEXT,
     Discounts_idDiscounts INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (Order_idOrder, Product_Variations_idProduct_Variations),
     FOREIGN KEY (Order_idOrder) REFERENCES `Order`(idOrder),
     FOREIGN KEY (Product_Variations_idProduct_Variations) REFERENCES Product_Variations(idProduct_Variations),
@@ -212,6 +244,8 @@ CREATE TABLE Review (
     Comment VARCHAR(45),
     Date_Time VARCHAR(45),
     Status VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Customer_idCustomer) REFERENCES Customer(idCustomer),
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
@@ -228,10 +262,32 @@ CREATE TABLE FAQ (
 );
 
 -- Header Footer Setting Table
-CREATE TABLE Header_Footer_Setting (
+CREATE TABLE IF NOT EXISTS Header_Footer_Setting (
   idHeader_Footer_Setting INT AUTO_INCREMENT PRIMARY KEY,
   Navbar_Logo_Url TEXT,
   Footer_Copyright VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Admin Notifications Setting Table
+CREATE TABLE Admin_Notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES User(idUser)
+);
+
+-- Admin Notification Status Setting Table
+CREATE TABLE Admin_Notification_Status (
+    notification_id INT NOT NULL,
+    admin_id INT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP NULL,
+    PRIMARY KEY (notification_id, admin_id),
+    FOREIGN KEY (notification_id) REFERENCES Admin_Notifications(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES User(idUser)
+); 

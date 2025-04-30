@@ -27,6 +27,7 @@
     "react-select": "^5.10.1",
     "react-tooltip": "^5.28.0",
     "reactstrap": "^9.2.3",
+    "socket.io-client": "^4.8.1",
     "sweetalert2": "^11.17.2",
     "sweetalert2-react-content": "^5.1.0",
     "tailwindcss": "^4.0.15"

@@ -1,21 +1,23 @@
-const AdminNotification = require('../../models/AdminNotification');
+const AdminNotification = require("../../models/notification.model");
 
 // Get all notifications with read status for current admin
 const getNotifications = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const notifications = await AdminNotification.getNotificationsForAdmin(userId);
-    
+    const notifications = await AdminNotification.getNotificationsForAdmin(
+      userId
+    );
+
     res.status(200).json({
       success: true,
-      data: notifications
+      data: notifications,
     });
   } catch (error) {
-    console.error('Error fetching notifications:', error);
+    console.error("Error fetching notifications:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch notifications',
-      error: error.message
+      message: "Failed to fetch notifications",
+      error: error.message,
     });
   }
 };
@@ -25,24 +27,24 @@ const getNotificationById = async (req, res) => {
   try {
     const { id } = req.params;
     const notification = await AdminNotification.getNotificationById(id);
-    
+
     if (!notification) {
       return res.status(404).json({
         success: false,
-        message: 'Notification not found'
+        message: "Notification not found",
       });
     }
-    
+
     res.status(200).json({
       success: true,
-      data: notification
+      data: notification,
     });
   } catch (error) {
-    console.error('Error fetching notification:', error);
+    console.error("Error fetching notification:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch notification',
-      error: error.message
+      message: "Failed to fetch notification",
+      error: error.message,
     });
   }
 };
@@ -52,27 +54,38 @@ const createNotification = async (req, res) => {
   try {
     const { title, message } = req.body;
     const userId = req.user.userId;
-    
+
     if (!title || !message) {
       return res.status(400).json({
         success: false,
-        message: 'Title and message are required'
+        message: "Title and message are required",
       });
     }
-    
-    const notificationId = await AdminNotification.createNotification(title, message, userId);
-    
+
+    const notificationId = await AdminNotification.createNotification(
+      title,
+      message,
+      userId
+    );
+
+    const newNotification = await AdminNotification.getNotificationById(
+      notificationId
+    );
+
+    const io = req.app.get("io");
+    io.emit("newNotification", newNotification);
+
     res.status(201).json({
       success: true,
-      message: 'Notification created successfully',
-      data: { id: notificationId }
+      message: "Notification created successfully",
+      data: { id: notificationId },
     });
   } catch (error) {
-    console.error('Error creating notification:', error);
+    console.error("Error creating notification:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create notification',
-      error: error.message
+      message: "Failed to create notification",
+      error: error.message,
     });
   }
 };
@@ -83,43 +96,52 @@ const updateNotification = async (req, res) => {
     const { id } = req.params;
     const { title, message } = req.body;
     const userId = req.user.userId;
-    
+
     // Check if notification exists and belongs to current user
     const notification = await AdminNotification.getNotificationById(id);
-    
+
     if (!notification) {
       return res.status(404).json({
         success: false,
-        message: 'Notification not found'
+        message: "Notification not found",
       });
     }
-    
+
     if (notification.created_by !== userId) {
       return res.status(403).json({
         success: false,
-        message: 'You can only edit your own notifications'
+        message: "You can only edit your own notifications",
       });
     }
-    
-    const updated = await AdminNotification.updateNotification(id, title, message);
-    
+
+    const updated = await AdminNotification.updateNotification(
+      id,
+      title,
+      message
+    );
+
     if (!updated) {
       return res.status(400).json({
         success: false,
-        message: 'Failed to update notification'
+        message: "Failed to update notification",
       });
     }
-    
+
+    // Fetch the updated notification and emit WebSocket event
+    const updatedNotification = await AdminNotification.getNotificationById(id);
+    const io = req.app.get("io");
+    io.emit("notificationUpdated", updatedNotification);
+
     res.status(200).json({
       success: true,
-      message: 'Notification updated successfully'
+      message: "Notification updated successfully",
     });
   } catch (error) {
-    console.error('Error updating notification:', error);
+    console.error("Error updating notification:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update notification',
-      error: error.message
+      message: "Failed to update notification",
+      error: error.message,
     });
   }
 };
@@ -129,43 +151,47 @@ const deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    
+
     // Check if notification exists and belongs to current user
     const notification = await AdminNotification.getNotificationById(id);
-    
+
     if (!notification) {
       return res.status(404).json({
         success: false,
-        message: 'Notification not found'
+        message: "Notification not found",
       });
     }
-    
+
     if (notification.created_by !== userId) {
       return res.status(403).json({
         success: false,
-        message: 'You can only delete your own notifications'
+        message: "You can only delete your own notifications",
       });
     }
-    
+
     const deleted = await AdminNotification.deleteNotification(id);
-    
+
     if (!deleted) {
       return res.status(400).json({
         success: false,
-        message: 'Failed to delete notification'
+        message: "Failed to delete notification",
       });
     }
-    
+
+    // Emit WebSocket event for deletion
+    const io = req.app.get("io");
+    io.emit("notificationDeleted", { id });
+
     res.status(200).json({
       success: true,
-      message: 'Notification deleted successfully'
+      message: "Notification deleted successfully",
     });
   } catch (error) {
-    console.error('Error deleting notification:', error);
+    console.error("Error deleting notification:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete notification',
-      error: error.message
+      message: "Failed to delete notification",
+      error: error.message,
     });
   }
 };
@@ -175,26 +201,26 @@ const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    
+
     const updated = await AdminNotification.markAsRead(id, userId);
-    
+
     if (!updated) {
       return res.status(400).json({
         success: false,
-        message: 'Failed to mark notification as read'
+        message: "Failed to mark notification as read",
       });
     }
-    
+
     res.status(200).json({
       success: true,
-      message: 'Notification marked as read'
+      message: "Notification marked as read",
     });
   } catch (error) {
-    console.error('Error marking notification as read:', error);
+    console.error("Error marking notification as read:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to mark notification as read',
-      error: error.message
+      message: "Failed to mark notification as read",
+      error: error.message,
     });
   }
 };
@@ -204,26 +230,26 @@ const markAsUnread = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    
+
     const updated = await AdminNotification.markAsUnread(id, userId);
-    
+
     if (!updated) {
       return res.status(400).json({
         success: false,
-        message: 'Failed to mark notification as unread'
+        message: "Failed to mark notification as unread",
       });
     }
-    
+
     res.status(200).json({
       success: true,
-      message: 'Notification marked as unread'
+      message: "Notification marked as unread",
     });
   } catch (error) {
-    console.error('Error marking notification as unread:', error);
+    console.error("Error marking notification as unread:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to mark notification as unread',
-      error: error.message
+      message: "Failed to mark notification as unread",
+      error: error.message,
     });
   }
 };
@@ -235,5 +261,5 @@ module.exports = {
   updateNotification,
   deleteNotification,
   markAsRead,
-  markAsUnread
-}; 
+  markAsUnread,
+};

@@ -117,6 +117,7 @@ router.get(
 );
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/:id", productController.getProductById);
+router.get("/:id/sales", productController.getProductSales);
 router.delete("/:id", authenticate, productController.deleteProduct);
 
 // ----------------

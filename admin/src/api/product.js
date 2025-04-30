@@ -206,6 +206,16 @@ export const getProduct = async (id) => {
   }
 };
 
+// Get product sales information
+export const getProductSales = async (id) => {
+  try {
+    const response = await api.get(`/api/products/${id}/sales`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // Get total number of products
 export const getProductTotal = async () => {
   try {
