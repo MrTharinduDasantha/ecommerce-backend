@@ -147,6 +147,7 @@ const DiscountForm = () => {
       if (
         !formData.productId ||
         !formData.description ||
+        !formData.discountType ||
         !formData.discountValue ||
         !formData.startDate ||
         !formData.endDate
@@ -155,10 +156,24 @@ const DiscountForm = () => {
         return;
       }
 
-      // Validate discount value is a number
-      if (isNaN(formData.discountValue) || formData.discountValue <= 0) {
-        toast.error("Discount value must be a positive number");
+      // Convert discountValue to a number for validation
+      const value = Number(formData.discountValue);
+      if (isNaN(value)) {
+        toast.error("Discount value must be a number");
         return;
+      }
+
+      // Validate discount value based on discount type
+      if (formData.discountType === "percentage") {
+        if (value < 1 || value > 100) {
+          toast.error("Percentage discount must be between 1 and 100");
+          return;
+        }
+      } else if (formData.discountType === "fixed") {
+        if (value <= 0) {
+          toast.error("Fixed discount must be greater than 0");
+          return;
+        }
       }
 
       // Validate dates
@@ -298,7 +313,6 @@ const DiscountForm = () => {
                     : "in rupees"
                 }`}
                 className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
-                min="0"
                 step={formData.discountType === "percentage" ? "1" : "0.01"}
               />
             </div>

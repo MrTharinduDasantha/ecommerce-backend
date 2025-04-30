@@ -1,21 +1,50 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-import { getProduct } from "../api/product";
+import { getProduct, getProductSales } from "../api/product";
 import toast from "react-hot-toast";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+// Register chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
+  const [salesInfo, setSalesInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         setLoading(true);
-        const data = await getProduct(id);
-        setProduct(data.product);
+
+        // Fetch product details
+        const productData = await getProduct(id);
+        setProduct(productData.product);
+
+        // Fetch product sales details
+        const salesData = await getProductSales(id);
+        setSalesInfo(salesData.salesInfo);
       } catch (error) {
         toast.error(error.message || "Failed to load product details");
         navigate("/dashboard/products/edit-product");
@@ -60,6 +89,58 @@ const ProductDetails = () => {
     );
   }
 
+  // Prepare sales data for chart
+  const salesData = {
+    labels: salesInfo?.weeklySales.map((_, index) => `Week ${index + 1}`) || [],
+    datasets: [
+      {
+        label: "Units Sold",
+        data: salesInfo?.weeklySales.map((ws) => ws.unitsSold) || [],
+        borderColor: "rgb(75, 192, 192)",
+        tension: 0.1,
+        yAxisID: "y",
+      },
+      {
+        label: "Revenue",
+        data: salesInfo?.weeklySales.map((ws) => ws.revenue) || [],
+        borderColor: "rgb(255, 99, 132)",
+        tension: 0.1,
+        yAxisID: "y1",
+      },
+    ],
+  };
+
+  const options = {
+    scales: {
+      y: {
+        type: "linear",
+        display: true,
+        position: "left",
+        title: {
+          display: true,
+          text: "Units Sold",
+        },
+        ticks: {
+          callback: function (value) {
+            return Number.isInteger(value) ? value : Math.floor(value);
+          },
+        },
+      },
+      y1: {
+        type: "linear",
+        display: true,
+        position: "right",
+        title: {
+          display: true,
+          text: "Revenue (Rs.)",
+        },
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+    },
+  };
+
   return (
     <div className="card bg-white shadow-md">
       <div className="card-body p-4 md:p-6">
@@ -81,8 +162,9 @@ const ProductDetails = () => {
 
         {/* Product Details */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Images */}
-          <div className="lg:col-span-1">
+          {/* Left Column - Images and Additional Information */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Images Section */}
             <div className="card bg-white border border-[#1D372E]">
               <div className="card-body p-4">
                 <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
@@ -135,9 +217,32 @@ const ProductDetails = () => {
                 </div>
               </div>
             </div>
+
+            {/* Additional Information Section */}
+            <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
+              <div className="card-body p-4">
+                <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+                  Additional Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-medium text-sm">Date Created</h4>
+                    <p className="mt-1">
+                      {new Date(product.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-sm">Time Created</h4>
+                    <p className="mt-1">
+                      {new Date(product.created_at).toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Right Column - Details */}
+          {/* Right Column - Details and Sales Information */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
@@ -145,28 +250,23 @@ const ProductDetails = () => {
                 <h3 className="card-title text-base font-semibold mb-4">
                   Basic Information
                 </h3>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-medium text-sm">Main Description</h4>
                     <p className="mt-1">{product.Description}</p>
                   </div>
-
                   <div>
                     <h4 className="font-medium text-sm">Brand</h4>
                     <p className="mt-1">{product.Brand_Name || "Other"}</p>
                   </div>
-
                   <div>
                     <h4 className="font-medium text-sm">Market Price</h4>
                     <p className="mt-1">Rs. {product.Market_Price}</p>
                   </div>
-
                   <div>
                     <h4 className="font-medium text-sm">Selling Price</h4>
                     <p className="mt-1">Rs. {product.Selling_Price}</p>
                   </div>
-
                   <div className="md:col-span-2">
                     <h4 className="font-medium text-sm">Sub Description</h4>
                     <p className="mt-1">
@@ -183,7 +283,6 @@ const ProductDetails = () => {
                 <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
                   Sub Categories
                 </h3>
-
                 {product.subcategories?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {product.subcategories.map((subCat) => (
@@ -209,7 +308,6 @@ const ProductDetails = () => {
                 <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
                   Variations
                 </h3>
-
                 {product.variations?.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="table min-w-[400px] text-center border border-[#1D372E] w-full">
@@ -259,7 +357,6 @@ const ProductDetails = () => {
                 <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
                   Frequently Asked Questions
                 </h3>
-
                 {product.faqs?.length > 0 ? (
                   <div className="space-y-4">
                     {product.faqs.map((faq) => (
@@ -280,30 +377,51 @@ const ProductDetails = () => {
               </div>
             </div>
 
-            {/* Metadata */}
-            <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
-                  Additional Information
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium text-sm">Date Created</h4>
-                    <p className="mt-1">
-                      {new Date(product.created_at).toLocaleDateString()}
+            {/* Sales Information Section */}
+            {salesInfo && (
+              <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
+                <div className="card-body p-4">
+                  <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+                    Sales Information for {product.Description}
+                  </h3>
+                  {salesInfo.weeklySales.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <h4 className="font-medium text-sm">
+                          Total Units Sold (Last 30 Days)
+                        </h4>
+                        <p className="mt-1">
+                          {salesInfo.totalUnitsSoldLast30Days}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm">
+                          Total Revenue (Last 30 Days)
+                        </h4>
+                        <p className="mt-1">
+                          Rs.{" "}
+                          {parseFloat(salesInfo.totalRevenueLast30Days).toFixed(
+                            2
+                          )}
+                        </p>
+                      </div>
+                      <div className="mt-6">
+                        <h4 className="font-medium text-sm mb-2">
+                          Sales Trend (Last 30 Days)
+                        </h4>
+                        <div className="aspect-video">
+                          <Line data={salesData} options={options} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm opacity-70">
+                      No sales data available for the last 30 days
                     </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-sm">Time Created</h4>
-                    <p className="mt-1">
-                      {new Date(product.created_at).toLocaleTimeString()}
-                    </p>
-                  </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

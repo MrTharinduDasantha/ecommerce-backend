@@ -698,6 +698,39 @@ async function getProductById(productId) {
   return product;
 }
 
+// Get sales information for a product
+async function getProductSalesInfo(productId) {
+  // Get total units sold and revenue in last 30 days
+  const [totals] = await pool.query(
+    `SELECT SUM(ohpv.Qty) AS totalUnitsSoldLast30Days, SUM(ohpv.Total_Amount) AS totalRevenueLast30Days
+    FROM Order_has_Product_Variations ohpv
+    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    WHERE pv.Product_idProduct = ?
+    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`,
+    [productId]
+  );
+
+  // Get weekly sales data for the last 30 days
+  const [weeklySales] = await pool.query(
+    `SELECT DATE_FORMAT(o.Date_Time, '%Y-%u') AS week, SUM(ohpv.Qty) AS unitsSold, SUM(ohpv.Total_Amount) AS revenue
+    FROM Order_has_Product_Variations ohpv
+    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    WHERE pv.Product_idProduct = ?
+    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    GROUP BY week
+    ORDER BY week`,
+    [productId]
+  );
+
+  return {
+    totalUnitsSoldLast30Days: totals[0].totalUnitsSoldLast30Days || 0,
+    totalRevenueLast30Days: totals[0].totalRevenueLast30Days || 0,
+    weeklySales: weeklySales,
+  };
+}
+
 // Delete a product and its related records
 async function deleteProduct(productId) {
   // Delete from join table
@@ -885,6 +918,7 @@ module.exports = {
   getProductsBySubCategory,
   getProductsByBrand,
   getProductById,
+  getProductSalesInfo,
   deleteProduct,
   // Discount related functions
   getAllDiscounts,
