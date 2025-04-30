@@ -496,21 +496,6 @@ async function updateProduct(productId, productData, associatedData) {
   }
 }
 
-// Toggle or update the history status of a product
-async function toggleProductHistoryStatus(productId, historyStatus) {
-  if (!historyStatus) {
-    throw new Error("History status is required");
-  }
-
-  const query = `
-    UPDATE Product
-    SET History_Status = ?
-    WHERE idProduct = ?
-  `;
-
-  await pool.query(query, [historyStatus, productId]);
-}
-
 // Toggle or update the status of a product
 async function toggleProductStatus(productId, status) {
   if (!status) {
@@ -869,7 +854,6 @@ async function getTopSellingCategories() {
 }
 
 
-
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
@@ -893,7 +877,6 @@ module.exports = {
   createProductFaq,
   createProductSubCategory,
   updateProduct,
-  toggleProductHistoryStatus,
   toggleProductStatus,
   getAllProducts,
   getProductCount,

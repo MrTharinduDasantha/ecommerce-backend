@@ -68,6 +68,7 @@ router.delete(
   productController.deleteSubCategory
 );
 
+
 // -------------
 // Brand Routes
 // -------------
@@ -90,11 +91,6 @@ router.get("/brands", productController.getBrands);
 // ---------------
 router.post("/", authenticate, cpUpload, productController.createProduct);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
-router.patch(
-  "/:id/history-status",
-  authenticate,
-  productController.toggleProductHistoryStatus
-);
 router.patch(
   "/:id/status",
   authenticate,
