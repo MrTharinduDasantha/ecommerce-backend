@@ -53,8 +53,8 @@ export default function CategoryDropdown() {
   };
 
   const handleSubcategoryClick = (subcategory) => {
-    // Navigate to AllCategories with selected subcategory ID
-    navigate(`/all-categories`, { state: { selectedSubcategory: subcategory.idSub_Category } });
+    // Navigate to the SubCategory page with the selected subcategory ID
+    navigate(`/subcategory/${subcategory.idSub_Category}`);
     setShowSubcategories(false);
     setSelectedCategory(null);
   };
@@ -149,8 +149,6 @@ export default function CategoryDropdown() {
           }}
         >
           <div className="w-full">
-            <div className="flex items-center mb-4 pb-2 bg-[#5CAF90]">
-            </div>
             <h3 className="text-[15px] font-medium mb-3">{selectedCategory.Description}</h3>
             <ul className="text-black">
               {selectedCategory.subcategories && selectedCategory.subcategories.map((subcategory) => (

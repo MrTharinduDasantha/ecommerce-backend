@@ -213,3 +213,13 @@ export const getProductsBySubCategoryId = async (subCategoryId) => {
     throw error.response.data;
   }
 };
+
+// Mock implementation - replace with your actual API call
+export const getSubCategoryById = async (id) => {
+  const response = await fetch(`/api/subcategories/${id}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch subcategory');
+  }
+  const data = await response.json();
+  return data; // Ensure this structure has a 'description' field as expected
+};

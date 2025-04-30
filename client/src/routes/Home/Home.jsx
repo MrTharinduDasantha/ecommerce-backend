@@ -1,24 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useEffect, useState } from 'react';
 import denim from './denims.png';
 import fruits from './fruits.avif';
