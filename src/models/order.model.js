@@ -226,6 +226,23 @@ class Order {
     );
     return result[0].count;
   }
+  static async getTotalRevenue() {
+    const [result] = await pool.query(
+      "SELECT SUM(Net_Amount) as total_revenue FROM `Order` WHERE Payment_Stats = 'paid'"
+    );
+    return result[0].total_revenue || 0; // Ensure we handle null values
+  }
+
+  static async getMonthlyTotalRevenue() {
+    const [result] = await pool.query(
+      "SELECT DATE_FORMAT(Date_Time, '%Y-%m') AS month, SUM(Net_Amount) AS monthly_revenue " +
+      "FROM `Order` " +
+      "WHERE Payment_Stats = 'paid' " +
+      "GROUP BY month " +
+      "ORDER BY month DESC"
+    );
+    return result; // This will return an array of monthly revenue objects
+  }
 }
 
 module.exports = Order;

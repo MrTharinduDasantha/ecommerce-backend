@@ -215,6 +215,34 @@ class OrderController {
       });
     }
   }
+
+// Get Total Revenue 
+async getTotalRevenue(req, res) {
+  try {
+    const totalRevenue = await Order.getTotalRevenue();
+    res.json({ totalRevenue });
+  } catch (error) {
+    console.error("Error in getTotalRevenue:", error);
+    res.status(500).json({
+      message: "Failed to fetch total revenue",
+      error: error.message,
+    });
+  }
+}
+
+// Get Monthly Total Revenue
+async getMonthlyTotalRevenue(req, res) {
+  try {
+    const monthlyRevenue = await Order.getMonthlyTotalRevenue();
+    res.json(monthlyRevenue); // This is an array of monthly revenue
+  } catch (error) {
+    console.error("Error in getMonthlyTotalRevenue:", error);
+    res.status(500).json({
+      message: "Failed to fetch monthly total revenue",
+      error: error.message,
+    });
+  }
+}
 }
 
 module.exports = new OrderController();

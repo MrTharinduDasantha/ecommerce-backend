@@ -307,12 +307,7 @@ cancelButtonColor: "#6B7280",
                         >
                           <FaEdit className="w-3 h-3" />
                         </button>
-                        <button
-                          onClick={() => handleHistory(customer.idCustomer)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                        >
-                          <FaHistory className="w-3 h-3" />
-                        </button>
+                       
                         <button
                           onClick={() => handleDelete(customer.idCustomer)}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
@@ -374,12 +369,7 @@ cancelButtonColor: "#6B7280",
                   >
                     <FaEdit className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={() => handleHistory(customer.idCustomer)}
-                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                  >
-                    <FaHistory className="w-3 h-3" />
-                  </button>
+                 
                   <button
                     onClick={() => handleDelete(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"

@@ -130,3 +130,42 @@ export const getPendingDeliveryCount = async () => {
     throw error.response?.data || { message: 'Failed to fetch pending delivery count' };
   }
 };
+
+
+// Get Total Revenue
+export const getTotalRevenue = async () => {
+  try {
+    const token = getToken();
+    console.log('Using token for getTotalRevenue:', token);
+
+    const response = await axios.get(`${API_URL}/total-revenue`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching total revenue:', error);
+    throw error.response?.data || { message: 'Failed to fetch total revenue' };
+  }
+};
+
+// Get Monthly Total Revenue
+export const getMonthlyTotalRevenue = async () => {
+  try {
+    const token = getToken();
+    console.log('Using token for getMonthlyTotalRevenue:', token);
+
+    const response = await axios.get(`${API_URL}/monthly-revenue`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching monthly total revenue:', error);
+    throw error.response?.data || { message: 'Failed to fetch monthly total revenue' };
+  }
+};

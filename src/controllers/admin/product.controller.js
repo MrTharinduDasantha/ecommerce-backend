@@ -1417,6 +1417,7 @@ async function getTopSellingCategories(req, res) {
   }
 }
 
+
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
