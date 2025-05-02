@@ -34,7 +34,7 @@ app.use("/api/products", productRoutes); // Use the product routes
 app.use("/api/settings", settingRoutes); // Use the setting routes
 app.use("/api/carts", cartRoutes); // Use the cart routes
 app.use("/admin/orders", orderRoutes); // Use the order routes
-app.use("/admin/notifications", notificationRoutes); // Register the notification routes
+app.use("/admin/notifications", notificationRoutes); // Use the notification routes
 
 // Socket.io connection
 io.on("connection", (socket) => {

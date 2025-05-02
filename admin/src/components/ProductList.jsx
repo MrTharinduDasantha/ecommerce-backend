@@ -68,15 +68,6 @@ const ProductList = () => {
     navigate(`/dashboard/products/view-product/${productId}`);
   };
 
-  // Hide scrollbar when popup is open, restore when closed
-  useEffect(() => {
-    if (deleteProductId) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [deleteProductId]);
-
   // Toggle product history status
   const handleToggleHistoryStatus = async (productId, currentHistoryStatus) => {
     try {
@@ -121,7 +112,9 @@ const ProductList = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-[#5CAF90]"></div>
-          <h2 className="text-xl font-bold text-[#1D372E]">All Products</h2>
+          <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+            All Products
+          </h2>
         </div>
 
         {/* Search Bar */}
@@ -136,18 +129,18 @@ const ProductList = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Search by product..."
-              className="input input-bordered w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
+              className="input input-bordered input-sm md:input-md w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
             />
             <button
               onClick={handleSearch}
-              className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              className="btn btn-primary btn-sm md:btn-md ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             >
               Search
             </button>
           </div>
         </div>
 
-        {/* Products Table */}
+        {/* Products Display */}
         {loading ? (
           <div className="flex justify-center items-center h-40">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -157,31 +150,185 @@ const ProductList = () => {
             <span>No products found.</span>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table min-w-[700px] text-center border border-[#1D372E]">
-              <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                <tr className="border-b border-[#1D372E]">
-                  <th className="font-semibold">Main Description</th>
-                  <th className="font-semibold">Brand</th>
-                  <th className="font-semibold">Selling Price</th>
-                  <th className="font-semibold">History Status</th>
-                  <th className="font-semibold">Main Image</th>
-                  <th className="font-semibold">Status</th>
-                  <th className="font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-[#1D372E]">
-                {filteredProducts.map((product) => (
-                  <tr
-                    key={product.idProduct}
-                    className="border-b border-[#1D372E]"
-                  >
-                    <td>{product.Description}</td>
-                    <td>{product.Brand_Name || "Other"}</td>
-                    <td>Rs. {product.Selling_Price}</td>
-                    <td>
-                      <div className="flex items-center justify-center gap-2">
-                        <span>New Arrivals</span>
+          <>
+            {/* Table for larger screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="table table-fixed min-w-[800px] text-center border border-[#1D372E]">
+                <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                  <tr className="border-b border-[#1D372E]">
+                    <th className="font-semibold md:text-xs lg:text-sm w-[125px]">
+                      Main Description
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Brand
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Selling Price
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[150px]">
+                      History Status
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Main Image
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Status
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[125px]">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-[#1D372E]">
+                  {filteredProducts.map((product) => (
+                    <tr
+                      key={product.idProduct}
+                      className="border-b border-[#1D372E]"
+                    >
+                      <td className="text-xs lg:text-sm">
+                        {product.Description}
+                      </td>
+                      <td className="text-xs lg:text-sm">
+                        {product.Brand_Name || "Other"}
+                      </td>
+                      <td className="text-xs lg:text-sm">
+                        Rs. {product.Selling_Price}
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-xs lg:text-sm">
+                            New Arrivals
+                          </span>
+                          <button
+                            onClick={() =>
+                              handleToggleHistoryStatus(
+                                product.idProduct,
+                                product.History_Status
+                              )
+                            }
+                            className="text-[#5CAF90]"
+                          >
+                            {product.History_Status === "new arrivals" ? (
+                              <FaCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            ) : (
+                              <FaRegCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        {product.Main_Image_Url ? (
+                          <div className="avatar">
+                            <div className="w-12 h-12 rounded-md">
+                              <img
+                                src={
+                                  product.Main_Image_Url || "/placeholder.svg"
+                                }
+                                alt="Main"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-sm opacity-70">No image</span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="md:text-xs lg:text-sm">Active</span>
+                          <button
+                            onClick={() =>
+                              handleToggleStatus(
+                                product.idProduct,
+                                product.Status
+                              )
+                            }
+                            className="text-[#5CAF90]"
+                          >
+                            {product.Status === "active" ? (
+                              <FaCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            ) : (
+                              <FaRegCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleViewProduct(product.idProduct)}
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="View Product"
+                          >
+                            <FaEye />
+                          </button>
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/dashboard/products/edit-product/${product.idProduct}`
+                              )
+                            }
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="Edit Product"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (product.hasOrders) {
+                                toast.error(
+                                  "This product cannot be deleted since it has already been ordered"
+                                );
+                              } else {
+                                setDeleteProductId(product.idProduct);
+                              }
+                            }}
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="Delete Product"
+                          >
+                            <RiDeleteBin5Fill />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Product Cards for mobile view */}
+            <div className="md:hidden grid grid-cols-1 gap-4">
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.idProduct}
+                  className="card bg-white shadow-md border border-[#1D372E] p-4"
+                >
+                  <div className="flex items-center gap-4">
+                    {product.Main_Image_Url ? (
+                      <div className="avatar">
+                        <div className="w-16 h-16 rounded-md">
+                          <img
+                            src={product.Main_Image_Url || "/placeholder.svg"}
+                            alt="Main"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm opacity-70">No image</span>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-[#1D372E]">
+                        {product.Description}
+                      </h3>
+                      <p className="text-xs text-[#1D372E]">
+                        Brand: {product.Brand_Name || "Other"}
+                      </p>
+                      <p className="text-xs text-[#1D372E]">
+                        Price: Rs. {product.Selling_Price}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-[#1D372E]">
+                          New Arrivals
+                        </span>
                         <button
                           onClick={() =>
                             handleToggleHistoryStatus(
@@ -198,24 +345,8 @@ const ProductList = () => {
                           )}
                         </button>
                       </div>
-                    </td>
-                    <td>
-                      {product.Main_Image_Url ? (
-                        <div className="avatar">
-                          <div className="w-12 h-12 rounded-md">
-                            <img
-                              src={product.Main_Image_Url || "/placeholder.svg"}
-                              alt="Main"
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-sm opacity-70">No image</span>
-                      )}
-                    </td>
-                    <td>
-                      <div className="flex items-center justify-center gap-2">
-                        <span>Active</span>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-[#1D372E]">Active</span>
                         <button
                           onClick={() =>
                             handleToggleStatus(
@@ -232,49 +363,47 @@ const ProductList = () => {
                           )}
                         </button>
                       </div>
-                    </td>
-                    <td>
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => handleViewProduct(product.idProduct)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="View Product"
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          onClick={() =>
-                            navigate(
-                              `/dashboard/products/edit-product/${product.idProduct}`
-                            )
-                          }
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="Edit Product"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (product.hasOrders) {
-                              toast.error(
-                                "This product cannot be deleted since it has already been ordered"
-                              );
-                            } else {
-                              setDeleteProductId(product.idProduct);
-                            }
-                          }}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="Delete Product"
-                        >
-                          <RiDeleteBin5Fill />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      onClick={() => handleViewProduct(product.idProduct)}
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="View Product"
+                    >
+                      <FaEye />
+                    </button>
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/dashboard/products/edit-product/${product.idProduct}`
+                        )
+                      }
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="Edit Product"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (product.hasOrders) {
+                          toast.error(
+                            "This product cannot be deleted since it has already been ordered"
+                          );
+                        } else {
+                          setDeleteProductId(product.idProduct);
+                        }
+                      }}
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="Delete Product"
+                    >
+                      <RiDeleteBin5Fill />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

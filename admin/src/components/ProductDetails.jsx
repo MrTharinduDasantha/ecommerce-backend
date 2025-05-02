@@ -154,7 +154,7 @@ const ProductDetails = () => {
           </button>
           <div className="flex items-center gap-2">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-xl font-bold text-[#1D372E]">
+            <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
               Product Details
             </h2>
           </div>
@@ -310,12 +310,12 @@ const ProductDetails = () => {
                 </h3>
                 {product.variations?.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="table min-w-[400px] text-center border border-[#1D372E] w-full">
+                    <table className="table table-fixed min-w-[450px] text-center border border-[#1D372E] w-full">
                       <thead className="bg-[#EAFFF7] text-[#1D372E]">
                         <tr className="border-b border-[#1D372E]">
-                          <th className="font-semibold">Color</th>
-                          <th className="font-semibold">Size</th>
-                          <th className="font-semibold">Quantity</th>
+                          <th className="font-semibold w-[175px]">Color</th>
+                          <th className="font-semibold w-[150px]">Size</th>
+                          <th className="font-semibold w-[125px]">Quantity</th>
                         </tr>
                       </thead>
                       <tbody className="text-[#1D372E]">
