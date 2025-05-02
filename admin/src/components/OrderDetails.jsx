@@ -6,7 +6,7 @@ import {
   updatePaymentStatus,
 } from "../api/orders";
 import { FaArrowLeft } from "react-icons/fa";
-import Swal from "sweetalert2";
+import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 
 const OrderDetails = () => {
@@ -24,10 +24,11 @@ const OrderDetails = () => {
     useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState(null);
+  const [showOrderStatusModal, setShowOrderStatusModal] = useState(false);
+  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(false);
 
   useEffect(() => {
     if (orderId) {
-      // Validate orderId is a number before fetching
       if (!isNaN(Number.parseInt(orderId, 10))) {
         fetchOrderDetails();
       } else {
@@ -44,173 +45,32 @@ const OrderDetails = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log(`Fetching order details for ID: ${orderId}`);
-
       const data = await getOrderById(orderId);
-      console.log("Order details received:", data);
-
       setOrderDetails(data);
       setSelectedStatus(data.order.Status);
       setSelectedPaymentStatus(data.order.Payment_Stats);
       setLoading(false);
     } catch (err) {
-      console.error("Error in OrderDetails.fetchOrderDetails:", err);
       setError(err.message || "Failed to fetch order details");
       setLoading(false);
     }
   };
 
-  const handleStatusChange = async () => {
+  const handleStatusChange = () => {
     if (!selectedStatus || selectedStatus === orderDetails.order.Status) {
       return;
     }
-
-    const currentStatus = orderDetails.order.Status;
-
-    Swal.fire({
-      title: "Confirm Status Change",
-      html: `
-        <div class="text-center">
-          <p class="mb-2">Are you sure you want to change the order status?</p>
-          <div class="flex justify-between items-center mb-4 mx-auto max-w-xs">
-            <div>
-              <p class="font-semibold mb-1">From:</p>
-              <span class="px-2 py-1 rounded-full text-xs ${getStatusColor(
-                currentStatus
-              )} border border-gray-200">
-                ${currentStatus}
-              </span>
-            </div>
-            <div class="text-2xl">→</div>
-            <div>
-              <p class="font-semibold mb-1">To:</p>
-              <span class="px-2 py-1 rounded-full text-xs ${getStatusColor(
-                selectedStatus
-              )} border border-gray-200">
-                ${selectedStatus}
-              </span>
-            </div>
-          </div>
-          <p class="text-sm text-gray-600">This action will update the status of Order #${orderId}</p>
-        </div>
-      `,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, update it!",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#5CAF90",
-      cancelButtonColor: "#6B7280",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          setUpdatingStatus(true);
-          setStatusError(null);
-          setStatusUpdateSuccess(false);
-
-          await updateOrderStatus(
-            orderId,
-            selectedStatus,
-            orderDetails.order.Full_Name,
-            orderDetails.order.Total_Amount
-          );
-
-          // Re-fetch the order details to get the updated status
-          await fetchOrderDetails();
-
-          setStatusUpdateSuccess(true);
-          toast.success("Order status updated successfully");
-          setUpdatingStatus(false);
-
-          // Hide success message after 3 seconds
-          setTimeout(() => {
-            setStatusUpdateSuccess(false);
-          }, 3000);
-        } catch (err) {
-          setStatusError(err.message || "Failed to update order status");
-          toast.error("Failed to update order status");
-          setUpdatingStatus(false);
-        }
-      }
-    });
+    setShowOrderStatusModal(true);
   };
 
-  const handlePaymentStatusChange = async () => {
+  const handlePaymentStatusChange = () => {
     if (
       !selectedPaymentStatus ||
       selectedPaymentStatus === orderDetails.order.Payment_Stats
     ) {
       return;
     }
-
-    const currentPaymentStatus = orderDetails.order.Payment_Stats;
-
-    Swal.fire({
-      title: "Confirm Payment Status Change",
-      html: `
-        <div class="text-center">
-          <p class="mb-2">Are you sure you want to change the payment status?</p>
-          <div class="flex justify-between items-center mb-4 mx-auto max-w-xs">
-            <div>
-              <p class="font-semibold mb-1">From:</p>
-              <span class="px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(
-                currentPaymentStatus
-              )} border border-gray-200">
-                ${currentPaymentStatus}
-              </span>
-            </div>
-            <div class="text-2xl">→</div>
-            <div>
-              <p class="font-semibold mb-1">To:</p>
-              <span class="px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(
-                selectedPaymentStatus
-              )} border border-gray-200">
-                ${selectedPaymentStatus}
-              </span>
-            </div>
-          </div>
-          <p class="text-sm text-gray-600">This action will update the payment status of Order #${orderId}</p>
-        </div>
-      `,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, update it!",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#5CAF90",
-      cancelButtonColor: "#6B7280",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          setUpdatingPaymentStatus(true);
-          setPaymentStatusError(null);
-          setPaymentStatusUpdateSuccess(false);
-
-          await updatePaymentStatus(
-            orderId,
-            selectedPaymentStatus,
-            orderDetails.order.Full_Name,
-            orderDetails.order.Total_Amount
-          );
-
-          // Re-fetch the order details to get the updated status
-          await fetchOrderDetails();
-
-          setPaymentStatusUpdateSuccess(true);
-          toast.success("Payment status updated successfully");
-          setUpdatingPaymentStatus(false);
-
-          // Hide success message after 3 seconds
-          setTimeout(() => {
-            setPaymentStatusUpdateSuccess(false);
-          }, 3000);
-        } catch (err) {
-          setPaymentStatusError(
-            err.message || "Failed to update payment status"
-          );
-          toast.error("Failed to update payment status");
-          setUpdatingPaymentStatus(false);
-        }
-      }
-    });
+    setShowPaymentStatusModal(true);
   };
 
   const handleStatusSelect = (status) => {
@@ -255,7 +115,6 @@ const OrderDetails = () => {
     }
   };
 
-  // Navigate back to the previous page
   const handleBack = () => {
     navigate(-1);
   };
@@ -582,6 +441,181 @@ const OrderDetails = () => {
             </table>
           </div>
         </div>
+
+        {/* Order Status Modal */}
+        {showOrderStatusModal && (
+          <div className="modal modal-open">
+            <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
+              <h3 className="font-bold text-lg mb-4">Confirm Status Change</h3>
+              <button
+                onClick={() => setShowOrderStatusModal(false)}
+                className="absolute right-6 top-7 text-lg text-[#1D372E]"
+              >
+                <IoClose className="w-5 h-5" />
+              </button>
+              <div className="text-center">
+                <p className="mb-2">
+                  Are you sure you want to change the order status?
+                </p>
+                <div className="flex justify-between items-center mb-4 mx-auto max-w-xs">
+                  <div>
+                    <p className="font-semibold mb-1">From:</p>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                        order.Status
+                      )} border border-gray-200`}
+                    >
+                      {order.Status}
+                    </span>
+                  </div>
+                  <div className="text-2xl">→</div>
+                  <div>
+                    <p className="font-semibold mb-1">To:</p>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                        selectedStatus
+                      )} border border-gray-200`}
+                    >
+                      {selectedStatus}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600">
+                  This action will update the status of Order #{orderId}
+                </p>
+              </div>
+              <div className="modal-action">
+                <button
+                  onClick={() => setShowOrderStatusModal(false)}
+                  className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      setUpdatingStatus(true);
+                      await updateOrderStatus(
+                        orderId,
+                        selectedStatus,
+                        order.Full_Name,
+                        order.Total_Amount
+                      );
+                      await fetchOrderDetails();
+                      setShowOrderStatusModal(false);
+                      setStatusUpdateSuccess(true);
+                      toast.success("Order status updated");
+                      setTimeout(() => setStatusUpdateSuccess(false), 3000);
+                    } catch (err) {
+                      setStatusError(
+                        err.message || "Failed to update order status"
+                      );
+                      toast.error("Failed to update order status");
+                    } finally {
+                      setUpdatingStatus(false);
+                    }
+                  }}
+                  className={`btn btn-sm bg-[#5CAF90] border-[#5CAF90] ${
+                    updatingStatus ? "loading" : ""
+                  }`}
+                  disabled={updatingStatus}
+                >
+                  {updatingStatus ? "Updating..." : "Confirm"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Payment Status Modal */}
+        {showPaymentStatusModal && (
+          <div className="modal modal-open">
+            <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
+              <h3 className="font-bold text-lg mb-4">
+                Confirm Payment Status Change
+              </h3>
+              <button
+                onClick={() => setShowPaymentStatusModal(false)}
+                className="absolute right-6 top-7 text-lg text-[#1D372E]"
+              >
+                <IoClose className="w-5 h-5" />
+              </button>
+              <div className="text-center">
+                <p className="mb-2">
+                  Are you sure you want to change the payment status?
+                </p>
+                <div className="flex justify-between items-center mb-4 mx-auto max-w-xs">
+                  <div>
+                    <p className="font-semibold mb-1">From:</p>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(
+                        order.Payment_Stats
+                      )} border border-gray-200`}
+                    >
+                      {order.Payment_Stats}
+                    </span>
+                  </div>
+                  <div className="text-2xl">→</div>
+                  <div>
+                    <p className="font-semibold mb-1">To:</p>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(
+                        selectedPaymentStatus
+                      )} border border-gray-200`}
+                    >
+                      {selectedPaymentStatus}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600">
+                  This action will update the payment status of Order #{orderId}
+                </p>
+              </div>
+              <div className="modal-action">
+                <button
+                  onClick={() => setShowPaymentStatusModal(false)}
+                  className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      setUpdatingPaymentStatus(true);
+                      await updatePaymentStatus(
+                        orderId,
+                        selectedPaymentStatus,
+                        order.Full_Name,
+                        order.Total_Amount
+                      );
+                      await fetchOrderDetails();
+                      setShowPaymentStatusModal(false);
+                      setPaymentStatusUpdateSuccess(true);
+                      toast.success("Payment status updated");
+                      setTimeout(
+                        () => setPaymentStatusUpdateSuccess(false),
+                        3000
+                      );
+                    } catch (err) {
+                      setPaymentStatusError(
+                        err.message || "Failed to update payment status"
+                      );
+                      toast.error("Failed to update payment status");
+                    } finally {
+                      setUpdatingPaymentStatus(false);
+                    }
+                  }}
+                  className={`btn btn-sm bg-[#5CAF90] border-[#5CAF90] ${
+                    updatingPaymentStatus ? "loading" : ""
+                  }`}
+                  disabled={updatingPaymentStatus}
+                >
+                  {updatingPaymentStatus ? "Updating..." : "Confirm"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

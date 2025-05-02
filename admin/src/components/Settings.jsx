@@ -125,7 +125,7 @@ const Settings = () => {
           {!isEditing && (
             <button
               onClick={handleEdit}
-              className="btn btn-primary btn-sm gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              className="btn btn-primary gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             >
               <FaEdit className="w-4 h-4" /> Edit
             </button>
@@ -195,15 +195,15 @@ const Settings = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
+                className="btn btn-primary bg-[#1D372E] border-[#1D372E]"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className={`btn btn-sm bg-[#5CAF90] border-none text-white ${
-                  isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
+                className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+                  isLoading ? "cursor-not-allowed" : ""
                 }`}
               >
                 {isLoading ? (

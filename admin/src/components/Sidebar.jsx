@@ -11,7 +11,6 @@ import {
 } from "react-icons/tb";
 import { MdOutlineDiscount } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
-import toast from "react-hot-toast";
 
 const Sidebar = ({ isSidebarOpen }) => {
   const location = useLocation();
@@ -49,7 +48,6 @@ const Sidebar = ({ isSidebarOpen }) => {
   // Logout handler
   const handleLogout = () => {
     logout();
-    toast.success("Logout successful");
     navigate("/");
   };
 
