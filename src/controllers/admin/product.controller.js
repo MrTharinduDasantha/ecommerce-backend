@@ -1127,6 +1127,20 @@ async function getProductSales(req, res) {
   }
 }
 
+// Get products with active discounts
+async function getDiscountedProducts(req, res) {
+  try {
+    const products = await Product.getDiscountedProducts();
+
+    res
+      .status(200)
+      .json({ message: "Discounted products fetched successfully", products });
+  } catch (error) {
+    console.error("Error fetching discounted products:", error);
+    res.status(500).json({ message: "Failed to fetch discounted products" });
+  }
+}
+
 // Delete a product
 async function deleteProduct(req, res) {
   try {
@@ -1462,6 +1476,7 @@ module.exports = {
   getProductsByBrand,
   getProductById,
   getProductSales,
+  getDiscountedProducts,
   deleteProduct,
   // Discount related functions
   getAllDiscounts,

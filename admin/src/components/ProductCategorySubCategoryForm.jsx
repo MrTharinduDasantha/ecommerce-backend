@@ -242,7 +242,9 @@ const ProductCategorySubCategoryForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="form-control">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text font-medium">Description</span>
+                  <span className="label-text text-sm md:text-base font-medium">
+                    Description
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -255,7 +257,9 @@ const ProductCategorySubCategoryForm = () => {
 
               <div className="form-control">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text font-medium">Image</span>
+                  <span className="label-text text-sm md:text-base font-medium">
+                    Image
+                  </span>
                 </label>
                 <input
                   type="file"
