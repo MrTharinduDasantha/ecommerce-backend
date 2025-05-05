@@ -773,6 +773,37 @@ async function getProductSalesInfo(productId) {
   };
 }
 
+// Get all products with active discounts
+async function getDiscountedProducts() {
+  const query = `
+    SELECT DISTINCT P.*
+    FROM Product P
+    JOIN Discounts D ON P.idProduct = D.Product_idProduct
+    WHERE D.Status = 'active'
+    AND CURDATE() BETWEEN STR_TO_DATE(D.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(D.End_Date, '%Y-%m-%d')
+  `;
+  const [products] = await pool.query(query);
+
+  // Fetch complete details and discounts for each product
+  const detailedProducts = [];
+  for (const product of products) {
+    const fullProduct = await getProductById(product.idProduct);
+    const discounts = await getDiscountsByProductId(product.idProduct);
+
+    // Filter active discounts
+    fullProduct.discounts = discounts.filter((d) => {
+      const today = new Date();
+      const startDate = new Date(d.Start_Date);
+      const endDate = new Date(d.End_Date);
+      return d.Status === "active" && today >= startDate && today <= endDate;
+    });
+
+    detailedProducts.push(fullProduct);
+  }
+
+  return detailedProducts;
+}
+
 // Delete a product and its related records
 async function deleteProduct(productId) {
   // Delete from join table
@@ -936,6 +967,7 @@ module.exports = {
   getProductsByBrand,
   getProductById,
   getProductSalesInfo,
+  getDiscountedProducts,
   deleteProduct,
   // Discount related functions
   getAllDiscounts,

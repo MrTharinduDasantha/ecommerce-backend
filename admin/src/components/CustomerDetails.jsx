@@ -70,7 +70,7 @@ const CustomerDetails = () => {
             aria-label="Back to Customer page"
           >
             <ArrowLeft className="w-4 h-4" />
-                     </button>
+          </button>
 
           {/* Header */}
           <div className="flex items-center gap-2 mb-6 mt-3">
@@ -87,7 +87,7 @@ const CustomerDetails = () => {
                 {customer.Full_Name}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 text-[#1D372E]">
                   <p className="flex items-center">
                     <span className="text-gray-600 w-24 text-sm">Email:</span>
                     <span className="font-medium text-xs">
@@ -113,7 +113,7 @@ const CustomerDetails = () => {
                     </span>
                   </p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 text-[#1D372E]">
                   <p className="flex items-center">
                     <span className="text-gray-600 w-24 text-sm">Address:</span>
                     <span className="font-medium text-xs">
@@ -146,7 +146,7 @@ const CustomerDetails = () => {
                     key={order.idOrder || order.id}
                     className="bg-white rounded-lg p-4 shadow-sm w-270"
                   >
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-[#1D372E]">
                       <div className="flex items-center">
                         <span className="text-gray-600 mr-2 text-sm">
                           Order ID:

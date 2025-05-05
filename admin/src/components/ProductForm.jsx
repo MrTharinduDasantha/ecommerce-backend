@@ -629,7 +629,7 @@ const ProductForm = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-[#5CAF90]"></div>
-          <h2 className="text-xl font-bold text-[#1D372E]">
+          <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
             {isEditMode ? "Edit Product" : "Add Product"}
           </h2>
         </div>
@@ -646,7 +646,7 @@ const ProductForm = () => {
                 {/* Description */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">
+                    <span className="label-text text-sm font-medium">
                       Main Description
                     </span>
                   </label>
@@ -655,14 +655,16 @@ const ProductForm = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Enter product description"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Brand */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Brand</span>
+                    <span className="label-text text-sm font-medium">
+                      Brand
+                    </span>
                   </label>
                   <div className="flex gap-2 text-[#1D372E]">
                     <Select
@@ -696,7 +698,7 @@ const ProductForm = () => {
                     <button
                       type="button"
                       onClick={openBrandPopup}
-                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                      className="btn btn-primary btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
                       Add
                     </button>
@@ -706,21 +708,23 @@ const ProductForm = () => {
                 {/* Market Price */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Market Price</span>
+                    <span className="label-text text-sm font-medium">
+                      Market Price
+                    </span>
                   </label>
                   <input
                     type="number"
                     value={marketPrice}
                     onChange={(e) => setMarketPrice(e.target.value)}
                     placeholder="Enter market price"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Selling Price */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">
+                    <span className="label-text text-sm font-medium">
                       Selling Price
                     </span>
                   </label>
@@ -729,14 +733,14 @@ const ProductForm = () => {
                     value={sellingPrice}
                     onChange={(e) => setSellingPrice(e.target.value)}
                     placeholder="Enter selling price"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Sub Categories */}
                 <div className="form-control md:col-span-2">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">
+                    <span className="label-text text-sm font-medium">
                       Sub Categories
                     </span>
                   </label>
@@ -835,13 +839,15 @@ const ProductForm = () => {
                 {/* Main Image */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Main Image</span>
+                    <span className="label-text text-sm font-medium">
+                      Main Image
+                    </span>
                   </label>
                   <input
                     type="file"
                     onChange={handleMainImageChange}
                     ref={mainImageRef}
-                    className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                     accept="image/*"
                   />
                   {mainImagePreview && (
@@ -865,14 +871,16 @@ const ProductForm = () => {
                 {/* Sub Images */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Sub Images</span>
+                    <span className="label-text text-sm font-medium">
+                      Sub Images
+                    </span>
                   </label>
                   <input
                     type="file"
                     multiple
                     onChange={handleSubImagesChange}
                     ref={subImagesRef}
-                    className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                     accept="image/*"
                   />
                   {subImagesPreview.length > 0 && (
@@ -930,7 +938,9 @@ const ProductForm = () => {
                 {/* Color */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Color</span>
+                    <span className="label-text text-sm font-medium">
+                      Color
+                    </span>
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -938,13 +948,13 @@ const ProductForm = () => {
                       value={colorName}
                       onChange={(e) => setColorName(e.target.value)}
                       placeholder="Enter color hex value"
-                      className="input input-bordered flex-1 border-[#1D372E] text-[#1D372E]"
+                      className="input input-bordered input-sm md:input-md flex-1 border-[#1D372E] text-[#1D372E]"
                       disabled={isColorLocked}
                       style={getInputStyle()}
                     />
                     <div className="relative">
                       <div
-                        className="w-10 h-10 border border-base-300 rounded-md cursor-pointer"
+                        className="w-8 h-8 md:w-10 md:h-10 border border-base-300 rounded-md cursor-pointer"
                         style={{ backgroundColor: colorPickerValue }}
                         onClick={() =>
                           document.getElementById("colorPicker").click()
@@ -965,9 +975,9 @@ const ProductForm = () => {
                       className="text-[#1D372E]"
                     >
                       {isColorLocked ? (
-                        <FaCheckSquare className="w-5 h-5" />
+                        <FaCheckSquare className="w-4 h-4 md:w-5 md:h-5" />
                       ) : (
-                        <FaRegCheckSquare className="w-5 h-5" />
+                        <FaRegCheckSquare className="w-4 h-4 md:w-5 md:h-5" />
                       )}
                     </button>
                   </div>
@@ -976,21 +986,23 @@ const ProductForm = () => {
                 {/* Size */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Size</span>
+                    <span className="label-text text-sm font-medium">Size</span>
                   </label>
                   <input
                     type="text"
                     value={size}
                     onChange={(e) => setSize(e.target.value)}
                     placeholder="Enter size"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Quantity */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Quantity</span>
+                    <span className="label-text text-sm font-medium">
+                      Quantity
+                    </span>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -998,7 +1010,7 @@ const ProductForm = () => {
                       value={colorQuantity}
                       onChange={(e) => setColorQuantity(e.target.value)}
                       placeholder="Enter quantity"
-                      className="input input-bordered flex-1 bg-white border-[#1D372E] text-[#1D372E]"
+                      className="input input-bordered input-sm md:input-md flex-1 bg-white border-[#1D372E] text-[#1D372E]"
                     />
                     <button
                       type="button"
@@ -1007,7 +1019,7 @@ const ProductForm = () => {
                           ? handleUpdateVariation
                           : handleAddVariation
                       }
-                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                      className="btn btn-primary btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
                       {editingVariationIndex !== null ? "Edit" : "Add"}
                     </button>
@@ -1094,7 +1106,9 @@ const ProductForm = () => {
                 {/* Question */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Question</span>
+                    <span className="label-text text-sm font-medium">
+                      Question
+                    </span>
                   </label>
                   <textarea
                     value={faqQuestion}
@@ -1108,7 +1122,9 @@ const ProductForm = () => {
                 {/* Answer */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Answer</span>
+                    <span className="label-text text-sm font-medium">
+                      Answer
+                    </span>
                   </label>
                   <textarea
                     value={faqAnswer}
@@ -1125,7 +1141,7 @@ const ProductForm = () => {
                     onClick={
                       editingFaqIndex !== null ? handleUpdateFaq : handleAddFaq
                     }
-                    className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                    className="btn btn-primary btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                   >
                     {editingFaqIndex !== null ? "Edit" : "Add"}
                   </button>
@@ -1180,7 +1196,7 @@ const ProductForm = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+              className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md ${
                 isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
               }`}
             >
