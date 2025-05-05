@@ -48,10 +48,19 @@ const customStyles = {
     "&:hover": {
       borderColor: "#1D372E",
     },
+    // Reduce control height and font size on small screens
+    "@media screen and (max-width: 640px)": {
+      minHeight: "2rem",
+      fontSize: "0.75rem",
+    },
   }),
   option: (provided) => ({
     ...provided,
     fontSize: "0.875rem",
+    // Reduce option font size on small screens
+    "@media screen and (max-width: 640px)": {
+      fontSize: "0.75rem",
+    },
   }),
 };
 
@@ -692,7 +701,7 @@ const ProductForm = () => {
                       ]}
                       styles={customStyles}
                       placeholder="Select Brand"
-                      className="flex-1"
+                      className="flex-1 input-sm md:input-md"
                       isClearable={false}
                     />
                     <button
@@ -777,7 +786,7 @@ const ProductForm = () => {
                     styles={customStyles}
                     isMulti
                     placeholder="Select sub category"
-                    className="w-full text-[#1D372E]"
+                    className="w-full text-[#1D372E] input-sm md:input-md"
                     formatGroupLabel={(data) => (
                       <div className="font-bold text-[#1D372E]">
                         {data.label}
@@ -919,7 +928,7 @@ const ProductForm = () => {
                     value={subDescription}
                     onChange={(e) => setSubDescription(e.target.value)}
                     placeholder="Enter additional product details"
-                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                     rows={4}
                   />
                 </div>
@@ -1029,67 +1038,137 @@ const ProductForm = () => {
 
               {/* Variations Table */}
               {variations.length > 0 && (
-                <div className="overflow-x-auto mt-4">
-                  <table className="table text-center border border-[#1D372E]">
-                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                      <tr className="border-b border-[#1D372E]">
-                        <th className="font-semibold">Color Code</th>
-                        <th className="font-semibold">Size</th>
-                        <th className="font-semibold">Quantity</th>
-                        <th className="font-semibold">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-[#1D372E]">
-                      {variations.map((item, index) => (
-                        <tr key={index} className="border-b border-[#1D372E]">
-                          <td>
-                            <div className="flex items-center justify-center gap-2">
-                              {item.colorCode !== "No color selected" && (
-                                <div
-                                  className="w-5 h-5 border border-base-300 rounded-md"
-                                  style={{ backgroundColor: item.colorCode }}
-                                />
-                              )}
-                              <span>{item.colorCode}</span>
-                            </div>
-                          </td>
-                          <td>{item.size}</td>
-                          <td>{item.quantity}</td>
-                          <td>
-                            <div className="flex items-center justify-center gap-2">
+                <div className="mt-4">
+                  {/* Desktop View */}
+                  <div className="hidden md:block">
+                    <div className="overflow-x-auto">
+                      <table className="table text-center border border-[#1D372E]">
+                        <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                          <tr className="border-b border-[#1D372E]">
+                            <th className="font-semibold">Color Code</th>
+                            <th className="font-semibold">Size</th>
+                            <th className="font-semibold">Quantity</th>
+                            <th className="font-semibold">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-[#1D372E]">
+                          {variations.map((item, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-[#1D372E]"
+                            >
+                              <td>
+                                <div className="flex items-center justify-center gap-2 text-sm">
+                                  {item.colorCode !== "No color selected" && (
+                                    <div
+                                      className="w-5 h-5 border border-base-300 rounded-md"
+                                      style={{
+                                        backgroundColor: item.colorCode,
+                                      }}
+                                    />
+                                  )}
+                                  <span>{item.colorCode}</span>
+                                </div>
+                              </td>
+                              <td className="text-sm">{item.size}</td>
+                              <td className="text-sm">{item.quantity}</td>
+                              <td>
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditVariation(index)}
+                                    className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                    title="Edit Variation"
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                  {item.hasOrders ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeVariation(index)}
+                                      className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                      title="Cannot delete as it has orders"
+                                    >
+                                      <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeVariation(index)}
+                                      className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                      title="Delete Variation"
+                                    >
+                                      <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Mobile View */}
+                  <div className="md:hidden space-y-3">
+                    {variations.map((item, index) => (
+                      <div
+                        key={index}
+                        className="card bg-white border border-[#1D372E] text-[#1D372E] p-4"
+                      >
+                        <div className="flex justify-between items-center text-xs mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Color:</span>
+                            {item.colorCode !== "No color selected" && (
+                              <div
+                                className="w-5 h-5 border border-base-300 rounded-md"
+                                style={{ backgroundColor: item.colorCode }}
+                              />
+                            )}
+                            <span className="text-xs">{item.colorCode}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditVariation(index)}
+                              className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                              title="Edit Variation"
+                            >
+                              <FaEdit className="w-3 h-3" />
+                            </button>
+                            {item.hasOrders ? (
                               <button
                                 type="button"
-                                onClick={() => handleEditVariation(index)}
+                                onClick={() => removeVariation(index)}
                                 className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
-                                title="Edit Variation"
+                                title="Cannot delete as it has orders"
                               >
-                                <FaEdit className="w-3.5 h-3.5" />
+                                <RiDeleteBin5Fill className="w-3 h-3" />
                               </button>
-                              {item.hasOrders ? (
-                                <button
-                                  type="button"
-                                  onClick={() => removeVariation(index)}
-                                  className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
-                                  title="Cannot delete as it has orders"
-                                >
-                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => removeVariation(index)}
-                                  className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
-                                  title="Delete Variation"
-                                >
-                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => removeVariation(index)}
+                                className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                title="Delete Variation"
+                              >
+                                <RiDeleteBin5Fill className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-xs">Size:</span>
+                          <span className="text-xs">{item.size}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-xs">Quantity:</span>
+                          <span className="text-xs">{item.quantity}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -1114,7 +1193,7 @@ const ProductForm = () => {
                     value={faqQuestion}
                     onChange={(e) => setFaqQuestion(e.target.value)}
                     placeholder="Enter question"
-                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                     rows={3}
                   />
                 </div>
@@ -1130,7 +1209,7 @@ const ProductForm = () => {
                     value={faqAnswer}
                     onChange={(e) => setFaqAnswer(e.target.value)}
                     placeholder="Enter answer"
-                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                     rows={3}
                   />
                 </div>
@@ -1159,10 +1238,14 @@ const ProductForm = () => {
                       <div className="card-body p-4">
                         <div className="flex justify-between">
                           <div className="flex items-start gap-2 flex-1">
-                            <FaQuestionCircle className="mt-1 text-[#5CAF90] w-4 h-4" />
+                            <FaQuestionCircle className="mt-1 text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
                             <div>
-                              <h4 className="font-medium">{faq.question}</h4>
-                              <p className="text-sm mt-1">{faq.answer}</p>
+                              <h4 className="font-medium text-xs md:text-sm">
+                                {faq.question}
+                              </h4>
+                              <p className="mt-1 text-xs md:text-sm">
+                                {faq.answer}
+                              </p>
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -1172,7 +1255,7 @@ const ProductForm = () => {
                               className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
                               title="Edit FAQ"
                             >
-                              <FaEdit className="w-3.5 h-3.5" />
+                              <FaEdit className="w-3 h-3 md:w-3.5 md:h-3.5" />
                             </button>
                             <button
                               type="button"
@@ -1180,7 +1263,7 @@ const ProductForm = () => {
                               className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
                               title="Delete FAQ"
                             >
-                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                              <RiDeleteBin5Fill className="w-3 h-3 md:w-3.5 md:h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -1219,7 +1302,7 @@ const ProductForm = () => {
       {brandPopupVisible && (
         <div className="modal modal-open">
           <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
-            <h3 className="font-bold text-lg mb-4">
+            <h3 className="font-bold text-base lg:text-lg mb-4">
               {isEditingBrand ? "Edit Brand" : "Add Brand"}
             </h3>
             <button
@@ -1231,20 +1314,24 @@ const ProductForm = () => {
 
             <div className="form-control mb-3">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Brand Name</span>
+                <span className="label-text text-sm lg:text-base font-medium">
+                  Brand Name
+                </span>
               </label>
               <input
                 type="text"
                 value={newBrandName}
                 onChange={(e) => setNewBrandName(e.target.value)}
                 placeholder="Enter brand name"
-                className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
               />
             </div>
 
             <div className="form-control mb-3">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Brand Image</span>
+                <span className="label-text text-sm lg:text-base font-medium">
+                  Brand Image
+                </span>
               </label>
               <input
                 type="file"
@@ -1261,7 +1348,7 @@ const ProductForm = () => {
                     setNewBrandImagePreview(null);
                   }
                 }}
-                className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                 accept="image/*"
               />
 
@@ -1290,13 +1377,15 @@ const ProductForm = () => {
 
             <div className="form-control mb-4">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Description</span>
+                <span className="label-text text-sm lg:text-base font-medium">
+                  Description
+                </span>
               </label>
               <textarea
                 value={newBrandDescription}
                 onChange={(e) => setNewBrandDescription(e.target.value)}
                 placeholder="Enter brand description"
-                className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                 rows={3}
               ></textarea>
             </div>
@@ -1304,7 +1393,7 @@ const ProductForm = () => {
             <div className="modal-action">
               <button
                 onClick={handleAddOrUpdateBrand}
-                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md"
               >
                 {isEditingBrand ? "Edit Brand" : "Add Brand"}
               </button>
@@ -1313,14 +1402,22 @@ const ProductForm = () => {
             {/* Brands Table */}
             {brands.length > 0 && (
               <div className="mt-6">
-                <h4 className="font-medium mb-2">Existing Brands</h4>
+                <h4 className="font-medium text-sm lg:text-base mb-2">
+                  Existing Brands
+                </h4>
                 <div className="overflow-x-auto">
                   <table className="table text-center border border-[#1D372E] w-full">
                     <thead className="bg-[#EAFFF7] text-[#1D372E]">
                       <tr className="border-b border-[#1D372E]">
-                        <th className="font-semibold">Name</th>
-                        <th className="font-semibold">Image</th>
-                        <th className="font-semibold">Actions</th>
+                        <th className="font-semibold text-xs lg:text-sm">
+                          Name
+                        </th>
+                        <th className="font-semibold text-xs lg:text-sm">
+                          Image
+                        </th>
+                        <th className="font-semibold text-xs lg:text-sm">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1329,7 +1426,9 @@ const ProductForm = () => {
                           key={brand.idProduct_Brand}
                           className="border-b border-[#1D372E]"
                         >
-                          <td>{brand.Brand_Name}</td>
+                          <td className="text-xs lg:text-sm">
+                            {brand.Brand_Name}
+                          </td>
                           <td>
                             {brand.Brand_Image_Url ? (
                               <div className="avatar">
@@ -1342,7 +1441,7 @@ const ProductForm = () => {
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-sm opacity-70">
+                              <span className="text-xs lg:text-sm opacity-70">
                                 No image
                               </span>
                             )}
@@ -1354,7 +1453,7 @@ const ProductForm = () => {
                                 className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                                 title="Edit Brand"
                               >
-                                <FaEdit className="w-3.5 h-3.5" />
+                                <FaEdit className="w-3 h-3 md:w-3.5 md:h-3.5" />
                               </button>
                               <button
                                 onClick={() =>
@@ -1363,7 +1462,7 @@ const ProductForm = () => {
                                 className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                                 title="Delete Brand"
                               >
-                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                <RiDeleteBin5Fill className="w-3 h-3 md:w-3.5 md:h-3.5" />
                               </button>
                             </div>
                           </td>
