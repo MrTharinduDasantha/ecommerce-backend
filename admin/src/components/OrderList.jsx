@@ -176,36 +176,40 @@ const OrderList = () => {
               <table className="table min-w-[700px] text-center border border-[#1D372E]">
                 <thead className="bg-[#EAFFF7] text-[#1D372E]">
                   <tr className="border-b border-[#1D372E]">
-                    <th className="font-semibold p-3 w-[12%]">Tracking No</th>
-                    <th className="font-semibold p-3 w-[12%]">Order Date</th>
-                    <th className="font-semibold p-3 w-[16%]">Customer Name</th>
+                    <th className="font-semibold p-3 w-[10%]">Tracking No</th>
+                    <th className="font-semibold p-3 w-[10%]">Order Date</th>
+                    <th className="font-semibold p-3 w-[15%]">Customer Name</th>
                     <th className="font-semibold p-3 w-[10%]">Order Amount</th>
-                    <th className="font-semibold p-3 w-[12%]">Delivery Date</th>
-                    <th className="font-semibold p-3 w-[12%]">Order Status</th>
-                    <th className="font-semibold p-3 w-[12%]">
+                    <th className="font-semibold p-3 w-[10%]">Delivery Amount</th>
+                    <th className="font-semibold p-3 w-[10%]">Total Amount</th>
+                    <th className="font-semibold p-3 w-[10%]">Delivery Date</th>
+                    <th className="font-semibold p-3 w-[10%]">Order Status</th>
+                    <th className="font-semibold p-3 w-[10%]">
                       Payment Status
                     </th>
-                    <th className="font-semibold p-3 w-[5%]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
                   {filteredOrders.map((order) => (
                     <tr
                       key={order.idOrder}
-                      className="border-b border-[#1D372E]"
+                      className="border-b border-[#1D372E] cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleViewOrder(order.idOrder)}
                     >
                       <td className="p-3">#{order.idOrder}</td>
                       <td className="p-3">
                         {new Date(order.Date_Time).toLocaleDateString()}
                       </td>
                       <td className="p-3">{order.Full_Name}</td>
+                      <td className="p-3">Rs. {order.Net_Amount}</td>
+                      <td className="p-3">Rs. {order.Delivery_Charges}</td>
                       <td className="p-3">Rs. {order.Total_Amount}</td>
                       <td className="p-3">
                         {order.Delivery_Date
                           ? new Date(order.Delivery_Date).toLocaleDateString()
                           : "Not set"}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
                         {updatingStatus === order.idOrder ? (
                           <div className="flex items-center justify-center">
                             <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
@@ -254,7 +258,7 @@ const OrderList = () => {
                           </select>
                         )}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
                         {updatingPaymentStatus === order.idOrder ? (
                           <div className="flex items-center justify-center">
                             <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
@@ -306,15 +310,6 @@ const OrderList = () => {
                           </select>
                         )}
                       </td>
-                      <td className="p-3">
-                        <button
-                          onClick={() => handleViewOrder(order.idOrder)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="View Order"
-                        >
-                          <FaEye />
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -324,7 +319,11 @@ const OrderList = () => {
             {/* Mobile view */}
             <div className="sm:hidden">
               {filteredOrders.map((order) => (
-                <div key={order.idOrder} className="bg-white p-4 border-b">
+                <div 
+                  key={order.idOrder} 
+                  className="bg-white p-4 border-b cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleViewOrder(order.idOrder)}
+                >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center">
                       {order.product_image ? (
@@ -360,7 +359,13 @@ const OrderList = () => {
                     </span>
                   </div>
                   <div className="text-sm text-gray-500 mb-1">
-                    Amount: Rs. {order.Total_Amount}
+                    Product Amount: Rs. {order.Net_Amount}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Delivery: Rs. {order.Delivery_Charges}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-2">
+                    Total Amount: Rs. {order.Total_Amount}
                   </div>
                   <div className="text-sm text-gray-500 mb-2">
                     Date: {new Date(order.Date_Time).toLocaleString()}
@@ -373,7 +378,7 @@ const OrderList = () => {
                   </div>
 
                   {/* Payment status and order status controls */}
-                  <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div className="grid grid-cols-2 gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
                     <div>
                       <div className="text-xs text-gray-700 mb-1">
                         Order Status:
@@ -421,16 +426,6 @@ const OrderList = () => {
                         <option value="refunded">Refunded</option>
                       </select>
                     </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => handleViewOrder(order.idOrder)}
-                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                      title="View Order"
-                    >
-                      <FaEye />
-                    </button>
                   </div>
                 </div>
               ))}
