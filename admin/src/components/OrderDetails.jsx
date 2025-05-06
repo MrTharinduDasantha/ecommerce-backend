@@ -4,11 +4,14 @@ import {
   getOrderById,
   updateOrderStatus,
   updatePaymentStatus,
+  updateDeliveryDate,
   getOrderHistory,
 } from "../api/orders";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaSpinner } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const OrderDetails = () => {
   const { orderId } = useParams();
@@ -30,6 +33,9 @@ const OrderDetails = () => {
   const [statusReason, setStatusReason] = useState("");
   const [orderHistory, setOrderHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [deliveryDateModalOpen, setDeliveryDateModalOpen] = useState(false);
+  const [newDeliveryDate, setNewDeliveryDate] = useState("");
+  const [updatingDeliveryDate, setUpdatingDeliveryDate] = useState(false);
 
   useEffect(() => {
     if (orderId) {
@@ -203,6 +209,34 @@ const OrderDetails = () => {
     navigate(-1);
   };
 
+  const handleDeliveryDateUpdate = async () => {
+    if (!newDeliveryDate) {
+      toast.error("Please select a delivery date");
+      return;
+    }
+    
+    try {
+      setUpdatingDeliveryDate(true);
+      await updateDeliveryDate(
+        orderDetails.order.idOrder,
+        newDeliveryDate,
+        orderDetails.order.Full_Name,
+        orderDetails.order.Total_Amount
+      );
+      setOrderDetails({ 
+        ...orderDetails, 
+        order: { ...orderDetails.order, Delivery_Date: newDeliveryDate } 
+      });
+      toast.success("Delivery date updated successfully");
+      setDeliveryDateModalOpen(false);
+    } catch (error) {
+      console.error("Error updating delivery date:", error);
+      toast.error(error.message || "Failed to update delivery date");
+    } finally {
+      setUpdatingDeliveryDate(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="card bg-white">
@@ -323,6 +357,59 @@ const OrderDetails = () => {
               <p className="flex justify-between text-[#1D372E]">
                 <span className="font-medium">Net Amount:</span>
                 <span>Rs. {order.Net_Amount}</span>
+              </p>
+              <p className="flex justify-between text-[#1D372E]">
+                <span className="font-medium">Delivery Date:</span>
+                <span className="flex items-center">
+                  {deliveryDateModalOpen ? (
+                    <div className="flex items-center">
+                      <DatePicker
+                        selected={newDeliveryDate ? new Date(newDeliveryDate) : null}
+                        onChange={(date) => setNewDeliveryDate(date.toISOString().split('T')[0])}
+                        className="input input-bordered input-sm w-40 mr-2 bg-white border-[#1D372E] text-[#1D372E]"
+                        dateFormat="yyyy-MM-dd"
+                        placeholderText="Select date"
+                        minDate={new Date()}
+                      />
+                      {updatingDeliveryDate ? (
+                        <div className="flex items-center">
+                          <FaSpinner className="animate-spin text-[#5CAF90] mr-1" size={12} />
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={handleDeliveryDateUpdate}
+                            className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 rounded-md"
+                            disabled={updatingDeliveryDate}
+                          >
+                            ✓
+                          </button>
+                          <button 
+                            onClick={() => setDeliveryDateModalOpen(false)}
+                            className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 rounded-md"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      {order.Delivery_Date
+                        ? new Date(order.Delivery_Date).toLocaleDateString()
+                        : "Not set"}
+                      <button
+                        onClick={() => {
+                          setNewDeliveryDate(order.Delivery_Date || "");
+                          setDeliveryDateModalOpen(true);
+                        }}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                      >
+                        <FaEdit size={14} />
+                      </button>
+                    </>
+                  )}
+                </span>
               </p>
               <p className="flex justify-between text-[#1D372E]">
                 <span className="font-medium">Payment Type:</span>

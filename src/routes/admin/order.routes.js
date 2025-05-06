@@ -17,6 +17,7 @@ router.get("/:id", orderController.getOrderById.bind(orderController));
 router.get("/:id/history", orderController.getOrderHistory.bind(orderController));
 router.put("/:id/status", orderController.updateOrderStatus.bind(orderController));
 router.put("/:id/payment-status", orderController.updatePaymentStatus.bind(orderController));
+router.put("/:id/delivery-date", orderController.updateDeliveryDate.bind(orderController));
 
 
 module.exports = router;

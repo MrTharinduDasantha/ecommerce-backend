@@ -244,6 +244,85 @@ class OrderController {
     }
   }
 
+  // Update delivery date
+  async updateDeliveryDate(req, res) {
+    try {
+      const { deliveryDate, customerName, orderTotal } = req.body;
+      const orderId = req.params.id;
+
+      // Validate date format (YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(deliveryDate)) {
+        return res.status(400).json({ message: "Invalid date format. Please use YYYY-MM-DD" });
+      }
+
+      // Get admin email
+      const [adminData] = await pool.query(
+        "SELECT Email FROM User WHERE idUser = ?",
+        [req.user.userId]
+      );
+
+      const adminEmail = adminData[0]?.Email || "admin";
+
+      // Get the current order details
+      const [currentOrder] = await pool.query(
+        "SELECT Delivery_Date FROM `Order` WHERE idOrder = ?",
+        [orderId]
+      );
+
+      if (!currentOrder.length) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Update the delivery date
+      const affectedRows = await Order.updateDeliveryDate(orderId, deliveryDate);
+
+      if (affectedRows === 0) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Log the admin action
+      const logData = {
+        orderId,
+        originalDeliveryDate: currentOrder[0].Delivery_Date,
+        updatedDeliveryDate: deliveryDate,
+        customerName,
+        orderTotal
+      };
+
+      await pool.query(
+        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+        [
+          req.user.userId,
+          "Updated delivery date",
+          req.headers["user-agent"],
+          JSON.stringify(logData),
+        ]
+      );
+
+      // Add record to Order_History table
+      await pool.query(
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, notes, changed_by) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          orderId,
+          currentOrder[0].Delivery_Date || "Not set",
+          deliveryDate,
+          "delivery_date",
+          `Delivery date updated by ${adminEmail}`,
+          req.user.userId,
+        ]
+      );
+
+      res.json({ message: "Delivery date updated successfully" });
+    } catch (error) {
+      console.error("Error in updateDeliveryDate:", error);
+      res.status(500).json({
+        message: "Failed to update delivery date",
+        error: error.message,
+      });
+    }
+  }
+
   // get order count by status
   async getOrderCountByStatus(req, res) {
     try {
