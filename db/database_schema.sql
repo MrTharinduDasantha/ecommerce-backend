@@ -207,6 +207,7 @@ CREATE TABLE `Order` (
     Payment_Type VARCHAR(45),
     Payment_Stats VARCHAR(45),
     Delivery_Status VARCHAR(45),
+    Delivery_Date DATE NULL,
     Status VARCHAR(45),
     Customer_Note TEXT,
     Supplier_Note TEXT,

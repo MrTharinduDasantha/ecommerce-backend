@@ -94,6 +94,26 @@ export const updatePaymentStatus = async (orderId, paymentStatus, customerName, 
   }
 };
 
+// Update delivery date
+export const updateDeliveryDate = async (orderId, deliveryDate, customerName, orderTotal) => {
+  try {
+    const token = getToken();
+    
+    const response = await axios.put(`${API_URL}/${orderId}/delivery-date`, 
+      { deliveryDate, customerName, orderTotal },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating delivery date:', error);
+    throw error.response?.data || { message: 'Failed to update delivery date' };
+  }
+};
+
 // Get order counts by status
 export const getOrderCountByStatus = async () => {
   try {
