@@ -4,6 +4,7 @@ import {
   getOrderById,
   updateOrderStatus,
   updatePaymentStatus,
+  getOrderHistory,
 } from "../api/orders";
 import { FaArrowLeft } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -26,11 +27,15 @@ const OrderDetails = () => {
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState(null);
   const [showOrderStatusModal, setShowOrderStatusModal] = useState(false);
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(false);
+  const [statusReason, setStatusReason] = useState("");
+  const [orderHistory, setOrderHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     if (orderId) {
       if (!isNaN(Number.parseInt(orderId, 10))) {
         fetchOrderDetails();
+        fetchOrderHistory();
       } else {
         setError("Invalid order ID format. Order ID must be a number.");
         setLoading(false);
@@ -53,6 +58,18 @@ const OrderDetails = () => {
     } catch (err) {
       setError(err.message || "Failed to fetch order details");
       setLoading(false);
+    }
+  };
+
+  const fetchOrderHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const data = await getOrderHistory(orderId);
+      setOrderHistory(data);
+      setLoadingHistory(false);
+    } catch (err) {
+      console.error("Failed to fetch order history:", err);
+      setLoadingHistory(false);
     }
   };
 
@@ -79,6 +96,75 @@ const OrderDetails = () => {
 
   const handlePaymentStatusSelect = (status) => {
     setSelectedPaymentStatus(status);
+  };
+
+  // Define valid next status transitions for order status
+  const getValidOrderStatusTransitions = (currentStatus) => {
+    // Define status order for progression
+    const orderStatusFlow = [
+      "Order Confirmed",
+      "Order Packed",
+      "Awaiting Delivery",
+      "Out for Delivery",
+      "Delivered"
+      // Removed "Cancelled" as it will be a separate button
+    ];
+    
+    const currentIndex = orderStatusFlow.indexOf(currentStatus);
+    
+    // If current status is not found or is Cancelled, no transitions allowed
+    if (currentIndex === -1 || currentStatus === "Cancelled") {
+      return [currentStatus]; // Only allow selecting the current status
+    }
+    
+    // Allow selecting the current status, one step forward, or one step backward
+    const result = [currentStatus];
+    
+    // Add next status if not at the end
+    if (currentIndex < orderStatusFlow.length - 1) {
+      result.push(orderStatusFlow[currentIndex + 1]);
+    }
+    
+    // Add previous status if not at the beginning
+    if (currentIndex > 0) {
+      result.push(orderStatusFlow[currentIndex - 1]);
+    }
+    
+    return result;
+  };
+
+  // Define valid next status transitions for payment status
+  const getValidPaymentStatusTransitions = (currentStatus) => {
+    // Define status order for progression
+    const paymentStatusFlow = [
+      "pending",
+      "paid",
+      "failed", 
+      "cancelled"
+      // Removed "refunded" as it will be a separate button
+    ];
+    
+    const currentIndex = paymentStatusFlow.indexOf(currentStatus);
+    
+    // If current status is not found, no transitions allowed
+    if (currentIndex === -1) {
+      return [currentStatus]; // Only allow selecting the current status
+    }
+    
+    // Allow selecting the current status, one step forward, or one step backward
+    const result = [currentStatus];
+    
+    // Add next status if not at the end
+    if (currentIndex < paymentStatusFlow.length - 1) {
+      result.push(paymentStatusFlow[currentIndex + 1]);
+    }
+    
+    // Add previous status if not at the beginning
+    if (currentIndex > 0) {
+      result.push(paymentStatusFlow[currentIndex - 1]);
+    }
+    
+    return result;
   };
 
   const getStatusColor = (status) => {
@@ -108,8 +194,6 @@ const OrderDetails = () => {
         return "bg-red-100 text-red-800";
       case "cancelled":
         return "bg-gray-100 text-gray-800";
-      case "refunded":
-        return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -291,32 +375,143 @@ const OrderDetails = () => {
           </div>
         )}
 
+        {/* Order & Payment Timeline */}
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 mb-4 sm:mb-6">
+          <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">
+            Order & Payment Timeline
+          </h2>
+          {loadingHistory ? (
+            <div className="flex justify-center items-center h-20">
+              <span className="loading loading-spinner loading-md text-[#5CAF90]"></span>
+            </div>
+          ) : orderHistory.length === 0 ? (
+            <div className="text-center text-gray-500 py-4">
+              No history available for this order.
+            </div>
+          ) : (
+            <div className="relative pb-2">
+              {/* Timeline Events */}
+              <div className="space-y-4">
+                {orderHistory.map((event, index) => (
+                  <div key={index} className="flex items-start ml-2">
+                    <div className="relative z-10">
+                      <div className="h-8 w-8 rounded-full bg-[#5CAF90] flex items-center justify-center shadow-md">
+                        <span className="text-white text-xs">{orderHistory.length - index}</span>
+                      </div>
+                    </div>
+                    <div className="ml-4 bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex-grow">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-semibold text-[#1D372E]">
+                            {event.status_type === 'order_status' ? 'Order Status Changed' : 
+                             event.status_type === 'payment_status' ? 'Payment Status Changed' : 
+                             event.status_type === 'cancellation' ? 'Order Cancelled' : 'Status Changed'}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {event.status_from ? (
+                              <>
+                                Changed from <span className="font-medium">{event.status_from}</span> to{" "}
+                                <span className="font-medium">{event.status_to}</span>
+                              </>
+                            ) : (
+                              <>
+                                Status set to <span className="font-medium">{event.status_to}</span>
+                              </>
+                            )}
+                          </p>
+                          {event.reason && (
+                            <p className="text-sm text-gray-700 mt-1">
+                              <span className="font-medium">Reason:</span> {event.reason}
+                            </p>
+                          )}
+                          {event.notes && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {event.notes}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(event.created_at).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 mb-4 sm:mb-6">
           <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[#1D372E]">
             Update Order Status
           </h2>
           <div className="space-y-3 sm:space-y-4">
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              {[
-                "Order Confirmed",
-                "Order Packed",
-                "Awaiting Delivery",
-                "Out for Delivery",
-                "Delivered",
-              ].map((status) => (
+            <div className="flex flex-wrap gap-1 sm:gap-2 items-center justify-between">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
+                {[
+                  "Order Confirmed",
+                  "Order Packed",
+                  "Awaiting Delivery",
+                  "Out for Delivery",
+                  "Delivered",
+                ].map((status) => {
+                  // Determine if this status is a valid transition
+                  const validTransitions = getValidOrderStatusTransitions(order.Status);
+                  const isValidTransition = validTransitions.includes(status);
+                  const isCurrent = status === order.Status;
+                  
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => handleStatusSelect(status)}
+                      disabled={updatingStatus || (!isValidTransition && !isCurrent)}
+                      className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm capitalize ${
+                        selectedStatus === status
+                          ? "bg-gray-100 text-[#1D372E] border-2 border-[#5CAF90]"
+                          : isValidTransition || isCurrent
+                          ? "bg-white text-[#1D372E] border border-gray-300 hover:bg-gray-50"
+                          : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Separate Cancel/Revert Cancel Button */}
+              {order.Status === "Cancelled" ? (
                 <button
-                  key={status}
-                  onClick={() => handleStatusSelect(status)}
+                  onClick={() => {
+                    // Set to the last status before cancellation (getting from history)
+                    const lastValidStatus = orderHistory.find(
+                      history => history.status_type === 'order_status' && history.status_to === 'Cancelled'
+                    )?.status_from || "Order Confirmed";
+                    
+                    setSelectedStatus(lastValidStatus);
+                    setShowOrderStatusModal(true);
+                  }}
                   disabled={updatingStatus}
-                  className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm capitalize ${
-                    selectedStatus === status
-                      ? "bg-gray-100 text-[#1D372E] border-2 border-[#5CAF90]"
-                      : "bg-white text-[#1D372E] border border-gray-300 hover:bg-gray-50"
+                  className="px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm bg-green-500 text-white hover:bg-green-600"
+                >
+                  Revert Cancellation
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setSelectedStatus("Cancelled");
+                    setShowOrderStatusModal(true);
+                  }}
+                  disabled={updatingStatus || order.Status === "Cancelled"}
+                  className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm ${
+                    selectedStatus === "Cancelled"
+                      ? "bg-red-100 text-red-800 border-2 border-red-500"
+                      : "bg-red-500 text-white hover:bg-red-600"
                   }`}
                 >
-                  {status}
+                  Cancel Order
                 </button>
-              ))}
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center">
@@ -355,22 +550,61 @@ const OrderDetails = () => {
             Update Payment Status
           </h2>
           <div className="space-y-3 sm:space-y-4">
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              {["pending", "paid", "failed", "cancelled", "refunded"].map(
-                (status) => (
-                  <button
-                    key={status}
-                    onClick={() => handlePaymentStatusSelect(status)}
-                    disabled={updatingPaymentStatus}
-                    className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm capitalize ${
-                      selectedPaymentStatus === status
-                        ? "bg-gray-100 text-[#1D372E] border-2 border-[#5CAF90]"
-                        : "bg-white text-[#1D372E] border border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {status}
-                  </button>
-                )
+            <div className="flex flex-wrap gap-1 sm:gap-2 items-center justify-between">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
+                {["pending", "paid", "failed", "cancelled"].map(
+                  (status) => {
+                    // Determine if this status is a valid transition
+                    const validTransitions = getValidPaymentStatusTransitions(order.Payment_Stats);
+                    const isValidTransition = validTransitions.includes(status);
+                    const isCurrent = status === order.Payment_Stats;
+                    
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => handlePaymentStatusSelect(status)}
+                        disabled={updatingPaymentStatus || (!isValidTransition && !isCurrent)}
+                        className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm capitalize ${
+                          selectedPaymentStatus === status
+                            ? "bg-gray-100 text-[#1D372E] border-2 border-[#5CAF90]"
+                            : isValidTransition || isCurrent
+                            ? "bg-white text-[#1D372E] border border-gray-300 hover:bg-gray-50"
+                            : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                        }`}
+                      >
+                        {status}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+              {/* Separate Refund/Revert Refund Button */}
+              {order.Payment_Stats === "refunded" ? (
+                <button
+                  onClick={() => {
+                    setSelectedPaymentStatus("paid");
+                    setShowPaymentStatusModal(true);
+                  }}
+                  disabled={updatingPaymentStatus}
+                  className="px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm bg-green-500 text-white hover:bg-green-600"
+                >
+                  Revert Refund
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setSelectedPaymentStatus("refunded");
+                    setShowPaymentStatusModal(true);
+                  }}
+                  disabled={updatingPaymentStatus || order.Payment_Stats === "refunded"}
+                  className={`px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm ${
+                    selectedPaymentStatus === "refunded"
+                      ? "bg-red-100 text-red-800 border-2 border-red-500"
+                      : "bg-red-500 text-white hover:bg-red-600"
+                  }`}
+                >
+                  Refund Payment
+                </button>
               )}
             </div>
 
@@ -480,13 +714,30 @@ const OrderDetails = () => {
                     </span>
                   </div>
                 </div>
+                
+                {/* Reason Field */}
+                <div className="mb-4 mt-4">
+                  <label className="block text-left text-sm font-medium mb-1">
+                    Reason for change (optional):
+                  </label>
+                  <textarea
+                    value={statusReason}
+                    onChange={(e) => setStatusReason(e.target.value)}
+                    className="textarea textarea-bordered w-full h-20 text-sm text-[#1D372E] bg-white"
+                    placeholder={selectedStatus === "Cancelled" ? "Please provide a reason for cancellation..." : "Add notes about this status change..."}
+                  ></textarea>
+                </div>
+                
                 <p className="text-sm text-gray-600">
                   This action will update the status of Order #{orderId}
                 </p>
               </div>
               <div className="modal-action">
                 <button
-                  onClick={() => setShowOrderStatusModal(false)}
+                  onClick={() => {
+                    setShowOrderStatusModal(false);
+                    setStatusReason("");
+                  }}
                   className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
                 >
                   Cancel
@@ -499,11 +750,14 @@ const OrderDetails = () => {
                         orderId,
                         selectedStatus,
                         order.Full_Name,
-                        order.Total_Amount
+                        order.Total_Amount,
+                        statusReason
                       );
                       await fetchOrderDetails();
+                      await fetchOrderHistory();
                       setShowOrderStatusModal(false);
                       setStatusUpdateSuccess(true);
+                      setStatusReason("");
                       toast.success("Order status updated");
                       setTimeout(() => setStatusUpdateSuccess(false), 3000);
                     } catch (err) {
@@ -567,13 +821,32 @@ const OrderDetails = () => {
                     </span>
                   </div>
                 </div>
+                
+                {/* Reason Field */}
+                <div className="mb-4 mt-4">
+                  <label className="block text-left text-sm font-medium mb-1">
+                    Reason for change (optional):
+                  </label>
+                  <textarea
+                    value={statusReason}
+                    onChange={(e) => setStatusReason(e.target.value)}
+                    className="textarea textarea-bordered w-full h-20 text-sm text-[#1D372E] bg-white"
+                    placeholder={selectedPaymentStatus === "cancelled" || selectedPaymentStatus === "refunded" ? 
+                      "Please provide a reason..." : 
+                      "Add notes about this payment status change..."}
+                  ></textarea>
+                </div>
+                
                 <p className="text-sm text-gray-600">
                   This action will update the payment status of Order #{orderId}
                 </p>
               </div>
               <div className="modal-action">
                 <button
-                  onClick={() => setShowPaymentStatusModal(false)}
+                  onClick={() => {
+                    setShowPaymentStatusModal(false);
+                    setStatusReason("");
+                  }}
                   className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
                 >
                   Cancel
@@ -586,11 +859,14 @@ const OrderDetails = () => {
                         orderId,
                         selectedPaymentStatus,
                         order.Full_Name,
-                        order.Total_Amount
+                        order.Total_Amount,
+                        statusReason
                       );
                       await fetchOrderDetails();
+                      await fetchOrderHistory();
                       setShowPaymentStatusModal(false);
                       setPaymentStatusUpdateSuccess(true);
+                      setStatusReason("");
                       toast.success("Payment status updated");
                       setTimeout(
                         () => setPaymentStatusUpdateSuccess(false),
