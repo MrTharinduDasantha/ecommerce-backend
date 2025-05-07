@@ -216,6 +216,21 @@ CREATE TABLE `Order` (
     FOREIGN KEY (Delivery_Address_idDelivery_Address) REFERENCES Delivery_Address(idDelivery_Address)
 );
 
+-- Order_History
+CREATE TABLE Order_History (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    status_from VARCHAR(45),
+    status_to VARCHAR(45), 
+    status_type VARCHAR(45),
+    reason TEXT,
+    notes TEXT,
+    changed_by INT, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    FOREIGN KEY (order_id) REFERENCES `Order`(idOrder),
+    FOREIGN KEY (changed_by) REFERENCES User(idUser)
+);
+
 -- Order_has_Product_Variations Table
 CREATE TABLE Order_has_Product_Variations (
     Order_idOrder INT,
