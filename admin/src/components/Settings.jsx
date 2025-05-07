@@ -118,14 +118,14 @@ const Settings = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-xl font-bold text-[#1D372E]">
+            <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
               Manage Settings
             </h2>
           </div>
           {!isEditing && (
             <button
               onClick={handleEdit}
-              className="btn btn-primary gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              className="btn btn-primary gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md"
             >
               <FaEdit className="w-4 h-4" /> Edit
             </button>
@@ -137,13 +137,15 @@ const Settings = () => {
             {/* Navbar Logo Input */}
             <div className="form-control">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Navbar Logo</span>
+                <span className="label-text text-sm md:text-base font-medium">
+                  Navbar Logo
+                </span>
               </label>
               <input
                 type="file"
                 onChange={handleLogoChange}
                 ref={logoInputRef}
-                className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E] disabled:bg-white disabled:border-[#1D372E] disabled:text-[#1D372E]"
+                className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E] disabled:bg-white disabled:border-[#1D372E] disabled:text-[#1D372E]"
                 disabled={!isEditing}
               />
               {logoPreview && (
@@ -169,7 +171,9 @@ const Settings = () => {
             {/* Copyright Input */}
             <div className="form-control">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Footer Copyright</span>
+                <span className="label-text text-sm md:text-base font-medium">
+                  Footer Copyright
+                </span>
               </label>
               {isEditing ? (
                 <input
@@ -177,10 +181,10 @@ const Settings = () => {
                   value={copyrightText}
                   onChange={(e) => setCopyrightText(e.target.value)}
                   placeholder="Enter copyright text"
-                  className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                 />
               ) : (
-                <div className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E] flex items-center">
+                <div className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E] flex items-center">
                   {copyrightText || (
                     <span className="text-gray-400">Enter copyright text</span>
                   )}
@@ -195,14 +199,14 @@ const Settings = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="btn btn-primary bg-[#1D372E] border-[#1D372E]"
+                className="btn btn-primary bg-[#1D372E] border-[#1D372E] btn-sm md:btn-md"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+                className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md ${
                   isLoading ? "cursor-not-allowed" : ""
                 }`}
               >
