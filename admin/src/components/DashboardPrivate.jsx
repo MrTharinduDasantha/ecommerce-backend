@@ -400,27 +400,8 @@ const DashboardPrivate = () => {
               )}
             </div>
           </div>
-
-          {/* Order Status Chart */}
-          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
-            <h2 className="text-lg font-bold text-[#1D372E] mb-4">Order Status Breakdown</h2>
-            <div className="w-full h-64">
-              {loadingOrderStatus ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500 animate-pulse">Loading order status data...</p>
-                </div>
-              ) : errorOrderStatus ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-red-500">{errorOrderStatus}</p>
-                </div>
-              ) : (
-                <Doughnut data={orderStatusData} options={doughnutOptions} />
-              )}
-            </div>
-          </div>
-
-          {/* Top Selling Products */}
-          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
+            {/* Top Selling Products */}
+            <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
             <h2 className="text-lg font-bold text-[#1D372E] mb-4">Top Selling Products</h2>
             {loadingTopProducts ? (
               <div className="flex items-center justify-center h-64">
@@ -462,6 +443,25 @@ const DashboardPrivate = () => {
               </div>
             )}
           </div>
+
+          {/* Order Status Chart */}
+          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <h2 className="text-lg font-bold text-[#1D372E] mb-4">Order Status Breakdown</h2>
+            <div className="w-full h-64">
+              {loadingOrderStatus ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500 animate-pulse">Loading order status data...</p>
+                </div>
+              ) : errorOrderStatus ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-red-500">{errorOrderStatus}</p>
+                </div>
+              ) : (
+                <Doughnut data={orderStatusData} options={doughnutOptions} />
+              )}
+            </div>
+          </div>
+
 
           {/* Pending Shipments Progress */}
           <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg h-50">
