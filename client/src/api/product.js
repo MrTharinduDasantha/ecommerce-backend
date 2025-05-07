@@ -34,7 +34,6 @@ export const getCategories = async () => {
   }
 };
 
-
 // Update category
 export const updateCategory = async (id, formData) => {
   try {
@@ -164,6 +163,16 @@ export const updateProduct = async (id, formData) => {
   }
 };
 
+// Get products with active discounts
+export const getDiscountedProducts = async () => {
+  try {
+    const response = await api.get("/api/products/discountd-products/all");
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 // Delete a product
 export const deleteProduct = async (id) => {
   try {
@@ -192,14 +201,15 @@ export const getTopSoldProducts = async (limit = 10) => {
     console.error("Error fetching top sold products:", error);
     throw error.response?.data || error;
   }
-
 };
 
 // Inside your API file
 
 export const getSubCategoriesByCategoryId = async (categoryId) => {
   try {
-    const response = await api.get(`/api/products/categories/${categoryId}/subcategories`);
+    const response = await api.get(
+      `/api/products/categories/${categoryId}/subcategories`
+    );
     return response.data; // Adjust according to your server's response structure
   } catch (error) {
     throw error.response.data;
@@ -208,10 +218,11 @@ export const getSubCategoriesByCategoryId = async (categoryId) => {
 
 export const getProductsBySubCategoryId = async (subCategoryId) => {
   try {
-    const response = await api.get(`/api/products/sub-categories/${subCategoryId}/products`);
+    const response = await api.get(
+      `/api/products/sub-categories/${subCategoryId}/products`
+    );
     return response.data; // Adjust according to your server's response structure
   } catch (error) {
     throw error.response.data;
   }
-
 };

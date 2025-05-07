@@ -53,14 +53,14 @@ export const getOrderById = async (orderId) => {
   }
 };
 
-// Update order status
-export const updateOrderStatus = async (orderId, status, customerName, orderTotal) => {
+// Update order status with reason
+export const updateOrderStatus = async (orderId, status, customerName, orderTotal, reason = '') => {
   try {
     const token = getToken();
     console.log('Using token for updateOrderStatus:', token);
     
     const response = await axios.put(`${API_URL}/${orderId}/status`, 
-      { status, customerName, orderTotal },
+      { status, customerName, orderTotal, reason },
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -75,12 +75,12 @@ export const updateOrderStatus = async (orderId, status, customerName, orderTota
 };
 
 // Update payment status
-export const updatePaymentStatus = async (orderId, paymentStatus, customerName, orderTotal) => {
+export const updatePaymentStatus = async (orderId, paymentStatus, customerName, orderTotal, reason = '') => {
   try {
     const token = getToken();
     
     const response = await axios.put(`${API_URL}/${orderId}/payment-status`, 
-      { paymentStatus, customerName, orderTotal },
+      { paymentStatus, customerName, orderTotal, reason },
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -91,6 +91,26 @@ export const updatePaymentStatus = async (orderId, paymentStatus, customerName, 
   } catch (error) {
     console.error('Error updating payment status:', error);
     throw error.response?.data || { message: 'Failed to update payment status' };
+  }
+};
+
+// Update delivery date
+export const updateDeliveryDate = async (orderId, deliveryDate, customerName, orderTotal) => {
+  try {
+    const token = getToken();
+    
+    const response = await axios.put(`${API_URL}/${orderId}/delivery-date`, 
+      { deliveryDate, customerName, orderTotal },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating delivery date:', error);
+    throw error.response?.data || { message: 'Failed to update delivery date' };
   }
 };
 
@@ -167,5 +187,24 @@ export const getMonthlyTotalRevenue = async () => {
   } catch (error) {
     console.error('Error fetching monthly total revenue:', error);
     throw error.response?.data || { message: 'Failed to fetch monthly total revenue' };
+  }
+};
+
+// Get order history
+export const getOrderHistory = async (orderId) => {
+  try {
+    const token = getToken();
+    console.log(`Fetching history for order ID: ${orderId}`);
+    
+    const response = await axios.get(`${API_URL}/${orderId}/history`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order history:', error);
+    throw error.response?.data || { message: 'Failed to fetch order history' };
   }
 };

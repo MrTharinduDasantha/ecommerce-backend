@@ -6,3 +6,17 @@
 body {
   font-family: "Poppins", sans-serif;
 }
+
+@keyframes spin-3d {
+  0% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+  100% {
+    transform: rotateY(360deg) rotateX(360deg);
+  }
+}
+
+.animate-spin-3d {
+  animation: spin-3d 1.5s linear infinite;
+  transform-style: preserve-3d;
+}

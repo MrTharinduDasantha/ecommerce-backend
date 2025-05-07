@@ -20,27 +20,51 @@ const parsePrice = (str) => {
 const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  console.log(location.state)
   const selectedItems = location.state?.selectedItems || [];
-
   // Calculate subtotal and discount for selected items
   const subtotal = selectedItems.reduce((sum, item) => {
     const price = parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''));
     return sum + (price * item.quantity);
   }, 0);
 
-  const discount = selectedItems.reduce((sum, item) => {
-    const price = parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''));
+  // Calculate total market price
+  const totalMarketPrice = selectedItems.reduce((sum, item) => {
     const marketPrice = parseFloat(item.marketPrice?.replace('Rs. ', '').replace(/,/g, '') || 0);
-    if (marketPrice > price) {
-      return sum + ((marketPrice - price) * item.quantity);
-    }
-    return sum;
+    return sum + (marketPrice * item.quantity);
   }, 0);
 
-  // Calculate total after discount
-  const total = subtotal - discount + deliveryFee;
+  // Calculate total discount
+  const totalDiscount = totalMarketPrice - subtotal;
+  // Calculate final total (subtotal already includes discounts)
+  const total = subtotal + deliveryFee;
 
+  // Calculate individual product totals and discounts
+  const getProductTotals = () => {
+    return selectedItems.map(item => {
+      const price = parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''));
+      const marketPrice = parseFloat(item.marketPrice?.replace('Rs. ', '').replace(/,/g, '') || 0);
+      const itemTotal = price * item.quantity;
+      const itemDiscount = marketPrice > price ? (marketPrice - price) * item.quantity : 0;
+      
+      return {
+        name: item.name,
+        quantity: item.quantity,
+        price: price,
+        marketPrice: marketPrice,
+        total: itemTotal,
+        discount: itemDiscount
+      };
+    });
+  };
+
+  const productTotals = getProductTotals();
+
+  // Calculate total savings
+  const totalSavings = productTotals.reduce((sum, item) => sum + item.discount, 0);
+  
   return (
+    
     <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-[#E8E8E8]">
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-700 mb-6">
@@ -50,7 +74,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
         
         {/* Order Items */}
         <div className="mt-4 space-y-4">
-          {selectedItems.map((item) => (
+          {selectedItems.map((item, index) => (
             <div
               key={`${item.id}-${item.color || ''}-${item.size || ''}`}
               className="flex items-center space-x-4 bg-gray-100 rounded-lg p-3 cursor-pointer border border-[#E8E8E8]"
@@ -90,7 +114,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
                     </p>
                   )}
                 </div>
-                {item.marketPrice && (
+                {item.marketPrice && parseFloat(item.marketPrice.replace('Rs. ', '').replace(/,/g, '')) > parseFloat(item.price.replace('Rs. ', '').replace(/,/g, '')) && (
                   <div className="mt-1">
                     <span className="text-[12px] text-[#5CAF90] font-medium">
                       {item.discountName || (
@@ -101,13 +125,14 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
                       )}
                     </span>
                     <span className="text-[12px] text-[#5CAF90] ml-2">
-                      Save Rs. {(
-                        parseFloat(item.marketPrice.replace('Rs. ', '').replace(/,/g, '')) - 
-                        parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''))
-                      ).toLocaleString()}
+                      Save Rs. {productTotals[index].discount.toLocaleString()}
                     </span>
                   </div>
                 )}
+                <div className="mt-1 text-sm text-gray-600">
+                  <span className="font-medium">Item Total:</span>{" "}
+                  Rs. {productTotals[index].total.toLocaleString()}
+                </div>
               </div>
             </div>
           ))}
@@ -117,21 +142,21 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
         <div className="space-y-3 border-t border-[#E8E8E8] pt-4 mt-4">
           <div className="flex justify-between">
             <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">Rs. {formatPrice(subtotal)}</span>
+            <span className="font-medium">Rs. {subtotal.toLocaleString()}</span>
           </div>
-          {discount > 0 && (
+          {totalSavings > 0 && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Discount</span>
-              <span className="text-[#5CAF90]">-Rs. {formatPrice(discount)}</span>
+              <span className="text-gray-600">Total Discounts</span>
+              <span className="text-[#5CAF90]">-Rs. {totalDiscount.toLocaleString()}</span>
             </div>
           )}
           <div className="flex justify-between">
             <span className="text-gray-600">Delivery Fee</span>
-            <span className="font-medium">Rs. {formatPrice(deliveryFee)}</span>
+            <span className="font-medium">Rs. {deliveryFee.toLocaleString()}</span>
           </div>
           <div className="flex justify-between pt-3 border-t border-[#E8E8E8] mt-2">
             <span className="font-semibold">Total</span>
-            <span className="font-bold text-lg">Rs. {formatPrice(total)}</span>
+            <span className="font-bold text-lg">Rs. {total.toLocaleString()}</span>
           </div>
         </div>
         
