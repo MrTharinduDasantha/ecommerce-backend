@@ -29,7 +29,6 @@ const CustomerManagedForm = () => {
   };
 
   const handleViewDetails = (customerId) => {
-    console.log("Viewing details for customer ID:", customerId);
     navigate(`/dashboard/customer/view-customer/${customerId}`);
   };
 
@@ -189,7 +188,7 @@ const CustomerManagedForm = () => {
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#5CAF90",
-cancelButtonColor: "#6B7280",
+      cancelButtonColor: "#6B7280",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -304,10 +303,17 @@ cancelButtonColor: "#6B7280",
                         <button
                           onClick={() => handleEdit(customer.idCustomer)}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="Edit Customer"
                         >
                           <FaEdit className="w-3 h-3" />
                         </button>
-                       
+                        <button
+                          onClick={() => handleHistory(customer.idCustomer)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="View History"
+                        >
+                          <FaHistory className="w-3 h-3" />
+                        </button>
                         <button
                           onClick={() => handleDelete(customer.idCustomer)}
                           className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
@@ -324,20 +330,21 @@ cancelButtonColor: "#6B7280",
           </div>
 
           {/* Mobile view */}
-          <div className="sm:hidden">
+          <div className="sm:hidden space-y-3">
             {filteredCustomers.map((customer) => (
-              <div key={customer.idCustomer} className="bg-white p-3 border-b">
+              <div
+                key={customer.idCustomer}
+                className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
+              >
                 <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
+                  <div className="space-y-1">
+                    <div className="font-medium text-[#1D372E] text-xs">
                       {customer.Full_Name}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      ID: {customer.idCustomer}
-                    </div>
+                    <div className="text-xs text-gray-600">{customer.Email}</div>
                   </div>
                   <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
                       customer.Status === "Active"
                         ? "bg-green-100 text-green-800"
                         : "bg-red-100 text-red-800"
@@ -346,16 +353,18 @@ cancelButtonColor: "#6B7280",
                     {customer.Status}
                   </span>
                 </div>
-                <div className="text-xs text-gray-500 mb-1">
-                  {customer.Email}
-                </div>
-                <div className="text-xs text-gray-500 mb-2">
+                <div className="text-xs text-gray-600 mb-2">
                   {customer.Mobile_No}
                 </div>
-                <div className="text-xs text-gray-400 mb-2">
-                  Created: {new Date(customer.created_at).toLocaleDateString()}
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div>
+                    Created: {new Date(customer.created_at).toLocaleDateString()}
+                  </div>
+                  <div>
+                    Updated: {new Date(customer.updated_at).toLocaleDateString()}
+                  </div>
                 </div>
-                <div className="flex justify-end space-x-2">
+                <div className="flex justify-end space-x-2 mt-2">
                   <button
                     onClick={() => handleViewDetails(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
@@ -366,10 +375,17 @@ cancelButtonColor: "#6B7280",
                   <button
                     onClick={() => handleEdit(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                    title="Edit Customer"
                   >
                     <FaEdit className="w-3 h-3" />
                   </button>
-                 
+                  <button
+                    onClick={() => handleHistory(customer.idCustomer)}
+                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                    title="View History"
+                  >
+                    <FaHistory className="w-3 h-3" />
+                  </button>
                   <button
                     onClick={() => handleDelete(customer.idCustomer)}
                     className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
