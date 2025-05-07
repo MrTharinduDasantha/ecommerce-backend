@@ -813,7 +813,7 @@ const ProductForm = () => {
                     {selectedSubCategories.map((subcat, index) => (
                       <div
                         key={index}
-                        className="badge badge-primary gap-1 px-3 py-4 bg-[#5CAF90] border-[#5CAF90]"
+                        className="badge badge-primary badge-xs md:badge-sm gap-2 px-2 md:px-3 py-3 md:py-4 bg-[#5CAF90] border-[#5CAF90]"
                       >
                         <span>{subcat.Description}</span>
                         <button
@@ -827,7 +827,7 @@ const ProductForm = () => {
                             )
                           }
                         >
-                          <RiDeleteBack2Fill className="cursor-pointer" />
+                          <RiDeleteBack2Fill className="cursor-pointer w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                         </button>
                       </div>
                     ))}
@@ -1238,7 +1238,7 @@ const ProductForm = () => {
                       <div className="card-body p-4">
                         <div className="flex justify-between">
                           <div className="flex items-start gap-2 flex-1">
-                            <FaQuestionCircle className="mt-1 text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
+                            <FaQuestionCircle className="mt-1 text-[#5CAF90] w-5 h-5 md:w-4 md:h-4" />
                             <div>
                               <h4 className="font-medium text-xs md:text-sm">
                                 {faq.question}

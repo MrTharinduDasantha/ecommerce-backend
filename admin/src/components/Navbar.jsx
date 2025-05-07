@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
 import {
@@ -16,9 +16,10 @@ import profile from "../assets/userprofile.png";
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   const text = "Admin Panel".split("");
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const { unreadCount } = useNotifications();
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   // Handle scroll effect
   useEffect(() => {
@@ -33,6 +34,12 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Logout handler
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <header
@@ -148,13 +155,13 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               </li>
               <div className="divider my-1"></div>
               <li>
-                <Link
-                  to="/logout"
+                <button
+                  onClick={handleLogout}
                   className="flex items-center gap-2 hover:bg-error"
                 >
                   <TbLogout className="h-4 w-4" />
                   <span>Logout</span>
-                </Link>
+                </button>
               </li>
             </ul>
           </div>
