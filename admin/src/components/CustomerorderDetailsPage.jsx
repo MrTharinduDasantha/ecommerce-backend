@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import * as api from "../api/customer";
 import toast from "react-hot-toast";
-import { ArrowLeft } from "lucide-react";
+import { FaArrowLeft } from "react-icons/fa";
 
 const CustomerorderDetailsPage = () => {
   const { orderId } = useParams();
@@ -24,7 +24,9 @@ const CustomerorderDetailsPage = () => {
           setOrderDetails(orderData);
 
           if (location.state?.customerId) {
-            const customerHistory = await api.getCustomerHistory(location.state.customerId);
+            const customerHistory = await api.getCustomerHistory(
+              location.state.customerId
+            );
             if (customerHistory.deliveryAddresses.length > 0) {
               setDeliveryAddress(customerHistory.deliveryAddresses[0]);
             }
@@ -44,7 +46,9 @@ const CustomerorderDetailsPage = () => {
 
   const handleBack = () => {
     if (location.state?.customerId) {
-      navigate(`/dashboard/customer/view-customer/${location.state.customerId}`);
+      navigate(
+        `/dashboard/customer/view-customer/${location.state.customerId}`
+      );
     } else {
       navigate("/dashboard/orders");
     }
@@ -73,24 +77,24 @@ const CustomerorderDetailsPage = () => {
   }
 
   return (
-    <div className="mx-auto p-4 sm:p-6 max-w-10xl">
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+    <div className="mx-auto">
+      <div className="bg-white rounded-lg shadow-sm p-1">
         <div className="p-4 sm:p-6">
-          {/* Back Button */}
-          <button
-            onClick={handleBack}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-[#5CAF90] text-white hover:bg-[#4a9277] transition-colors cursor-pointer mb-4"
-            aria-label="Back to Customer page"
-          >
-           <ArrowLeft className="w-4 h-4" />
-          </button>
-
-          {/* Header */}
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-base sm:text-lg font-bold text-[#1D372E]">
-              Order Details
-            </h2>
+          {/* Back Button with Heading */}
+          <div className="flex items-center gap-4 mb-6">
+            <button
+              onClick={handleBack}
+              className="btn btn-circle btn-xs md:btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              title="Back to All Customers"
+            >
+              <FaArrowLeft className="w-2.5 h-2.5 md:w-3 md:h-3" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-6 bg-[#5CAF90]"></div>
+              <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+                Order Details
+              </h2>
+            </div>
           </div>
 
           {/* Order Info Card */}
@@ -104,9 +108,11 @@ const CustomerorderDetailsPage = () => {
                 <h5 className="font-semibold text-[#1D372E] text-sm sm:text-base mb-3">
                   Order Information
                 </h5>
-                <div className="space-y-2">
+                <div className="space-y-2 text-gray-700">
                   <p className="flex items-center">
-                    <span className="text-gray-600 w-32 text-sm">Order ID:</span>
+                    <span className="text-gray-600 w-32 text-sm">
+                      Order ID:
+                    </span>
                     <span className="font-medium text-xs sm:text-sm">
                       {orderDetails.idOrder || orderDetails.id}
                     </span>
@@ -160,7 +166,8 @@ const CustomerorderDetailsPage = () => {
                       Customer Note:
                     </span>
                     <span className="font-medium text-xs sm:text-sm">
-                      {orderDetails.Customer_Note}
+                      {orderDetails.Customer_Note ||
+                        "Customer Note not available"}
                     </span>
                   </p>
                   <p className="flex items-center">
@@ -168,7 +175,8 @@ const CustomerorderDetailsPage = () => {
                       Supplier Note:
                     </span>
                     <span className="font-medium text-xs sm:text-sm">
-                      {orderDetails.Supplier_Note}
+                      {orderDetails.Supplier_Note ||
+                        "Supplier Note not available"}
                     </span>
                   </p>
                   <p className="flex items-center">
@@ -194,8 +202,7 @@ const CustomerorderDetailsPage = () => {
                       ${calculateNetAmount()}
                     </span>
                   </p>
- ⊗
-                  <div className="h-px bg-black my-2"></div>
+                  ⊗<div className="h-px bg-black my-2"></div>
                   {orderDetails.Payment_Method && (
                     <p className="flex items-center">
                       <span className="text-gray-600 w-32 text-sm">
@@ -214,7 +221,7 @@ const CustomerorderDetailsPage = () => {
                   <h5 className="font-semibold text-[#1D372E] text-sm sm:text-base mb-3">
                     Delivery Address
                   </h5>
-                  <div className="space-y-2">
+                  <div className="space-y-2 text-gray-700">
                     <p className="flex items-center">
                       <span className="text-gray-600 w-24 text-sm">
                         Address:

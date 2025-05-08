@@ -197,10 +197,10 @@ const UsersManagedForm = () => {
                           Status
                         </th>
                         <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
-                          Created At
+                          Created
                         </th>
                         <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
-                          Updated At
+                          Updated
                         </th>
                       </tr>
                     </thead>
