@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { products } from "./Products";
+import { products } from "../Products";
 import Banner from "../assets/banner.png";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
@@ -20,26 +20,14 @@ const ProductPage = () => {
   const [cartItem, setCartItem] = useState(null);
 
   useEffect(() => {
-    // Check if product data is passed from Rush Delivery page
-    if (location.state?.product) {
-      const rushProduct = location.state.product;
-      setProduct(rushProduct);
-      setMainImage(rushProduct.image);
-      if (rushProduct.variants?.[0]?.size) {
-        setSelectedSize(rushProduct.variants[0].size[0]);
+    const selectedProduct = products.find((p) => p.id === parseInt(id));
+    if (selectedProduct) {
+      setProduct(selectedProduct);
+      setMainImage(selectedProduct.image);
+      if (selectedProduct.variants[0]?.size) {
+        setSelectedSize(selectedProduct.variants[0].size[0]);
       }
-      setQuantity(rushProduct.variants?.[0]?.quantity > 0 ? 1 : 0);
-    } else {
-      // Fallback to finding product from static products array
-      const selectedProduct = products.find((p) => p.id === parseInt(id));
-      if (selectedProduct) {
-        setProduct(selectedProduct);
-        setMainImage(selectedProduct.image);
-        if (selectedProduct.variants?.[0]?.size) {
-          setSelectedSize(selectedProduct.variants[0].size[0]);
-        }
-        setQuantity(selectedProduct.variants?.[0]?.quantity > 0 ? 1 : 0);
-      }
+      setQuantity(selectedProduct.variants[selectedVariant].quantity > 0 ? 1 : 0);
     }
 
     // Check if coming from cart
@@ -47,8 +35,8 @@ const ProductPage = () => {
       setIsFromCart(true);
       setCartItem(location.state.selectedVariant);
       // Set initial variant based on cart item
-      if (location.state.selectedVariant && product?.variants) {
-        const variantIndex = product.variants.findIndex(
+      if (location.state.selectedVariant) {
+        const variantIndex = selectedProduct.variants.findIndex(
           v => v.colorName === location.state.selectedVariant.color
         );
         if (variantIndex !== -1) {
@@ -59,20 +47,21 @@ const ProductPage = () => {
   }, [id, location.state]);
 
   useEffect(() => {
-    if (product?.variants?.[selectedVariant]) {
-      setQuantity(product.variants[selectedVariant].quantity > 0 ? 1 : 0);
+    if (product) {
+      setQuantity(currentVariant.quantity > 0 ? 1 : 0);
     }
   }, [selectedVariant, product]);
 
-  const currentVariant = product?.variants?.[selectedVariant] || {};
+  const currentVariant = product?.variants[selectedVariant] || {};
 
+  console.log(currentVariant)
   const handleAddToCart = () => {
     if (product && currentVariant.quantity > 0) {
       const cartItem = {
         id: product.id,
         name: product.name,
         image: mainImage,
-        price: `Rs. ${currentVariant.price.toFixed(2)}`,
+        price: `LKR ${currentVariant.price.toFixed(2)}`,
         quantity: quantity,
         size: selectedSize,
         color: currentVariant.colorName || null,
@@ -181,25 +170,13 @@ const ProductPage = () => {
 
           {/* Price */}
           <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
-            Rs. {currentVariant.price.toLocaleString()}
+            LKR {currentVariant.price.toFixed(2)}
             {product.marketPrice > currentVariant.price && (
               <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
-                Rs {product.marketPrice.toLocaleString()}
+                LKR {product.marketPrice.toFixed(2)}
               </span>
             )}
           </div>
-
-          {/* Discount Information */}
-          {product.marketPrice > currentVariant.price && (
-            <div className="mt-1">
-              <span className="text-[#5CAF90] font-medium">
-                {product.discountName || 'Special Discount'}
-              </span>
-              <span className="text-[#5CAF90] ml-2">
-                Save Rs. {(product.marketPrice - currentVariant.price).toLocaleString()}
-              </span>
-            </div>
-          )}
 
           {/* Description */}
           <p className="text-gray-600 text-sm sm:text-base line-clamp-3">
@@ -349,7 +326,7 @@ const ProductPage = () => {
                 {relatedProduct.name}
               </h3>
               <div className="text-center text-gray-800 font-bold text-sm sm:text-base">
-                Rs. {relatedProduct.variants[0].price.toLocaleString()}
+                LKR {relatedProduct.variants[0].price.toFixed(2)}
               </div>
             </div>
           ))}
