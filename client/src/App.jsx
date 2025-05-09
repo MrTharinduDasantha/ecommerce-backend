@@ -22,6 +22,8 @@ import SeasonalOffers from "./components/Pages/SeasonalOffers";
 import Cart from "./components/Cart";
 import { CartProvider } from "./context/CartContext";
 import AllCategories from "./components/Pages/Category";
+import AllProducts from "./components/AllProducts";
+import SubCategory from "./components/Pages/SubCategory";
 
 const App = () => {
   return (
@@ -48,7 +50,10 @@ const App = () => {
         <Route path="/seasonal-offers" element={<SeasonalOffers />} />
         <Route path="/for-you" element={<ForYou />} />
         <Route path="/on-sale" element={<OnSale />} />
-        <Route path="/AllCategories" element={<AllCategories />} />
+        <Route path="/AllCategories/:categoryId" element={<AllCategories />} />
+        <Route path="/AllProducts" element={<AllProducts />} />
+        <Route path="/subcategory/:id" element={<SubCategory />} />
+        
       </Routes>
       <Footer />
     </CartProvider>

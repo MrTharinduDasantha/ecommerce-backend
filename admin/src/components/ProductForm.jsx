@@ -48,10 +48,19 @@ const customStyles = {
     "&:hover": {
       borderColor: "#1D372E",
     },
+    // Reduce control height and font size on small screens
+    "@media screen and (max-width: 640px)": {
+      minHeight: "2rem",
+      fontSize: "0.75rem",
+    },
   }),
   option: (provided) => ({
     ...provided,
     fontSize: "0.875rem",
+    // Reduce option font size on small screens
+    "@media screen and (max-width: 640px)": {
+      fontSize: "0.75rem",
+    },
   }),
 };
 
@@ -161,7 +170,11 @@ const ProductForm = () => {
           const product = data.product;
           // Set product fields
           setDescription(product.Description);
-          setSelectedBrand(product.Product_Brand_idProduct_Brand);
+          setSelectedBrand(
+            product.Product_Brand_idProduct_Brand
+              ? product.Product_Brand_idProduct_Brand
+              : "other"
+          );
           setMarketPrice(product.Market_Price);
           setSellingPrice(product.Selling_Price);
           setSubDescription(product.Long_Description);
@@ -517,7 +530,7 @@ const ProductForm = () => {
       variations.some((v) => !v.quantity)
     ) {
       toast.error(
-        "Please fill all required fields: Main Description, Brand, Market Price, Selling Price, Sub Categories, Main Image, and Quantity"
+        "Main Description, Brand, Market Price, Selling Price, Sub Categories, Main Image, and Quantity are required"
       );
       return;
     }
@@ -528,7 +541,9 @@ const ProductForm = () => {
       // Build FormData
       const formData = new FormData();
       formData.append("Description", description);
-      formData.append("Product_Brand_idProduct_Brand", selectedBrand);
+      if (selectedBrand !== "other") {
+        formData.append("Product_Brand_idProduct_Brand", selectedBrand);
+      }
       formData.append("Market_Price", marketPrice);
       formData.append("Selling_Price", sellingPrice);
       formData.append("Long_Description", subDescription);
@@ -623,7 +638,7 @@ const ProductForm = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-[#5CAF90]"></div>
-          <h2 className="text-xl font-bold text-[#1D372E]">
+          <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
             {isEditMode ? "Edit Product" : "Add Product"}
           </h2>
         </div>
@@ -640,7 +655,7 @@ const ProductForm = () => {
                 {/* Description */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">
+                    <span className="label-text text-sm font-medium">
                       Main Description
                     </span>
                   </label>
@@ -649,39 +664,50 @@ const ProductForm = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Enter product description"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Brand */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Brand</span>
+                    <span className="label-text text-sm font-medium">
+                      Brand
+                    </span>
                   </label>
                   <div className="flex gap-2 text-[#1D372E]">
                     <Select
                       value={
-                        brands
-                          .map((brand) => ({
-                            value: brand.idProduct_Brand,
-                            label: brand.Brand_Name,
-                          }))
-                          .find((option) => option.value === selectedBrand) ||
-                        null
+                        selectedBrand === "other"
+                          ? { value: "other", label: "Other" }
+                          : brands
+                              .map((brand) => ({
+                                value: brand.idProduct_Brand,
+                                label: brand.Brand_Name,
+                              }))
+                              .find(
+                                (option) => option.value === selectedBrand
+                              ) || null
                       }
-                      onChange={(selected) => setSelectedBrand(selected.value)}
-                      options={brands.map((brand) => ({
-                        value: brand.idProduct_Brand,
-                        label: brand.Brand_Name,
-                      }))}
+                      onChange={(selected) =>
+                        setSelectedBrand(selected ? selected.value : null)
+                      }
+                      options={[
+                        { value: "other", label: "Other" },
+                        ...brands.map((brand) => ({
+                          value: brand.idProduct_Brand,
+                          label: brand.Brand_Name,
+                        })),
+                      ]}
                       styles={customStyles}
                       placeholder="Select Brand"
-                      className="flex-1"
+                      className="flex-1 input-sm md:input-md"
+                      isClearable={false}
                     />
                     <button
                       type="button"
                       onClick={openBrandPopup}
-                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                      className="btn btn-primary mt-0.5 md:mt-0 btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
                       Add
                     </button>
@@ -691,21 +717,23 @@ const ProductForm = () => {
                 {/* Market Price */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Market Price</span>
+                    <span className="label-text text-sm font-medium">
+                      Market Price
+                    </span>
                   </label>
                   <input
                     type="number"
                     value={marketPrice}
                     onChange={(e) => setMarketPrice(e.target.value)}
                     placeholder="Enter market price"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Selling Price */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">
+                    <span className="label-text text-sm font-medium">
                       Selling Price
                     </span>
                   </label>
@@ -714,14 +742,14 @@ const ProductForm = () => {
                     value={sellingPrice}
                     onChange={(e) => setSellingPrice(e.target.value)}
                     placeholder="Enter selling price"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Sub Categories */}
                 <div className="form-control md:col-span-2">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">
+                    <span className="label-text text-sm font-medium">
                       Sub Categories
                     </span>
                   </label>
@@ -758,7 +786,7 @@ const ProductForm = () => {
                     styles={customStyles}
                     isMulti
                     placeholder="Select sub category"
-                    className="w-full text-[#1D372E]"
+                    className="w-full text-[#1D372E] input-sm md:input-md"
                     formatGroupLabel={(data) => (
                       <div className="font-bold text-[#1D372E]">
                         {data.label}
@@ -785,7 +813,7 @@ const ProductForm = () => {
                     {selectedSubCategories.map((subcat, index) => (
                       <div
                         key={index}
-                        className="badge badge-primary gap-1 px-3 py-4 bg-[#5CAF90] border-[#5CAF90]"
+                        className="badge badge-primary badge-xs md:badge-sm gap-2 px-2 md:px-3 py-3 md:py-4 bg-[#5CAF90] border-[#5CAF90]"
                       >
                         <span>{subcat.Description}</span>
                         <button
@@ -799,7 +827,7 @@ const ProductForm = () => {
                             )
                           }
                         >
-                          <RiDeleteBack2Fill className="cursor-pointer" />
+                          <RiDeleteBack2Fill className="cursor-pointer w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                         </button>
                       </div>
                     ))}
@@ -820,13 +848,16 @@ const ProductForm = () => {
                 {/* Main Image */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Main Image</span>
+                    <span className="label-text text-sm font-medium">
+                      Main Image
+                    </span>
                   </label>
                   <input
                     type="file"
                     onChange={handleMainImageChange}
                     ref={mainImageRef}
-                    className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    accept="image/*"
                   />
                   {mainImagePreview && (
                     <div className="relative mt-2 w-24 h-24 rounded-lg overflow-hidden">
@@ -849,14 +880,17 @@ const ProductForm = () => {
                 {/* Sub Images */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Sub Images</span>
+                    <span className="label-text text-sm font-medium">
+                      Sub Images
+                    </span>
                   </label>
                   <input
                     type="file"
                     multiple
                     onChange={handleSubImagesChange}
                     ref={subImagesRef}
-                    className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    accept="image/*"
                   />
                   {subImagesPreview.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -894,7 +928,7 @@ const ProductForm = () => {
                     value={subDescription}
                     onChange={(e) => setSubDescription(e.target.value)}
                     placeholder="Enter additional product details"
-                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                     rows={4}
                   />
                 </div>
@@ -913,7 +947,9 @@ const ProductForm = () => {
                 {/* Color */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Color</span>
+                    <span className="label-text text-sm font-medium">
+                      Color
+                    </span>
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -921,13 +957,13 @@ const ProductForm = () => {
                       value={colorName}
                       onChange={(e) => setColorName(e.target.value)}
                       placeholder="Enter color hex value"
-                      className="input input-bordered flex-1 border-[#1D372E] text-[#1D372E]"
+                      className="input input-bordered input-sm md:input-md flex-1 border-[#1D372E] text-[#1D372E]"
                       disabled={isColorLocked}
                       style={getInputStyle()}
                     />
                     <div className="relative">
                       <div
-                        className="w-10 h-10 border border-base-300 rounded-md cursor-pointer"
+                        className="w-8 h-8 md:w-10 md:h-10 border border-base-300 rounded-md cursor-pointer"
                         style={{ backgroundColor: colorPickerValue }}
                         onClick={() =>
                           document.getElementById("colorPicker").click()
@@ -948,9 +984,9 @@ const ProductForm = () => {
                       className="text-[#1D372E]"
                     >
                       {isColorLocked ? (
-                        <FaCheckSquare className="w-5 h-5" />
+                        <FaCheckSquare className="w-4 h-4 md:w-5 md:h-5" />
                       ) : (
-                        <FaRegCheckSquare className="w-5 h-5" />
+                        <FaRegCheckSquare className="w-4 h-4 md:w-5 md:h-5" />
                       )}
                     </button>
                   </div>
@@ -959,21 +995,23 @@ const ProductForm = () => {
                 {/* Size */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Size</span>
+                    <span className="label-text text-sm font-medium">Size</span>
                   </label>
                   <input
                     type="text"
                     value={size}
                     onChange={(e) => setSize(e.target.value)}
                     placeholder="Enter size"
-                    className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
                 </div>
 
                 {/* Quantity */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Quantity</span>
+                    <span className="label-text text-sm font-medium">
+                      Quantity
+                    </span>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -981,7 +1019,7 @@ const ProductForm = () => {
                       value={colorQuantity}
                       onChange={(e) => setColorQuantity(e.target.value)}
                       placeholder="Enter quantity"
-                      className="input input-bordered flex-1 bg-white border-[#1D372E] text-[#1D372E]"
+                      className="input input-bordered input-sm md:input-md flex-1 bg-white border-[#1D372E] text-[#1D372E]"
                     />
                     <button
                       type="button"
@@ -990,7 +1028,7 @@ const ProductForm = () => {
                           ? handleUpdateVariation
                           : handleAddVariation
                       }
-                      className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                      className="btn btn-primary btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
                       {editingVariationIndex !== null ? "Edit" : "Add"}
                     </button>
@@ -1000,67 +1038,137 @@ const ProductForm = () => {
 
               {/* Variations Table */}
               {variations.length > 0 && (
-                <div className="overflow-x-auto mt-4">
-                  <table className="table text-center border border-[#1D372E]">
-                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                      <tr className="border-b border-[#1D372E]">
-                        <th className="font-semibold">Color Code</th>
-                        <th className="font-semibold">Size</th>
-                        <th className="font-semibold">Quantity</th>
-                        <th className="font-semibold">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-[#1D372E]">
-                      {variations.map((item, index) => (
-                        <tr key={index} className="border-b border-[#1D372E]">
-                          <td>
-                            <div className="flex items-center justify-center gap-2">
-                              {item.colorCode !== "No color selected" && (
-                                <div
-                                  className="w-5 h-5 border border-base-300 rounded-md"
-                                  style={{ backgroundColor: item.colorCode }}
-                                />
-                              )}
-                              <span>{item.colorCode}</span>
-                            </div>
-                          </td>
-                          <td>{item.size}</td>
-                          <td>{item.quantity}</td>
-                          <td>
-                            <div className="flex items-center justify-center gap-2">
+                <div className="mt-4">
+                  {/* Desktop View */}
+                  <div className="hidden md:block">
+                    <div className="overflow-x-auto">
+                      <table className="table text-center border border-[#1D372E]">
+                        <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                          <tr className="border-b border-[#1D372E]">
+                            <th className="font-semibold">Color Code</th>
+                            <th className="font-semibold">Size</th>
+                            <th className="font-semibold">Quantity</th>
+                            <th className="font-semibold">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-[#1D372E]">
+                          {variations.map((item, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-[#1D372E]"
+                            >
+                              <td>
+                                <div className="flex items-center justify-center gap-2 text-sm">
+                                  {item.colorCode !== "No color selected" && (
+                                    <div
+                                      className="w-5 h-5 border border-base-300 rounded-md"
+                                      style={{
+                                        backgroundColor: item.colorCode,
+                                      }}
+                                    />
+                                  )}
+                                  <span>{item.colorCode}</span>
+                                </div>
+                              </td>
+                              <td className="text-sm">{item.size}</td>
+                              <td className="text-sm">{item.quantity}</td>
+                              <td>
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditVariation(index)}
+                                    className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                    title="Edit Variation"
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                  {item.hasOrders ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeVariation(index)}
+                                      className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                      title="Cannot delete as it has orders"
+                                    >
+                                      <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeVariation(index)}
+                                      className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                      title="Delete Variation"
+                                    >
+                                      <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Mobile View */}
+                  <div className="md:hidden space-y-3">
+                    {variations.map((item, index) => (
+                      <div
+                        key={index}
+                        className="card bg-white border border-[#1D372E] text-[#1D372E] p-4"
+                      >
+                        <div className="flex justify-between items-center text-xs mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Color:</span>
+                            {item.colorCode !== "No color selected" && (
+                              <div
+                                className="w-5 h-5 border border-base-300 rounded-md"
+                                style={{ backgroundColor: item.colorCode }}
+                              />
+                            )}
+                            <span className="text-xs">{item.colorCode}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditVariation(index)}
+                              className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                              title="Edit Variation"
+                            >
+                              <FaEdit className="w-3 h-3" />
+                            </button>
+                            {item.hasOrders ? (
                               <button
                                 type="button"
-                                onClick={() => handleEditVariation(index)}
+                                onClick={() => removeVariation(index)}
                                 className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
-                                title="Edit Variation"
+                                title="Cannot delete as it has orders"
                               >
-                                <FaEdit className="w-3.5 h-3.5" />
+                                <RiDeleteBin5Fill className="w-3 h-3" />
                               </button>
-                              {item.hasOrders ? (
-                                <button
-                                  type="button"
-                                  onClick={() => removeVariation(index)}
-                                  className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
-                                  title="Cannot delete as it has orders"
-                                >
-                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => removeVariation(index)}
-                                  className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
-                                  title="Delete Variation"
-                                >
-                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => removeVariation(index)}
+                                className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
+                                title="Delete Variation"
+                              >
+                                <RiDeleteBin5Fill className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-xs">Size:</span>
+                          <span className="text-xs">{item.size}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-xs">Quantity:</span>
+                          <span className="text-xs">{item.quantity}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -1077,13 +1185,15 @@ const ProductForm = () => {
                 {/* Question */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Question</span>
+                    <span className="label-text text-sm font-medium">
+                      Question
+                    </span>
                   </label>
                   <textarea
                     value={faqQuestion}
                     onChange={(e) => setFaqQuestion(e.target.value)}
                     placeholder="Enter question"
-                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                     rows={3}
                   />
                 </div>
@@ -1091,13 +1201,15 @@ const ProductForm = () => {
                 {/* Answer */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
-                    <span className="label-text font-medium">Answer</span>
+                    <span className="label-text text-sm font-medium">
+                      Answer
+                    </span>
                   </label>
                   <textarea
                     value={faqAnswer}
                     onChange={(e) => setFaqAnswer(e.target.value)}
                     placeholder="Enter answer"
-                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                     rows={3}
                   />
                 </div>
@@ -1108,7 +1220,7 @@ const ProductForm = () => {
                     onClick={
                       editingFaqIndex !== null ? handleUpdateFaq : handleAddFaq
                     }
-                    className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                    className="btn btn-primary btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                   >
                     {editingFaqIndex !== null ? "Edit" : "Add"}
                   </button>
@@ -1126,10 +1238,14 @@ const ProductForm = () => {
                       <div className="card-body p-4">
                         <div className="flex justify-between">
                           <div className="flex items-start gap-2 flex-1">
-                            <FaQuestionCircle className="mt-1 text-[#5CAF90] w-4 h-4" />
+                            <FaQuestionCircle className="mt-1 text-[#5CAF90] w-5 h-5 md:w-4 md:h-4" />
                             <div>
-                              <h4 className="font-medium">{faq.question}</h4>
-                              <p className="text-sm mt-1">{faq.answer}</p>
+                              <h4 className="font-medium text-xs md:text-sm">
+                                {faq.question}
+                              </h4>
+                              <p className="mt-1 text-xs md:text-sm">
+                                {faq.answer}
+                              </p>
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -1139,7 +1255,7 @@ const ProductForm = () => {
                               className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
                               title="Edit FAQ"
                             >
-                              <FaEdit className="w-3.5 h-3.5" />
+                              <FaEdit className="w-3 h-3 md:w-3.5 md:h-3.5" />
                             </button>
                             <button
                               type="button"
@@ -1147,7 +1263,7 @@ const ProductForm = () => {
                               className="btn bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-xs btn-square"
                               title="Delete FAQ"
                             >
-                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                              <RiDeleteBin5Fill className="w-3 h-3 md:w-3.5 md:h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -1163,7 +1279,7 @@ const ProductForm = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+              className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md ${
                 isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
               }`}
             >
@@ -1185,8 +1301,8 @@ const ProductForm = () => {
       {/* Brand Popup */}
       {brandPopupVisible && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-md max-h-[70vh] bg-white text-[#1D372E]">
-            <h3 className="font-bold text-lg mb-4">
+          <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
+            <h3 className="font-bold text-base lg:text-lg mb-4">
               {isEditingBrand ? "Edit Brand" : "Add Brand"}
             </h3>
             <button
@@ -1198,20 +1314,24 @@ const ProductForm = () => {
 
             <div className="form-control mb-3">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Brand Name</span>
+                <span className="label-text text-sm lg:text-base font-medium">
+                  Brand Name
+                </span>
               </label>
               <input
                 type="text"
                 value={newBrandName}
                 onChange={(e) => setNewBrandName(e.target.value)}
                 placeholder="Enter brand name"
-                className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
               />
             </div>
 
             <div className="form-control mb-3">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Brand Image</span>
+                <span className="label-text text-sm lg:text-base font-medium">
+                  Brand Image
+                </span>
               </label>
               <input
                 type="file"
@@ -1228,14 +1348,14 @@ const ProductForm = () => {
                     setNewBrandImagePreview(null);
                   }
                 }}
-                className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                 accept="image/*"
               />
 
               {newBrandImagePreview && (
                 <div className="relative mt-2 w-24 h-24 border border-base-300 rounded-lg overflow-hidden">
                   <img
-                    src={newBrandImagePreview || "/placeholder.svg"}
+                    src={newBrandImagePreview}
                     alt="Brand Preview"
                     className="object-cover w-full h-full"
                   />
@@ -1257,13 +1377,15 @@ const ProductForm = () => {
 
             <div className="form-control mb-4">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Description</span>
+                <span className="label-text text-sm lg:text-base font-medium">
+                  Description
+                </span>
               </label>
               <textarea
                 value={newBrandDescription}
                 onChange={(e) => setNewBrandDescription(e.target.value)}
                 placeholder="Enter brand description"
-                className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E] text-sm md:text-base"
                 rows={3}
               ></textarea>
             </div>
@@ -1271,7 +1393,7 @@ const ProductForm = () => {
             <div className="modal-action">
               <button
                 onClick={handleAddOrUpdateBrand}
-                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md"
               >
                 {isEditingBrand ? "Edit Brand" : "Add Brand"}
               </button>
@@ -1280,14 +1402,22 @@ const ProductForm = () => {
             {/* Brands Table */}
             {brands.length > 0 && (
               <div className="mt-6">
-                <h4 className="font-medium mb-2">Existing Brands</h4>
+                <h4 className="font-medium text-sm lg:text-base mb-2">
+                  Existing Brands
+                </h4>
                 <div className="overflow-x-auto">
                   <table className="table text-center border border-[#1D372E] w-full">
                     <thead className="bg-[#EAFFF7] text-[#1D372E]">
                       <tr className="border-b border-[#1D372E]">
-                        <th className="font-semibold">Name</th>
-                        <th className="font-semibold">Image</th>
-                        <th className="font-semibold">Actions</th>
+                        <th className="font-semibold text-xs lg:text-sm">
+                          Name
+                        </th>
+                        <th className="font-semibold text-xs lg:text-sm">
+                          Image
+                        </th>
+                        <th className="font-semibold text-xs lg:text-sm">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1296,7 +1426,9 @@ const ProductForm = () => {
                           key={brand.idProduct_Brand}
                           className="border-b border-[#1D372E]"
                         >
-                          <td>{brand.Brand_Name}</td>
+                          <td className="text-xs lg:text-sm">
+                            {brand.Brand_Name}
+                          </td>
                           <td>
                             {brand.Brand_Image_Url ? (
                               <div className="avatar">
@@ -1309,7 +1441,7 @@ const ProductForm = () => {
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-sm opacity-70">
+                              <span className="text-xs lg:text-sm opacity-70">
                                 No image
                               </span>
                             )}
@@ -1321,7 +1453,7 @@ const ProductForm = () => {
                                 className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                                 title="Edit Brand"
                               >
-                                <FaEdit className="w-3.5 h-3.5" />
+                                <FaEdit className="w-3 h-3 md:w-3.5 md:h-3.5" />
                               </button>
                               <button
                                 onClick={() =>
@@ -1330,7 +1462,7 @@ const ProductForm = () => {
                                 className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                                 title="Delete Brand"
                               >
-                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                <RiDeleteBin5Fill className="w-3 h-3 md:w-3.5 md:h-3.5" />
                               </button>
                             </div>
                           </td>

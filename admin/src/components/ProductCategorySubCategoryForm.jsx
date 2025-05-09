@@ -53,15 +53,6 @@ const ProductCategorySubCategoryForm = () => {
     }
   };
 
-  // Hide scrollbar when popup is open, restore when closed
-  useEffect(() => {
-    if (showSubCategoryPopup) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [showSubCategoryPopup]);
-
   // Handle category image change
   const handleCategoryImageChange = (e) => {
     const file = e.target.files[0];
@@ -240,7 +231,7 @@ const ProductCategorySubCategoryForm = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-[#5CAF90]"></div>
-          <h2 className="text-xl font-bold text-[#1D372E]">
+          <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
             {isEditing ? "Edit Category" : "Add Category and Sub Category"}
           </h2>
         </div>
@@ -251,26 +242,31 @@ const ProductCategorySubCategoryForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="form-control">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text font-medium">Description</span>
+                  <span className="label-text text-sm md:text-base font-medium">
+                    Description
+                  </span>
                 </label>
                 <input
                   type="text"
                   value={categoryDescription}
                   onChange={(e) => setCategoryDescription(e.target.value)}
                   placeholder="Enter category description"
-                  className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                 />
               </div>
 
               <div className="form-control">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text font-medium">Image</span>
+                  <span className="label-text text-sm md:text-base font-medium">
+                    Image
+                  </span>
                 </label>
                 <input
                   type="file"
                   onChange={handleCategoryImageChange}
                   ref={categoryImageRef}
-                  className="file-input file-input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  accept="image/*"
                 />
                 {categoryImagePreview && (
                   <div className="relative mt-2 w-24 h-24 rounded-lg overflow-hidden">
@@ -293,17 +289,17 @@ const ProductCategorySubCategoryForm = () => {
               <div className="md:col-span-2 flex justify-end">
                 <button
                   onClick={handleCategoryFormSubmit}
-                  className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+                  className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md ${
                     isSubmitting ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
                   }`}
                 >
                   {isSubmitting ? (
                     <>
                       <span className="loading loading-spinner loading-xs"></span>
-                      {isEditing ? "Updating..." : "Adding..."}
+                      {isEditing ? "Editing..." : "Adding..."}
                     </>
                   ) : isEditing ? (
-                    "Update Category"
+                    "Edit Category"
                   ) : (
                     "Add Category"
                   )}
@@ -313,62 +309,168 @@ const ProductCategorySubCategoryForm = () => {
           </div>
         </div>
 
-        {/* Category Table */}
+        {/* Category Display */}
         {loading ? (
           <div className="flex justify-center items-center h-40">
             <span className="loading loading-spinner loading-lg text-primary"></span>
           </div>
-        ) : categories.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="table table-fixed min-w-[750px] text-center border border-[#1D372E]">
-              <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                <tr className="border-b border-[#1D372E]">
-                  <th className="font-semibold w-[125px]">Category</th>
-                  <th className="font-semibold w-[100px]">Image</th>
-                  <th className="font-semibold w-[325px]">Sub Categories</th>
-                  <th className="font-semibold w-[100px]">Status</th>
-                  <th className="font-semibold w-[100px]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-[#1D372E]">
-                {categories.map((cat, index) => (
-                  <tr key={index} className="border-b border-[#1D372E]">
-                    <td>{cat.Description}</td>
-                    <td>
-                      {cat.Image_Icon_Url ? (
-                        <div className="avatar">
-                          <div className="w-12 h-12 rounded-md">
-                            <img
-                              src={cat.Image_Icon_Url || "/placeholder.svg"}
-                              alt="Category"
-                            />
+        ) : categories.length === 0 ? (
+          <div className="alert bg-[#1D372E] border-[#1D372E]">
+            <span>No categories found. Add your first category above.</span>
+          </div>
+        ) : (
+          <>
+            {/* Table for larger screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="table table-fixed min-w-[750px] text-center border border-[#1D372E]">
+                <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                  <tr className="border-b border-[#1D372E]">
+                    <th className="font-semibold text-xs lg:text-sm w-[125px]">
+                      Category
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Image
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[325px]">
+                      Sub Categories
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Status
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-[#1D372E]">
+                  {categories.map((cat, index) => (
+                    <tr key={index} className="border-b border-[#1D372E]">
+                      <td className="text-xs lg:text-sm">{cat.Description}</td>
+                      <td>
+                        {cat.Image_Icon_Url ? (
+                          <div className="avatar">
+                            <div className="w-12 h-12 rounded-md">
+                              <img src={cat.Image_Icon_Url} alt="Category" />
+                            </div>
                           </div>
+                        ) : (
+                          <span className="text-xs lg:text-sm opacity-70">
+                            No image
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        {cat.subcategories && cat.subcategories.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {cat.subcategories.map((sub, subIndex) => (
+                              <span
+                                key={subIndex}
+                                className="badge badge-outline text-xs lg:text-sm"
+                              >
+                                {sub.Description}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs lg:text-sm opacity-70">
+                            No subcategories
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-xs lg:text-sm">Active</span>
+                          <button
+                            onClick={() => handleToggleStatus(cat)}
+                            className="text-[#5CAF90]"
+                          >
+                            {cat.Status === "active" ? (
+                              <FaCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            ) : (
+                              <FaRegCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            )}
+                          </button>
                         </div>
+                      </td>
+                      <td>
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleEditCategory(cat)}
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="Edit Category"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => openSubCategoryPopup(index)}
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="Add Sub Category"
+                          >
+                            <FaPlus />
+                          </button>
+                          <button
+                            onClick={() =>
+                              setDeleteConfirmationId(cat.idProduct_Category)
+                            }
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="Delete Category"
+                          >
+                            <RiDeleteBin5Fill />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Category Cards for mobile view */}
+            <div className="md:hidden grid grid-cols-1 gap-4">
+              {categories.map((cat, index) => (
+                <div
+                  key={index}
+                  className="card bg-white shadow-md border border-[#1D372E] p-4"
+                >
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      {cat.Image_Icon_Url ? (
+                        <img
+                          src={cat.Image_Icon_Url}
+                          alt="Category"
+                          className="w-16 h-16 rounded-md object-cover"
+                        />
                       ) : (
-                        <span className="text-sm opacity-70">No image</span>
+                        <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-xs">
+                          No Image
+                        </div>
                       )}
-                    </td>
-                    <td>
-                      {cat.subcategories && cat.subcategories.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {cat.subcategories.map((sub, subIndex) => (
-                            <span
-                              key={subIndex}
-                              className="badge badge-outline"
-                            >
-                              {sub.Description}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-[#1D372E]">
+                        {cat.Description}
+                      </h3>
+                      <div className="mt-2 text-[#1D372E]">
+                        <p className="text-xs">Subcategories:</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {cat.subcategories && cat.subcategories.length > 0 ? (
+                            cat.subcategories.map((sub, subIndex) => (
+                              <span
+                                key={subIndex}
+                                className="badge badge-outline text-xs"
+                              >
+                                {sub.Description}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-xs opacity-70">
+                              No subcategories
                             </span>
-                          ))}
+                          )}
                         </div>
-                      ) : (
-                        <span className="text-sm opacity-70">
-                          No subcategories
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <div className="flex items-center justify-center gap-2">
-                        <span>Active</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-[#1D372E]">Active</span>
                         <button
                           onClick={() => handleToggleStatus(cat)}
                           className="text-[#5CAF90]"
@@ -380,43 +482,37 @@ const ProductCategorySubCategoryForm = () => {
                           )}
                         </button>
                       </div>
-                    </td>
-                    <td>
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => handleEditCategory(cat)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="Edit Category"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() => openSubCategoryPopup(index)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="Add Sub Category"
-                        >
-                          <FaPlus />
-                        </button>
-                        <button
-                          onClick={() =>
-                            setDeleteConfirmationId(cat.idProduct_Category)
-                          }
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="Delete Category"
-                        >
-                          <RiDeleteBin5Fill />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="alert bg-[#1D372E] border-[#1D372E]">
-            <span>No categories found. Add your first category above.</span>
-          </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      onClick={() => handleEditCategory(cat)}
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="Edit Category"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => openSubCategoryPopup(index)}
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="Add Sub Category"
+                    >
+                      <FaPlus />
+                    </button>
+                    <button
+                      onClick={() =>
+                        setDeleteConfirmationId(cat.idProduct_Category)
+                      }
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="Delete Category"
+                    >
+                      <RiDeleteBin5Fill />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
@@ -424,7 +520,7 @@ const ProductCategorySubCategoryForm = () => {
       {showSubCategoryPopup && (
         <div className="modal modal-open">
           <div className="modal-box max-h-[70vh] bg-white text-[#1D372E]">
-            <h3 className="font-bold text-lg mb-4">
+            <h3 className="font-bold text-base lg:text-lg mb-4">
               {subCategoryToEdit ? "Edit Sub Category" : "Add Sub Category"}
             </h3>
             <button
@@ -436,28 +532,30 @@ const ProductCategorySubCategoryForm = () => {
 
             <div className="form-control mb-4">
               <label className="label text-[#1D372E] mb-0.5">
-                <span className="label-text font-medium">Description</span>
+                <span className="label-text text-sm lg:text-base font-medium">
+                  Description
+                </span>
               </label>
               <input
                 type="text"
                 value={subCategoryDescription}
                 onChange={(e) => setSubCategoryDescription(e.target.value)}
                 placeholder="Enter sub category description"
-                className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
               />
             </div>
 
             <div className="modal-action">
               <button
                 onClick={handleAddOrUpdateSubCategory}
-                className={`btn btn-primary bg-[#5CAF90] border-none text-white ${
+                className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md ${
                   isSubmitting ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
                 }`}
               >
                 {isSubmitting ? (
                   <>
                     <span className="loading loading-spinner loading-xs"></span>
-                    {subCategoryToEdit ? "Updating..." : "Adding..."}
+                    {subCategoryToEdit ? "Editing..." : "Adding..."}
                   </>
                 ) : subCategoryToEdit ? (
                   "Edit Sub Category"
@@ -471,13 +569,19 @@ const ProductCategorySubCategoryForm = () => {
             {selectedCategoryIndex !== null &&
               categories[selectedCategoryIndex]?.subcategories?.length > 0 && (
                 <div className="mt-6">
-                  <h4 className="font-medium mb-2">Existing Sub Categories</h4>
+                  <h4 className="font-medium text-sm lg:text-base mb-2">
+                    Existing Sub Categories
+                  </h4>
                   <div className="overflow-x-auto">
                     <table className="table text-center border border-[#1D372E] w-full">
                       <thead className="bg-[#EAFFF7] text-[#1D372E]">
                         <tr className="border-b border-[#1D372E]">
-                          <th className="font-semibold">Sub Category</th>
-                          <th className="font-semibold">Action</th>
+                          <th className="font-semibold text-xs lg:text-sm">
+                            Sub Category
+                          </th>
+                          <th className="font-semibold text-xs lg:text-sm">
+                            Action
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -487,7 +591,9 @@ const ProductCategorySubCategoryForm = () => {
                               key={subIndex}
                               className="border-b border-[#1D372E]"
                             >
-                              <td>{sub.Description}</td>
+                              <td className="text-xs lg:text-sm">
+                                {sub.Description}
+                              </td>
                               <td>
                                 <div className="flex justify-center gap-2">
                                   <button

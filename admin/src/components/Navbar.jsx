@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
 import {
@@ -16,9 +16,10 @@ import profile from "../assets/userprofile.png";
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   const text = "Admin Panel".split("");
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const { unreadCount } = useNotifications();
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   // Handle scroll effect
   useEffect(() => {
@@ -33,6 +34,12 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Logout handler
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <header
@@ -64,10 +71,10 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
             to="/dashboard/dashboard-private"
             className="flex items-center gap-2"
           >
-            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-[#5CAF90] text-primary-content">
+            <div className="hidden md:flex items-center justify-center w-8 h-8 rounded-md bg-[#5CAF90] text-primary-content">
               <TbPackage className="h-4 w-4" />
             </div>
-            <span className="font-semibold text-lg hidden sm:inline-block">
+            <span className="font-semibold text-lg">
               {text.map((char, index) => (
                 <span
                   key={index}
@@ -124,16 +131,18 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
             </div>
             <ul
               tabIndex={0}
-              className="dropdown-content z-[1] menu p-2 shadow bg-[#1D372E] border border-emerald-950 rounded-box w-56 mt-4"
+              className="dropdown-content text-xs md:text-sm z-[1] menu p-2 shadow bg-[#1D372E] border border-emerald-950 rounded-box w-56 mt-4"
             >
-              <li className="menu-title text-white">My Account</li>
+              <li className="menu-title text-xs md:text-sm text-white">
+                My Account
+              </li>
               <div className="divider my-1"></div>
               <li>
                 <Link
                   to="/dashboard/profile"
                   className="flex items-center gap-2 hover:bg-[#5CAF90]"
                 >
-                  <TbUser className="h-4 w-4" />
+                  <TbUser className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span>Profile</span>
                 </Link>
               </li>
@@ -142,19 +151,19 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                   to="/dashboard/settings"
                   className="flex items-center gap-2 hover:bg-[#5CAF90]"
                 >
-                  <TbSettings className="h-4 w-4" />
+                  <TbSettings className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span>Settings</span>
                 </Link>
               </li>
               <div className="divider my-1"></div>
               <li>
-                <Link
-                  to="/logout"
+                <button
+                  onClick={handleLogout}
                   className="flex items-center gap-2 hover:bg-error"
                 >
-                  <TbLogout className="h-4 w-4" />
+                  <TbLogout className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span>Logout</span>
-                </Link>
+                </button>
               </li>
             </ul>
           </div>

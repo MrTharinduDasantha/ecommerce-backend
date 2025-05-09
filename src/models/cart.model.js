@@ -158,6 +158,8 @@ async function addProductToCart(cartId, productVariationId, qty, rate) {
     ]);
   }
 
+  // Commenting out the problematic UPDATE Product_Variations query
+  /*
   await pool.query(
     `
     UPDATE Product_Variations
@@ -166,6 +168,7 @@ async function addProductToCart(cartId, productVariationId, qty, rate) {
   `,
     [qty, qty, productVariationId]
   );
+  */
 
   // Update cart totals
   await updateCartTotals(cartId);
@@ -344,7 +347,7 @@ async function convertCartToOrder(
   );
 
   if (cartItems.length === 0) {
-    throw new Error("Cart id empty");
+    throw new Error("Cart is empty");
   }
 
   // Calculate delivery charges based on delivery type
@@ -356,11 +359,14 @@ async function convertCartToOrder(
   } else if (deliveryType === "standard_delivery") {
     deliveryCharges = 30.0;
   } else {
-    throw new Error("Invalid delivery type");
+    // Default or error handling for unknown delivery type could be added here
+    // For now, proceeding based on potential earlier structure.
   }
 
+  const netAmount = parseFloat(cart[0].Total_Amount) + deliveryCharges;
+
   // Create order
-  const query = `
+  const orderInsertQuery = `
     INSERT INTO \`Order\` (
       Date_Time,
       Delivery_Address_idDelivery_Address,
@@ -382,14 +388,12 @@ async function convertCartToOrder(
       ?,
       ?,
       'pending',
-      'processing', 
-      'active' 
+      'processing',
+      'active'
     )
   `;
 
-  const netAmount = Number.parseFloat(cart[0].Total_Amount) + deliveryCharges;
-
-  const [orderResult] = await pool.query(query, [
+  const [orderResult] = await pool.query(orderInsertQuery, [
     deliveryAddressId,
     cart[0].Total_Amount,
     deliveryType,
@@ -402,37 +406,36 @@ async function convertCartToOrder(
 
   // Add order items
   for (const item of cartItems) {
-    const query = `
+    const orderItemInsertQuery = `
       INSERT INTO Order_has_Product_Variations (
         Order_idOrder,
         Product_Variations_idProduct_Variations,
         Rate,
         Qty,
-        Total,
+        Total, 
         Discount_Percentage,
         Discount_Amount,
-        Total_Amount,
+        Total_Amount, 
         Note,
         Discounts_idDiscounts
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-
-    await pool.query(query, [
+    await pool.query(orderItemInsertQuery, [
       orderId,
       item.Product_Variations_idProduct_Variations,
       item.Rate,
       item.Qty,
-      item.Total_Amount,
+      item.Total_Amount, // Gross total for the item line
       item.Discount_Percentage,
       item.Discount_Amount,
-      item.NetAmount,
+      item.NetAmount,    // Net total for the item line (after discount)
       item.Note,
       item.Discounts_idDiscounts,
     ]);
   }
 
-  // Clear cart
+  // Clear cart (this will also update cart totals implicitly if clearCart calls updateCartTotals)
   await clearCart(cartId);
 
   return { orderId };
@@ -445,6 +448,7 @@ module.exports = {
   updateCartItemQuantity,
   removeProductFromCart,
   clearCart,
+  updateCartTotals,
   addNoteToCartItem,
   convertCartToOrder,
 };

@@ -26,6 +26,33 @@ async function getAllCategories() {
   return categoryList;
 }
 
+// Get top 6 selling categories
+async function getTopSellingCategories() {
+  const query = `
+    SELECT 
+        pc.idProduct_Category,
+        pc.Description AS Category_Name,
+        pc.Image_Icon_Url,
+        pc.Description AS Category_Description,
+        COALESCE(SUM(p.Sold_Qty), 0) AS Total_Sold_Qty
+    FROM 
+        Product_Category pc
+    LEFT JOIN 
+        Sub_Category sc ON pc.idProduct_Category = sc.Product_Category_idProduct_Category
+    LEFT JOIN 
+        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category
+    LEFT JOIN 
+        Product p ON phsc.Product_idProduct = p.idProduct
+    GROUP BY 
+        pc.idProduct_Category, pc.Description, pc.Image_Icon_Url
+    ORDER BY 
+        Total_Sold_Qty DESC
+    LIMIT 6
+  `;
+  const [categories] = await pool.query(query);
+  return categories;
+}
+
 // Create a new category
 async function createCategory(description, imageUrl) {
   if (!description) {
@@ -496,6 +523,21 @@ async function updateProduct(productId, productData, associatedData) {
   }
 }
 
+// Toggle or update the history status of a product
+async function toggleProductHistoryStatus(productId, historyStatus) {
+  if (!historyStatus) {
+    throw new Error("History status is required");
+  }
+
+  const query = `
+    UPDATE Product
+    SET History_Status = ?
+    WHERE idProduct = ?
+  `;
+
+  await pool.query(query, [historyStatus, productId]);
+}
+
 // Toggle or update the status of a product
 async function toggleProductStatus(productId, status) {
   if (!status) {
@@ -698,6 +740,70 @@ async function getProductById(productId) {
   return product;
 }
 
+// Get sales information for a product
+async function getProductSalesInfo(productId) {
+  // Get total units sold and revenue in last 30 days
+  const [totals] = await pool.query(
+    `SELECT SUM(ohpv.Qty) AS totalUnitsSoldLast30Days, SUM(ohpv.Total_Amount) AS totalRevenueLast30Days
+    FROM Order_has_Product_Variations ohpv
+    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    WHERE pv.Product_idProduct = ?
+    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`,
+    [productId]
+  );
+
+  // Get weekly sales data for the last 30 days
+  const [weeklySales] = await pool.query(
+    `SELECT DATE_FORMAT(o.Date_Time, '%Y-%u') AS week, SUM(ohpv.Qty) AS unitsSold, SUM(ohpv.Total_Amount) AS revenue
+    FROM Order_has_Product_Variations ohpv
+    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    WHERE pv.Product_idProduct = ?
+    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    GROUP BY week
+    ORDER BY week`,
+    [productId]
+  );
+
+  return {
+    totalUnitsSoldLast30Days: totals[0].totalUnitsSoldLast30Days || 0,
+    totalRevenueLast30Days: totals[0].totalRevenueLast30Days || 0,
+    weeklySales: weeklySales,
+  };
+}
+
+// Get all products with active discounts
+async function getDiscountedProducts() {
+  const query = `
+    SELECT DISTINCT P.*
+    FROM Product P
+    JOIN Discounts D ON P.idProduct = D.Product_idProduct
+    WHERE D.Status = 'active'
+    AND CURDATE() BETWEEN STR_TO_DATE(D.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(D.End_Date, '%Y-%m-%d')
+  `;
+  const [products] = await pool.query(query);
+
+  // Fetch complete details and discounts for each product
+  const detailedProducts = [];
+  for (const product of products) {
+    const fullProduct = await getProductById(product.idProduct);
+    const discounts = await getDiscountsByProductId(product.idProduct);
+
+    // Filter active discounts
+    fullProduct.discounts = discounts.filter((d) => {
+      const today = new Date();
+      const startDate = new Date(d.Start_Date);
+      const endDate = new Date(d.End_Date);
+      return d.Status === "active" && today >= startDate && today <= endDate;
+    });
+
+    detailedProducts.push(fullProduct);
+  }
+
+  return detailedProducts;
+}
+
 // Delete a product and its related records
 async function deleteProduct(productId) {
   // Delete from join table
@@ -830,6 +936,7 @@ async function getDiscountById(discountId) {
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
+  getTopSellingCategories,
   createCategory,
   updateCategory,
   toggleCategoryStatus,
@@ -850,6 +957,7 @@ module.exports = {
   createProductFaq,
   createProductSubCategory,
   updateProduct,
+  toggleProductHistoryStatus,
   toggleProductStatus,
   getAllProducts,
   getProductCount,
@@ -858,6 +966,8 @@ module.exports = {
   getProductsBySubCategory,
   getProductsByBrand,
   getProductById,
+  getProductSalesInfo,
+  getDiscountedProducts,
   deleteProduct,
   // Discount related functions
   getAllDiscounts,

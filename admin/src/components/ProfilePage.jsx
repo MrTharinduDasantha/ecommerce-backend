@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
+import { IoClose } from "react-icons/io5";
 import * as api from "../api/auth";
-import Swal from "sweetalert2";
 import { toast } from "react-hot-toast";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -21,152 +29,77 @@ const ProfilePage = () => {
     fetchProfile();
   }, []);
 
-  const handleEditProfile = async () => {
-    const { value: formValues } = await Swal.fire({
-      html: `
-        <div class="relative max-h-[80vh] overflow-y-auto p-4">
-          <h3 class="pt-5 text-xl font-bold text-left">Update Your Information</h3>
-          <div class="space-y-4 mt-6">
-            <div>
-              <label class="block text-sm font-medium text-left mb-2">Full Name:</label>
-              <input id="name" class="w-full px-3 py-2 border rounded-md" value="${
-                user.Full_Name
-              }" placeholder="Enter Name" required />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-left mb-2">Email Address:</label>
-              <input id="email" class="w-full px-3 py-2 border rounded-md" value="${
-                user.Email
-              }" placeholder="Enter Email" type="email" required />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-left mb-2">Phone Number:</label>
-              <input id="phonenumber" class="w-full px-3 py-2 border rounded-md" value="${
-                user.Phone_No
-              }" placeholder="Enter Phone Number" required />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-left mb-2">Status:</label>
-              <select id="status" class="w-full px-3 py-2 border rounded-md">
-                <option value="Active" ${
-                  user.Status === "Active" ? "selected" : ""
-                }>Active</option>
-                <option value="Inactive" ${
-                  user.Status === "Inactive" ? "selected" : ""
-                }>Inactive</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "Update",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#5CAF90",
-      cancelButtonColor: "#5CAF90",
-      preConfirm: () => {
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const phoneNo = document.getElementById("phonenumber").value;
-        const status = document.getElementById("status").value;
+  useEffect(() => {
+    if (showEditModal && user) {
+      setEditName(user.Full_Name);
+      setEditEmail(user.Email);
+      setEditPhone(user.Phone_No);
+      setEditStatus(user.Status);
+    }
+  }, [showEditModal, user]);
 
-        const errors = [];
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editName.trim()) {
+      toast.error("Full Name is required.");
+      return;
+    }
+    if (!editEmail.trim()) {
+      toast.error("Email is required.");
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(editEmail)) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    if (!/^(\+?\d{1,3}[- ]?)?\d{10}$/.test(editPhone)) {
+      toast.error("Enter a valid phone number.");
+      return;
+    }
 
-        // Validation rules
-        if (!name) errors.push("Full Name is required.");
-        if (!email) {
-          errors.push("Email Address is required.");
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
-          errors.push("Enter a valid email address.");
-        }
-        if (!/^(\+?\d{1,3}[- ]?)?\d{10}$/.test(phoneNo)) {
-          errors.push("Enter a valid phone number.");
-        }
-
-        if (errors.length) {
-          Swal.showValidationMessage(errors.join(" "));
-          return false;
-        }
-
-        return {
-          full_name: name,
-          email: email,
-          phone_no: phoneNo,
-          status: status,
-        };
-      },
-    });
-
-    if (formValues) {
-      try {
-        await api.updateUser(user.idUser, formValues);
-        toast.success("Your profile has been updated.");
-
-        if (formValues.email !== user.Email) {
-          toast(
-            "A confirmation email has been sent to your new email address."
-          );
-        }
-
-        setUser((prevUser) => ({
-          ...prevUser,
-          ...formValues,
-        }));
-      } catch (error) {
-        toast.error("There was an error updating the profile.");
+    try {
+      const formValues = {
+        full_name: editName,
+        email: editEmail,
+        phone_no: editPhone,
+        status: editStatus,
+      };
+      await api.updateUser(user.idUser, formValues);
+      toast.success("Profile updated successfully.");
+      if (editEmail !== user.Email) {
+        toast("A confirmation email has been sent to your new email address.");
       }
+      setUser((prevUser) => ({
+        ...prevUser,
+        Full_Name: editName,
+        Email: editEmail,
+        Phone_No: editPhone,
+        Status: editStatus,
+      }));
+      setShowEditModal(false);
+    } catch (error) {
+      toast.error(error.message || "Failed to update profile.");
     }
   };
 
-  const handleChangePassword = async () => {
-    const { value: formValues } = await Swal.fire({
-      maxWidth: "600px",
-      height: "200px",
-      html: `
-        <div class="relative max-h-[80vh] overflow-y-auto p-4">
-          <h3 class="pt-5 text-xl font-bold text-left">Change Your Password</h3>
-          <div class="space-y-4 mt-6">
-            <div>
-              <label class="block text-sm font-medium text-left mb-2">New Password:</label>
-              <input id="new_password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Enter new password" required />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-left mb-2">Confirm Password:</label>
-              <input id="confirm_password" type="password" class="w-full px-3 py-2 border rounded-md" placeholder="Confirm new password" required />
-            </div>
-          </div>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "Change Password",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#5CAF90",
-      cancelButtonColor: "#5CAF90",
-      preConfirm: () => {
-        const newPassword = document.getElementById("new_password").value;
-        const confirmPassword =
-          document.getElementById("confirm_password").value;
-
-        if (!newPassword) {
-          Swal.showValidationMessage("New Password is required.");
-          return false;
-        }
-        if (newPassword !== confirmPassword) {
-          Swal.showValidationMessage("Passwords do not match.");
-          return false;
-        }
-
-        return { newPassword };
-      },
-    });
-
-    if (formValues) {
-      try {
-        await api.updateUserPassword(user.idUser, formValues.newPassword);
-        toast.success("Your password has been updated.");
-      } catch (error) {
-        toast.error("There was an error updating your password.");
-      }
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!newPassword) {
+      toast.error("New password is required.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+    try {
+      await api.updateUserPassword(user.idUser, newPassword);
+      toast.success("Password updated successfully.");
+      setShowPasswordModal(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      toast.error(error.message || "Failed to update password.");
     }
   };
 
@@ -193,7 +126,6 @@ const ProfilePage = () => {
                   className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover shadow-md ring-4 ring-gray-50"
                 />
               </div>
-
               {/* Profile Info */}
               <div className="flex-1 text-center sm:text-left space-y-2">
                 <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
@@ -218,18 +150,17 @@ const ProfilePage = () => {
                 </div>
               </div>
             </div>
-
             {/* Action Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
-                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-sm hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium cursor-pointer"
-                onClick={handleEditProfile}
+                className="btn btn-primary gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md"
+                onClick={() => setShowEditModal(true)}
               >
                 Edit Profile
               </button>
               <button
-                className="w-full sm:w-auto px-6 py-3 bg-[#5CAF90] text-white rounded-sm hover:bg-[#4b9f75] transition duration-300 text-sm sm:text-base font-medium cursor-pointer"
-                onClick={handleChangePassword}
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md"
+                onClick={() => setShowPasswordModal(true)}
               >
                 Change Password
               </button>
@@ -237,6 +168,150 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-md max-h-[80vh] bg-white text-[#1D372E]">
+            <h3 className="font-bold text-base lg:text-lg mb-4">
+              Update Your Information
+            </h3>
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute right-6 top-7 text-lg text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+            <form onSubmit={handleEditSubmit}>
+              <div className="form-control mb-4">
+                <label className="label text-[#1D372E] mb-0.5">
+                  <span className="label-text text-sm lg:text-base font-medium">
+                    Full Name
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  placeholder="Enter Name"
+                  required
+                />
+              </div>
+              <div className="form-control mb-4">
+                <label className="label text-[#1D372E] mb-0.5">
+                  <span className="label-text text-sm lg:text-base font-medium">
+                    Email Address
+                  </span>
+                </label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  placeholder="Enter Email"
+                  required
+                />
+              </div>
+              <div className="form-control mb-4">
+                <label className="label text-[#1D372E] mb-0.5">
+                  <span className="label-text text-sm lg:text-base font-medium">
+                    Phone Number
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  placeholder="Enter Phone Number"
+                  required
+                />
+              </div>
+              <div className="form-control mb-4">
+                <label className="label text-[#1D372E] mb-0.5">
+                  <span className="label-text text-sm lg:text-base font-medium">
+                    Status
+                  </span>
+                </label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                  className="select select-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+              <div className="modal-action">
+                <button
+                  type="submit"
+                  className="btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md hover:bg-[#4a9a7d]"
+                >
+                  Update
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showPasswordModal && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-md max-h-[70vh] bg-white text-[#1D372E]">
+            <h3 className="font-bold text-base lg:text-lg mb-4">
+              Change Your Password
+            </h3>
+            <button
+              onClick={() => setShowPasswordModal(false)}
+              className="absolute right-6 top-7 text-lg text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+            <form onSubmit={handlePasswordSubmit}>
+              <div className="form-control mb-4">
+                <label className="label text-[#1D372E] mb-0.5">
+                  <span className="label-text text-sm lg:text-base font-medium">
+                    New Password
+                  </span>
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  placeholder="Enter new password"
+                  required
+                />
+              </div>
+              <div className="form-control mb-4">
+                <label className="label text-[#1D372E] mb-0.5">
+                  <span className="label-text text-sm lg:text-base font-medium">
+                    Confirm Password
+                  </span>
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+              <div className="modal-action">
+                <button
+                  type="submit"
+                  className="btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md hover:bg-[#4a9a7d]"
+                >
+                  Change Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

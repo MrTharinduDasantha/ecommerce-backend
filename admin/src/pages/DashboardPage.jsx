@@ -39,7 +39,7 @@ const DashboardPage = () => {
       <Sidebar isSidebarOpen={isSidebarOpen} />
 
       <main className="pt-16 md:pl-64 transition-all duration-300 ease-in-out min-h-screen">
-        <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        <div className="p-4 md:p-6 mx-auto">
           <Outlet />
         </div>
       </main>

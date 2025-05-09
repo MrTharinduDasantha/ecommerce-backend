@@ -34,7 +34,6 @@ export const getCategories = async () => {
   }
 };
 
-
 // Update category
 export const updateCategory = async (id, formData) => {
   try {
@@ -164,6 +163,16 @@ export const updateProduct = async (id, formData) => {
   }
 };
 
+// Get products with active discounts
+export const getDiscountedProducts = async () => {
+  try {
+    const response = await api.get("/api/products/discountd-products/all");
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 // Delete a product
 export const deleteProduct = async (id) => {
   try {
@@ -173,3 +182,63 @@ export const deleteProduct = async (id) => {
     throw error.response.data;
   }
 };
+
+//  Get top 6 selling categories
+export const getTopSellingCategories = async () => {
+  try {
+    const response = await api.get("/api/products/categories/top-selling");
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getTopSoldProducts = async (limit = 10) => {
+  try {
+    const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top sold products:", error);
+    throw error.response?.data || error;
+  }
+};
+
+// Inside your API file
+
+export const getSubCategoriesByCategoryId = async (categoryId) => {
+  try {
+    const response = await api.get(
+      `/api/products/categories/${categoryId}/subcategories`
+    );
+    return response.data; // Adjust according to your server's response structure
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getProductsBySubCategoryId = async (subCategoryId) => {
+  try {
+    const response = await api.get(
+      `/api/products/sub-categories/${subCategoryId}/products`
+    );
+    return response.data; // Adjust according to your server's response structure
+  } catch (error) {
+    throw error.response.data;
+  }
+
+
+};
+
+// Mock implementation - replace with your actual API call
+export const getSubCategoryById = async (id) => {
+  const response = await fetch(`/api/subcategories/${id}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch subcategory');
+  }
+  const data = await response.json();
+  return data; // Ensure this structure has a 'description' field as expected
+
+};
+
+};
+

@@ -68,7 +68,7 @@ class OrderController {
   // Update order status
   async updateOrderStatus(req, res) {
     try {
-      const { status, customerName, orderTotal } = req.body;
+      const { status, customerName, orderTotal, reason } = req.body;
       const orderId = req.params.id;
 
       if (
@@ -78,6 +78,7 @@ class OrderController {
           "Awaiting Delivery",
           "Out for Delivery",
           "Delivered",
+          "Cancelled",
         ].includes(status)
       ) {
         return res.status(400).json({ message: "Invalid status" });
@@ -92,6 +93,14 @@ class OrderController {
       if (!currentOrder.length) {
         return res.status(404).json({ message: "Order not found" });
       }
+
+      // Get admin email
+      const [adminData] = await pool.query(
+        "SELECT Email FROM User WHERE idUser = ?",
+        [req.user.userId]
+      );
+
+      const adminEmail = adminData[0]?.Email || "admin";
 
       // Update the order status
       const affectedRows = await Order.updateStatus(orderId, status);
@@ -126,6 +135,21 @@ class OrderController {
         ]
       );
 
+      // Add record to Order_History table
+      const statusType = status === "Cancelled" ? "cancellation" : "order_status";
+      await pool.query(
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes, changed_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+          orderId,
+          currentOrder[0].Status,
+          status,
+          statusType,
+          reason || null,
+          `Updated by ${adminEmail}`,
+          req.user.userId,
+        ]
+      );
+
       res.json({ message: "Order status updated successfully" });
     } catch (error) {
       console.error("Error in updateOrderStatus:", error);
@@ -139,7 +163,7 @@ class OrderController {
   // Update payment status
   async updatePaymentStatus(req, res) {
     try {
-      const { paymentStatus } = req.body;
+      const { paymentStatus, customerName, orderTotal, reason } = req.body;
       const orderId = req.params.id;
 
       const validStatuses = [
@@ -152,6 +176,24 @@ class OrderController {
       if (!validStatuses.includes(paymentStatus)) {
         return res.status(400).json({ message: "Invalid payment status" });
       }
+
+      // Get current payment status and admin email
+      const [currentOrder] = await pool.query(
+        "SELECT Payment_Stats FROM `Order` WHERE idOrder = ?",
+        [orderId]
+      );
+
+      if (!currentOrder.length) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Get admin email
+      const [adminData] = await pool.query(
+        "SELECT Email FROM User WHERE idUser = ?",
+        [req.user.userId]
+      );
+
+      const adminEmail = adminData[0]?.Email || "admin";
 
       const affectedRows = await Order.updatePaymentStatus(
         orderId,
@@ -178,11 +220,104 @@ class OrderController {
         ]
       );
 
+      // Add record to Order_History table
+      await pool.query(
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes, changed_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+          orderId,
+          currentOrder[0].Payment_Stats,
+          paymentStatus,
+          "payment_status",
+          reason || null,
+          `Updated by ${adminEmail}`,
+          req.user.userId,
+        ]
+      );
+
       res.json({ message: "Payment status updated successfully" });
     } catch (error) {
       console.error("Error in updatePaymentStatus:", error);
       res.status(500).json({
         message: "Failed to update payment status",
+        error: error.message,
+      });
+    }
+  }
+
+  // Update delivery date
+  async updateDeliveryDate(req, res) {
+    try {
+      const { deliveryDate, customerName, orderTotal } = req.body;
+      const orderId = req.params.id;
+
+      // Validate date format (YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(deliveryDate)) {
+        return res.status(400).json({ message: "Invalid date format. Please use YYYY-MM-DD" });
+      }
+
+      // Get admin email
+      const [adminData] = await pool.query(
+        "SELECT Email FROM User WHERE idUser = ?",
+        [req.user.userId]
+      );
+
+      const adminEmail = adminData[0]?.Email || "admin";
+
+      // Get the current order details
+      const [currentOrder] = await pool.query(
+        "SELECT Delivery_Date FROM `Order` WHERE idOrder = ?",
+        [orderId]
+      );
+
+      if (!currentOrder.length) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Update the delivery date
+      const affectedRows = await Order.updateDeliveryDate(orderId, deliveryDate);
+
+      if (affectedRows === 0) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Log the admin action
+      const logData = {
+        orderId,
+        originalDeliveryDate: currentOrder[0].Delivery_Date,
+        updatedDeliveryDate: deliveryDate,
+        customerName,
+        orderTotal
+      };
+
+      await pool.query(
+        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+        [
+          req.user.userId,
+          "Updated delivery date",
+          req.headers["user-agent"],
+          JSON.stringify(logData),
+        ]
+      );
+
+      // Add record to Order_History table
+      await pool.query(
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, notes, changed_by) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          orderId,
+          currentOrder[0].Delivery_Date || "Not set",
+          deliveryDate,
+          "delivery_date",
+          `Delivery date updated by ${adminEmail}`,
+          req.user.userId,
+        ]
+      );
+
+      res.json({ message: "Delivery date updated successfully" });
+    } catch (error) {
+      console.error("Error in updateDeliveryDate:", error);
+      res.status(500).json({
+        message: "Failed to update delivery date",
         error: error.message,
       });
     }
@@ -215,6 +350,64 @@ class OrderController {
       });
     }
   }
+
+// Get Total Revenue 
+async getTotalRevenue(req, res) {
+  try {
+    const totalRevenue = await Order.getTotalRevenue();
+    res.json({ totalRevenue });
+  } catch (error) {
+    console.error("Error in getTotalRevenue:", error);
+    res.status(500).json({
+      message: "Failed to fetch total revenue",
+      error: error.message,
+    });
+  }
+}
+
+// Get Monthly Total Revenue
+async getMonthlyTotalRevenue(req, res) {
+  try {
+    const monthlyRevenue = await Order.getMonthlyTotalRevenue();
+    res.json(monthlyRevenue); // This is an array of monthly revenue
+  } catch (error) {
+    console.error("Error in getMonthlyTotalRevenue:", error);
+    res.status(500).json({
+      message: "Failed to fetch monthly total revenue",
+      error: error.message,
+    });
+  }
+}
+
+// Get order history
+async getOrderHistory(req, res) {
+  try {
+    const orderId = req.params.id;
+    
+    // Validate if id is numeric
+    if (isNaN(parseInt(orderId, 10))) {
+      return res.status(400).json({ message: "Invalid order ID format" });
+    }
+
+    // Get order history from Order_History table
+    const [history] = await pool.query(
+      `SELECT oh.*, u.Full_Name as changed_by_name
+       FROM Order_History oh
+       LEFT JOIN User u ON oh.changed_by = u.idUser
+       WHERE oh.order_id = ?
+       ORDER BY oh.created_at DESC`,
+      [orderId]
+    );
+
+    res.json(history);
+  } catch (error) {
+    console.error(`Error in getOrderHistory: ${error.message}`);
+    res.status(500).json({
+      message: "Failed to fetch order history",
+      error: error.message,
+    });
+  }
+}
 }
 
 module.exports = new OrderController();

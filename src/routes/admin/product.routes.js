@@ -26,6 +26,10 @@ const cpUpload = upload.fields([
 // Category Routes
 // ----------------
 router.get("/categories", productController.getAllCategories);
+router.get(
+  "/categories/top-selling",
+  productController.getTopSellingCategories
+);
 router.post(
   "/categories",
   authenticate,
@@ -91,6 +95,11 @@ router.get("/brands", productController.getBrands);
 router.post("/", authenticate, cpUpload, productController.createProduct);
 router.put("/:id", authenticate, cpUpload, productController.updateProduct);
 router.patch(
+  "/:id/history-status",
+  authenticate,
+  productController.toggleProductHistoryStatus
+);
+router.patch(
   "/:id/status",
   authenticate,
   productController.toggleProductStatus
@@ -112,6 +121,8 @@ router.get(
 );
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/:id", productController.getProductById);
+router.get("/:id/sales", productController.getProductSales);
+router.get("/discountd-products/all", productController.getDiscountedProducts);
 router.delete("/:id", authenticate, productController.deleteProduct);
 
 // ----------------

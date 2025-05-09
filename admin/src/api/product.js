@@ -206,6 +206,16 @@ export const getProduct = async (id) => {
   }
 };
 
+// Get product sales information
+export const getProductSales = async (id) => {
+  try {
+    const response = await api.get(`/api/products/${id}/sales`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // Get total number of products
 export const getProductTotal = async () => {
   try {
@@ -217,7 +227,7 @@ export const getProductTotal = async () => {
 };
 
 // Get top sold products
-export const getTopSoldProducts = async (limit = 5) => {
+export const getTopSoldProducts = async (limit = 6) => {
   try {
     const response = await api.get(`/api/products/sold-qty?limit=${limit}`);
     return response.data;
@@ -226,6 +236,7 @@ export const getTopSoldProducts = async (limit = 5) => {
     throw error.response?.data || error;
   }
 };
+
 
 // Update a product
 export const updateProduct = async (id, formData) => {
@@ -266,6 +277,18 @@ export const updateProduct = async (id, formData) => {
     return response.data;
   } catch (error) {
     console.error("Update product error:", error.response || error);
+    throw error.response?.data || error;
+  }
+};
+
+// Toggle product history status
+export const toggleProductHistoryStatus = async (id, historyStatus) => {
+  try {
+    const response = await api.patch(`/api/products/${id}/history-status`, {
+      historyStatus,
+    });
+    return response.data;
+  } catch (error) {
     throw error.response?.data || error;
   }
 };

@@ -80,6 +80,8 @@ class Order {
       [orderId]
     );
 
+    console.log("Order items found:", orderItems.length);
+    
     return {
       order: orders[0],
       items: orderItems,
@@ -87,6 +89,16 @@ class Order {
   }
 
   static async findByCustomerId(customerId) {
+    // Ensure customerId is an integer
+    const customerIdInt = parseInt(customerId, 10);
+    
+    if (isNaN(customerIdInt)) {
+      console.error("Invalid customer ID:", customerId);
+      return [];
+    }
+    
+    console.log("Finding orders for customer ID:", customerIdInt);
+    
     const [orders] = await pool.query(
       `
       SELECT o.*, da.Full_Name, da.Address, da.City, da.Country 
@@ -95,9 +107,10 @@ class Order {
       JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
       WHERE c.idCustomer = ?
     `,
-      [customerId]
+      [customerIdInt]
     );
-
+    
+    console.log("Orders found:", orders.length);
     return orders;
   }
 
@@ -166,6 +179,15 @@ class Order {
     return result.affectedRows;
   }
 
+  static async updateDeliveryDate(id, deliveryDate) {
+    const [result] = await pool.query(
+      "UPDATE `Order` SET Delivery_Date = ? WHERE idOrder = ?",
+      [deliveryDate, id]
+    );
+
+    return result.affectedRows;
+  }
+
   static async updatePaymentStatus(id, paymentStatus) {
     const [result] = await pool.query(
       "UPDATE `Order` SET Payment_Stats = ? WHERE idOrder = ?",
@@ -225,6 +247,23 @@ class Order {
       ["pending"]
     );
     return result[0].count;
+  }
+  static async getTotalRevenue() {
+    const [result] = await pool.query(
+      "SELECT SUM(Net_Amount) as total_revenue FROM `Order` WHERE Payment_Stats = 'paid'"
+    );
+    return result[0].total_revenue || 0; // Ensure we handle null values
+  }
+
+  static async getMonthlyTotalRevenue() {
+    const [result] = await pool.query(
+      "SELECT DATE_FORMAT(Date_Time, '%Y-%m') AS month, SUM(Net_Amount) AS monthly_revenue " +
+      "FROM `Order` " +
+      "WHERE Payment_Stats = 'paid' " +
+      "GROUP BY month " +
+      "ORDER BY month DESC"
+    );
+    return result; // This will return an array of monthly revenue objects
   }
 }
 
