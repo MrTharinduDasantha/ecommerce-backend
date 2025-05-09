@@ -148,13 +148,14 @@ const ProductDetails = () => {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={handleBack}
-            className="btn btn-circle btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            className="btn btn-circle btn-xs md:btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            title="Back to All Products"
           >
-            <FaArrowLeft className="w-3 h-3" />
+            <FaArrowLeft className="w-2.5 h-2.5 md:w-3 md:h-3" />
           </button>
           <div className="flex items-center gap-2">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-xl font-bold text-[#1D372E]">
+            <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
               Product Details
             </h2>
           </div>
@@ -308,46 +309,90 @@ const ProductDetails = () => {
                 <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
                   Variations
                 </h3>
-                {product.variations?.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="table min-w-[400px] text-center border border-[#1D372E] w-full">
-                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                        <tr className="border-b border-[#1D372E]">
-                          <th className="font-semibold">Color</th>
-                          <th className="font-semibold">Size</th>
-                          <th className="font-semibold">Quantity</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-[#1D372E]">
-                        {product.variations.map((variation) => (
-                          <tr
-                            key={variation.idProduct_Variations}
-                            className="border-b border-[#1D372E]"
-                          >
-                            <td>
-                              <div className="flex items-center justify-center gap-2">
-                                {variation.Colour &&
-                                  variation.Colour !== "No color selected" && (
-                                    <div
-                                      className="w-5 h-5 border border-base-300 rounded-md"
-                                      style={{
-                                        backgroundColor: variation.Colour,
-                                      }}
-                                    />
-                                  )}
-                                <span>{variation.Colour}</span>
-                              </div>
-                            </td>
-                            <td>{variation.Size || "N/A"}</td>
-                            <td>{variation.Qty}</td>
+                {/* Desktop View */}
+                <div className="hidden md:block">
+                  {product.variations?.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="table table-fixed min-w-[450px] text-center border border-[#1D372E] w-full">
+                        <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                          <tr className="border-b border-[#1D372E]">
+                            <th className="font-semibold w-[175px]">Color</th>
+                            <th className="font-semibold w-[150px]">Size</th>
+                            <th className="font-semibold w-[125px]">
+                              Quantity
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-sm opacity-70">No variations available</p>
-                )}
+                        </thead>
+                        <tbody className="text-[#1D372E]">
+                          {product.variations.map((variation) => (
+                            <tr
+                              key={variation.idProduct_Variations}
+                              className="border-b border-[#1D372E]"
+                            >
+                              <td>
+                                <div className="flex items-center justify-center gap-2">
+                                  {variation.Colour &&
+                                    variation.Colour !==
+                                      "No color selected" && (
+                                      <div
+                                        className="w-5 h-5 border border-base-300 rounded-md"
+                                        style={{
+                                          backgroundColor: variation.Colour,
+                                        }}
+                                      />
+                                    )}
+                                  <span>{variation.Colour}</span>
+                                </div>
+                              </td>
+                              <td>{variation.Size || "N/A"}</td>
+                              <td>{variation.Qty}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-sm opacity-70">
+                      No variations available
+                    </p>
+                  )}
+                </div>
+                {/* Mobile View */}
+                <div className="md:hidden space-y-3">
+                  {product.variations?.length > 0 ? (
+                    product.variations.map((variation) => (
+                      <div
+                        key={variation.idProduct_Variations}
+                        className="card bg-white border border-[#1D372E] p-4 text-[#1D372E]"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-xs">Color:</span>
+                          {variation.Colour !== "No color selected" && (
+                            <div
+                              className="w-5 h-5 border border-base-300 rounded-md"
+                              style={{ backgroundColor: variation.Colour }}
+                            />
+                          )}
+                          <span className="text-xs">{variation.Colour}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-xs">Size:</span>
+                          <span className="text-xs">
+                            {variation.Size || "N/A"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-xs">Quantity:</span>
+                          <span className="text-xs">{variation.Qty}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm opacity-70">
+                      No variations available
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 

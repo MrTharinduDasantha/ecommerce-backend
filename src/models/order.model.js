@@ -166,6 +166,15 @@ class Order {
     return result.affectedRows;
   }
 
+  static async updateDeliveryDate(id, deliveryDate) {
+    const [result] = await pool.query(
+      "UPDATE `Order` SET Delivery_Date = ? WHERE idOrder = ?",
+      [deliveryDate, id]
+    );
+
+    return result.affectedRows;
+  }
+
   static async updatePaymentStatus(id, paymentStatus) {
     const [result] = await pool.query(
       "UPDATE `Order` SET Payment_Stats = ? WHERE idOrder = ?",

@@ -95,19 +95,21 @@ const VerifyOtpPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#1D372E] via-[#5CAF90] to-[#1D372E] p-4">
-      <div className="w-full max-w-[26rem] p-8 space-y-8 bg-white rounded-lg shadow-xl">
+      <div className="w-full max-w-[20rem] md:max-w-[26rem] p-8 space-y-4 md:space-y-6 bg-white rounded-lg shadow-xl">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={logo} alt="Logo" className="h-16 w-auto" />
+            <img src={logo} alt="Logo" className="h-14 md:h-16 w-auto" />
           </div>
-          <h2 className="text-2xl font-bold text-[#1D372E]">Verify OTP</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-xl md:text-2xl font-bold text-[#1D372E]">
+            Verify OTP
+          </h2>
+          <p className="text-xs md:text-sm text-gray-600 mt-1">
             Enter the 6-digit code sent to{" "}
             <span className="font-medium">{email}</span>
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
           <div className="flex justify-center gap-2">
             {otp.map((digit, index) => (
               <input
@@ -119,14 +121,14 @@ const VerifyOtpPage = () => {
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={index === 0 ? handlePaste : undefined}
                 ref={(el) => (inputRef.current[index] = el)}
-                className="input input-bordered w-12 h-12 text-center text-xl bg-white border-[#1D372E] text-[#1D372E]"
+                className="input input-bordered w-9 h-9 md:w-12 md:h-12 text-center text-lg md:text-xl bg-white border-[#1D372E] text-[#1D372E]"
               />
             ))}
           </div>
 
           <button
             type="submit"
-            className={`btn btn-primary bg-[#5CAF90] border-none text-white w-full ${
+            className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md w-full ${
               isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
             }`}
           >
@@ -144,14 +146,14 @@ const VerifyOtpPage = () => {
             <button
               type="button"
               onClick={() => navigate("/forgot-password")}
-              className="text-sm text-[#5CAF90] hover:underline flex items-center cursor-pointer"
+              className="text-xs md:text-sm text-[#5CAF90] hover:underline flex items-center cursor-pointer"
             >
               <FiArrowLeft className="mr-1" /> Back
             </button>
             <button
               type="button"
               onClick={handleResendOtp}
-              className="text-sm text-[#5CAF90] hover:underline cursor-pointer"
+              className="text-xs md:text-sm text-[#5CAF90] hover:underline cursor-pointer"
               disabled={isLoading}
             >
               Resend Code

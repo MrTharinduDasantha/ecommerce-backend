@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import * as api from "../api/customer";
 import toast from "react-hot-toast";
-import { ArrowLeft } from 'lucide-react';
+import { FaArrowLeft } from "react-icons/fa";
 
 const CustomerorderDetailsPage = () => {
   const { orderId } = useParams();
@@ -25,7 +24,9 @@ const CustomerorderDetailsPage = () => {
           setOrderDetails(orderData);
 
           if (location.state?.customerId) {
-            const customerHistory = await api.getCustomerHistory(location.state.customerId);
+            const customerHistory = await api.getCustomerHistory(
+              location.state.customerId
+            );
             if (customerHistory.deliveryAddresses.length > 0) {
               setDeliveryAddress(customerHistory.deliveryAddresses[0]);
             }
@@ -45,9 +46,11 @@ const CustomerorderDetailsPage = () => {
 
   const handleBack = () => {
     if (location.state?.customerId) {
-      navigate(`/dashboard/customer/view-customer/${location.state.customerId}`);
+      navigate(
+        `/dashboard/customer/view-customer/${location.state.customerId}`
+      );
     } else {
-      navigate('/dashboard/orders');
+      navigate("/dashboard/orders");
     }
   };
 
@@ -59,162 +62,198 @@ const CustomerorderDetailsPage = () => {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-        <div style={{ animation: "spin 1s linear infinite", borderRadius: "50%", width: "48px", height: "48px", border: "2px solid #5CAF90", borderTopColor: "transparent", borderBottomColor: "transparent" }}></div>
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-lg text-[#5CAF90]"></span>
       </div>
     );
   }
 
   if (!orderDetails) {
     return (
-      <div style={{ padding: "16px", textAlign: "center", color: "#4B5563" }}>
+      <div className="p-4 text-center text-gray-600 text-sm sm:text-base">
         No order details found.
       </div>
     );
   }
 
   return (
-    <div className="w-315 mx-auto p-6 sm:p-6">
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-      <div className="p-4 md:p-6">
-          {/* Back Button */}
-          <button
-            onClick={handleBack}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              color: "#5CAF90",
-              transition: "color 0.3s",
-              cursor: "pointer",
-              background: "none",
-              border: "none",
-              marginBottom: "24px",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.color = "#4a9277")}
-            onMouseOut={(e) => (e.currentTarget.style.color = "#5CAF90")}
-          >
-            <ArrowLeft style={{ width: "20px", height: "20px", marginRight: "8px" }} />
-            
-          </button>
-
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}>
-            <div style={{ width: "4px", height: "24px", backgroundColor: "#5CAF90" }}></div>
-            <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#1D372E" }}>Order Details</h2>
+    <div className="mx-auto">
+      <div className="bg-white rounded-lg shadow-sm p-1">
+        <div className="p-4 sm:p-6">
+          {/* Back Button with Heading */}
+          <div className="flex items-center gap-4 mb-6">
+            <button
+              onClick={handleBack}
+              className="btn btn-circle btn-xs md:btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              title="Back to All Customers"
+            >
+              <FaArrowLeft className="w-2.5 h-2.5 md:w-3 md:h-3" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-6 bg-[#5CAF90]"></div>
+              <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+                Order Details
+              </h2>
+            </div>
           </div>
 
           {/* Order Info Card */}
-          <div style={{ backgroundColor: "#F4F4F4", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", padding: "24px", marginBottom: "24px" }}>
-            <h4 style={{ fontWeight: "700", color: "#1D372E", fontSize: "16px", marginBottom: "16px" }}>
+          <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4 sm:p-6 mb-6">
+            <h4 className="font-bold text-[#1D372E] text-sm sm:text-base mb-4">
               Order #{orderDetails.idOrder || orderDetails.id}
             </h4>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px", "@media (min-width: 768px)": { gridTemplateColumns: "1fr 1fr" } }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-                  <h5 style={{ fontWeight: "600", color: "#1D372E", fontSize: "14px", marginBottom: "12px" }}>Order Information</h5>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Order ID:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.idOrder || orderDetails.id}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Status:</span>
-                      <span
-                        style={{
-                          padding: "2px 8px",
-                          borderRadius: "9999px",
-                          fontSize: "12px",
-                          backgroundColor: orderDetails.Status === 'Delivered' ? "#DCFCE7" : "#FEF9C3",
-                          color: orderDetails.Status === 'Delivered' ? "#166534" : "#713F12",
-                        }}
-                      >
-                        {orderDetails.Status}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+                <h5 className="font-semibold text-[#1D372E] text-sm sm:text-base mb-3">
+                  Order Information
+                </h5>
+                <div className="space-y-2 text-gray-700">
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Order ID:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      {orderDetails.idOrder || orderDetails.id}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">Status:</span>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs sm:text-sm ${
+                        orderDetails.Status === "Delivered"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {orderDetails.Status}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Date and Time:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      {orderDetails.Date_Time}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Delivery Type:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      {orderDetails.Delivery_Type}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Payment Type:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      {orderDetails.Payment_Type}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Payment Stats:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      {orderDetails.Payment_Stats}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Customer Note:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      {orderDetails.Customer_Note ||
+                        "Customer Note not available"}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Supplier Note:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      {orderDetails.Supplier_Note ||
+                        "Supplier Note not available"}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">Amount:</span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      ${orderDetails.Total_Amount}
+                    </span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Delivery Charges:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm">
+                      ${orderDetails.Delivery_Charges}
+                    </span>
+                  </p>
+                  <div className="h-px bg-black my-2"></div>
+                  <p className="flex items-center">
+                    <span className="text-gray-600 w-32 text-sm">
+                      Total Amount:
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm bg-[#f9ddf2] text-black px-2 py-1 rounded">
+                      ${calculateNetAmount()}
+                    </span>
+                  </p>
+                  ⊗<div className="h-px bg-black my-2"></div>
+                  {orderDetails.Payment_Method && (
+                    <p className="flex items-center">
+                      <span className="text-gray-600 w-32 text-sm">
+                        Payment Method:
+                      </span>
+                      <span className="font-medium text-xs sm:text-sm">
+                        {orderDetails.Payment_Method}
                       </span>
                     </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Date and Time:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.Date_Time}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Delivery Type:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.Delivery_Type}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Payment Type:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.Payment_Type}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Payment Stats:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.Payment_Stats}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Customer_Note:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.Customer_Note}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Supplier Note:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.Supplier_Note}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Amount:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>${orderDetails.Total_Amount}</span>
-                    </p>
-                    <p style={{ display: "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Delivery Charges:</span>
-                      <span style={{ fontWeight: "500", fontSize: "12px" }}>${orderDetails.Delivery_Charges}</span>
-                    </p>
-                    <div style={{ backgroundColor: "#000000", height: "2px", margin: "8px 0" ,width:"250px" }}></div>
-                    <p style={{ display : "flex", alignItems: "center" }}>
-                      <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Total Amount:</span>
-                      <span
-                        style={{
-                          fontWeight: "500",
-                          fontSize: "12px",
-                          backgroundColor: "#f9ddf2",
-                          color: "black",
-                          padding: "2px 6px",
-                          borderRadius: "2px",
-                        }}
-                      >
-                        ${calculateNetAmount()}
-                      </span>
-                    </p>
-                    <div style={{ backgroundColor: "#000000", height: "2px", margin: "8px 0" ,width:"250px" }}></div>
-                    {orderDetails.Payment_Method && (
-                      <p style={{ display: "flex", alignItems: "center" }}>
-                        <span style={{ color: "#4B5563", width: "128px", fontSize: "14px" }}>Payment Method:</span>
-                        <span style={{ fontWeight: "500", fontSize: "12px" }}>{orderDetails.Payment_Method}</span>
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
 
               {deliveryAddress && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-                    <h5 style={{ fontWeight: "600", color: "#1D372E", fontSize: "14px", marginBottom: "12px" }}>Delivery Address</h5>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <p style={{ display: "flex", alignItems: "center" }}>
-                        <span style={{ color: "#4B5563", width: "96px", fontSize: "14px" }}>Address:</span>
-                        <span style={{ fontWeight: "500", fontSize: "12px" }}>{deliveryAddress.Address}</span>
+                <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+                  <h5 className="font-semibold text-[#1D372E] text-sm sm:text-base mb-3">
+                    Delivery Address
+                  </h5>
+                  <div className="space-y-2 text-gray-700">
+                    <p className="flex items-center">
+                      <span className="text-gray-600 w-24 text-sm">
+                        Address:
+                      </span>
+                      <span className="font-medium text-xs sm:text-sm">
+                        {deliveryAddress.Address}
+                      </span>
+                    </p>
+                    <p className="flex items-center">
+                      <span className="text-gray-600 w-24 text-sm">City:</span>
+                      <span className="font-medium text-xs sm:text-sm">
+                        {deliveryAddress.City}
+                      </span>
+                    </p>
+                    <p className="flex items-center">
+                      <span className="text-gray-600 w-24 text-sm">
+                        Country:
+                      </span>
+                      <span className="font-medium text-xs sm:text-sm">
+                        {deliveryAddress.Country}
+                      </span>
+                    </p>
+                    {deliveryAddress.PostalCode && (
+                      <p className="flex items-center">
+                        <span className="text-gray-600 w-24 text-sm">
+                          Postal Code:
+                        </span>
+                        <span className="font-medium text-xs sm:text-sm">
+                          {deliveryAddress.PostalCode}
+                        </span>
                       </p>
-                      <p style={{ display: "flex", alignItems: "center" }}>
-                        <span style={{ color: "#4B5563", width: "96px", fontSize: "14px" }}>City:</span>
-                        <span style={{ fontWeight: "500", fontSize: "12px" }}>{deliveryAddress.City}</span>
-                      </p>
-                      <p style={{ display: "flex", alignItems: "center" }}>
-                        <span style={{ color: "#4B5563", width: "96px", fontSize: "14px" }}>Country:</span>
-                        <span style={{ fontWeight: "500", fontSize: "12px" }}>{deliveryAddress.Country}</span>
-                      </p>
-                      {deliveryAddress.PostalCode && (
-                        <p style={{ display: "flex", alignItems: "center" }}>
-                          <span style={{ color: "#4B5563", width: "96px", fontSize: "14px" }}>Postal Code:</span>
-                          <span style={{ fontWeight: "500", fontSize: "12px" }}>{deliveryAddress.PostalCode}</span>
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -222,92 +261,60 @@ const CustomerorderDetailsPage = () => {
 
             {/* Order Items Section */}
             {orderDetails.items && orderDetails.items.length > 0 && (
-              <div style={{ marginTop: "24px" }}>
-                <h5 style={{ fontWeight: "600", color: "#1D372E", fontSize: "14px", marginBottom: "12px" }}>Order Items</h5>
-                <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ minWidth: "100%", borderCollapse: "collapse" }}>
-                      <thead style={{ backgroundColor: "#F9FAFB" }}>
-                        <tr>
-                          <th
-                            style={{
-                              padding: "12px 24px",
-                              textAlign: "left",
-                              fontSize: "12px",
-                              fontWeight: "500",
-                              color: "#6B7280",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Product
-                          </th>
-                          <th
-                            style={{
-                              padding: "12px 24px",
-                              textAlign: "left",
-                              fontSize: "12px",
-                              fontWeight: "500",
-                              color: "#6B7280",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Quantity
-                          </th>
-                          <th
-                            style={{
-                              padding: "12px 24px",
-                              textAlign: "left",
-                              fontSize: "12px",
-                              fontWeight: "500",
-                              color: "#6B7280",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Price
-                          </th>
-                          <th
-                            style={{
-                              padding: "12px 24px",
-                              textAlign: "left",
-                              fontSize: "12px",
-                              fontWeight: "500",
-                              color: "#6B7280",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Total
-                          </th>
+              <div className="mt-6">
+                <h5 className="font-semibold text-[#1D372E] text-sm sm:text-base mb-3">
+                  Order Items
+                </h5>
+                <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm overflow-x-auto">
+                  <table className="min-w-full border-collapse">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Product
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Quantity
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Price
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Total
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white">
+                      {orderDetails.items.map((item, index) => (
+                        <tr key={index} className="border-t border-gray-200">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {item.product_name}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {item.quantity}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                            ${item.price}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                            ${item.total}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody style={{ backgroundColor: "white" }}>
-                        {orderDetails.items.map((item, index) => (
-                          <tr key={index} style={{ borderTop: "1px solid #E5E7EB" }}>
-                            <td style={{ padding: "16px 24px", whiteSpace: "nowrap", fontSize: "14px", color: "#6B7280" }}>
-                              {item.product_name}
-                            </td>
-                            <td style={{ padding: "16px 24px", whiteSpace: "nowrap", fontSize: "14px", color: "#6B7280" }}>
-                              {item.quantity}
-                            </td>
-                            <td style={{ padding: "16px 24px", whiteSpace: "nowrap", fontSize: "14px", color: "#6B7280" }}>
-                              ${item.price}
-                            </td>
-                            <td style={{ padding: "16px 24px", whiteSpace: "nowrap", fontSize: "14px", color: "#6B7280" }}>
-                              ${item.total}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
 
             {/* Additional Order Details */}
             {orderDetails.notes && (
-              <div style={{ marginTop: "24px", backgroundColor: "white", padding: "16px", borderRadius: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-                <h5 style={{ fontWeight: "600", color: "#1D372E", fontSize: "14px", marginBottom: "8px" }}>Order Notes</h5>
-                <p style={{ fontSize: "12px", color: "#4B5563" }}>{orderDetails.notes}</p>
+              <div className="mt-6 bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+                <h5 className="font-semibold text-[#1D372E] text-sm sm:text-base mb-2">
+                  Order Notes
+                </h5>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  {orderDetails.notes}
+                </p>
               </div>
             )}
           </div>

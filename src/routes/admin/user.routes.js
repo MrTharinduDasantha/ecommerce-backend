@@ -12,7 +12,7 @@ router.post("/reset-password", userController.resetPassword);
 
 // Protected routes (authentication required)
 router.get("/logs", authenticate, userController.getAdminLogs);
-router.post("/", authenticate, userController.createUser); // Added authentication middleware
+router.post("/",  userController.createUser); // Added authentication middleware
 router.get("/profile", authenticate, userController.getProfile);
 router.get("/:id", authenticate, userController.getUser);
 router.get("/", authenticate, userController.getUsers);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { FaArrowLeft } from "react-icons/fa";
 
 const LogDetails = () => {
   const location = useLocation();
@@ -10,11 +11,10 @@ const LogDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading for consistency; set to false after checking log data
     if (log) {
       setLoading(false);
     } else {
-      setLoading(false); // No log data, so no need to keep loading
+      setLoading(false);
     }
   }, [log]);
 
@@ -28,13 +28,13 @@ const LogDetails = () => {
 
   if (!log) {
     return (
-      <div className="p-8 text-center">
-        <p>Log not found</p>
+      <div className="p-4 sm:p-6 text-center">
+        <p className="text-sm sm:text-base">Log not found</p>
         <button
           onClick={() => navigate("/dashboard/admin-logs")}
-          className="inline-flex items-center text-[#5CAF90] hover:text-[#4a9277] transition-colors mb-6"
+          className="inline-flex items-center text-[#5CAF90] hover:text-[#4a9277] transition-colors mb-4 sm:mb-6 text-sm sm:text-base"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Logs
+          <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2" /> Back to Logs
         </button>
       </div>
     );
@@ -57,39 +57,41 @@ const LogDetails = () => {
     // Admin Information Section
     detailsContent.push(
       <div key="admin-info">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
           <button
             onClick={() => navigate("/dashboard/admin-logs")}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-[#5CAF90] text-white hover:bg-[#4a9277] transition-colors cursor-pointer"
+            className="btn btn-circle btn-xs md:btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             aria-label="Back to admin logs"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <FaArrowLeft className="w-2.5 h-2.5 md:w-3 md:h-3" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-1 h-5 bg-[#5CAF90]"></div>
-            <h2 className="text-base font-bold text-[#1D372E]">Admin Action</h2>
+            <div className="w-1 h-4 sm:h-5 bg-[#5CAF90]"></div>
+            <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+              Admin Action
+            </h2>
           </div>
         </div>
-        <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-5 bg-[#EAFFF7]"></div>
-            <h3 className=" text-base font-semibold text-[#1D372E]">
+        <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
+            <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+            <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
               Admin Information
             </h3>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm text-gray-600 p-2">
+            <span className="text-xs sm:text-sm text-gray-600 p-2">
               Admin Name:{" "}
-              <span className="font-medium p-2 text-xs">
+              <span className="font-medium text-xs sm:text-sm">
                 {log.Admin_Name || "N/A"}
               </span>
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm text-gray-600 p-2">
+            <span className="text-xs sm:text-sm text-gray-600 p-2">
               Action:
               <span
-                className={`items-center px-2.5 py-0.5 rounded-full w-45 font-medium p-2 text-xs ${getActionStyle(
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full font-medium text-xs sm:text-sm ${getActionStyle(
                   log.action
                 )}`}
               >
@@ -98,9 +100,9 @@ const LogDetails = () => {
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm text-gray-600 p-2">
+            <span className="text-xs sm:text-sm text-gray-600 p-2">
               Date and Time:{" "}
-              <span className="font-medium p-2 text-xs">
+              <span className="font-medium text-xs sm:text-sm">
                 {new Date(log.timestamp).toLocaleString()}
               </span>
             </span>
@@ -117,19 +119,19 @@ const LogDetails = () => {
         // Handle Create Product Action
         if (log.action === "Created product") {
           detailsContent.push(
-            <div key="product-creation" className="px-1 py-5">
-              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-5 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E]">
+            <div key="product-creation" className="px-1 py-3 sm:py-5">
+              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                  <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+                  <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
                     Product Creation Details
                   </h3>
                 </div>
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-3 sm:p-4 rounded-lg">
                   <div className="grid grid-cols-1 gap-4">
                     {/* Basic Product Information */}
-                    <div className="p-3 border border-[#E5E7EB] rounded-md">
-                      <h4 className=" font-medium text-[#1D372E] mb-2 text-sm">
+                    <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
+                      <h4 className="font-medium text-[#1D372E] mb-2 text-xs sm:text-sm">
                         Basic Information
                       </h4>
                       {Object.entries(details)
@@ -145,10 +147,10 @@ const LogDetails = () => {
                         )
                         .map(([key, value]) => (
                           <div key={key} className="mb-2 text-[#1D372E]">
-                            <span className="text-sm font-medium capitalize">
+                            <span className="text-xs sm:text-sm font-medium capitalize">
                               {key.replace("_", " ")}:{" "}
                             </span>
-                            <span className="text-xs">
+                            <span className="text-xs sm:text-sm">
                               {typeof value === "object"
                                 ? JSON.stringify(value)
                                 : value}
@@ -159,17 +161,17 @@ const LogDetails = () => {
 
                     {/* Images Section */}
                     {(details.main_image || details.sub_images?.length > 0) && (
-                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                      <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                         <div
                           className="flex items-center cursor-pointer"
                           onClick={() => toggleSection("createdImages")}
                         >
                           {isSectionExpanded("createdImages") ? (
-                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           ) : (
-                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           )}
-                          <h4 className="font-medium text-[#1D372E] text-sm">
+                          <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                             Images
                           </h4>
                         </div>
@@ -183,7 +185,7 @@ const LogDetails = () => {
                                 <img
                                   src={details.main_image}
                                   alt="Main Image"
-                                  className="w-32 h-32 object-cover rounded-md mt-2"
+                                  className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-md mt-2"
                                   onError={(e) =>
                                     (e.target.src = "/placeholder.svg")
                                   }
@@ -201,7 +203,7 @@ const LogDetails = () => {
                                       key={index}
                                       src={img}
                                       alt={`Sub Image ${index + 1}`}
-                                      className="w-24 h-24 object-cover rounded-md"
+                                      className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-md"
                                       onError={(e) =>
                                         (e.target.src = "/placeholder.svg")
                                       }
@@ -217,50 +219,46 @@ const LogDetails = () => {
 
                     {/* Subcategories Section */}
                     {details.sub_categories?.length > 0 && (
-                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                      <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                         <div
                           className="flex items-center cursor-pointer"
                           onClick={() => toggleSection("createdSubCategories")}
                         >
                           {isSectionExpanded("createdSubCategories") ? (
-                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           ) : (
-                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           )}
-                          <h4 className="font-medium text-[#1D372E] text-sm">
+                          <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                             Subcategories
                           </h4>
                         </div>
                         {isSectionExpanded("createdSubCategories") && (
-                          <div className="mt-2">
-                            <div className="overflow-x-auto">
-                              <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
-                                <thead className="bg-[#EAFFF7]">
-                                  <tr>
-                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                      ID
-                                    </th>
-                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                      Description
-                                    </th>
+                          <div className="mt-2 overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
+                              <thead className="bg-[#EAFFF7]">
+                                <tr>
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                    ID
+                                  </th>
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                    Description
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {details.sub_categories.map((subCat, index) => (
+                                  <tr key={index}>
+                                    <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
+                                      {subCat.idSub_Category}
+                                    </td>
+                                    <td className="px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm">
+                                      {subCat.Description}
+                                    </td>
                                   </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                  {details.sub_categories.map(
-                                    (subCat, index) => (
-                                      <tr key={index}>
-                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                          {subCat.idSub_Category}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                          {subCat.Description}
-                                        </td>
-                                      </tr>
-                                    )
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         )}
                       </div>
@@ -268,65 +266,61 @@ const LogDetails = () => {
 
                     {/* Product Variations Section */}
                     {details.variations?.length > 0 && (
-                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                      <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                         <div
                           className="flex items-center cursor-pointer"
                           onClick={() => toggleSection("createdVariations")}
                         >
                           {isSectionExpanded("createdVariations") ? (
-                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           ) : (
-                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           )}
-                          <h4 className="font-medium text-[#1D372E] text-sm">
+                          <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                             Product Variations
                           </h4>
                         </div>
                         {isSectionExpanded("createdVariations") && (
-                          <div className="mt-2">
-                            <div className="overflow-x-auto">
-                              <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
-                                <thead className="bg-[#EAFFF7]">
-                                  <tr>
-                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                      Color
-                                    </th>
-                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                      Size
-                                    </th>
-                                    <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                      Quantity
-                                    </th>
+                          <div className="mt-2 overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
+                              <thead className="bg-[#EAFFF7]">
+                                <tr>
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                    Color
+                                  </th>
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                    Size
+                                  </th>
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                    Quantity
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {details.variations.map((variation, index) => (
+                                  <tr key={index}>
+                                    <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
+                                      <div className="flex items-center">
+                                        <div
+                                          className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2"
+                                          style={{
+                                            backgroundColor:
+                                              variation.colorCode,
+                                          }}
+                                        />
+                                        {variation.colorCode}
+                                      </div>
+                                    </td>
+                                    <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
+                                      {variation.size}
+                                    </td>
+                                    <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
+                                      {variation.quantity}
+                                    </td>
                                   </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                  {details.variations.map(
-                                    (variation, index) => (
-                                      <tr key={index}>
-                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                          <div className="flex items-center">
-                                            <div
-                                              className="w-4 h-4 rounded-full mr-2"
-                                              style={{
-                                                backgroundColor:
-                                                  variation.colorCode,
-                                              }}
-                                            />
-                                            {variation.colorCode}
-                                          </div>
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                          {variation.size}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                          {variation.quantity}
-                                        </td>
-                                      </tr>
-                                    )
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         )}
                       </div>
@@ -334,17 +328,17 @@ const LogDetails = () => {
 
                     {/* FAQs Section */}
                     {details.faqs?.length > 0 && (
-                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                      <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                         <div
                           className="flex items-center cursor-pointer"
                           onClick={() => toggleSection("createdFaqs")}
                         >
                           {isSectionExpanded("createdFaqs") ? (
-                            <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           ) : (
-                            <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                           )}
-                          <h4 className="font-medium text-[#1D372E] text-sm">
+                          <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                             Product FAQs
                           </h4>
                         </div>
@@ -353,12 +347,12 @@ const LogDetails = () => {
                             {details.faqs.map((faq, index) => (
                               <div
                                 key={index}
-                                className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
+                                className="bg-white p-2 sm:p-3 rounded-lg border border-[#E5E7EB]"
                               >
-                                <h5 className="font-medium text-[#1D372E] mb-1 text-xs">
+                                <h5 className="font-medium text-[#1D372E] mb-1 text-xs sm:text-sm">
                                   Q: {faq.question}
                                 </h5>
-                                <p className="text-gray-600 text-xs">
+                                <p className="text-gray-600 text-xs sm:text-sm">
                                   A: {faq.answer}
                                 </p>
                               </div>
@@ -376,32 +370,32 @@ const LogDetails = () => {
         // Handle Update Product Action
         else if (log.action === "Updated product") {
           detailsContent.push(
-            <div key="product-update" className="px-1 py-5">
-              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="text-base font-semibold text-[#1D372E]">
+            <div key="product-update" className="px-1 py-3 sm:py-5">
+              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                  <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+                  <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
                     Product Update Details
                   </h3>
                 </div>
                 <div className="space-y-4">
                   {/* Basic Information Changes */}
-                  <div className="bg-white p-4 rounded-lg">
+                  <div className="bg-white p-3 sm:p-4 rounded-lg">
                     <div
                       className="flex items-center cursor-pointer mb-3"
                       onClick={() => toggleSection("basicChanges")}
                     >
                       {isSectionExpanded("basicChanges") ? (
-                        <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                        <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                        <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                       )}
-                      <h4 className="font-medium text-[#1D372E] text-sm">
+                      <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                         Basic Information
                       </h4>
                     </div>
                     {isSectionExpanded("basicChanges") && (
-                      <div className="p-3 border border-[#E5E7EB] rounded-md">
+                      <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                         {Object.entries(details.updatedData || {})
                           .filter(
                             ([key]) =>
@@ -415,10 +409,10 @@ const LogDetails = () => {
                           )
                           .map(([key, value]) => (
                             <div key={key} className="mb-2 text-[#1D372E]">
-                              <span className="text-sm font-medium capitalize">
+                              <span className="text-xs sm:text-sm font-medium capitalize">
                                 {key.replace("_", " ")}:{" "}
                               </span>
-                              <span className="text-xs">
+                              <span className="text-xs sm:text-sm">
                                 {typeof value === "object"
                                   ? JSON.stringify(value)
                                   : value}
@@ -430,33 +424,33 @@ const LogDetails = () => {
                   </div>
 
                   {/* Images Changes */}
-                  {details.updatedData?.main_image ||
-                  details.updatedData?.sub_images?.length > 0 ? (
-                    <div className="bg-white p-4 rounded-lg">
+                  {(details.updatedData?.main_image ||
+                    details.updatedData?.sub_images?.length > 0) && (
+                    <div className="bg-white p-3 sm:p-4 rounded-lg">
                       <div
                         className="flex items-center cursor-pointer mb-3"
                         onClick={() => toggleSection("imageChanges")}
                       >
                         {isSectionExpanded("imageChanges") ? (
-                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         )}
-                        <h4 className="font-medium text-[#1D372E] text-sm">
+                        <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                           Images
                         </h4>
                       </div>
                       {isSectionExpanded("imageChanges") && (
-                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                        <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                           {details.updatedData?.main_image && (
                             <div className="mb-4">
-                              <h6 className="text-xs font-medium text-gray-600 ">
+                              <h6 className="text-xs font-medium text-gray-600">
                                 Main Image
                               </h6>
                               <img
                                 src={details.updatedData.main_image}
                                 alt="Updated Main Image"
-                                className="w-32 h-32 object-cover rounded-md mt-2"
+                                className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-md mt-2"
                                 onError={(e) =>
                                   (e.target.src = "/placeholder.svg")
                                 }
@@ -475,7 +469,7 @@ const LogDetails = () => {
                                       key={index}
                                       src={img}
                                       alt={`Updated Sub Image ${index + 1}`}
-                                      className="w-24 h-24 object-cover rounded-md"
+                                      className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-md"
                                       onError={(e) =>
                                         (e.target.src = "/placeholder.svg")
                                       }
@@ -488,34 +482,34 @@ const LogDetails = () => {
                         </div>
                       )}
                     </div>
-                  ) : null}
+                  )}
 
                   {/* Subcategories Changes */}
                   {details.updatedData?.sub_categories?.length > 0 && (
-                    <div className="bg-white p-4 rounded-lg">
+                    <div className="bg-white p-3 sm:p-4 rounded-lg">
                       <div
                         className="flex items-center cursor-pointer mb-3"
                         onClick={() => toggleSection("subCategoryChanges")}
                       >
                         {isSectionExpanded("subCategoryChanges") ? (
-                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         )}
-                        <h4 className="font-medium text-[#1D372E] text-sm">
+                        <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                           Subcategories
                         </h4>
                       </div>
                       {isSectionExpanded("subCategoryChanges") && (
-                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                        <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                           <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
                               <thead className="bg-[#EAFFF7]">
                                 <tr>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
                                     ID
                                   </th>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
                                     Description
                                   </th>
                                 </tr>
@@ -524,10 +518,10 @@ const LogDetails = () => {
                                 {details.updatedData.sub_categories.map(
                                   (subCat, index) => (
                                     <tr key={index}>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                      <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
                                         {subCat.idSub_Category}
                                       </td>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                      <td className="px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm">
                                         {subCat.Description}
                                       </td>
                                     </tr>
@@ -543,33 +537,33 @@ const LogDetails = () => {
 
                   {/* Variations Changes */}
                   {details.updatedData?.variations?.length > 0 && (
-                    <div className="bg-white p-4 rounded-lg">
+                    <div className="bg-white p-3 sm:p-4 rounded-lg">
                       <div
                         className="flex items-center cursor-pointer mb-3"
                         onClick={() => toggleSection("variationChanges")}
                       >
                         {isSectionExpanded("variationChanges") ? (
-                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         )}
-                        <h4 className="font-medium text-[#1D372E] text-sm">
+                        <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                           Product Variations
                         </h4>
                       </div>
                       {isSectionExpanded("variationChanges") && (
-                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                        <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                           <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
                               <thead className="bg-[#EAFFF7]">
                                 <tr>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider ">
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
                                     Color
                                   </th>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
                                     Size
                                   </th>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
+                                  <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
                                     Quantity
                                   </th>
                                 </tr>
@@ -578,10 +572,10 @@ const LogDetails = () => {
                                 {details.updatedData.variations.map(
                                   (variation, index) => (
                                     <tr key={index}>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                      <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
                                         <div className="flex items-center">
                                           <div
-                                            className="w-4 h-4 rounded-full mr-2"
+                                            className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2"
                                             style={{
                                               backgroundColor:
                                                 variation.Colour ||
@@ -592,10 +586,10 @@ const LogDetails = () => {
                                             variation.colorCode}
                                         </div>
                                       </td>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                      <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
                                         {variation.Size || variation.size}
                                       </td>
-                                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                      <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
                                         {variation.Qty || variation.quantity}
                                       </td>
                                     </tr>
@@ -611,32 +605,32 @@ const LogDetails = () => {
 
                   {/* FAQs Changes */}
                   {details.updatedData?.faqs?.length > 0 && (
-                    <div className="bg-white p-4 rounded-lg">
+                    <div className="bg-white p-3 sm:p-4 rounded-lg">
                       <div
                         className="flex items-center cursor-pointer mb-3"
                         onClick={() => toggleSection("faqChanges")}
                       >
                         {isSectionExpanded("faqChanges") ? (
-                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         )}
-                        <h4 className="font-medium text-[#1D372E] text-sm">
+                        <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                           FAQs
                         </h4>
                       </div>
                       {isSectionExpanded("faqChanges") && (
-                        <div className="p-3 border border-[#E5E7EB] rounded-md">
+                        <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                           <div className="space-y-3">
                             {details.updatedData.faqs.map((faq, index) => (
                               <div
                                 key={index}
-                                className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
+                                className="bg-white p-2 sm:p-3 rounded-lg border border-[#E5E7EB]"
                               >
-                                <h6 className="font-medium text-[#1D372E] mb-1 text-xs">
+                                <h6 className="font-medium text-[#1D372E] mb-1 text-xs sm:text-sm">
                                   Q: {faq.Question || faq.question}
                                 </h6>
-                                <p className="text-gray-600 text-xs">
+                                <p className="text-gray-600 text-xs sm:text-sm">
                                   A: {faq.Answer || faq.answer}
                                 </p>
                               </div>
@@ -654,28 +648,28 @@ const LogDetails = () => {
         // Handle Delete Product Action
         else if (log.action === "Deleted product") {
           detailsContent.push(
-            <div key="product-deletion" className="px-1 py-5">
-              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E] text-base">
+            <div key="product-deletion" className="px-1 py-3 sm:py-5">
+              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                  <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+                  <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
                     Deleted Product Details
                   </h3>
                 </div>
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-3 sm:p-4 rounded-lg">
                   {/* Basic Product Information */}
-                  <div className="p-3 border border-[#E5E7EB] rounded-md mb-4">
-                    <h4 className="font-medium text-[#1D372E] mb-2 text-sm">
+                  <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md mb-4">
+                    <h4 className="font-medium text-[#1D372E] mb-2 text-xs sm:text-sm">
                       Basic Information
                     </h4>
                     {Object.entries(details)
                       .filter(([key]) => !["variations", "faqs"].includes(key))
                       .map(([key, value]) => (
                         <div key={key} className="mb-2 text-[#1D372E]">
-                          <span className="text-sm font-medium capitalize">
+                          <span className="text-xs sm:text-sm font-medium capitalize">
                             {key.replace("_", " ")}:{" "}
                           </span>
-                          <span className="text-xs">
+                          <span className="text-xs sm:text-sm">
                             {typeof value === "object" && !Array.isArray(value)
                               ? JSON.stringify(value)
                               : value}
@@ -686,65 +680,62 @@ const LogDetails = () => {
 
                   {/* Product Variations */}
                   {details.variations?.length > 0 && (
-                    <div className="p-3 border border-[#E5E7EB] rounded-md mb-4">
+                    <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md mb-4">
                       <div
                         className="flex items-center cursor-pointer"
                         onClick={() => toggleSection("deletedVariations")}
                       >
                         {isSectionExpanded("deletedVariations") ? (
-                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         )}
-                        <h4 className="font-medium text-[#1D372E] text-sm">
+                        <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                           Deleted Product Variations
                         </h4>
                       </div>
                       {isSectionExpanded("deletedVariations") && (
-                        <div className="mt-2">
-                          <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
-                              <thead className="bg-[#EAFFF7]">
-                                <tr>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                    Color
-                                  </th>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                    Size
-                                  </th>
-                                  <th className="px-3 py-2 text-left text-sm font-medium uppercase tracking-wider">
-                                    Quantity
-                                  </th>
+                        <div className="mt-2 overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200 text-[#1D372E]">
+                            <thead className="bg-[#EAFFF7]">
+                              <tr>
+                                <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                  Color
+                                </th>
+                                <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                  Size
+                                </th>
+                                <th className="px-2 sm:px-3 py-1 sm:py-2 text-left text-xs sm:text-sm font-medium uppercase tracking-wider">
+                                  Quantity
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {details.variations.map((variation, index) => (
+                                <tr key={index}>
+                                  <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
+                                    <div className="flex items-center">
+                                      <div
+                                        className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2"
+                                        style={{
+                                          backgroundColor:
+                                            variation.Colour ||
+                                            variation.colorCode,
+                                        }}
+                                      />
+                                      {variation.Colour || variation.colorCode}
+                                    </div>
+                                  </td>
+                                  <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
+                                    {variation.Size || variation.size}
+                                  </td>
+                                  <td className="px-2 sm:px-3 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm">
+                                    {variation.Qty || variation.quantity}
+                                  </td>
                                 </tr>
-                              </thead>
-                              <tbody className="bg-white divide-y divide-gray-200">
-                                {details.variations.map((variation, index) => (
-                                  <tr key={index}>
-                                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                      <div className="flex items-center">
-                                        <div
-                                          className="w-4 h-4 rounded-full mr-2"
-                                          style={{
-                                            backgroundColor:
-                                              variation.Colour ||
-                                              variation.colorCode,
-                                          }}
-                                        />
-                                        {variation.Colour ||
-                                          variation.colorCode}
-                                      </div>
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                      {variation.Size || variation.size}
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                                      {variation.Qty || variation.quantity}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       )}
                     </div>
@@ -752,17 +743,17 @@ const LogDetails = () => {
 
                   {/* Deleted FAQs */}
                   {details.faqs?.length > 0 && (
-                    <div className="p-3 border border-[#E5E7EB] rounded-md">
+                    <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
                       <div
                         className="flex items-center cursor-pointer"
                         onClick={() => toggleSection("deletedFaqs")}
                       >
                         {isSectionExpanded("deletedFaqs") ? (
-                          <ChevronDown className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 mr-1 text-[#5CAF90]" />
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#5CAF90]" />
                         )}
-                        <h4 className="font-medium text-[#1D372E] text-sm">
+                        <h4 className="font-medium text-[#1D372E] text-xs sm:text-sm">
                           Deleted Product FAQs
                         </h4>
                       </div>
@@ -771,12 +762,12 @@ const LogDetails = () => {
                           {details.faqs.map((faq, index) => (
                             <div
                               key={index}
-                              className="bg-white p-3 rounded-lg border border-[#E5E7EB]"
+                              className="bg-white p-2 sm:p-3 rounded-lg border border-[#E5E7EB]"
                             >
-                              <h5 className="font-medium text-[#1D372E] mb-1 text-xs">
+                              <h5 className="font-medium text-[#1D372E] mb-1 text-xs sm:text-sm">
                                 Q: {faq.Question || faq.question}
                               </h5>
-                              <p className="text-gray-600 text-xs">
+                              <p className="text-gray-600 text-xs sm:text-sm">
                                 A: {faq.Answer || faq.answer}
                               </p>
                             </div>
@@ -817,27 +808,29 @@ const LogDetails = () => {
             }[log.action] || "Action Details";
 
           detailsContent.push(
-            <div key="generic-action" className="px-1 py-5">
-              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E]">{title}</h3>
+            <div key="generic-action" className="px-1 py-3 sm:py-5">
+              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                  <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+                  <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
+                    {title}
+                  </h3>
                 </div>
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-3 sm:p-4 rounded-lg">
                   {details.originalData || details.updatedData ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {details.updatedData && (
-                        <div className="p-3 border border-[#E5E7EB] rounded-md">
-                          <h5 className="text-sm font-medium text-gray-600 mb-3">
+                        <div className="p-2 sm:p-3 border border-[#E5E7EB] rounded-md">
+                          <h5 className="text-xs sm:text-sm font-medium text-gray-600 mb-3">
                             Updated Data
                           </h5>
                           {Object.entries(details.updatedData).map(
                             ([key, value]) => (
                               <div key={key} className="mb-2 text-[#1D372E]">
-                                <span className="text-sm font-medium capitalize">
+                                <span className="text-xs sm:text-sm font-medium capitalize">
                                   {key.replace("_", " ")}:{" "}
                                 </span>
-                                <span className="text-xs">
+                                <span className="text-xs sm:text-sm">
                                   {typeof value === "object"
                                     ? JSON.stringify(value)
                                     : value}
@@ -851,10 +844,10 @@ const LogDetails = () => {
                   ) : (
                     Object.entries(details).map(([key, value]) => (
                       <div key={key} className="mb-2 text-[#1D372E]">
-                        <span className="text-sm font-medium capitalize">
+                        <span className="text-xs sm:text-sm font-medium capitalize">
                           {key.replace("_", " ")}:{" "}
                         </span>
-                        <span className="text-sm">
+                        <span className="text-xs sm:text-sm">
                           {typeof value === "object"
                             ? JSON.stringify(value)
                             : value}
@@ -870,21 +863,21 @@ const LogDetails = () => {
         // Handle Other Actions (e.g., Added new user)
         else {
           detailsContent.push(
-            <div key="other-action" className="px-1 py-5">
-              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                  <h3 className="font-semibold text-[#1D372E]">
+            <div key="other-action" className="px-1 py-3 sm:py-5">
+              <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                  <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+                  <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
                     Additional Information
                   </h3>
                 </div>
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-3 sm:p-4 rounded-lg">
                   {Object.entries(details).map(([key, value]) => (
                     <div key={key} className="mb-2 text-[#1D372E]">
-                      <span className="text-sm font-medium capitalize">
+                      <span className="text-xs sm:text-sm font-medium capitalize">
                         {key.replace("_", " ")}:{" "}
                       </span>
-                      <span className="text-sm">
+                      <span className="text-xs sm:text-sm">
                         {typeof value === "object"
                           ? JSON.stringify(value)
                           : value}
@@ -898,16 +891,16 @@ const LogDetails = () => {
         }
       } catch (e) {
         detailsContent.push(
-          <div key="error" className="px-1 py-5">
-            <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-                <h3 className="font-semibold text-[#1D372E]">
+          <div key="error" className="px-1 py-3 sm:py-5">
+            <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+                <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
                   Additional Information
                 </h3>
               </div>
-              <div className="bg-white p-4 rounded-lg">
-                <p className="text-sm text-gray-600">
+              <div className="bg-white p-3 sm:p-4 rounded-lg">
+                <p className="text-xs sm:text-sm text-gray-600">
                   Failed to parse user info: {log.new_user_info}
                 </p>
               </div>
@@ -920,16 +913,18 @@ const LogDetails = () => {
     // Device Information Section
     if (log.device_info) {
       detailsContent.push(
-        <div key="device-info" className="px-1 py-5">
-          <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-4">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-6 bg-[#EAFFF7]"></div>
-              <h3 className="test-base font-semibold text-[#1D372E]">
+        <div key="device-info" className="px-1 py-3 sm:py-5">
+          <div className="bg-[#F4F4F4] rounded-lg shadow-sm overflow-hidden p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
+              <div className="w-1 h-4 sm:h-5 bg-[#EAFFF7]"></div>
+              <h3 className="text-sm sm:text-base font-semibold text-[#1D372E]">
                 Device Information
               </h3>
             </div>
-            <div className="bg-white p-4 rounded-lg">
-              <p className="text-gray-600 text-xs">{log.device_info}</p>
+            <div className="bg-white p-3 sm:p-4 rounded-lg">
+              <p className="text-gray-600 text-xs sm:text-sm">
+                {log.device_info}
+              </p>
             </div>
           </div>
         </div>
@@ -940,7 +935,7 @@ const LogDetails = () => {
   };
 
   return (
-    <div className="w-315 mx-auto p-6 sm:p-6">
+    <div className="mx-auto">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
         {getDetailsContent()}
       </div>

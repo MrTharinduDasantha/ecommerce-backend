@@ -94,7 +94,9 @@ const DiscountList = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-[#5CAF90]"></div>
-          <h2 className="text-xl font-bold text-[#1D372E]">All Discounts</h2>
+          <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+            All Discounts
+          </h2>
         </div>
 
         {/* Search Bar */}
@@ -109,18 +111,18 @@ const DiscountList = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Search by discount or product..."
-              className="input input-bordered w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
+              className="input input-bordered input-sm md:input-md w-full pl-8 md:pl-10 bg-white border-[#1D372E] text-[#1D372E]"
             />
             <button
               onClick={handleSearch}
-              className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              className="btn btn-primary btn-sm md:btn-md ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             >
               Search
             </button>
           </div>
         </div>
 
-        {/* Discount Table */}
+        {/* Discount Display */}
         {loading ? (
           <div className="flex justify-center items-center h-40">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -130,78 +132,179 @@ const DiscountList = () => {
             <span>No discounts found.</span>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table min-w-[1000px] text-center border border-[#1D372E]">
-              <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                <tr className="border-b border-[#1D372E]">
-                  <th className="font-semibold">Product</th>
-                  <th className="font-semibold">Description</th>
-                  <th className="font-semibold">Type</th>
-                  <th className="font-semibold">Value</th>
-                  <th className="font-semibold">Start Date</th>
-                  <th className="font-semibold">End Date</th>
-                  <th className="font-semibold">Status</th>
-                  <th className="font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-[#1D372E]">
-                {filteredDiscounts.map((discount) => (
-                  <tr
-                    key={discount.idDiscounts}
-                    className="border-b border-[#1D372E]"
-                  >
-                    <td>{discount.ProductName}</td>
-                    <td>{discount.Description}</td>
-                    <td>{formatDiscountType(discount.Dicaunt_Type)}</td>
-                    <td>
+          <>
+            {/* Table for larger screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="table table-fixed min-w-[1000px] text-center border border-[#1D372E]">
+                <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                  <tr className="border-b border-[#1D372E]">
+                    <th className="font-semibold md:text-xs lg:text-sm w-[175px]">
+                      Product
+                    </th>
+                    <th className="font-semibold md:text-xs lg:text-sm w-[175px]">
+                      Description
+                    </th>
+                    <th className="font-semibold md:text-xs lg:text-sm w-[100px]">
+                      Type
+                    </th>
+                    <th className="font-semibold md:text-xs lg:text-sm w-[100px]">
+                      Value
+                    </th>
+                    <th className="font-semibold md:text-xs lg:text-sm w-[125px]">
+                      Start Date
+                    </th>
+                    <th className="font-semibold md:text-xs lg:text-sm w-[125px]">
+                      End Date
+                    </th>
+                    <th className="font-semibold md:text-xs lg:text-sm w-[100px]">
+                      Status
+                    </th>
+                    <th className="font-semibold md:text-xs lg:text-sm w-[100px]">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-[#1D372E]">
+                  {filteredDiscounts.map((discount) => (
+                    <tr
+                      key={discount.idDiscounts}
+                      className="border-b border-[#1D372E]"
+                    >
+                      <td className="text-xs lg:text-sm">
+                        {discount.ProductName}
+                      </td>
+                      <td className="text-xs lg:text-sm">
+                        {discount.Description}
+                      </td>
+                      <td className="text-xs lg:text-sm">
+                        {formatDiscountType(discount.Dicaunt_Type)}
+                      </td>
+                      <td className="text-xs lg:text-sm">
+                        {formatDiscountValue(
+                          discount.Discount_Value,
+                          discount.Dicaunt_Type
+                        )}
+                      </td>
+                      <td className="text-xs lg:text-sm">
+                        {formatDate(discount.Start_Date)}
+                      </td>
+                      <td className="text-xs lg:text-sm">
+                        {formatDate(discount.End_Date)}
+                      </td>
+                      <td>
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            discount.Status === "active"
+                              ? "bg-green-100 text-green-800 border border-green-800"
+                              : "bg-red-100 text-red-800 border border-red-800"
+                          }`}
+                        >
+                          {discount.Status.charAt(0).toUpperCase() +
+                            discount.Status.slice(1)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/dashboard/discounts/add-discount/${discount.idDiscounts}`
+                              )
+                            }
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="Edit Discount"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() =>
+                              setDeleteDiscountId(discount.idDiscounts)
+                            }
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="Delete Discount"
+                          >
+                            <RiDeleteBin5Fill />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Discount Cards for smaller screens */}
+            <div className="md:hidden grid grid-cols-1 gap-4">
+              {filteredDiscounts.map((discount) => (
+                <div
+                  key={discount.idDiscounts}
+                  className="card bg-white shadow-md border border-[#1D372E] p-4"
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-sm font-semibold text-[#1D372E]">
+                      {discount.ProductName}
+                    </h3>
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        discount.Status === "active"
+                          ? "bg-green-100 text-green-800 border border-green-800"
+                          : "bg-red-100 text-red-800 border border-red-800"
+                      }`}
+                    >
+                      {discount.Status.charAt(0).toUpperCase() +
+                        discount.Status.slice(1)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#1D372E] mb-2">
+                    {discount.Description}
+                  </p>
+                  <div className="text-xs text-[#1D372E] mb-2">
+                    <span className="font-medium">Type: </span>{" "}
+                    <span>{formatDiscountType(discount.Dicaunt_Type)}</span>
+                  </div>
+                  <div className="text-xs text-[#1D372E] mb-2">
+                    <span className="font-medium">Value: </span>{" "}
+                    <span>
                       {formatDiscountValue(
                         discount.Discount_Value,
                         discount.Dicaunt_Type
                       )}
-                    </td>
-                    <td>{formatDate(discount.Start_Date)}</td>
-                    <td>{formatDate(discount.End_Date)}</td>
-                    <td>
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          discount.Status === "active"
-                            ? "bg-green-100 text-green-800 border border-green-800"
-                            : "bg-red-100 text-red-800 border border-red-800"
-                        }`}
-                      >
-                        {discount.Status.charAt(0).toUpperCase() +
-                          discount.Status.slice(1)}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() =>
-                            navigate(
-                              `/dashboard/discounts/add-discount/${discount.idDiscounts}`
-                            )
-                          }
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="Edit Discount"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() =>
-                            setDeleteDiscountId(discount.idDiscounts)
-                          }
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="Delete Discount"
-                        >
-                          <RiDeleteBin5Fill />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-[#1D372E] mb-4">
+                    <div>
+                      <span className="font-medium">Start: </span>{" "}
+                      <span>{formatDate(discount.Start_Date)}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">End: </span>{" "}
+                      <span>{formatDate(discount.End_Date)}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/dashboard/discounts/add-discount/${discount.idDiscounts}`
+                        )
+                      }
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="Edit Discount"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => setDeleteDiscountId(discount.idDiscounts)}
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="Delete Discount"
+                    >
+                      <RiDeleteBin5Fill />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

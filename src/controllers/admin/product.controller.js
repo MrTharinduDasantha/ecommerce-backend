@@ -40,6 +40,20 @@ async function getAllCategories(req, res) {
   }
 }
 
+// Get top 6 selling categories
+async function getTopSellingCategories(req, res) {
+  try {
+    const categories = await Product.getTopSellingCategories();
+    res.status(200).json({
+      message: "Top selling categories fetched successfully",
+      categories,
+    });
+  } catch (error) {
+    console.error("Error fetching top selling categories:", error);
+    res.status(500).json({ message: "Failed to fetch top selling categories" });
+  }
+}
+
 // Create a new category
 async function createCategory(req, res) {
   try {
@@ -530,7 +544,7 @@ async function createProduct(req, res) {
   try {
     const {
       Description,
-      Product_Brand_idProduct_Brand,
+      Product_Brand_idProduct_Brand = null,
       Market_Price,
       Selling_Price,
       Long_Description,
@@ -561,7 +575,7 @@ async function createProduct(req, res) {
 
     const productData = {
       Description,
-      Product_Brand_idProduct_Brand,
+      Product_Brand_idProduct_Brand: Product_Brand_idProduct_Brand || null,
       Market_Price,
       Selling_Price,
       Main_Image_Url: mainImageUrl,
@@ -721,7 +735,7 @@ async function updateProduct(req, res) {
 
     const productData = {
       Description,
-      Product_Brand_idProduct_Brand,
+      Product_Brand_idProduct_Brand: Product_Brand_idProduct_Brand || null,
       Market_Price,
       Selling_Price,
       Main_Image_Url: mainImageUrl,
@@ -857,6 +871,61 @@ async function updateProduct(req, res) {
   }
 }
 
+// Toggle the history status of a product (new arrivals/old)
+async function toggleProductHistoryStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const { historyStatus } = req.body;
+
+    if (!historyStatus) {
+      return res.status(400).json({ message: "History status is required" });
+    }
+
+    // Get original product data for logging
+    const [originalProduct] = await pool.query(
+      "SELECT Description, History_Status FROM Product WHERE idProduct = ?",
+      [id]
+    );
+
+    if (!originalProduct.length) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    await Product.toggleProductHistoryStatus(id, historyStatus);
+
+    // Log the admin action with original and updated data
+    const logData = {
+      originalData: {
+        description: originalProduct[0].Description,
+        historyStatus: originalProduct[0].History_Status,
+      },
+      updatedData: {
+        description: originalProduct[0].Description,
+        historyStatus: historyStatus,
+      },
+    };
+
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Toggled product history status",
+        req.headers["user-agent"],
+        JSON.stringify(logData),
+      ]
+    );
+
+    res
+      .status(200)
+      .json({ message: "Product history status updated successfully" });
+  } catch (error) {
+    console.error("Error toggling product history status:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to toggle product history status" });
+  }
+}
+
 // Toggle the status of a product (active/inactive)
 async function toggleProductStatus(req, res) {
   try {
@@ -941,7 +1010,7 @@ async function getProductsSoldQty(req, res) {
   console.log("Called getProductsSoldQty");
   try {
     // Default to 5 if no limit is provided
-    const limit = parseInt(req.query.limit) || 6;
+    const limit = parseInt(req.query.limit) || 5;
     if (limit < 1 || limit > 100) {
       return res
         .status(400)
@@ -949,7 +1018,7 @@ async function getProductsSoldQty(req, res) {
     }
 
     const query = `
-      SELECT idProduct, Description,Long_Description,Main_Image_Url, Sold_Qty ,Market_Price , Selling_Price
+      SELECT idProduct, Description, Sold_Qty
       FROM Product
       WHERE Sold_Qty > 0
       ORDER BY Sold_Qty DESC
@@ -1055,6 +1124,20 @@ async function getProductSales(req, res) {
   } catch (error) {
     console.error("Error fetching sales information:", error);
     res.status(500).json({ message: "Failed to fetch sales information" });
+  }
+}
+
+// Get products with active discounts
+async function getDiscountedProducts(req, res) {
+  try {
+    const products = await Product.getDiscountedProducts();
+
+    res
+      .status(200)
+      .json({ message: "Discounted products fetched successfully", products });
+  } catch (error) {
+    console.error("Error fetching discounted products:", error);
+    res.status(500).json({ message: "Failed to fetch discounted products" });
   }
 }
 
@@ -1363,24 +1446,11 @@ async function getDiscountById(req, res) {
     res.status(500).json({ message: "Failed to fetch discount" });
   }
 }
-// Get top 6 selling categories
-async function getTopSellingCategories(req, res) {
-  try {
-    const categories = await Product.getTopSellingCategories();
-    res.status(200).json({
-      message: "Top selling categories fetched successfully",
-      categories,
-    });
-  } catch (error) {
-    console.error("Error fetching top selling categories:", error);
-    res.status(500).json({ message: "Failed to fetch top selling categories" });
-  }
-}
-
 
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
+  getTopSellingCategories,
   createCategory,
   updateCategory,
   toggleCategoryStatus,
@@ -1396,6 +1466,7 @@ module.exports = {
   // Product related functions
   createProduct,
   updateProduct,
+  toggleProductHistoryStatus,
   toggleProductStatus,
   getAllProducts,
   getProductTotal,
@@ -1405,6 +1476,7 @@ module.exports = {
   getProductsByBrand,
   getProductById,
   getProductSales,
+  getDiscountedProducts,
   deleteProduct,
   // Discount related functions
   getAllDiscounts,
@@ -1413,6 +1485,4 @@ module.exports = {
   updateDiscount,
   deleteDiscount,
   getDiscountById,
-
-  getTopSellingCategories,
 };

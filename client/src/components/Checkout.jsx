@@ -59,7 +59,7 @@ const Checkout = () => {
   );
   const deliveryFee = 500.0;
   const total = subtotal - discount + deliveryFee;
-
+console.log(subtotal,discount,deliveryFee)
   // Order information
   const orderInfo = {
     orderNo: `#${Math.floor(100000 + Math.random() * 900000)}`,
@@ -73,7 +73,7 @@ const Checkout = () => {
   const formatPrice = (price) => {
     return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-
+console.log(cartItems)
   // Calculate individual product discounts
   const getProductDiscounts = () => {
     return cartItems.map(item => {
@@ -87,7 +87,8 @@ const Checkout = () => {
             item.category === 'Rush Delivery' ? 'Rush Discounts' :
             item.category === 'For You' ? 'For You Discounts' :
             'Sale Discounts'
-          )
+          ),
+          discountPrice: item.marketPrice - item.sellingPrice
         };
       }
       return null;
@@ -95,7 +96,7 @@ const Checkout = () => {
   };
 
   const productDiscounts = getProductDiscounts();
-
+console.log(productDiscounts,"waqas")
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({

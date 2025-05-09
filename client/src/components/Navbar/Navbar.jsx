@@ -127,6 +127,7 @@ function Navbar() {
         <CategoryDropdown />
 
 
+
         <Link to="/ramadan">
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
             <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
@@ -182,6 +183,65 @@ function Navbar() {
         </Link>
 
         </div>
+
+        <Link to="/seasonal-offers">
+      <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+        <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+          <FaGift />
+        </motion.span>
+        <span>Seasonal Offers</span>
+      </div>
+    </Link>
+
+
+  {/* Buttons that adopt Seasonal Offer styling on hover */}
+  <Link to="/rush-delivery">
+    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+      <FaRocket />
+      </motion.span>
+      <span>Rush Delivery</span>
+</div>
+  </Link>
+
+  <Link to="/on-sale">
+    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+      <FaTags />
+      </motion.span>
+      <span>On Sale</span>
+    </div>
+  </Link>
+
+  <Link to="/Events">
+    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+      <FaCalendarAlt />
+      </motion.span>
+      <span>Events</span>
+    </div>
+  </Link>
+
+  <Link to="/brands">
+    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+      <FaNetworkWired />
+</motion.span>
+      <span>Brands</span>
+    </div>
+  </Link>
+
+  <Link to="/for-you">
+    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+      <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+      <FaHeart />
+      </motion.span>
+      <span>For You</span>
+    </div>
+  </Link>
+
+      </div>
+
       {isModalOpen && (
         <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
           <h2 className="text-xl font-semibold mb-4">Search Results</h2>

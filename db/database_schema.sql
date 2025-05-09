@@ -207,12 +207,28 @@ CREATE TABLE `Order` (
     Payment_Type VARCHAR(45),
     Payment_Stats VARCHAR(45),
     Delivery_Status VARCHAR(45),
+    Delivery_Date DATE NULL,
     Status VARCHAR(45),
     Customer_Note TEXT,
     Supplier_Note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Delivery_Address_idDelivery_Address) REFERENCES Delivery_Address(idDelivery_Address)
+);
+
+-- Order_History
+CREATE TABLE Order_History (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    status_from VARCHAR(45),
+    status_to VARCHAR(45), 
+    status_type VARCHAR(45),
+    reason TEXT,
+    notes TEXT,
+    changed_by INT, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    FOREIGN KEY (order_id) REFERENCES `Order`(idOrder),
+    FOREIGN KEY (changed_by) REFERENCES User(idUser)
 );
 
 -- Order_has_Product_Variations Table
