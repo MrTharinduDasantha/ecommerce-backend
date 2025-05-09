@@ -94,7 +94,7 @@ const CustomerorderDetailsPage = () => {
             onMouseOut={(e) => (e.currentTarget.style.color = "#5CAF90")}
           >
             <ArrowLeft style={{ width: "20px", height: "20px", marginRight: "8px" }} />
-            <span style={{ fontSize: "14px", fontWeight: "500" }}>Back to Customer Details</span>
+            
           </button>
 
           {/* Header */}

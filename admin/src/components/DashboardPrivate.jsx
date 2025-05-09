@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Pie, Bar } from "react-chartjs-2";
+import React, { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,12 +8,13 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
   ArcElement,
-  BarElement,
 } from "chart.js";
+import { Line, Doughnut } from "react-chartjs-2";
 import { getProductTotal, getTopSoldProducts } from "../api/product";
 import { fetchCustomerCount } from "../api/customer";
-import { getOrderCountByStatus, getPendingDeliveryCount } from "../api/orders";
+import { getOrderCountByStatus, getPendingDeliveryCount, getTotalRevenue, getMonthlyTotalRevenue } from "../api/orders";
 
 // Register necessary Chart.js components
 ChartJS.register(
@@ -22,40 +22,118 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
-  ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler,
+  ArcElement
 );
 
 const DashboardPrivate = () => {
-  // State for total products
+  // State for stats
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [pendingDeliveryCount, setPendingDeliveryCount] = useState(0);
-  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [monthlyRevenue, setMonthlyRevenue] = useState([]); // New state for monthly revenue
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
-  const [loadingOrderStatus, setLoadingOrderStatus] = useState(true);
-  const [loadingTopProducts, setLoadingTopProducts] = useState(true);
   const [loadingPendingDelivery, setLoadingPendingDelivery] = useState(true);
+  const [loadingTotalRevenue, setLoadingTotalRevenue] = useState(true);
+  const [loadingMonthlyRevenue, setLoadingMonthlyRevenue] = useState(true); // New loading state
   const [errorProducts, setErrorProducts] = useState(null);
   const [errorCustomers, setErrorCustomers] = useState(null);
-  const [errorOrderStatus, setErrorOrderStatus] = useState(null);
-  const [errorTopProducts, setErrorTopProducts] = useState(null);
   const [errorPendingDelivery, setErrorPendingDelivery] = useState(null);
+  const [errorTotalRevenue, setErrorTotalRevenue] = useState(null);
+  const [errorMonthlyRevenue, setErrorMonthlyRevenue] = useState(null); // New error state
   const [orderStatusCounts, setOrderStatusCounts] = useState([]);
-  const [topSellingProductsData, setTopSellingProductsData] = useState({
+  const [loadingOrderStatus, setLoadingOrderStatus] = useState(true);
+  const [errorOrderStatus, setErrorOrderStatus] = useState(null);
+  const [topSellingProducts, setTopSellingProducts] = useState([]);
+  const [loadingTopProducts, setLoadingTopProducts] = useState(true);
+  const [errorTopProducts, setErrorTopProducts] = useState(null);
+
+  // Revenue chart data
+  const [revenueData, setRevenueData] = useState({
     labels: [],
     datasets: [
       {
-        label: "Units Sold",
+        label: "Revenue",
         data: [],
-        backgroundColor: "#5CAF90",
+        fill: true,
+        backgroundColor: (context) => {
+          const chart = context.chart;
+          const { ctx } = chart;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+          gradient.addColorStop(0, "rgba(92, 175, 144, 0.6)");
+          gradient.addColorStop(1, "rgba(92, 175, 144, 0)");
+          return gradient;
+        },
+        borderColor: "#5CAF90",
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 0,
       },
     ],
   });
+
+  // Chart options for the revenue chart
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false, // Hide legend
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(29, 55, 46, 0.8)',
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          size: 13,
+        },
+        padding: 12,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false, // Hide x-axis grid lines
+        },
+        ticks: {
+          font: {
+            size: 12,
+          },
+        },
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: "rgba(0, 0, 0, 0.05)",
+        },
+        ticks: {
+          font: {
+            size: 12,
+          },
+          callback: (value) => `$${value}`, // Add $ to y-axis labels
+        },
+      },
+    },
+    interaction: {
+      mode: 'nearest',
+      intersect: false,
+      axis: 'x'
+    },
+    animations: {
+      tension: {
+        duration: 1000,
+        easing: 'linear'
+      }
+    }
+  };
 
   // Fetch total products
   useEffect(() => {
@@ -89,54 +167,6 @@ const DashboardPrivate = () => {
     fetchTotalCustomers();
   }, []);
 
-  // Fetch order status counts
-  useEffect(() => {
-    const fetchOrderStatusCounts = async () => {
-      try {
-        const response = await getOrderCountByStatus();
-        setOrderStatusCounts(response);
-        // Calculate total orders from order status counts
-        const total = response.reduce((sum, item) => sum + item.count, 0);
-        setTotalOrders(total);
-      } catch (error) {
-        setErrorOrderStatus("Failed to fetch order status counts");
-      } finally {
-        setLoadingOrderStatus(false);
-      }
-    };
-
-    fetchOrderStatusCounts();
-  }, []);
-
-  // Fetch top selling products
-  useEffect(() => {
-    const fetchTopSellingProducts = async () => {
-      try {
-        const response = await getTopSoldProducts(); // Fetch top 5 products
-        const products = response.products;
-
-        // Update topSellingProductsData with API data
-        setTopSellingProductsData({
-          labels: products.map((product) => product.Description),
-          datasets: [
-            {
-              label: "Units Sold",
-              data: products.map((product) => product.Sold_Qty),
-              backgroundColor: "#5CAF90",
-            },
-          ],
-        });
-      } catch (error) {
-        setErrorTopProducts("Failed to fetch top selling products");
-        console.error("Error fetching top selling products:", error);
-      } finally {
-        setLoadingTopProducts(false);
-      }
-    };
-
-    fetchTopSellingProducts();
-  }, []);
-
   // Fetch pending delivery count
   useEffect(() => {
     const fetchPendingDeliveryCount = async () => {
@@ -154,155 +184,311 @@ const DashboardPrivate = () => {
     fetchPendingDeliveryCount();
   }, []);
 
-  // Prepare order status data for the Pie Chart
-  const orderLabels = orderStatusCounts.map((item) => item.Status);
-  const orderDataValues = orderStatusCounts.map((item) => item.count);
+  // Fetch order status counts
+  useEffect(() => {
+    const fetchOrderStatusCounts = async () => {
+      try {
+        const response = await getOrderCountByStatus();
+        setOrderStatusCounts(response);
+      } catch (error) {
+        setErrorOrderStatus("Failed to fetch order status counts");
+      } finally {
+        setLoadingOrderStatus(false);
+      }
+    };
 
-  // Order Status Breakdown (Pie Chart) Data
+    fetchOrderStatusCounts();
+  }, []);
+
+  // Fetch total revenue
+  useEffect(() => {
+    const fetchTotalRevenue = async () => {
+      try {
+        const response = await getTotalRevenue();
+        setTotalRevenue(response.totalRevenue);
+      } catch (error) {
+        setErrorTotalRevenue("Failed to fetch total revenue");
+      } finally {
+        setLoadingTotalRevenue(false);
+      }
+    };
+
+    fetchTotalRevenue();
+  }, []);
+
+  // Fetch monthly revenue
+  useEffect(() => {
+    const fetchMonthlyRevenue = async () => {
+      try {
+        const response = await getMonthlyTotalRevenue();
+        setMonthlyRevenue(response);
+
+        // Transform the API response for the chart
+        const labels = response.map(item => {
+          const [year, month] = item.month.split('-');
+          return new Date(year, month - 1).toLocaleString('default', { month: 'short', year: 'numeric' });
+        });
+        const data = response.map(item => parseFloat(item.monthly_revenue));
+
+        setRevenueData({
+          labels,
+          datasets: [
+            {
+              label: "Revenue",
+              data,
+              fill: true,
+              backgroundColor: (context) => {
+                const chart = context.chart;
+                const { ctx } = chart;
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, "rgba(92, 175, 144, 0.6)");
+                gradient.addColorStop(1, "rgba(92, 175, 144, 0)");
+                return gradient;
+              },
+              borderColor: "#5CAF90",
+              borderWidth: 2,
+              tension: 0.4,
+              pointRadius: 0,
+            },
+          ],
+        });
+      } catch (error) {
+        setErrorMonthlyRevenue("Failed to fetch monthly revenue");
+      } finally {
+        setLoadingMonthlyRevenue(false);
+      }
+    };
+
+    fetchMonthlyRevenue();
+  }, []);
+
+  // Fetch top selling products
+  useEffect(() => {
+    const fetchTopSellingProducts = async () => {
+      try {
+        const response = await getTopSoldProducts();
+        setTopSellingProducts(response.products);
+      } catch (error) {
+        setErrorTopProducts("Failed to fetch top selling products");
+      } finally {
+        setLoadingTopProducts(false);
+      }
+    };
+
+    fetchTopSellingProducts();
+  }, []);
+
+  // Order Status Chart Data
   const orderStatusData = {
-    labels: orderLabels,
+    labels: orderStatusCounts.map(item => item.Status),
     datasets: [
       {
-        data: orderDataValues,
-        backgroundColor: ["#FF5733", "#FFBF00", "#28A745", "#DC3545", "#7f0492"],
+        data: orderStatusCounts.map(item => item.count),
+        backgroundColor: ["#1D372E", "#346352", "#5CAF90", "#65C09E", "#78E5BC"],
+        borderWidth: 0,
       },
     ],
   };
 
-  // Chart options for responsiveness
-  const chartOptions = {
+  const doughnutOptions = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
+    cutout: "70%",
     plugins: {
       legend: {
-        position: "bottom",
+        position: "right",
         labels: {
           boxWidth: 12,
+          padding: 15,
           font: {
-            size: 10,
+            size: 11,
           },
         },
       },
+      tooltip: {
+        backgroundColor: 'rgba(29, 55, 46, 0.8)',
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          size: 13,
+        },
+        padding: 12,
+      }
     },
+    animation: {
+      animateRotate: true,
+      animateScale: true
+    }
   };
 
   return (
     <section className="w-full max-w-7xl p-4 sm:p-6 md:p-8 lg:p-10 bg-white rounded-md shadow-md mx-auto">
       <div className="space-y-6 md:space-y-8">
         {/* Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Total Products */}
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Total Products</h2>
             {loadingProducts ? (
-              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">Loading...</p>
+              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold animate-pulse">Loading...</p>
             ) : errorProducts ? (
-              <p className="text-xl sm:text-2xl text-[#DC3545] font-bold">{errorProducts}</p>
+              <p className="text-xl sm:text-2xl text-red-500 font-bold">{errorProducts}</p>
             ) : (
               <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">{totalProducts}</p>
             )}
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+
+          {/* Total Customers */}
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Total Customers</h2>
             {loadingCustomers ? (
-              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">Loading...</p>
+              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold animate-pulse">Loading...</p>
             ) : errorCustomers ? (
-              <p className="text-xl sm:text-2xl text-[#DC3545] font-bold">{errorCustomers}</p>
+              <p className="text-xl sm:text-2xl text-red-500 font-bold">{errorCustomers}</p>
             ) : (
               <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">{totalCustomers}</p>
             )}
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+
+          {/* Pending Shipments */}
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Pending Shipments</h2>
             {loadingPendingDelivery ? (
-              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">Loading...</p>
+              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold animate-pulse">Loading...</p>
             ) : errorPendingDelivery ? (
-              <p className="text-xl sm:text-2xl text-[#DC3545] font-bold">{errorPendingDelivery}</p>
+              <p className="text-xl sm:text-2xl text-red-500 font-bold">{errorPendingDelivery}</p>
             ) : (
               <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">{pendingDeliveryCount}</p>
             )}
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+
+          {/* Total Revenue */}
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Total Revenue</h2>
-            <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">$5,000</p>
+            {loadingTotalRevenue ? (
+              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold animate-pulse">Loading...</p>
+            ) : errorTotalRevenue ? (
+              <p className="text-xl sm:text-2xl text-red-500 font-bold">{errorTotalRevenue}</p>
+            ) : (
+              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">${parseFloat(totalRevenue).toFixed(2)}</p>
+            )}
           </div>
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {/* Order Status Breakdown */}
-          <div className="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col items-center">
-            <h2 className="text-lg sm:text-xl font-bold text-[#1D372E] mb-3 sm:mb-4">Order Status Breakdown</h2>
-            <div className="w-full h-60 sm:h-64 flex items-center justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Chart */}
+          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <h2 className="text-lg font-bold text-[#1D372E] mb-4">Revenue Overview</h2>
+            <div className="w-full h-64">
+              {loadingMonthlyRevenue ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500 animate-pulse">Loading revenue data...</p>
+                </div>
+              ) : errorMonthlyRevenue ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-red-500">{errorMonthlyRevenue}</p>
+                </div>
+              ) : (
+                <Line data={revenueData} options={chartOptions} />
+              )}
+            </div>
+          </div>
+
+          {/* Order Status Chart */}
+          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <h2 className="text-lg font-bold text-[#1D372E] mb-4">Order Status Breakdown</h2>
+            <div className="w-full h-64">
               {loadingOrderStatus ? (
-                <p>Loading Order Status...</p>
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500 animate-pulse">Loading order status data...</p>
+                </div>
+              ) : errorOrderStatus ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-red-500">{errorOrderStatus}</p>
+                </div>
               ) : (
-                <Pie data={orderStatusData} options={chartOptions} />
+                <Doughnut data={orderStatusData} options={doughnutOptions} />
               )}
             </div>
           </div>
 
-          {/* Top Selling Products Chart */}
-          <div className="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col items-center">
-            <h2 className="text-lg sm:text-xl font-bold text-[#1D372E] mb-3 sm:mb-4">Top Selling Products</h2>
-            <div className="w-full h-60 sm:h-64 flex items-center justify-center">
-              {loadingTopProducts ? (
-                <p>Loading Top Products...</p>
-              ) : errorTopProducts ? (
-                <p className="text-[#DC3545]">{errorTopProducts}</p>
-              ) : (
-                <Bar
-                  data={topSellingProductsData}
-                  options={{
-                    ...chartOptions,
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        ticks: {
-                          font: {
-                            size: 10,
-                          },
-                        },
-                      },
-                      x: {
-                        ticks: {
-                          font: {
-                            size: 10,
-                          },
-                        },
-                      },
-                    },
-                  }}
-                />
-              )}
-            </div>
+          {/* Top Selling Products */}
+          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <h2 className="text-lg font-bold text-[#1D372E] mb-4">Top Selling Products</h2>
+            {loadingTopProducts ? (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-gray-500 animate-pulse">Loading top products...</p>
+              </div>
+            ) : errorTopProducts ? (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-red-500">{errorTopProducts}</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white">
+                  <thead>
+                    <tr className="bg-[#f1f8f5]">
+                      <th className="py-3 px-4 text-left text-sm font-medium text-[#1D372E] border-b">ID</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium text-[#1D372E] border-b">Product Name</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium text-[#1D372E] border-b">Units Sold</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topSellingProducts.map((product, index) => (
+                      <tr 
+                        key={product.idProduct}
+                        className={`transition-colors duration-150 hover:bg-[#f8fdfb] ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-[#f9fcfb]'
+                        }`}
+                      >
+                        <td className="py-3 px-4 text-sm text-gray-700 border-b">{product.idProduct}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700 border-b font-medium">{product.Description}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700 border-b">
+                          <span className="inline-flex items-center justify-center px-2.5 py-0.5 bg-[#e6f3ef] text-[#5CAF90] font-medium rounded-full">
+                            {product.Sold_Qty}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          {/* Pending Shipments */}
-          <div className="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col items-center md:col-span-2 lg:col-span-1">
-            <h2 className="text-lg sm:text-xl font-bold text-[#1D372E] mb-3 sm:mb-4">Pending Shipments</h2>
-            <div className="w-full flex flex-col items-center justify-center">
-              {loadingPendingDelivery || loadingOrderStatus ? (
-                <p>Loading Pending Shipments...</p>
-              ) : errorPendingDelivery || errorOrderStatus ? (
-                <p className="text-[#DC3545]">
-                  {errorPendingDelivery || errorOrderStatus}
+          {/* Pending Shipments Progress */}
+          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg h-50">
+            <h2 className="text-lg font-bold text-[#1D372E] mb-4">Pending Shipments Progress</h2>
+            {loadingPendingDelivery ? (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-gray-500 animate-pulse">Loading shipment data...</p>
+              </div>
+            ) : errorPendingDelivery ? (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-red-500">{errorPendingDelivery}</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div
+                    className="bg-[#5CAF90] h-4 rounded-full transition-all duration-1000 ease-out"
+                    style={{ 
+                      width: `${(pendingDeliveryCount / (orderStatusCounts.reduce((sum, item) => sum + item.count, 0) || 1)) * 100}%` 
+                    }}
+                  ></div>
+                </div>
+                <p className="text-center text-sm text-gray-500">
+                  {pendingDeliveryCount} out of {orderStatusCounts.reduce((sum, item) => sum + item.count, 0)} orders pending
                 </p>
-              ) : (
-                <>
-                  <div className="w-full bg-gray-200 rounded-full h-4 mb-3">
-                    <div
-                      className="bg-[#5CAF90] h-4 rounded-full"
-                      style={{
-                        width: totalOrders > 0 ? `${(pendingDeliveryCount / totalOrders) * 100}%` : "0%",
-                      }}
-                    ></div>
-                  </div>
-                  <p className="text-center text-[#5CAF90] mt-2">
-                    {pendingDeliveryCount} Pending out of {totalOrders} Orders
-                  </p>
-                </>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

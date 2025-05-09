@@ -47,8 +47,8 @@ const CustomerDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5CAF90]"></div>
+      <div className="flex justify-center items-center h-40">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
@@ -60,20 +60,20 @@ const CustomerDetails = () => {
   }
 
   return (
-    <div className="w-315 mx-auto p-6 sm:p-6">
+    <div className="w-310 mx-auto p-6 sm:p-6">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
         <div className="p-4 md:p-6">
           {/* Back Button */}
           <button
             onClick={() => navigate("/dashboard/customer-managed-form")}
-            className="inline-flex items-center text-[#5CAF90] hover:text-[#4a9277] transition-colors mb-6"
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-[#5CAF90] text-white hover:bg-[#4a9277] transition-colors cursor-pointer"
+            aria-label="Back to Customer page"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            <span className="text-sm font-medium">Back to Customers</span>
-          </button>
+            <ArrowLeft className="w-4 h-4" />
+                     </button>
 
           {/* Header */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 mt-3">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
             <h2 className="text-base font-bold text-[#1D372E]">
               Customer Details

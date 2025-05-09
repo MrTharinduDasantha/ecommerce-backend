@@ -1,51 +1,83 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  getNotifications, 
-  createNotification, 
-  updateNotification, 
-  deleteNotification, 
-  markAsRead, 
-  markAsUnread 
-} from '../api/notification';
-import { toast } from 'react-hot-toast';
-import Swal from 'sweetalert2';
-import { useNotifications } from '../context/NotificationContext';
+import { useState, useEffect, useRef } from "react";
+import {
+  getNotifications,
+  createNotification,
+  updateNotification,
+  deleteNotification,
+  markAsRead,
+  markAsUnread,
+} from "../api/notification";
+import { toast } from "react-hot-toast";
+import { useNotifications } from "../context/NotificationContext";
+import { MdOutlineNotificationAdd } from "react-icons/md";
+import {
+  FaSearch,
+  FaCheckSquare,
+  FaRegCheckSquare,
+  FaEye,
+  FaEdit,
+} from "react-icons/fa";
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import { IoClose } from "react-icons/io5";
+import { io } from "socket.io-client";
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState('');
-  const [message, setMessage] = useState('');
-  const [editMode, setEditMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredNotifications, setFilteredNotifications] = useState([]);
+  const [deleteNotificationId, setDeleteNotificationId] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [currentNotification, setCurrentNotification] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [addTitle, setAddTitle] = useState("");
+  const [addMessage, setAddMessage] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editMessage, setEditMessage] = useState("");
   const toastTimerRef = useRef(null);
+  const socketRef = useRef(null);
 
   const { updateUnreadCount } = useNotifications();
 
   useEffect(() => {
+    socketRef.current = io("http://localhost:9000");
+
+    socketRef.current.on("connect", () => {
+      console.log("Connected to WebSocket");
+    });
+
+    socketRef.current.on("newNotification", () => {
+      fetchNotifications();
+    });
+
+    socketRef.current.on("notificationUpdated", () => {
+      fetchNotifications();
+    });
+
+    socketRef.current.on("notificationDeleted", () => {
+      fetchNotifications();
+    });
+
     fetchNotifications();
-    
-    // Clear any pending timers when component unmounts
+
     return () => {
+      socketRef.current.disconnect();
       if (toastTimerRef.current) {
         clearTimeout(toastTimerRef.current);
       }
     };
   }, []);
 
-  // Show toast with debounce to prevent duplicates
-  const showToast = (message, type = 'success') => {
-    // Clear any pending toast timers
+  const showToast = (message, type = "success") => {
     if (toastTimerRef.current) {
       clearTimeout(toastTimerRef.current);
     }
-    
-    // Set a small timeout to prevent multiple toasts firing at once
+
     toastTimerRef.current = setTimeout(() => {
-      if (type === 'success') {
+      if (type === "success") {
         toast.success(message);
-      } else if (type === 'error') {
+      } else if (type === "error") {
         toast.error(message);
       }
       toastTimerRef.current = null;
@@ -57,8 +89,10 @@ const NotificationPage = () => {
       setLoading(true);
       const data = await getNotifications();
       setNotifications(data);
+      setFilteredNotifications(data);
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      console.error("Failed to fetch notifications:", error);
+      toast.error(error.message || "Failed to load notifications");
     } finally {
       setLoading(false);
     }
@@ -69,142 +103,85 @@ const NotificationPage = () => {
     updateUnreadCount();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleOpenAddModal = () => {
+    setAddTitle("");
+    setAddMessage("");
+    setShowAddModal(true);
+  };
 
-    if (!title.trim() || !message.trim()) {
-      showToast('Title and message are required', 'error');
+  const handleOpenEditModal = (notification) => {
+    setCurrentNotification(notification);
+    setEditTitle(notification.title);
+    setEditMessage(notification.message);
+    setShowEditModal(true);
+  };
+
+  const handleOpenViewModal = (notification) => {
+    setCurrentNotification(notification);
+    setShowViewModal(true);
+  };
+
+  const handleAddSubmit = async () => {
+    if (!addTitle.trim() || !addMessage.trim()) {
+      toast.error("Title and message are required");
       return;
     }
 
     try {
-      if (editMode && currentNotification) {
-        await updateNotification(currentNotification.id, { title, message });
-        showToast('Notification updated successfully');
-      } else {
-        await createNotification({ title, message });
-        showToast('Notification created successfully');
-      }
-
-      setTitle('');
-      setMessage('');
-      setEditMode(false);
-      setCurrentNotification(null);
+      await createNotification({ title: addTitle, message: addMessage });
+      setShowAddModal(false);
       refreshData();
+      toast.success("Notification created successfully");
     } catch (error) {
-      console.error('Error submitting notification:', error);
+      toast.error(error.message || "Failed to create notification");
     }
   };
 
-  const handleEdit = (notification) => {
-    Swal.fire({
-      title: 'Edit Notification',
-      html: `
-        <div class="text-left">
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="swal-title">
-              Title
-            </label>
-            <input 
-              id="swal-title" 
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              type="text" 
-              value="${notification.title.replace(/"/g, '&quot;')}"
-              placeholder="Notification Title"
-            />
-          </div>
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="swal-message">
-              Message
-            </label>
-            <textarea 
-              id="swal-message" 
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              rows="4"
-              placeholder="Notification Message"
-            >${notification.message}</textarea>
-          </div>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Update',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#5CAF90',
-      cancelButtonColor: '#6B7280',
-      focusConfirm: false,
-      preConfirm: () => {
-        const newTitle = Swal.getPopup().querySelector('#swal-title').value;
-        const newMessage = Swal.getPopup().querySelector('#swal-message').value;
-        
-        if (!newTitle || !newMessage) {
-          Swal.showValidationMessage('Title and message are required');
-          return false;
-        }
-        
-        return { title: newTitle, message: newMessage };
-      }
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await updateNotification(notification.id, result.value);
-          await refreshData();
-          showToast('Notification updated successfully');
-        } catch (error) {
-          console.error('Error updating notification:', error);
-          showToast('Failed to update notification', 'error');
-        }
-      }
-    });
+  const handleEditSubmit = async () => {
+    if (!editTitle.trim() || !editMessage.trim()) {
+      toast.error("Title and message are required");
+      return;
+    }
+
+    try {
+      await updateNotification(currentNotification.id, {
+        title: editTitle,
+        message: editMessage,
+      });
+      setShowEditModal(false);
+      setCurrentNotification(null);
+      refreshData();
+      toast.success("Notification updated successfully");
+    } catch (error) {
+      toast.error(error.message || "Failed to update notification");
+    }
   };
 
-  const handleDelete = async (notification) => {
-    Swal.fire({
-      title: 'Confirm Delete',
-      html: `
-        <div class="text-center">
-          <p class="mb-2">Are you sure you want to delete this notification?</p>
-          <div class="bg-gray-50 p-3 my-3 rounded-lg border border-gray-200 text-left">
-            <h3 class="font-semibold text-gray-800">${notification.title}</h3>
-            <p class="text-sm text-gray-600 mt-1">${notification.message}</p>
-          </div>
-          <p class="text-sm text-gray-600">This action cannot be undone.</p>
-        </div>
-      `,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6B7280',
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await deleteNotification(notification.id);
-          await refreshData();
-          showToast('Notification deleted successfully');
-        } catch (error) {
-          console.error('Error deleting notification:', error);
-          showToast('Failed to delete notification', 'error');
-        }
-      }
-    });
+  const handleDelete = (notification) => {
+    setDeleteNotificationId(notification.id);
   };
 
-  const handleCancel = () => {
-    setTitle('');
-    setMessage('');
-    setEditMode(false);
-    setCurrentNotification(null);
+  const confirmDelete = async () => {
+    try {
+      await deleteNotification(deleteNotificationId);
+      await refreshData();
+      showToast("Notification deleted successfully");
+      setDeleteNotificationId(null);
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      showToast("Failed to delete notification", "error");
+      setDeleteNotificationId(null);
+    }
   };
 
   const handleMarkAsRead = async (id) => {
     try {
       await markAsRead(id);
       await refreshData();
-      showToast('Marked as read');
+      showToast("Marked as read");
     } catch (error) {
-      console.error('Error marking as read:', error);
-      showToast('Failed to mark as read', 'error');
+      console.error("Error marking as read:", error);
+      showToast("Failed to mark as read", "error");
     }
   };
 
@@ -212,258 +189,175 @@ const NotificationPage = () => {
     try {
       await markAsUnread(id);
       await refreshData();
-      showToast('Marked as unread');
+      showToast("Marked as unread");
     } catch (error) {
-      console.error('Error marking as unread:', error);
-      showToast('Failed to mark as unread', 'error');
+      console.error("Error marking as unread:", error);
+      showToast("Failed to mark as unread", "error");
     }
   };
 
-  // Get current user ID from localStorage
-  const currentUserId = JSON.parse(localStorage.getItem('user'))?.userId;
+  const currentUserId = JSON.parse(localStorage.getItem("user"))?.userId;
 
-  const getNotificationStatusColor = (isRead) => {
-    return isRead 
-      ? "bg-gray-100 text-gray-800"
-      : "bg-blue-100 text-blue-800";
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setFilteredNotifications(notifications);
+      return;
+    }
+    const filtered = notifications.filter((notification) => {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      return (
+        notification.title.toLowerCase().includes(lowerSearchTerm) ||
+        notification.message.toLowerCase().includes(lowerSearchTerm) ||
+        notification.creator_name.toLowerCase().includes(lowerSearchTerm)
+      );
+    });
+    setFilteredNotifications(filtered);
   };
 
-  // Filter notifications based on search term
-  const filteredNotifications = notifications.filter((notification) => {
-    if (!searchTerm) return true;
-    
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return (
-      notification.title.toLowerCase().includes(lowerSearchTerm) ||
-      notification.message.toLowerCase().includes(lowerSearchTerm) ||
-      notification.creator_name.toLowerCase().includes(lowerSearchTerm)
-    );
-  });
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredNotifications(notifications);
+    }
+  }, [searchTerm, notifications]);
+
+  useEffect(() => {
+    if (showAddModal || showEditModal || showViewModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [showAddModal, showEditModal, showViewModal]);
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Admin Notifications</h1>
-        <button
-          onClick={() => {
-            Swal.fire({
-              title: 'Create New Notification',
-              html: `
-                <div class="text-left">
-                  <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="swal-title">
-                      Title
-                    </label>
-                    <input 
-                      id="swal-title" 
-                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      type="text" 
-                      placeholder="Notification Title"
-                    />
-                  </div>
-                  <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="swal-message">
-                      Message
-                    </label>
-                    <textarea 
-                      id="swal-message" 
-                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      rows="4"
-                      placeholder="Notification Message"
-                    ></textarea>
-                  </div>
-                </div>
-              `,
-              showCancelButton: true,
-              confirmButtonText: 'Send',
-              cancelButtonText: 'Cancel',
-              confirmButtonColor: '#5CAF90',
-              cancelButtonColor: '#6B7280',
-              focusConfirm: false,
-              preConfirm: () => {
-                const newTitle = Swal.getPopup().querySelector('#swal-title').value;
-                const newMessage = Swal.getPopup().querySelector('#swal-message').value;
-                
-                if (!newTitle || !newMessage) {
-                  Swal.showValidationMessage('Title and message are required');
-                  return false;
-                }
-                
-                return { title: newTitle, message: newMessage };
-              }
-            }).then(async (result) => {
-              if (result.isConfirmed) {
-                try {
-                  await createNotification(result.value);
-                  await refreshData();
-                  showToast('Notification created successfully');
-                } catch (error) {
-                  console.error('Error creating notification:', error);
-                  showToast('Failed to create notification', 'error');
-                }
-              }
-            });
-          }}
-          className="bg-[#5CAF90] hover:bg-[#4a9278] text-white px-4 py-2 rounded-md flex items-center"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-          New Notification
-        </button>
-      </div>
+    <div className="card bg-white shadow-md">
+      <div className="card-body p-4 md:p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-6 bg-[#5CAF90]"></div>
+            <h2 className="text-xl font-bold text-[#1D372E]">
+              Admin Notifications
+            </h2>
+          </div>
+          <button
+            onClick={handleOpenAddModal}
+            className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+          >
+            <MdOutlineNotificationAdd className="w-5 h-5 mr-1" /> Add
+            Notification
+          </button>
+        </div>
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative">
-          <input
-            type="text"
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#5CAF90] focus:border-transparent"
-            placeholder="Search notifications..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <div className="absolute left-3 top-2.5 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
+        <div className="flex flex-col sm:flex-row gap-2 mb-6">
+          <div className="relative flex w-full md:max-w-xl md:mx-auto">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+              <FaSearch className="text-muted-foreground text-[#1D372E]" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="Search notifications..."
+              className="input input-bordered w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
+            />
+            <button
+              onClick={handleSearch}
+              className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            >
+              Search
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Notifications List */}
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="text-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5CAF90] mx-auto"></div>
-              <p className="mt-3 text-gray-600">Loading notifications...</p>
-            </div>
-          ) : filteredNotifications.length === 0 ? (
-            <div className="text-center py-10">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              <p className="mt-3 text-gray-600">No notifications found</p>
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm('')}
-                  className="mt-2 text-[#5CAF90] hover:underline focus:outline-none"
-                >
-                  Clear search
-                </button>
-              )}
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notification</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+          </div>
+        ) : filteredNotifications.length === 0 ? (
+          <div className="alert bg-[#1D372E] border-[#1D372E]">
+            <span>No notifications found.</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table min-w-[700px] text-center border border-[#1D372E]">
+              <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                <tr className="border-b border-[#1D372E]">
+                  <th className="font-semibold">Notification</th>
+                  <th className="font-semibold">Created By</th>
+                  <th className="font-semibold">Date & Time</th>
+                  <th className="font-semibold">Status</th>
+                  <th className="font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="text-[#1D372E]">
                 {filteredNotifications.map((notification) => (
-                  <tr key={notification.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{notification.title}</div>
-                      <div className="text-sm text-gray-500 mt-1 line-clamp-2">{notification.message}</div>
+                  <tr
+                    key={notification.id}
+                    className="border-b border-[#1D372E]"
+                  >
+                    <td>
+                      <div className="font-medium">{notification.title}</div>
+                      <div className="text-sm text-gray-500 mt-1 line-clamp-2">
+                        {notification.message}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{notification.creator_name}</div>
-                      <div className="text-xs text-gray-500 mt-1">{notification.creator_email}</div>
+                    <td>
+                      <div>{notification.creator_name}</div>
+                      <div className="text-xs text-gray-500">
+                        {notification.creator_email}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{new Date(notification.created_at).toLocaleDateString()}</div>
-                      <div className="text-xs text-gray-500">{new Date(notification.created_at).toLocaleTimeString()}</div>
+                    <td>
+                      <div>
+                        {new Date(notification.created_at).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(notification.created_at).toLocaleTimeString()}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getNotificationStatusColor(notification.is_read)}`}>
-                        {notification.is_read ? 'Read' : 'Unread'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        {notification.is_read ? (
-                          <button
-                            onClick={() => handleMarkAsUnread(notification.id)}
-                            className="flex items-center text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
-                            title="Mark as unread"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                            </svg>
-                            <span>Unread</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            className="flex items-center text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded"
-                            title="Mark as read"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span>Read</span>
-                          </button>
-                        )}
-                        
-                        {/* View details button */}
+                    <td>
+                      <div className="flex items-center justify-center gap-2">
+                        <span>Read</span>
                         <button
-                          onClick={() => {
-                            Swal.fire({
-                              title: notification.title,
-                              html: `
-                                <div class="text-left">
-                                  <div class="mt-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <p class="text-gray-800">${notification.message}</p>
-                                  </div>
-                                  <div class="mt-3 flex justify-between text-sm">
-                                    <span class="text-gray-600">By: ${notification.creator_name} (${notification.creator_email || 'No email'})</span>
-                                    <span class="text-gray-600">${new Date(notification.created_at).toLocaleString()}</span>
-                                  </div>
-                                </div>
-                              `,
-                              confirmButtonText: 'Close',
-                              confirmButtonColor: '#5CAF90',
-                            });
-                          }}
-                          className="flex items-center text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded"
-                          title="View details"
+                          onClick={() =>
+                            notification.is_read
+                              ? handleMarkAsUnread(notification.id)
+                              : handleMarkAsRead(notification.id)
+                          }
+                          className="text-[#5CAF90]"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                          </svg>
-                          <span>View</span>
+                          {notification.is_read ? (
+                            <FaCheckSquare className="w-4 h-4" />
+                          ) : (
+                            <FaRegCheckSquare className="w-4 h-4" />
+                          )}
                         </button>
-                        
-                        {/* Only show edit/delete for notifications created by current user */}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleOpenViewModal(notification)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="View Notification"
+                        >
+                          <FaEye />
+                        </button>
                         {currentUserId === notification.created_by && (
                           <>
                             <button
-                              onClick={() => handleEdit(notification)}
-                              className="flex items-center text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 px-2 py-1 rounded"
-                              title="Edit"
+                              onClick={() => handleOpenEditModal(notification)}
+                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                              title="Edit Notification"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                              </svg>
-                              <span>Edit</span>
+                              <FaEdit />
                             </button>
                             <button
                               onClick={() => handleDelete(notification)}
-                              className="flex items-center text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-1 rounded"
-                              title="Delete"
+                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                              title="Delete Notification"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                              </svg>
-                              <span>Delete</span>
+                              <RiDeleteBin5Fill />
                             </button>
                           </>
                         )}
@@ -473,11 +367,185 @@ const NotificationPage = () => {
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* Add Notification Modal */}
+      {showAddModal && (
+        <div className="modal modal-open">
+          <div className="modal-box bg-white text-[#1D372E]">
+            <h3 className="font-bold text-lg mb-4">Create New Notification</h3>
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="absolute right-6 top-7 text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+
+            <div className="form-control mb-4">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Title</span>
+              </label>
+              <input
+                type="text"
+                value={addTitle}
+                onChange={(e) => setAddTitle(e.target.value)}
+                placeholder="Notification Title"
+                className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+              />
+            </div>
+
+            <div className="form-control mb-4">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Message</span>
+              </label>
+              <textarea
+                value={addMessage}
+                onChange={(e) => setAddMessage(e.target.value)}
+                placeholder="Notification Message"
+                className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div className="modal-action">
+              <button
+                onClick={handleAddSubmit}
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Notification Modal */}
+      {showEditModal && currentNotification && (
+        <div className="modal modal-open">
+          <div className="modal-box bg-white text-[#1D372E]">
+            <h3 className="font-bold text-lg mb-4">Edit Notification</h3>
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute right-6 top-7 text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+
+            <div className="form-control mb-4">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Title</span>
+              </label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Notification Title"
+                className="input input-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+              />
+            </div>
+
+            <div className="form-control mb-4">
+              <label className="label text-[#1D372E] mb-0.5">
+                <span className="label-text font-medium">Message</span>
+              </label>
+              <textarea
+                value={editMessage}
+                onChange={(e) => setEditMessage(e.target.value)}
+                placeholder="Notification Message"
+                className="textarea textarea-bordered w-full bg-white border-[#1D372E] text-[#1D372E]"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div className="modal-action">
+              <button
+                onClick={handleEditSubmit}
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              >
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Notification Modal */}
+      {showViewModal && currentNotification && (
+        <div className="modal modal-open">
+          <div className="modal-box bg-white text-[#1D372E]">
+            <h3 className="font-bold text-lg mb-4">
+              {currentNotification.title}
+            </h3>
+            <button
+              onClick={() => setShowViewModal(false)}
+              className="absolute right-6 top-7 text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+
+            <div className="mt-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <p className="text-gray-800">{currentNotification.message}</p>
+            </div>
+            <div className="mt-3 flex flex-col text-sm gap-2">
+              <span className="text-gray-600">
+                By: {currentNotification.creator_name} (
+                {currentNotification.creator_email || "No email"})
+              </span>
+              <span className="text-gray-600">
+                {new Date(currentNotification.created_at).toLocaleString()}
+              </span>
+            </div>
+
+            <div className="modal-action">
+              <button
+                onClick={() => setShowViewModal(false)}
+                className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Notification Confirmation Modal */}
+      {deleteNotificationId && (
+        <div className="modal modal-open">
+          <div className="modal-box bg-white text-[#1D372E]">
+            <h3 className="font-bold text-lg mb-4">Delete Notification</h3>
+            <button
+              onClick={() => setDeleteNotificationId(null)}
+              className="absolute right-6 top-7 text-[#1D372E]"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+
+            <p className="mb-6">
+              Are you sure you want to delete this notification? This action
+              cannot be undone.
+            </p>
+
+            <div className="modal-action">
+              <button
+                onClick={() => setDeleteNotificationId(null)}
+                className="btn btn-sm bg-[#1D372E] border-[#1D372E]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="btn btn-sm bg-[#5CAF90] border-[#5CAF90]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default NotificationPage; 
+export default NotificationPage;

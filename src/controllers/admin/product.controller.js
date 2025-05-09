@@ -1043,6 +1043,21 @@ async function getProductById(req, res) {
   }
 }
 
+// Get sales information for a product
+async function getProductSales(req, res) {
+  try {
+    const { id } = req.params;
+    const salesInfo = await Product.getProductSalesInfo(id);
+
+    res
+      .status(200)
+      .json({ message: "Sales information fetched successfully", salesInfo });
+  } catch (error) {
+    console.error("Error fetching sales information:", error);
+    res.status(500).json({ message: "Failed to fetch sales information" });
+  }
+}
+
 // Delete a product
 async function deleteProduct(req, res) {
   try {
@@ -1362,6 +1377,7 @@ async function getTopSellingCategories(req, res) {
   }
 }
 
+
 module.exports = {
   // Category and Sub-Category related functions
   getAllCategories,
@@ -1388,6 +1404,7 @@ module.exports = {
   getProductsBySubCategory,
   getProductsByBrand,
   getProductById,
+  getProductSales,
   deleteProduct,
   // Discount related functions
   getAllDiscounts,

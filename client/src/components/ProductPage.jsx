@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { products } from "./Products";
 import Banner from "../assets/banner.png";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 
 const ProductPage = () => {
@@ -18,28 +18,21 @@ const ProductPage = () => {
   const [mainImage, setMainImage] = useState("");
   const [isFromCart, setIsFromCart] = useState(false);
   const [cartItem, setCartItem] = useState(null);
+  const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
+  const [zoomStyle, setZoomStyle] = useState({});
+  const popupImageRef = useRef(null);
 
   useEffect(() => {
-    // Check if product data is passed from Rush Delivery page
-    if (location.state?.product) {
-      const rushProduct = location.state.product;
-      setProduct(rushProduct);
-      setMainImage(rushProduct.image);
-      if (rushProduct.variants?.[0]?.size) {
-        setSelectedSize(rushProduct.variants[0].size[0]);
+    const selectedProduct = products.find((p) => p.id === parseInt(id));
+    if (selectedProduct) {
+      setProduct(selectedProduct);
+      setMainImage(selectedProduct.image);
+      if (selectedProduct.variants[0]?.size) {
+        setSelectedSize(selectedProduct.variants[0].size[0]);
       }
-      setQuantity(rushProduct.variants?.[0]?.quantity > 0 ? 1 : 0);
-    } else {
-      // Fallback to finding product from static products array
-      const selectedProduct = products.find((p) => p.id === parseInt(id));
-      if (selectedProduct) {
-        setProduct(selectedProduct);
-        setMainImage(selectedProduct.image);
-        if (selectedProduct.variants?.[0]?.size) {
-          setSelectedSize(selectedProduct.variants[0].size[0]);
-        }
-        setQuantity(selectedProduct.variants?.[0]?.quantity > 0 ? 1 : 0);
-      }
+      setQuantity(
+        selectedProduct.variants[selectedVariant].quantity > 0 ? 1 : 0
+      );
     }
 
     // Check if coming from cart
@@ -47,9 +40,9 @@ const ProductPage = () => {
       setIsFromCart(true);
       setCartItem(location.state.selectedVariant);
       // Set initial variant based on cart item
-      if (location.state.selectedVariant && product?.variants) {
-        const variantIndex = product.variants.findIndex(
-          v => v.colorName === location.state.selectedVariant.color
+      if (location.state.selectedVariant) {
+        const variantIndex = selectedProduct.variants.findIndex(
+          (v) => v.colorName === location.state.selectedVariant.color
         );
         if (variantIndex !== -1) {
           setSelectedVariant(variantIndex);
@@ -59,12 +52,12 @@ const ProductPage = () => {
   }, [id, location.state]);
 
   useEffect(() => {
-    if (product?.variants?.[selectedVariant]) {
-      setQuantity(product.variants[selectedVariant].quantity > 0 ? 1 : 0);
+    if (product) {
+      setQuantity(currentVariant.quantity > 0 ? 1 : 0);
     }
   }, [selectedVariant, product]);
 
-  const currentVariant = product?.variants?.[selectedVariant] || {};
+  const currentVariant = product?.variants[selectedVariant] || {};
 
   const handleAddToCart = () => {
     if (product && currentVariant.quantity > 0) {
@@ -72,30 +65,30 @@ const ProductPage = () => {
         id: product.id,
         name: product.name,
         image: mainImage,
-        price: `Rs. ${currentVariant.price.toFixed(2)}`,
+        price: `LKR ${currentVariant.price.toFixed(2)}`,
         quantity: quantity,
         size: selectedSize,
         color: currentVariant.colorName || null,
-        colorCode: currentVariant.color || null
+        colorCode: currentVariant.color || null,
       };
-      
+
       if (isFromCart) {
         // Update existing cart item
         updateCartItem(cartItem);
-        navigate('/cart', { 
-          state: { 
+        navigate("/cart", {
+          state: {
             selectedProduct: cartItem,
-            source: 'product-page'
-          } 
+            source: "product-page",
+          },
         });
       } else {
         // Add new item to cart
         addToCart(cartItem);
-        navigate('/cart', { 
-          state: { 
+        navigate("/cart", {
+          state: {
             selectedProduct: cartItem,
-            source: 'product-page'
-          } 
+            source: "product-page",
+          },
         });
       }
     }
@@ -126,6 +119,28 @@ const ProductPage = () => {
     );
   };
 
+  const handleMouseMove = (e) => {
+    if (!popupImageRef.current) return;
+
+    const { left, top, width, height } =
+      popupImageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+
+    setZoomStyle({
+      transformOrigin: `${x}% ${y}%`,
+      transform: "scale(2)",
+      cursor: "zoom-in",
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({
+      transform: "scale(1)",
+      cursor: "default",
+    });
+  };
+
   if (!product) return <div className="text-center py-8">Loading...</div>;
 
   const relatedProducts = products
@@ -134,17 +149,47 @@ const ProductPage = () => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      {/* Image Popup Modal */}
+      {isImagePopupOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-200 ">
+          <div className="relative max-w-4xl w-full max-h-screen">
+            <button
+              className="cursor-pointer bg-white absolute -top-10 right-0 border-2 rounded-sm border-black text-red-700 text-2xl z-50 hover:text-red-500 "
+              onClick={() => setIsImagePopupOpen(false)}
+            >
+              <FaTimes />
+            </button>
+            <div className="relative overflow-hidden rounded-lg bg-gray-100 border-2 border-black">
+              <img
+                ref={popupImageRef}
+                src={mainImage}
+                alt={product.name}
+                className="w-full h-auto max-h-[80vh] object-cover transition-transform duration-300"
+                style={zoomStyle}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Product Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Product Images */}
         <div>
           <div
-            className=" border rounded-lg overflow-hidden mb-4 mt-3"
-            style={{ maxWidth: "600px", maxHeight: "400px", borderColor:"transparent" }}
+            className="border rounded-lg overflow-hidden mb-4 mt-3 cursor-zoom-in"
+            style={{
+              maxWidth: "600px",
+              maxHeight: "400px",
+              borderColor: "transparent",
+            }}
+            onClick={() => setIsImagePopupOpen(true)}
           >
             <img
               src={mainImage}
-              style={{maxHeight: "400px"}}
+              style={{ maxHeight: "400px" }}
               alt={product.name}
               className="w-full h-full object-cover"
             />
@@ -181,25 +226,13 @@ const ProductPage = () => {
 
           {/* Price */}
           <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
-            Rs. {currentVariant.price.toLocaleString()}
+            LKR {currentVariant.price.toFixed(2)}
             {product.marketPrice > currentVariant.price && (
               <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
-                Rs {product.marketPrice.toLocaleString()}
+                LKR {product.marketPrice.toFixed(2)}
               </span>
             )}
           </div>
-
-          {/* Discount Information */}
-          {product.marketPrice > currentVariant.price && (
-            <div className="mt-1">
-              <span className="text-[#5CAF90] font-medium">
-                {product.discountName || 'Special Discount'}
-              </span>
-              <span className="text-[#5CAF90] ml-2">
-                Save Rs. {(product.marketPrice - currentVariant.price).toLocaleString()}
-              </span>
-            </div>
-          )}
 
           {/* Description */}
           <p className="text-gray-600 text-sm sm:text-base line-clamp-3">
@@ -267,7 +300,7 @@ const ProductPage = () => {
               <button
                 className="text-lg sm:text-xl cursor-pointer"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                disabled={currentVariant.quantity <= 0} // Disable if out of stock
+                disabled={currentVariant.quantity <= 0}
               >
                 -
               </button>
@@ -276,11 +309,11 @@ const ProductPage = () => {
                 className="text-lg sm:text-xl cursor-pointer"
                 onClick={() =>
                   setQuantity(Math.min(quantity + 1, currentVariant.quantity))
-                } // Prevent exceeding stock
+                }
                 disabled={
                   quantity >= currentVariant.quantity ||
                   currentVariant.quantity <= 0
-                } // Disable if max reached or out of stock
+                }
               >
                 +
               </button>
@@ -349,7 +382,7 @@ const ProductPage = () => {
                 {relatedProduct.name}
               </h3>
               <div className="text-center text-gray-800 font-bold text-sm sm:text-base">
-                Rs. {relatedProduct.variants[0].price.toLocaleString()}
+                LKR {relatedProduct.variants[0].price.toFixed(2)}
               </div>
             </div>
           ))}

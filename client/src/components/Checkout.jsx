@@ -69,6 +69,33 @@ const Checkout = () => {
     address: addresses.find((a) => a.id === selectedAddress)?.value || "",
   };
 
+  // Format price helper function
+  const formatPrice = (price) => {
+    return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  // Calculate individual product discounts
+  const getProductDiscounts = () => {
+    return cartItems.map(item => {
+      if (item.marketPrice > item.variant.price) {
+        const itemDiscount = (item.marketPrice - item.variant.price) * item.quantity;
+        return {
+          name: item.name,
+          discount: itemDiscount,
+          discountName: item.discountName || (
+            item.category === 'Seasonal Offers' ? 'Seasonal Discounts' :
+            item.category === 'Rush Delivery' ? 'Rush Discounts' :
+            item.category === 'For You' ? 'For You Discounts' :
+            'Sale Discounts'
+          )
+        };
+      }
+      return null;
+    }).filter(Boolean);
+  };
+
+  const productDiscounts = getProductDiscounts();
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -131,6 +158,7 @@ const Checkout = () => {
               deliveryFee={deliveryFee}
               total={total}
               orderInfo={orderInfo}
+              productDiscounts={productDiscounts}
             />
           </div>
 

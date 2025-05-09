@@ -123,8 +123,9 @@ function Navbar() {
       </div>
 
       {/* Bottom bar */}
-      <div className="bg-[#F4F4F4] text-[#000000] px-6 py-2 flex items-center space-x-4 sm:space-x-20 text-sm overflow-x-auto mt-[60px] font-poppins">
+      <div className="bg-[#F4F4F4] text-[#000000] px-15 py-2 flex items-center space-x-4 sm:space-x-20 text-sm overflow-x-auto mt-[60px] font-poppins">
         <CategoryDropdown />
+
 
         <Link to="/ramadan">
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
@@ -179,8 +180,8 @@ function Navbar() {
             <span>For You</span>
           </div>
         </Link>
-      </div>
 
+        </div>
       {isModalOpen && (
         <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
           <h2 className="text-xl font-semibold mb-4">Search Results</h2>
