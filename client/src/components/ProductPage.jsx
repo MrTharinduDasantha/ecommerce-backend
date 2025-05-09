@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+
+import { products } from "../Products";
+import Banner from "../assets/banner.png";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+
 import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa";
+
 import { useCart } from "../context/CartContext";
 import { getProduct, getProducts } from "../api/product";
 import ProductCard from "./ProductCard";
@@ -24,6 +30,29 @@ const ProductPage = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
+
+    const selectedProduct = products.find((p) => p.id === parseInt(id));
+    if (selectedProduct) {
+      setProduct(selectedProduct);
+      setMainImage(selectedProduct.image);
+      if (selectedProduct.variants[0]?.size) {
+        setSelectedSize(selectedProduct.variants[0].size[0]);
+      }
+      setQuantity(selectedProduct.variants[selectedVariant].quantity > 0 ? 1 : 0);
+    }
+
+    // Check if coming from cart
+    if (location.state?.fromCart) {
+      setIsFromCart(true);
+      setCartItem(location.state.selectedVariant);
+      // Set initial variant based on cart item
+      if (location.state.selectedVariant) {
+        const variantIndex = selectedProduct.variants.findIndex(
+          v => v.colorName === location.state.selectedVariant.color
+        );
+        if (variantIndex !== -1) {
+          setSelectedVariant(variantIndex);
+
     const fetchProductAndRelated = async () => {
       try {
         // Fetch main product
@@ -98,6 +127,7 @@ const ProductPage = () => {
             
             setRelatedProducts(filteredRelated);
           }
+
         }
       } catch (error) {
         console.error('Error fetching product or related products:', error);
@@ -115,9 +145,12 @@ const ProductPage = () => {
 
   const currentVariant = product?.variants[selectedVariant] || {};
 
+
   // Check if any variant has a color defined (not null or empty)
   const hasColors = product?.variants.some(v => v.color || v.colorName);
 
+
+  console.log(currentVariant)
   const handleAddToCart = () => {
     if (product && currentVariant.quantity > 0) {
       const cartItem = {
@@ -442,8 +475,19 @@ const ProductPage = () => {
                   className="h-full"
                 />
               </div>
+
+              <h3 className="mt-2 text-center text-xs sm:text-sm font-semibold line-clamp-2">
+                {relatedProduct.name}
+              </h3>
+              <div className="text-center text-gray-800 font-bold text-sm sm:text-base">
+                LKR {relatedProduct.variants[0].price.toFixed(2)}
+              </div>
+            </div>
+          ))}
+
             ))}
           </div>
+
         </div>
       )}
     </div>
