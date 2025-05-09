@@ -1,6 +1,7 @@
 const User = require('../../models/user.model');
 const Customer = require('../../models/customer.model');
 const pool = require('../../config/database');
+const jwt = require('jsonwebtoken');
 
 // Customer Authentication Controller
 class CustomerAuthController {
@@ -10,19 +11,24 @@ class CustomerAuthController {
       const { first_name, full_name, email, password, mobile_no, status } = req.body;
       
       // Check if email is already used
-      const existingCustomers = await Customer.findByEmail(email);
-      if (existingCustomers.length > 0) {
+      const existingCustomer = await Customer.getCustomerByEmail(email);
+      if (existingCustomer) {
         return res.status(400).json({ message: 'Email already in use' });
       }
       
-      const customerId = await Customer.create({
+      // These parameters need to match the addCustomer function in the model
+      // Adjusting for default nulls for address, city, country
+      const customerId = await Customer.addCustomer(
         first_name,
         full_name,
-        email,
-        password,
+        null, // address
+        null, // city
+        null, // country
         mobile_no,
-        status
-      });
+        status,
+        email,
+        password
+      );
       
       res.status(201).json({ id: customerId, message: 'Customer registered successfully' });
     } catch (error) {
@@ -39,7 +45,30 @@ class CustomerAuthController {
       if (rows.length === 0) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
-      res.json({ user: rows[0], message: 'Login successful' });
+      
+      const customer = rows[0];
+      
+      // Generate JWT token
+      const secretKey = process.env.JWT_SECRET || 'your-secret-key';
+      const token = jwt.sign(
+        { 
+          customerId: customer.idCustomer, 
+          email: customer.Email,
+          role: 'customer'
+        }, 
+        secretKey, 
+        { expiresIn: '24h' }
+      );
+      
+      res.json({ 
+        user: {
+          id: customer.idCustomer,
+          email: customer.Email,
+          name: customer.Full_Name
+        },
+        token: token,
+        message: 'Login successful'
+      });
     } catch (error) {
       res.status(500).json({ message: 'Login failed', error: error.message });
     }
@@ -51,8 +80,8 @@ class CustomerAuthController {
       const { email } = req.body;
       
       // Check if customer exists
-      const customers = await Customer.findByEmail(email);
-      if (customers.length === 0) {
+      const customer = await Customer.getCustomerByEmail(email);
+      if (!customer) {
         return res.status(404).json({ message: 'Customer not found' });
       }
       
@@ -62,7 +91,7 @@ class CustomerAuthController {
       // 3. Send an email to the customer with a reset link containing the token
       
       // For demo purposes, we'll just return a success message
-      res.json({ message: 'Password reset instructions sent to your email', customer_id: customers[0].idCustomer });
+      res.json({ message: 'Password reset instructions sent to your email', customer_id: customer.idCustomer });
     } catch (error) {
       res.status(500).json({ message: 'Failed to request password reset', error: error.message });
     }
@@ -77,12 +106,14 @@ class CustomerAuthController {
       // 1. Verify the reset token from the request
       // 2. Check if the token is valid and not expired
       
-      // Update the password
-      const result = await Customer.updatePassword(customer_id, new_password);
-      
-      if (result === 0) {
+      // Get the customer to check if it exists
+      const customer = await Customer.getCustomerById(customer_id);
+      if (!customer) {
         return res.status(404).json({ message: 'Customer not found' });
       }
+      
+      // Update the password
+      await Customer.updateCustomer(customer_id, { password: new_password });
       
       res.json({ message: 'Password has been reset successfully' });
     } catch (error) {
