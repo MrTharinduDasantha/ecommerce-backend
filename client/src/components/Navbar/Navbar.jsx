@@ -79,13 +79,15 @@ function Navbar() {
         <div className="flex items-center justify-between px-6 h-full">
           {/* Logo */}
           <div className="flex items-center ml-6">
-            <Link to="/">
+
+            <Link to="/"> {/* Set the path to your home page */}
+
               <img src={logo} alt="Logo" className="h-[85px] w-auto cursor-pointer" />
             </Link>
           </div>
 
           {/* Search bar with item suggestions */}
-          <div className="flex flex-1 max-w-2xl mx-30 font-poppins ml-75 relative">
+          <div className="flex flex-1 max-w-2xl mx-8 font-poppins ml-16 relative">
             <input
               type="text"
               placeholder="SEARCH THE ENTIRE STORE..."
@@ -138,10 +140,12 @@ function Navbar() {
       </div>
 
       {/* Bottom bar */}
-      <div className="bg-[#F4F4F4] text-[#000000] px-15 py-2 flex items-center space-x-4 sm:space-x-20 text-sm overflow-x-auto mt-[60px] font-poppins">
+      <div className="bg-[#F4F4F4] text-[#000000] px-4 py-2 flex items-center space-x-4 sm:space-x-20 text-sm overflow-x-auto mt-[60px] font-poppins">
         <CategoryDropdown />
 
-        <Link to="/ramadan">
+
+        <Link to="/seasonal-offers">
+
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
             <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
               <FaGift />
@@ -197,7 +201,7 @@ function Navbar() {
       </div>
 
       {isModalOpen && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 w-[90%] sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
           <h2 className="text-xl font-semibold mb-4">Search Results</h2>
           <p className="text-[16px] text-gray-500 mb-4">
             {filteredItems.length} {filteredItems.length === 1 ? "result" : "results"} found
@@ -205,12 +209,14 @@ function Navbar() {
           <div className="flex flex-wrap gap-6">
             {filteredItems.length > 0 ? (
               filteredItems.map(item => (
+
                 <div key={item.idProduct} className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white">
                   <Link to={`/product-page/${item.idProduct}`} className="block">
                     <img src={item.Main_Image_Url} alt={item.Description} className="w-full h-32 object-cover rounded-md" />
                     <h3 className="font-semibold mt-2">{item.Description}</h3>
                     <p className="text-sm text-gray-500">{item.Category}</p>
                     <p className="font-bold mt-2">LKR {item.Selling_Price}</p>
+
                   </Link>
                 </div>
               ))
