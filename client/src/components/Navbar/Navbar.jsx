@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import CategoryDropdown from '../Navbar/CategoryDropdown';
-import { getProducts } from '../../api/product';
-import logo from './logo.png';
-import { 
-  FaSearch, 
-  FaShoppingCart, 
-  FaUser, 
-  FaClipboardList, 
-  FaRocket, 
-  FaTags, 
-  FaCalendarAlt, 
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import CategoryDropdown from "../Navbar/CategoryDropdown";
+import { getProducts } from "../../api/product";
+import logo from "./logo.png";
+import {
+  FaSearch,
+  FaShoppingCart,
+  FaUser,
+  FaClipboardList,
+  FaRocket,
+  FaTags,
+  FaCalendarAlt,
   FaHeart,
-  FaNetworkWired, 
-  FaGift
-} from 'react-icons/fa';
+  FaNetworkWired,
+  FaGift,
+} from "react-icons/fa";
 
 function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,11 +29,11 @@ function Navbar() {
     const fetchProducts = async () => {
       try {
         const response = await getProducts();
-        if (response.message === 'Products fetched successfully') {
+        if (response.message === "Products fetched successfully") {
           setProducts(response.products);
         }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       }
     };
     fetchProducts();
@@ -44,9 +44,10 @@ function Navbar() {
     setSearchQuery(query);
 
     if (query.length > 0) {
-      const filtered = products.filter(item => 
-        item.Description?.toLowerCase().includes(query.toLowerCase()) ||
-        item.Category?.toLowerCase().includes(query.toLowerCase())
+      const filtered = products.filter(
+        (item) =>
+          item.Description?.toLowerCase().includes(query.toLowerCase()) ||
+          item.Category?.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredItems(filtered);
       setIsModalOpen(true);
@@ -68,21 +69,28 @@ function Navbar() {
 
   // Initialize cart count from localStorage on component mount
   useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
     setCartCount(cart.reduce((total, item) => total + item.quantity, 0));
   }, []);
 
   return (
     <>
       {/* Top bar */}
-      <div className="fixed top-0 left-0 w-full bg-[#1D372E] text-white z-50 shadow-md font-poppins" style={{ height: '60px' }}>
+      <div
+        className="fixed top-0 left-0 w-full bg-[#1D372E] text-white z-50 shadow-md font-poppins"
+        style={{ height: "60px" }}
+      >
         <div className="flex items-center justify-between px-6 h-full">
           {/* Logo */}
           <div className="flex items-center ml-6">
-
-            <Link to="/"> {/* Set the path to your home page */}
-
-              <img src={logo} alt="Logo" className="h-[85px] w-auto cursor-pointer" />
+            <Link to="/">
+              {" "}
+              {/* Set the path to your home page */}
+              <img
+                src={logo}
+                alt="Logo"
+                className="h-[85px] w-auto cursor-pointer"
+              />
             </Link>
           </div>
 
@@ -107,7 +115,10 @@ function Navbar() {
                 transition={{ duration: 0.3 }}
                 className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
               >
-                <FaShoppingCart className="text-[15px] cursor-pointer" title="Cart" />
+                <FaShoppingCart
+                  className="text-[15px] cursor-pointer"
+                  title="Cart"
+                />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                     {cartCount}
@@ -122,7 +133,10 @@ function Navbar() {
                 transition={{ duration: 0.3 }}
                 className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
               >
-                <FaClipboardList className="text-[15px] cursor-pointer" title="Track Orders" />
+                <FaClipboardList
+                  className="text-[15px] cursor-pointer"
+                  title="Track Orders"
+                />
               </motion.div>
             </Link>
 
@@ -143,11 +157,16 @@ function Navbar() {
       <div className="bg-[#F4F4F4] text-[#000000] px-4 py-2 flex items-center space-x-4 sm:space-x-20 text-sm overflow-x-auto mt-[60px] font-poppins">
         <CategoryDropdown />
 
-
         <Link to="/seasonal-offers">
-
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+            <motion.span
+              animate={{ rotate: [-10, 10, -10] }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.5,
+                ease: "easeInOut",
+              }}
+            >
               <FaGift />
             </motion.span>
             <span>Seasonal Offers</span>
@@ -156,7 +175,14 @@ function Navbar() {
 
         <Link to="/rush-delivery">
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+            <motion.span
+              animate={{ rotate: [-10, 10, -10] }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.5,
+                ease: "easeInOut",
+              }}
+            >
               <FaRocket />
             </motion.span>
             <span>Rush Delivery</span>
@@ -165,7 +191,14 @@ function Navbar() {
 
         <Link to="/on-sale">
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+            <motion.span
+              animate={{ rotate: [-10, 10, -10] }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.5,
+                ease: "easeInOut",
+              }}
+            >
               <FaTags />
             </motion.span>
             <span>On Sale</span>
@@ -174,7 +207,14 @@ function Navbar() {
 
         <Link to="/events">
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+            <motion.span
+              animate={{ rotate: [-10, 10, -10] }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.5,
+                ease: "easeInOut",
+              }}
+            >
               <FaCalendarAlt />
             </motion.span>
             <span>Events</span>
@@ -183,7 +223,14 @@ function Navbar() {
 
         <Link to="/brands">
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+            <motion.span
+              animate={{ rotate: [-10, 10, -10] }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.5,
+                ease: "easeInOut",
+              }}
+            >
               <FaNetworkWired />
             </motion.span>
             <span>Brands</span>
@@ -192,7 +239,14 @@ function Navbar() {
 
         <Link to="/for-you">
           <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+            <motion.span
+              animate={{ rotate: [-10, 10, -10] }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.5,
+                ease: "easeInOut",
+              }}
+            >
               <FaHeart />
             </motion.span>
             <span>For You</span>
@@ -204,19 +258,28 @@ function Navbar() {
         <div className="fixed top-24 left-1/2 transform -translate-x-1/2 w-[90%] sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
           <h2 className="text-xl font-semibold mb-4">Search Results</h2>
           <p className="text-[16px] text-gray-500 mb-4">
-            {filteredItems.length} {filteredItems.length === 1 ? "result" : "results"} found
+            {filteredItems.length}{" "}
+            {filteredItems.length === 1 ? "result" : "results"} found
           </p>
           <div className="flex flex-wrap gap-6">
             {filteredItems.length > 0 ? (
-              filteredItems.map(item => (
-
-                <div key={item.idProduct} className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white">
-                  <Link to={`/product-page/${item.idProduct}`} className="block">
-                    <img src={item.Main_Image_Url} alt={item.Description} className="w-full h-32 object-cover rounded-md" />
+              filteredItems.map((item) => (
+                <div
+                  key={item.idProduct}
+                  className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white"
+                >
+                  <Link
+                    to={`/product-page/${item.idProduct}`}
+                    className="block"
+                  >
+                    <img
+                      src={item.Main_Image_Url}
+                      alt={item.Description}
+                      className="w-full h-32 object-cover rounded-md"
+                    />
                     <h3 className="font-semibold mt-2">{item.Description}</h3>
                     <p className="text-sm text-gray-500">{item.Category}</p>
                     <p className="font-bold mt-2">LKR {item.Selling_Price}</p>
-
                   </Link>
                 </div>
               ))
@@ -224,7 +287,10 @@ function Navbar() {
               <p>No items found</p>
             )}
           </div>
-          <button onClick={closeModal} className="mt-4 text-[#5CAF90] font-semibold border border-[#5CAF90] rounded-full py-2 px-4">
+          <button
+            onClick={closeModal}
+            className="mt-4 text-[#5CAF90] font-semibold border border-[#5CAF90] rounded-full py-2 px-4"
+          >
             Close
           </button>
         </div>
