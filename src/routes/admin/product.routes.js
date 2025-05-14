@@ -122,7 +122,7 @@ router.get(
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/:id", productController.getProductById);
 router.get("/:id/sales", productController.getProductSales);
-router.get("/discountd-products/all", productController.getDiscountedProducts);
+router.get("/discounted-products/all", productController.getDiscountedProducts);
 router.delete("/:id", authenticate, productController.deleteProduct);
 
 // ----------------
@@ -134,7 +134,7 @@ router.get(
   "/products/:productId/discounts",
   productController.getDiscountsByProductId
 );
-router.post("/discounts", authenticate, productController.createDiscount);
+router.post("/discounts", productController.createDiscount);
 router.put("/discounts/:id", authenticate, productController.updateDiscount);
 router.delete("/discounts/:id", authenticate, productController.deleteDiscount);
 
