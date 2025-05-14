@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CategoryDropdown from '../Navbar/CategoryDropdown';
-import { getProducts } from '../../api/product';
+import { products } from '../products'; // Make sure the products file path is correct
 import logo from './logo.png';
 import { 
   FaSearch, 
@@ -22,22 +22,6 @@ function Navbar() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const [products, setProducts] = useState([]);
-
-  // Fetch products on component mount
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await getProducts();
-        if (response.message === 'Products fetched successfully') {
-          setProducts(response.products);
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    };
-    fetchProducts();
-  }, []);
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
@@ -45,8 +29,9 @@ function Navbar() {
 
     if (query.length > 0) {
       const filtered = products.filter(item => 
-        item.Description?.toLowerCase().includes(query.toLowerCase()) ||
-        item.Category?.toLowerCase().includes(query.toLowerCase())
+        item.name.toLowerCase().includes(query.toLowerCase()) ||
+        item.category.toLowerCase().includes(query.toLowerCase()) ||
+        item.description.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredItems(filtered);
       setIsModalOpen(true);
@@ -67,7 +52,7 @@ function Navbar() {
   };
 
   // Initialize cart count from localStorage on component mount
-  useEffect(() => {
+  React.useEffect(() => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     setCartCount(cart.reduce((total, item) => total + item.quantity, 0));
   }, []);
@@ -79,13 +64,13 @@ function Navbar() {
         <div className="flex items-center justify-between px-6 h-full">
           {/* Logo */}
           <div className="flex items-center ml-6">
-            <Link to="/">
+            <Link to="/"> {/* Set the path to your home page */}
               <img src={logo} alt="Logo" className="h-[85px] w-auto cursor-pointer" />
             </Link>
           </div>
 
           {/* Search bar with item suggestions */}
-          <div className="flex flex-1 max-w-2xl mx-30 font-poppins ml-75 relative">
+          <div className="flex flex-1 max-w-2xl mx-8 font-poppins ml-16 relative">
             <input
               type="text"
               placeholder="SEARCH THE ENTIRE STORE..."
@@ -138,7 +123,7 @@ function Navbar() {
       </div>
 
       {/* Bottom bar */}
-      <div className="bg-[#F4F4F4] text-[#000000] px-15 py-2 flex items-center space-x-4 sm:space-x-20 text-sm overflow-x-auto mt-[60px] font-poppins">
+      <div className="bg-[#F4F4F4] text-[#000000] px-4 py-2 flex items-center space-x-4 sm:space-x-20 text-sm overflow-x-auto mt-[60px] font-poppins">
         <CategoryDropdown />
 
         <Link to="/seasonal-offers">
@@ -197,7 +182,7 @@ function Navbar() {
       </div>
 
       {isModalOpen && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 w-[90%] sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
           <h2 className="text-xl font-semibold mb-4">Search Results</h2>
           <p className="text-[16px] text-gray-500 mb-4">
             {filteredItems.length} {filteredItems.length === 1 ? "result" : "results"} found
@@ -205,12 +190,12 @@ function Navbar() {
           <div className="flex flex-wrap gap-6">
             {filteredItems.length > 0 ? (
               filteredItems.map(item => (
-                <div key={item.idProduct} className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white">
-                  <Link to={`/product-page/${item.idProduct}`} className="block">
-                    <img src={item.Main_Image_Url} alt={item.Description} className="w-full h-32 object-cover rounded-md" />
-                    <h3 className="font-semibold mt-2">{item.Description}</h3>
-                    <p className="text-sm text-gray-500">{item.Category}</p>
-                    <p className="font-bold mt-2">LKR {item.Selling_Price}</p>
+                <div key={item.id} className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white">
+                  <Link to={/product-page/${item.id}} className="block" onClick={() => setIsModalOpen(false)}>
+                    <img src={item.image} alt={item.name} className="w-full h-32 object-cover rounded-md" />
+                    <h3 className="font-semibold mt-2">{item.name}</h3>
+                    <p className="text-sm text-gray-500">{item.category}</p>
+                    <p className="font-bold mt-2">{item.price}</p>
                   </Link>
                 </div>
               ))
