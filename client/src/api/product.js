@@ -240,5 +240,5 @@ export const getSubCategoryById = async (id) => {
 
 };
 
-};
+
 
