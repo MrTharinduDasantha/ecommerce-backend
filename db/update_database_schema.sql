@@ -8,3 +8,6 @@ ADD COLUMN For_You TINYINT DEFAULT 0 AFTER Rush_Delivery;
 ALTER TABLE `Order` 
 ADD COLUMN Delivery_Date DATE NULL 
 AFTER Delivery_Status;
+
+-- Change the name of the Dicaunt_Type column in the Discounts table to Discount_Type
+ALTER TABLE Discounts CHANGE Dicaunt_Type Discount_Type VARCHAR(45);

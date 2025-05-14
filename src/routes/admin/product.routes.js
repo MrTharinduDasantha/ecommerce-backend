@@ -134,7 +134,7 @@ router.get(
   "/products/:productId/discounts",
   productController.getDiscountsByProductId
 );
-router.post("/discounts", productController.createDiscount);
+router.post("/discounts", authenticate, productController.createDiscount);
 router.put("/discounts/:id", authenticate, productController.updateDiscount);
 router.delete("/discounts/:id", authenticate, productController.deleteDiscount);
 

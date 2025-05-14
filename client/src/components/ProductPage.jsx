@@ -28,9 +28,9 @@ const ProductPage = () => {
       try {
         // Fetch main product
         const response = await getProduct(id);
-        if (response.message === 'Product fetched successfully') {
+        if (response.message === "Product fetched successfully") {
           const productData = response.product;
-          
+
           const transformedProduct = {
             id: productData.idProduct,
             name: productData.Description,
@@ -42,25 +42,35 @@ const ProductPage = () => {
             noOfRatings: 10,
             marketPrice: parseFloat(productData.Market_Price),
             image: productData.Main_Image_Url,
-            otherImages: productData.images.map(img => img.Image_Url),
+            otherImages: productData.images.map((img) => img.Image_Url),
             variants: productData.variations.map((variation) => ({
               id: variation.idProduct_Variations,
-              color: variation.Colour || null,  
-              size: variation.Size === "No size selected" ? null : variation.Size,
-              price: parseFloat(variation.Rate) || parseFloat(productData.Selling_Price),
+
+              color: variation.colorCode || null,
+              colorName: variation.Colour || null,
+              size:
+                variation.Size === "No size selected" ? null : [variation.Size],
+
+              color: variation.Colour || null,
+              size:
+                variation.Size === "No size selected" ? null : variation.Size,
+
+              price:
+                parseFloat(variation.Rate) ||
+                parseFloat(productData.Selling_Price),
               quantity: variation.Qty,
-              SIH: variation.SIH
-            }))
+              SIH: variation.SIH,
+            })),
           };
-          
+
           setProduct(transformedProduct);
           setMainImage(transformedProduct.image);
-          
+
           // Initialize selected size if the first variant has size
           if (transformedProduct.variants[0]?.size) {
             setSelectedSize(transformedProduct.variants[0].size);
           }
-          
+
           setQuantity(
             transformedProduct.variants[selectedVariant].quantity > 0 ? 1 : 0
           );
@@ -81,26 +91,26 @@ const ProductPage = () => {
 
           // Fetch related products from backend
           const relatedResponse = await getProducts();
-          if (relatedResponse.message === 'Products fetched successfully') {
+          if (relatedResponse.message === "Products fetched successfully") {
             const filteredRelated = relatedResponse.products
-              .filter(p => p.idProduct !== productData.idProduct)
+              .filter((p) => p.idProduct !== productData.idProduct)
               .slice(0, 4)
-              .map(product => ({
+              .map((product) => ({
                 id: product.idProduct,
                 name: product.Description,
                 image: product.Main_Image_Url,
-                price: LKR ${product.Selling_Price},
-                oldPrice: LKR ${product.Market_Price},
-                weight: product.SIH || 'N/A',
-                color: product.variations?.[0]?.Colour || 'N/A',
-                size: product.variations?.[0]?.Size || null
+                price: `LKR ${product.Selling_Price}`,
+                oldPrice: `LKR ${product.Market_Price}`,
+                weight: product.SIH || "N/A",
+                color: product.variations?.[0]?.Colour || "N/A",
+                size: product.variations?.[0]?.Size || null,
               }));
-            
+
             setRelatedProducts(filteredRelated);
           }
         }
       } catch (error) {
-        console.error('Error fetching product or related products:', error);
+        console.error("Error fetching product or related products:", error);
       }
     };
 
@@ -122,15 +132,16 @@ const ProductPage = () => {
   const currentVariant = product?.variants[selectedVariant] || {};
 
   // Check if any variant has a color
-  const hasColors = product?.variants.some(v => v.color !== null);
-  
+  const hasColors = product?.variants.some((v) => v.color !== null);
+
   // Check if current variant has size
-  const hasSize = currentVariant.size !== null && currentVariant.size !== undefined;
-  
+  const hasSize =
+    currentVariant.size !== null && currentVariant.size !== undefined;
+
   // Check if product has multiple variants with different sizes
-  const hasMultipleSizes = product?.variants.some(v => 
-    v.size !== null && v.size !== undefined && 
-    v.size !== currentVariant.size
+  const hasMultipleSizes = product?.variants.some(
+    (v) =>
+      v.size !== null && v.size !== undefined && v.size !== currentVariant.size
   );
 
   const handleAddToCart = () => {
@@ -139,11 +150,11 @@ const ProductPage = () => {
         id: product.id,
         name: product.name,
         image: mainImage,
-        price: LKR ${currentVariant.price.toFixed(2)},
+        price: `LKR ${currentVariant.price.toFixed(2)}`,
         quantity: quantity,
         ...(hasSize && { size: selectedSize }),
         ...(currentVariant.colorName && { color: currentVariant.colorName }),
-        ...(currentVariant.color && { colorCode: currentVariant.color })
+        ...(currentVariant.color && { colorCode: currentVariant.color }),
       };
 
       if (isFromCart) {
@@ -168,7 +179,7 @@ const ProductPage = () => {
 
   const renderRatingStars = () => {
     if (!product) return null;
-    
+
     const stars = [];
     const fullStars = Math.floor(product.rating);
     const hasHalfStar = product.rating % 1 >= 0.5;
@@ -202,7 +213,7 @@ const ProductPage = () => {
     const y = ((e.clientY - top) / height) * 100;
 
     setZoomStyle({
-      transformOrigin: ${x}% ${y}%,
+      transformOrigin: `${x}% ${y}%`,
       transform: "scale(2)",
       cursor: "zoom-in",
     });
@@ -234,10 +245,10 @@ const ProductPage = () => {
                 ref={popupImageRef}
                 src={mainImage}
                 alt={product.name}
-                className="w-full h-auto max-h-[80vh] object-cover transition-transform duration-300"
-                style={zoomStyle}
+                className="w-full h-full object-contain"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                style={zoomStyle}
               />
             </div>
           </div>
@@ -277,7 +288,7 @@ const ProductPage = () => {
               <img
                 key={index}
                 src={img}
-                alt={Product ${index + 1}}
+                alt={`Product ${index + 1}`}
                 className="w-16 h-16 border rounded cursor-pointer object-cover flex-shrink-0"
                 onClick={() => setMainImage(img)}
               />
@@ -327,12 +338,14 @@ const ProductPage = () => {
               <span className="font-semibold">Size:</span>
               <div className="flex flex-wrap gap-2 mt-2">
                 {product.variants
-                  .filter(v => v.size !== null && v.size !== undefined)
+                  .filter((v) => v.size !== null && v.size !== undefined)
                   .map((variant, index) => (
                     <button
                       key={index}
                       className={`cursor-pointer px-3 sm:px-4 py-1 sm:py-2 border rounded-lg hover:bg-[#87c4ae] hover:text-white text-sm sm:text-base ${
-                        selectedVariant === index ? "bg-[#5CAF90] text-white" : ""
+                        selectedVariant === index
+                          ? "bg-[#5CAF90] text-white"
+                          : ""
                       }`}
                       onClick={() => {
                         setSelectedVariant(index);
@@ -351,25 +364,26 @@ const ProductPage = () => {
             <div className="mt-2 sm:mt-4">
               <span className="font-semibold">Color:</span>
               <div className="flex gap-2 mt-2">
-                {product.variants.map((variant, index) => (
-                  variant.color && (
-                    <button
-                      key={index}
-                      className={`cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
-                        selectedVariant === index
-                          ? "border-gray-800"
-                          : "border-gray-300"
-                      }`}
-                      style={{ backgroundColor: variant.color }}
-                      onClick={() => {
-                        setSelectedVariant(index);
-                        if (!variant.size) {
-                          setSelectedSize("");
-                        }
-                      }}
-                    />
-                  )
-                ))}
+                {product.variants.map(
+                  (variant, index) =>
+                    variant.color && (
+                      <button
+                        key={index}
+                        className={`cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
+                          selectedVariant === index
+                            ? "border-gray-800"
+                            : "border-gray-300"
+                        }`}
+                        style={{ backgroundColor: variant.color }}
+                        onClick={() => {
+                          setSelectedVariant(index);
+                          if (!variant.size) {
+                            setSelectedSize("");
+                          }
+                        }}
+                      />
+                    )
+                )}
               </div>
             </div>
           )}
@@ -459,9 +473,9 @@ const ProductPage = () => {
               <div
                 key={relatedProduct.id}
                 className="border p-2 sm:p-4 rounded-lg cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate(/product-page/${relatedProduct.id})}
+                onClick={() => navigate(`/product-page/${relatedProduct.id}`)}
               >
-                <ProductCard 
+                <ProductCard
                   image={relatedProduct.image}
                   category="Related Product"
                   title={relatedProduct.name}

@@ -188,7 +188,7 @@ CREATE TABLE Discounts (
     idDiscounts INT AUTO_INCREMENT PRIMARY KEY,
     Product_idProduct INT,
     Description VARCHAR(45),
-    Dicaunt_Type VARCHAR(45),
+    Discount_Type VARCHAR(45),
     Discount_Value DECIMAL(10,2),
     Start_Date VARCHAR(45),
     End_Date VARCHAR(45),

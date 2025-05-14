@@ -104,7 +104,7 @@ const DiscountForm = () => {
           setFormData({
             productId: discount.Product_idProduct,
             description: discount.Description,
-            discountType: discount.Dicaunt_Type,
+            discountType: discount.Discount_Type,
             discountValue: discount.Discount_Value,
             startDate: startDate,
             endDate: endDate,
