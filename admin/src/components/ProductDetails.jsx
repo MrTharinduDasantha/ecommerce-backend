@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaCheckSquare, FaRegCheckSquare } from "react-icons/fa";
 import { getProduct, getProductSales } from "../api/product";
 import toast from "react-hot-toast";
 import { Line } from "react-chartjs-2";
@@ -296,6 +296,56 @@ const ProductDetails = () => {
                     No sub categories assigned
                   </p>
                 )}
+              </div>
+            </div>
+
+            {/* Special Offers */}
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white text-[#1D372E] rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold mb-4">Special Offers</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-2">
+                    {product.Seasonal_Offer === 1 ? (
+                      <>
+                        <span>Seasonal Offer</span>
+                        <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Seasonal Offer</span>
+                        <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {product.Rush_Delivery === 1 ? (
+                      <>
+                        <span>Rush Delivery</span>
+                        <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Rush Delivery</span>
+                        <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {product.For_You === 1 ? (
+                      <>
+                        <span>For You</span>
+                        <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>For You</span>
+                        <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
