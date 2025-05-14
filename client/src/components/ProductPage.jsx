@@ -45,8 +45,14 @@ const ProductPage = () => {
             otherImages: productData.images.map(img => img.Image_Url),
             variants: productData.variations.map((variation) => ({
               id: variation.idProduct_Variations,
+
+              color: variation.colorCode || null,
+              colorName: variation.Colour || null,
+              size: variation.Size === "No size selected" ? null : [variation.Size],
+
               color: variation.Colour || null,  
               size: variation.Size === "No size selected" ? null : variation.Size,
+              
               price: parseFloat(variation.Rate) || parseFloat(productData.Selling_Price),
               quantity: variation.Qty,
               SIH: variation.SIH
@@ -234,10 +240,10 @@ const ProductPage = () => {
                 ref={popupImageRef}
                 src={mainImage}
                 alt={product.name}
-                className="w-full h-auto max-h-[80vh] object-cover transition-transform duration-300"
-                style={zoomStyle}
+                className="w-full h-full object-contain"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                style={zoomStyle}
               />
             </div>
           </div>
@@ -456,6 +462,7 @@ const ProductPage = () => {
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-3 sm:mt-4">
             {relatedProducts.map((relatedProduct) => (
+
               <div
                 key={relatedProduct.id}
                 className="border p-2 sm:p-4 rounded-lg cursor-pointer hover:shadow-md transition-shadow"
@@ -471,6 +478,7 @@ const ProductPage = () => {
                   id={relatedProduct.id}
                   className="h-full"
                 />
+
               </div>
             ))}
           </div>
