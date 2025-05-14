@@ -45,14 +45,8 @@ const ProductPage = () => {
             otherImages: productData.images.map(img => img.Image_Url),
             variants: productData.variations.map((variation) => ({
               id: variation.idProduct_Variations,
-
-              color: variation.colorCode || null,
-              colorName: variation.Colour || null,
-              size: variation.Size === "No size selected" ? null : [variation.Size],
-
               color: variation.Colour || null,  
               size: variation.Size === "No size selected" ? null : variation.Size,
-              
               price: parseFloat(variation.Rate) || parseFloat(productData.Selling_Price),
               quantity: variation.Qty,
               SIH: variation.SIH
@@ -95,8 +89,8 @@ const ProductPage = () => {
                 id: product.idProduct,
                 name: product.Description,
                 image: product.Main_Image_Url,
-                price: `LKR ${product.Selling_Price}`,
-                oldPrice: `LKR ${product.Market_Price}`,
+                price: LKR ${product.Selling_Price},
+                oldPrice: LKR ${product.Market_Price},
                 weight: product.SIH || 'N/A',
                 color: product.variations?.[0]?.Colour || 'N/A',
                 size: product.variations?.[0]?.Size || null
@@ -145,7 +139,7 @@ const ProductPage = () => {
         id: product.id,
         name: product.name,
         image: mainImage,
-        price: `LKR ${currentVariant.price.toFixed(2)}`,
+        price: LKR ${currentVariant.price.toFixed(2)},
         quantity: quantity,
         ...(hasSize && { size: selectedSize }),
         ...(currentVariant.colorName && { color: currentVariant.colorName }),
@@ -208,7 +202,7 @@ const ProductPage = () => {
     const y = ((e.clientY - top) / height) * 100;
 
     setZoomStyle({
-      transformOrigin: `${x}% ${y}%`,
+      transformOrigin: ${x}% ${y}%,
       transform: "scale(2)",
       cursor: "zoom-in",
     });
@@ -240,10 +234,10 @@ const ProductPage = () => {
                 ref={popupImageRef}
                 src={mainImage}
                 alt={product.name}
-                className="w-full h-full object-contain"
+                className="w-full h-auto max-h-[80vh] object-cover transition-transform duration-300"
+                style={zoomStyle}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                style={zoomStyle}
               />
             </div>
           </div>
@@ -283,7 +277,7 @@ const ProductPage = () => {
               <img
                 key={index}
                 src={img}
-                alt={`Product ${index + 1}`}
+                alt={Product ${index + 1}}
                 className="w-16 h-16 border rounded cursor-pointer object-cover flex-shrink-0"
                 onClick={() => setMainImage(img)}
               />
@@ -462,11 +456,10 @@ const ProductPage = () => {
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-3 sm:mt-4">
             {relatedProducts.map((relatedProduct) => (
-
               <div
                 key={relatedProduct.id}
                 className="border p-2 sm:p-4 rounded-lg cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate(`/product-page/${relatedProduct.id}`)}
+                onClick={() => navigate(/product-page/${relatedProduct.id})}
               >
                 <ProductCard 
                   image={relatedProduct.image}
@@ -478,7 +471,6 @@ const ProductPage = () => {
                   id={relatedProduct.id}
                   className="h-full"
                 />
-
               </div>
             ))}
           </div>
