@@ -327,8 +327,8 @@ async function getBrands() {
 async function createProduct(productData) {
   const query = `
     INSERT INTO Product 
-      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH)
-      VALUES (?,?,?,?,?,?,?)
+      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH, Seasonal_Offer, Rush_Delivery, For_You)
+      VALUES (?,?,?,?,?,?,?,?,?,?)
   `;
 
   const [result] = await pool.query(query, [
@@ -339,6 +339,9 @@ async function createProduct(productData) {
     productData.Main_Image_Url,
     productData.Long_Description,
     productData.SIH,
+    productData.Seasonal_Offer || 0,
+    productData.Rush_Delivery || 0,
+    productData.For_You || 0,
   ]);
   return result;
 }
@@ -400,7 +403,7 @@ async function updateProduct(productId, productData, associatedData) {
   // Update main product details
   const query = `
     UPDATE Product
-    SET Description = ?, Product_Brand_idProduct_Brand = ?, Market_Price = ?, Selling_Price = ?, Main_Image_Url = ?, Long_Description = ?, SIH = ?
+    SET Description = ?, Product_Brand_idProduct_Brand = ?, Market_Price = ?, Selling_Price = ?, Main_Image_Url = ?, Long_Description = ?, SIH = ?, Seasonal_Offer = ?, Rush_Delivery = ?, For_You = ?
     WHERE idProduct = ?
   `;
 
@@ -412,6 +415,9 @@ async function updateProduct(productId, productData, associatedData) {
     productData.Main_Image_Url,
     productData.Long_Description,
     productData.SIH,
+    productData.Seasonal_Offer || 0,
+    productData.Rush_Delivery || 0,
+    productData.For_You || 0,
     productId,
   ]);
 
@@ -617,7 +623,7 @@ async function getProductCount() {
 // Get top sold products
 async function getProductsSoldQty() {
   const query = `
-    SELECT idProduct, Description, Sold_Qty
+    SELECT idProduct, Description, Sold_Qty, Main_Image_Url,Selling_Price,Market_Price
     FROM Product
     WHERE Sold_Qty > 0
     ORDER BY Sold_Qty DESC

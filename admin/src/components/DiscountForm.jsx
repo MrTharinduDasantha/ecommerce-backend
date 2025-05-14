@@ -104,7 +104,7 @@ const DiscountForm = () => {
           setFormData({
             productId: discount.Product_idProduct,
             description: discount.Description,
-            discountType: discount.Dicaunt_Type,
+            discountType: discount.Discount_Type,
             discountValue: discount.Discount_Value,
             startDate: startDate,
             endDate: endDate,
@@ -374,9 +374,9 @@ const DiscountForm = () => {
                 >
                   <span className="text-[#1D372E]">Active</span>
                   {formData.status === "active" ? (
-                    <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3 md:w-4 md:h-4" />
+                    <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
                   ) : (
-                    <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3 md:w-4 md:h-4" />
+                    <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
                   )}
                 </div>
                 <div
@@ -385,9 +385,9 @@ const DiscountForm = () => {
                 >
                   <span className="text-[#1D372E]">Inactive</span>
                   {formData.status === "inactive" ? (
-                    <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3 md:w-4 md:h-4" />
+                    <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
                   ) : (
-                    <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3 md:w-4 md:h-4" />
+                    <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
                   )}
                 </div>
               </div>
