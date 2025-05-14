@@ -43,15 +43,19 @@ const ProductPage = () => {
 
     // Check if coming from cart
     if (location.state?.fromCart) {
-      setIsFromCart(true);
-      setCartItem(location.state.selectedVariant);
-      // Set initial variant based on cart item
-      if (location.state.selectedVariant) {
-        const variantIndex = selectedProduct.variants.findIndex(
-          v => v.colorName === location.state.selectedVariant.color
-        );
-        if (variantIndex !== -1) {
-          setSelectedVariant(variantIndex);
+  setIsFromCart(true);
+  setCartItem(location.state.selectedVariant);
+  // Set initial variant based on cart item
+  if (location.state.selectedVariant) {
+    const variantIndex = selectedProduct.variants.findIndex(
+      v => v.colorName === location.state.selectedVariant.color
+    );
+    if (variantIndex !== -1) {
+      setSelectedVariant(variantIndex);
+    }
+  }
+}
+
 
     const fetchProductAndRelated = async () => {
       try {
@@ -151,7 +155,7 @@ const ProductPage = () => {
 
   const currentVariant = product?.variants[selectedVariant] || {};
 
-<<<<<<< HEAD
+
   // Check if any variant has a color
   const hasColors = product?.variants.some(v => v.color !== null);
   
@@ -163,11 +167,7 @@ const ProductPage = () => {
     v.size !== null && v.size !== undefined && 
     v.size !== currentVariant.size
   );
-=======
 
-  // Check if any variant has a color defined (not null or empty)
-  const hasColors = product?.variants.some(v => v.color || v.colorName);
->>>>>>> d95ef02874a8404ccc1a23c3578fb51091274ea1
 
 
   console.log(currentVariant)
