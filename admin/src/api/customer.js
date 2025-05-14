@@ -45,7 +45,10 @@ export const deleteCustomer = async (customerId) => {
 
 export const updateCustomer = async (customerId, updatedCustomer) => {
   try {
-    const response = await api.put(`/api/customers/${customerId}`, updatedCustomer);
+    const response = await api.put(
+      `/api/customers/${customerId}`,
+      updatedCustomer
+    );
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
