@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { getProducts, getDiscountedProducts } from '../../api/product'; // Updated import
+import { getDiscountedProducts } from '../../api/product'; 
 import Sidebar from '../Sidebar';
 import OnSaleBanner from '../OnSaleBanner';
 import ProductCard from '../ProductCard';
@@ -130,7 +130,7 @@ const OnSale = () => {
                     weight={product.weight}
                     id={product.id}
                     // discountName={product.discountName}
-                    // discountAmount={`Save LKR ${product.discountAmount.toLocaleString()}`}
+                    // discountAmount={Save LKR ${product.discountAmount.toLocaleString()}}
                     className="h-full"
                   />
                 </div>
