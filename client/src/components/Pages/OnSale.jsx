@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { getProducts } from '../../api/product'; // Import the API function
+import { getProducts, getDiscountedProducts } from '../../api/product'; // Updated import
 import Sidebar from '../Sidebar';
 import OnSaleBanner from '../OnSaleBanner';
 import ProductCard from '../ProductCard';
@@ -16,8 +16,9 @@ const OnSale = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProducts();
-        if (data.message === 'Products fetched successfully') {
+        const data = await getDiscountedProducts();
+        console.log('Discounted products response:', data);
+        if (data.message === 'Discounted products fetched successfully') {
           // Map backend data to the required format
           const formattedProducts = data.products.map(product => ({
             id: product.idProduct,
@@ -28,9 +29,10 @@ const OnSale = () => {
             weight: product.SIH || 'N/A',
             color: product.variations?.[0]?.Colour || 'N/A',
             size: product.variations?.[0]?.Size || null,
-            discountName: product.Discount_Name || 'Sale Discounts',
+            discountName: product.discounts?.[0]?.Description || 'Sale Discounts',
             discountAmount: product.Market_Price - product.Selling_Price
           }));
+          console.log('Formatted products:', formattedProducts);
           setProducts(formattedProducts);
         }
       } catch (error) {

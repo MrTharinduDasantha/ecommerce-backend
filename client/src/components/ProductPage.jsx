@@ -96,8 +96,8 @@ const ProductPage = () => {
                 id: product.idProduct,
                 name: product.Description,
                 image: product.Main_Image_Url,
-                price: `LKR ${product.Selling_Price}`,
-                oldPrice: `LKR ${product.Market_Price}`,
+                price: parseFloat(product.Selling_Price),
+                oldPrice: parseFloat(product.Market_Price),
                 weight: product.SIH || 'N/A',
                 color: product.variations?.[0]?.Colour || 'N/A',
                 size: product.variations?.[0]?.Size || null
@@ -476,8 +476,8 @@ const ProductPage = () => {
                     image={relatedProduct.image}
                     category="Related Product"
                     title={relatedProduct.name}
-                    price={relatedProduct.price}
-                    oldPrice={relatedProduct.oldPrice}
+                    price={`LKR ${relatedProduct.price.toFixed(2)}`}
+                    oldPrice={`LKR ${relatedProduct.oldPrice.toFixed(2)}`}
                     weight={relatedProduct.weight}
                     id={relatedProduct.id}
                     className="h-full"
@@ -488,7 +488,7 @@ const ProductPage = () => {
                   {relatedProduct.name}
                 </h3>
                 <div className="text-center text-gray-800 font-bold text-sm sm:text-base">
-                  LKR {relatedProduct.variants[0].price.toFixed(2)}
+                  LKR {relatedProduct.price.toFixed(2)}
                 </div>
               </div>
             ))}
