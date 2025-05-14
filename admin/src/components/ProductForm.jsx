@@ -707,7 +707,7 @@ const ProductForm = () => {
                     <button
                       type="button"
                       onClick={openBrandPopup}
-                      className="btn btn-primary btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                      className="btn btn-primary mt-0.5 md:mt-0 btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
                     >
                       Add
                     </button>

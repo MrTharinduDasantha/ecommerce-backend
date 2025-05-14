@@ -1,32 +1,54 @@
-# Dependencies
-node_modules
-.pnp
-.pnp.js
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
 
 # Environment variables
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+
+# Test directory
+test/
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Admin folder copy
+admin/New folder/
+
+# Dependencies
+.pnp
+.pnp.js
 
 # Build files
 dist
 build
-.DS_Store
 
 # Cache
-.npm
 .eslintcache
 
 # Editor directories
-.idea
-.vscode
 *.swp
 *.swo
 

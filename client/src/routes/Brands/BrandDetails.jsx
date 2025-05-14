@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import Review from "../../Components/NavBar/Review";
-import { getBrands, getProductsByBrand } from "../../api/product";
+import React, { useEffect, useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getBrands, getProductsByBrand } from "../../api/product"; // Assuming getProductsByBrand is the correct API call
 
 const BrandDetails = () => {
   const { name } = useParams();
+  const navigate = useNavigate();
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
@@ -18,11 +18,12 @@ const BrandDetails = () => {
         const brand = data.brands.find(
           (brand) => brand.Brand_Name.toUpperCase() === name.toUpperCase()
         );
-        
+
         if (brand) {
           setSelectedBrand(brand);
           setLoadingProducts(true);
           try {
+            // Fetch products for the brand
             const productData = await getProductsByBrand(brand.idProduct_Brand);
             const productsArray = Array.isArray(productData.products) ? productData.products : [];
             setProducts(productsArray);
@@ -45,6 +46,29 @@ const BrandDetails = () => {
 
     loadBrandData();
   }, [name]);
+
+  // Use useMemo to calculate top selling products based on the fetched products
+  const topSellingProducts = useMemo(() => {
+    // Filter out products with no sold quantity or invalid quantity
+    const validProducts = products.filter(product => typeof product.Sold_Qty === 'number' && product.Sold_Qty > 0);
+
+    // Sort products by Sold_Qty in descending order
+    const sortedProducts = [...validProducts].sort((a, b) => b.Sold_Qty - a.Sold_Qty);
+
+    // Take the top 5 products (or fewer if there are less than 5)
+    return sortedProducts.slice(0, 5).map((product, index) => ({
+      itemNo: index + 1,
+      orderName: product.Description, // Use product description as order name
+      price: Number(product.Selling_Price), // Use selling price
+      idProduct: product.idProduct // Keep product ID for navigation if needed
+    }));
+  }, [products]); // Recalculate when the 'products' state changes
+
+
+  // Function to navigate to ProductPage
+  const handleProductClick = (productId) => {
+    navigate(`/product-page/${productId}`); // Navigate to the ProductPage with the product ID
+  };
 
   if (loading) {
     return (
@@ -89,15 +113,6 @@ const BrandDetails = () => {
     );
   }
 
-  // Define static top selling products
-  const topSellingProducts = [
-    { itemNo: 1, orderName: "Product A", price: 199.99 },
-    { itemNo: 2, orderName: "Product B", price: 299.99 },
-    { itemNo: 3, orderName: "Product C", price: 399.99 },
-    { itemNo: 4, orderName: "Product D", price: 99.99 },
-    { itemNo: 5, orderName: "Product E", price: 149.99 },
-  ];
-
   // Format price to 2 decimal places
   const formatPrice = (price) => {
     return Number(price).toFixed(2);
@@ -118,10 +133,10 @@ const BrandDetails = () => {
 
       <div className="bg-white rounded-md p-6 flex flex-col md:flex-row items-center max-w-3xl mx-auto md:max-w-full relative ">
         <div className="flex-shrink-0 w-40">
-          <img 
-            src={selectedBrand.Brand_Image_Url || '/placeholder.svg'} 
-            alt={selectedBrand.Brand_Name} 
-            className="w-full h-auto object-contain rounded-lg" 
+          <img
+            src={selectedBrand.Brand_Image_Url || '/placeholder.svg'}
+            alt={selectedBrand.Brand_Name}
+            className="w-full h-auto object-contain rounded-lg"
           />
         </div>
 
@@ -144,9 +159,10 @@ const BrandDetails = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {products.length > 0 ? products.map((product, index) => (
               <div
-                key={index}
-                className="bg-white  relative border border-[#E8E8E8] hover:shadow-lg transition-shadow"
+                key={product.idProduct} // Use product.idProduct as key
+                className="bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow cursor-pointer"
                 style={{ width: '220px', height: '290px' }}
+                onClick={() => handleProductClick(product.idProduct)} // Use product.idProduct for navigation
               >
                 <div className="relative">
                   <img
@@ -154,7 +170,7 @@ const BrandDetails = () => {
                     alt={product.Description}
                     className="w-[220px] h-[170px] object-cover"
                   />
-                  
+
                   {calculateDiscount(product.Market_Price, product.Selling_Price) && (
                     <span className="absolute top-4 right-3 bg-[#5CAF90] text-white text-[11.11px] px-2 py-0.5 rounded">
                       {calculateDiscount(product.Market_Price, product.Selling_Price)}% OFF
@@ -188,35 +204,40 @@ const BrandDetails = () => {
       </div>
 
       {/* Top Selling Products Section */}
-      <div className="mt-12 border border-[#E8E8E8] rounded-[15px] p-6">
-        <h3 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-center">Top Selling Products</h3>
-        <table className="min-w-full rounded-[15px] overflow-hidden">
-          <thead>
-            <tr>
-              <th className="bg-[#EAFFF7] py-2 px-4 text-center font-semibold h-[60px] border-b-2 border-gray-300">Item No</th>
-              <th className="bg-[#EAFFF7] py-2 px-4 text-center font-semibold h-[60px] border-b-2 border-gray-300">Order Name</th>
-              <th className="bg-[#EAFFF7] py-2 px-4 text-center font-semibold h-[60px] border-b-2 border-gray-300">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {topSellingProducts.map((product, index) => (
-              <tr key={index} className="text-center">
-                <td className={`py-2 px-4 h-[45px] ${index !== topSellingProducts.length - 1 ? 'border-b border-gray-300' : ''} bg-[#F7FDFF] border-r border-gray-300`}>
-                  {product.itemNo}
-                </td>
-                <td className={`py-2 px-4 ${index !== topSellingProducts.length - 1 ? 'border-b border-gray-300' : ''} bg-[#F7FDFF] border-r border-gray-300`}>
-                  {product.orderName}
-                </td>
-                <td className={`py-2 px-4 ${index !== topSellingProducts.length - 1 ? 'border-b border-gray-300' : ''} bg-[#F7FDFF]`}>
-                  ${product.price}
-                </td>
+      {topSellingProducts.length > 0 && ( // Only show the table if there are top selling products
+        <div className="mt-12 border border-[#E8E8E8] rounded-[15px] p-6">
+          <h3 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-center">Top Selling Products</h3>
+          <table className="min-w-full rounded-[15px] overflow-hidden">
+            <thead>
+              <tr>
+                <th className="bg-[#EAFFF7] py-2 px-4 text-center font-semibold h-[60px] border-b-2 border-gray-300">Item No</th>
+                <th className="bg-[#EAFFF7] py-2 px-4 text-center font-semibold h-[60px] border-b-2 border-gray-300">Product Name</th>
+                <th className="bg-[#EAFFF7] py-2 px-4 text-center font-semibold h-[60px] border-b-2 border-gray-300">Price</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {topSellingProducts.map((product, index) => (
+                <tr
+                  key={product.idProduct} // Use product ID as key for better performance
+                  className="text-center cursor-pointer hover:bg-gray-100 transition-colors" // Add cursor and hover effect
+                  onClick={() => handleProductClick(product.idProduct)} // Make rows clickable
+                >
+                  <td className={`py-2 px-4 h-[45px] ${index !== topSellingProducts.length - 1 ? 'border-b border-gray-300' : ''} bg-[#F7FDFF] border-r border-gray-300`}>
+                    {product.itemNo}
+                  </td>
+                  <td className={`py-2 px-4 ${index !== topSellingProducts.length - 1 ? 'border-b border-gray-300' : ''} bg-[#F7FDFF] border-r border-gray-300`}>
+                    {product.orderName}
+                  </td>
+                  <td className={`py-2 px-4 ${index !== topSellingProducts.length - 1 ? 'border-b border-gray-300' : ''} bg-[#F7FDFF]`}>
+                    ${formatPrice(product.price)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <br />
-      <Review />
     </div>
   );
 };

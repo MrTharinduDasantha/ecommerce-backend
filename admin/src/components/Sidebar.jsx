@@ -7,9 +7,9 @@ import {
   TbUsers,
   TbTruck,
   TbBell,
-  TbSettings,
 } from "react-icons/tb";
 import { MdOutlineDiscount } from "react-icons/md";
+import { IoSettingsOutline } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 
 const Sidebar = ({ isSidebarOpen }) => {
@@ -54,7 +54,7 @@ const Sidebar = ({ isSidebarOpen }) => {
   return (
     <aside
       className={`fixed top-0 left-0 z-30 h-screen pt-16 transition-transform bg-[#1D372E] border-r border-emerald-950
-        w-64 ${
+        w-56 md:w-64 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
       aria-label="Sidebar"
@@ -66,7 +66,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <NavLink
               to="dashboard-private"
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors
+                `flex items-center gap-3 rounded-md px-3 py-2 text-xs md:text-sm transition-colors
                 hover:bg-[#5CAF90] hover:text-white ${
                   isActive
                     ? "bg-[#5CAF90] text-primary-content font-medium"
@@ -74,7 +74,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                 }`
               }
             >
-              <TbDashboard className="w-4 h-4" />
+              <TbDashboard className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Dashboard
             </NavLink>
           </li>
@@ -84,7 +84,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <details open={isProductSubMenuOpen || isManageProductsActive}>
               <summary
                 onClick={toggleProductSubMenu}
-                className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors
+                className={`flex items-center justify-between rounded-md px-3 py-2 text-xs md:text-sm transition-colors
                   hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
                     isManageProductsActive
                       ? "bg-[#5CAF90] text-primary-content font-medium"
@@ -92,7 +92,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <TbShoppingBag className="w-4 h-4" />
+                  <TbShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span>Manage Products</span>
                 </div>
               </summary>
@@ -101,7 +101,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="products/add-product"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -116,7 +116,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="products/add-category-subcategory"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -131,7 +131,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="products/edit-product"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -151,7 +151,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <details open={isDiscountSubMenuOpen || isManageDiscountsActive}>
               <summary
                 onClick={toggleDiscountSubMenu}
-                className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors
+                className={`flex items-center justify-between rounded-md px-3 py-2 text-xs md:text-sm transition-colors
                   hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
                     isManageDiscountsActive
                       ? "bg-[#5CAF90] text-primary-content font-medium"
@@ -159,7 +159,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <MdOutlineDiscount className="w-4 h-4" />
+                  <MdOutlineDiscount className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span>Manage Discounts</span>
                 </div>
               </summary>
@@ -168,7 +168,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="discounts/add-discount"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -183,7 +183,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="discounts/all-discounts"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -203,7 +203,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <details open={isUsersSubMenuOpen || isManageUsersActive}>
               <summary
                 onClick={toggleUsersSubMenu}
-                className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors
+                className={`flex items-center justify-between rounded-md px-3 py-2 text-xs md:text-sm transition-colors
                   hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
                     isManageUsersActive
                       ? "bg-[#5CAF90] text-primary-content font-medium"
@@ -211,7 +211,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <TbUsers className="w-4 h-4" />
+                  <TbUsers className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span>Manage Users</span>
                 </div>
               </summary>
@@ -220,7 +220,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="users_managed-form"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -235,7 +235,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="customer-managed-form"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -250,7 +250,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   <NavLink
                     to="admin-logs"
                     className={({ isActive }) =>
-                      `block rounded-md px-3 py-1.5 text-sm transition-colors
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
                       hover:bg-[#5CAF90] hover:text-white ${
                         isActive
                           ? "text-[#5CAF90] font-medium"
@@ -270,7 +270,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <NavLink
               to="orders"
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors
+                `flex items-center gap-3 rounded-md px-3 py-2 text-xs md:text-sm transition-colors
                 hover:bg-[#5CAF90] hover:text-white ${
                   isActive || isManageOrdersActive
                     ? "bg-[#5CAF90] text-primary-content font-medium"
@@ -278,7 +278,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                 }`
               }
             >
-              <TbTruck className="w-4 h-4" />
+              <TbTruck className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Manage Orders
             </NavLink>
           </li>
@@ -288,7 +288,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <NavLink
               to="notifications"
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors
+                `flex items-center gap-3 rounded-md px-3 py-2 text-xs md:text-sm transition-colors
                 hover:bg-[#5CAF90] hover:text-white ${
                   isActive || isNotificationsActive
                     ? "bg-[#5CAF90] text-primary-content font-medium"
@@ -296,7 +296,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                 }`
               }
             >
-              <TbBell className="w-4 h-4" />
+              <TbBell className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Notifications
             </NavLink>
           </li>
@@ -306,7 +306,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <NavLink
               to="settings"
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors
+                `flex items-center gap-3 rounded-md px-3 py-2 text-xs md:text-sm transition-colors
                 hover:bg-[#5CAF90] hover:text-white ${
                   isActive
                     ? "bg-[#5CAF90] text-primary-content font-medium"
@@ -314,7 +314,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                 }`
               }
             >
-              <TbSettings className="w-4 h-4" />
+              <IoSettingsOutline className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Manage Settings
             </NavLink>
           </li>
@@ -326,10 +326,10 @@ const Sidebar = ({ isSidebarOpen }) => {
           <li>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition-colors text-base-content/85
+              className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-xs md:text-sm transition-colors text-base-content/85
                 hover:bg-error hover:text-white"
             >
-              <TbLogout className="w-4 h-4" />
+              <TbLogout className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Logout
             </button>
           </li>
