@@ -74,9 +74,8 @@ const ProductPage = () => {
             otherImages: productData.images.map(img => img.Image_Url),
             variants: productData.variations.map((variation) => ({
               id: variation.idProduct_Variations,
-              color: variation.colorCode || null, // No random color fallback
-              colorName: variation.Colour || null, // No empty string fallback
-              size: variation.Size === "No size selected" ? null : [variation.Size],
+              color: variation.Colour || null,  
+              size: variation.Size === "No size selected" ? null : variation.Size,
               price: parseFloat(variation.Rate) || parseFloat(productData.Selling_Price),
               quantity: variation.Qty,
               SIH: variation.SIH
@@ -86,8 +85,9 @@ const ProductPage = () => {
           setProduct(transformedProduct);
           setMainImage(transformedProduct.image);
           
+          // Initialize selected size if the first variant has size
           if (transformedProduct.variants[0]?.size) {
-            setSelectedSize(transformedProduct.variants[0].size[0]);
+            setSelectedSize(transformedProduct.variants[0].size);
           }
           
           setQuantity(
@@ -140,14 +140,30 @@ const ProductPage = () => {
   useEffect(() => {
     if (product) {
       setQuantity(currentVariant.quantity > 0 ? 1 : 0);
+      // Reset selected size when variant changes if the new variant has size
+      if (currentVariant.size) {
+        setSelectedSize(currentVariant.size);
+      } else {
+        setSelectedSize("");
+      }
     }
   }, [selectedVariant, product]);
 
   const currentVariant = product?.variants[selectedVariant] || {};
 
 
-  // Check if any variant has a color defined (not null or empty)
-  const hasColors = product?.variants.some(v => v.color || v.colorName);
+  // Check if any variant has a color
+  const hasColors = product?.variants.some(v => v.color !== null);
+  
+  // Check if current variant has size
+  const hasSize = currentVariant.size !== null && currentVariant.size !== undefined;
+  
+  // Check if product has multiple variants with different sizes
+  const hasMultipleSizes = product?.variants.some(v => 
+    v.size !== null && v.size !== undefined && 
+    v.size !== currentVariant.size
+  );
+
 
 
   console.log(currentVariant)
@@ -159,7 +175,7 @@ const ProductPage = () => {
         image: mainImage,
         price: `LKR ${currentVariant.price.toFixed(2)}`,
         quantity: quantity,
-        ...(currentVariant.size && { size: selectedSize }),
+        ...(hasSize && { size: selectedSize }),
         ...(currentVariant.colorName && { color: currentVariant.colorName }),
         ...(currentVariant.color && { colorCode: currentVariant.color })
       };
@@ -327,22 +343,39 @@ const ProductPage = () => {
             {product.description}
           </p>
 
-          {/* Size Selection - Only show if size exists */}
-          {currentVariant.size && (
+          {/* Size Selection - Only show if current variant has size */}
+          {hasSize && !hasMultipleSizes && (
+            <div className="mt-2 sm:mt-4">
+              <span className="font-semibold">Size:</span>
+              <div className="mt-2">
+                <span className="inline-block px-3 py-1 bg-gray-100 rounded">
+                  {currentVariant.size}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Size Selection with options - Only show if multiple sizes exist */}
+          {hasMultipleSizes && (
             <div className="mt-2 sm:mt-4">
               <span className="font-semibold">Size:</span>
               <div className="flex flex-wrap gap-2 mt-2">
-                {currentVariant.size.map((size) => (
-                  <button
-                    key={size}
-                    className={`cursor-pointer px-3 sm:px-4 py-1 sm:py-2 border rounded-lg hover:bg-[#87c4ae] hover:text-white text-sm sm:text-base ${
-                      selectedSize === size ? "bg-[#5CAF90] text-white" : ""
-                    }`}
-                    onClick={() => setSelectedSize(size)}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {product.variants
+                  .filter(v => v.size !== null && v.size !== undefined)
+                  .map((variant, index) => (
+                    <button
+                      key={index}
+                      className={`cursor-pointer px-3 sm:px-4 py-1 sm:py-2 border rounded-lg hover:bg-[#87c4ae] hover:text-white text-sm sm:text-base ${
+                        selectedVariant === index ? "bg-[#5CAF90] text-white" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedVariant(index);
+                        setSelectedSize(variant.size);
+                      }}
+                    >
+                      {variant.size}
+                    </button>
+                  ))}
               </div>
             </div>
           )}
@@ -353,24 +386,22 @@ const ProductPage = () => {
               <span className="font-semibold">Color:</span>
               <div className="flex gap-2 mt-2">
                 {product.variants.map((variant, index) => (
-                  (variant.color || variant.colorName) && (
-                    <div key={index} className="relative group">
-                      <button
-                        className={`cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-[20%] border-1 ${
-                          selectedVariant === index
-                            ? "border-gray-500 border-3"
-                            : "border-gray-300"
-                        }`}
-                        style={{ backgroundColor: variant.color || 'transparent' }}
-                        onClick={() => setSelectedVariant(index)}
-                      />
-                      {/* Tooltip - Only show if colorName exists */}
-                      {variant.colorName && (
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                          {variant.colorName}
-                        </div>
-                      )}
-                    </div>
+                  variant.color && (
+                    <button
+                      key={index}
+                      className={`cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
+                        selectedVariant === index
+                          ? "border-gray-800"
+                          : "border-gray-300"
+                      }`}
+                      style={{ backgroundColor: variant.color }}
+                      onClick={() => {
+                        setSelectedVariant(index);
+                        if (!variant.size) {
+                          setSelectedSize("");
+                        }
+                      }}
+                    />
                   )
                 ))}
               </div>
