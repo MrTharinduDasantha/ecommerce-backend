@@ -617,7 +617,7 @@ async function getProductCount() {
 // Get top sold products
 async function getProductsSoldQty() {
   const query = `
-    SELECT idProduct, Description, Sold_Qty
+    SELECT idProduct, Description, Sold_Qty, Main_Image_Url,Selling_Price,Market_Price
     FROM Product
     WHERE Sold_Qty > 0
     ORDER BY Sold_Qty DESC
