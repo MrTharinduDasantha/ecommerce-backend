@@ -18,12 +18,8 @@ const SeasonalOffers = () => {
       try {
         const data = await getProducts();
         if (data.message === "Products fetched successfully") {
-          // Filter products where Seasonal_Offer is 1
-          const seasonalProducts = data.products.filter(
-            (product) => product.Seasonal_Offer === 1
-          );
-          // Map filtered products to the required format
-          const formattedProducts = seasonalProducts.map((product) => ({
+          // Map backend data to the required format
+          const formattedProducts = data.products.map((product) => ({
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
@@ -89,8 +85,8 @@ const SeasonalOffers = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+      <div className="container mx-auto px-3 xs:px-4 sm:px-5 lg:px-2 py-4 sm:py-6 lg:py-8 flex-grow">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-4">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <Sidebar />

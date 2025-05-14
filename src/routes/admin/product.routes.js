@@ -122,7 +122,7 @@ router.get(
 router.get("/brands/:brandId/products", productController.getProductsByBrand);
 router.get("/:id", productController.getProductById);
 router.get("/:id/sales", productController.getProductSales);
-router.get("/discounted-products/all", productController.getDiscountedProducts);
+router.get("/discountd-products/all", productController.getDiscountedProducts);
 router.delete("/:id", authenticate, productController.deleteProduct);
 
 // ----------------
