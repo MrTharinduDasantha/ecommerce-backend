@@ -1382,7 +1382,7 @@ async function updateDiscount(req, res) {
     const logData = {
       originalData: {
         description: existingDiscount.Description,
-        discountType: existingDiscount.Dicaunt_Type,
+        discountType: existingDiscount.Discount_Type,
         discountValue: existingDiscount.Discount_Value,
         startDate: existingDiscount.Start_Date,
         endDate: existingDiscount.End_Date,
