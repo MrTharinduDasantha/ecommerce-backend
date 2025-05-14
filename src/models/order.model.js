@@ -80,6 +80,8 @@ class Order {
       [orderId]
     );
 
+    console.log("Order items found:", orderItems.length);
+    
     return {
       order: orders[0],
       items: orderItems,
@@ -87,6 +89,16 @@ class Order {
   }
 
   static async findByCustomerId(customerId) {
+    // Ensure customerId is an integer
+    const customerIdInt = parseInt(customerId, 10);
+    
+    if (isNaN(customerIdInt)) {
+      console.error("Invalid customer ID:", customerId);
+      return [];
+    }
+    
+    console.log("Finding orders for customer ID:", customerIdInt);
+    
     const [orders] = await pool.query(
       `
       SELECT o.*, da.Full_Name, da.Address, da.City, da.Country 
@@ -95,9 +107,10 @@ class Order {
       JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
       WHERE c.idCustomer = ?
     `,
-      [customerId]
+      [customerIdInt]
     );
-
+    
+    console.log("Orders found:", orders.length);
     return orders;
   }
 

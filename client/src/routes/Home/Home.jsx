@@ -1,24 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useEffect, useState } from 'react';
 import denim from './denims.png';
 import fruits from './fruits.avif';
@@ -344,8 +323,9 @@ const Home = () => {
         <h2 className="text-[39.81px] font-semibold mb-0 text-center">
           <span className="text-[#1D372E]">HOW WE ARE </span>
           <span className="text-[#5CAF90]">WORKING</span>
+          
         </h2>
-        <p className="text-center text-[16px] text-[#636363] mb-8">
+        <p className="text-center text-[16px] text-[#636363] mb-15">
           We ensure a seamless shopping experience with a well-structured process. Here’s how we make your online shopping effortless and enjoyable
         </p>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { FaArrowLeft } from "react-icons/fa";
 
 const LogDetails = () => {
   const location = useLocation();
@@ -59,14 +60,14 @@ const LogDetails = () => {
         <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
           <button
             onClick={() => navigate("/dashboard/admin-logs")}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-[#5CAF90] text-white hover:bg-[#4a9277] transition-colors cursor-pointer"
+            className="btn btn-circle btn-xs md:btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             aria-label="Back to admin logs"
           >
-            <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+            <FaArrowLeft className="w-2.5 h-2.5 md:w-3 md:h-3" />
           </button>
           <div className="flex items-center gap-2">
             <div className="w-1 h-4 sm:h-5 bg-[#5CAF90]"></div>
-            <h2 className="text-sm sm:text-base font-bold text-[#1D372E]">
+            <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
               Admin Action
             </h2>
           </div>
@@ -303,7 +304,8 @@ const LogDetails = () => {
                                         <div
                                           className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2"
                                           style={{
-                                            backgroundColor: variation.colorCode,
+                                            backgroundColor:
+                                              variation.colorCode,
                                           }}
                                         />
                                         {variation.colorCode}
@@ -933,7 +935,7 @@ const LogDetails = () => {
   };
 
   return (
-    <div className="mx-auto p-4 sm:p-6 max-w-10xl">
+    <div className="mx-auto">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
         {getDetailsContent()}
       </div>

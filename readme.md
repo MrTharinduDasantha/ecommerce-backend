@@ -13,6 +13,82 @@ API_ENDPOINT = http://localhost:9000/api
 curl -X GET "http://localhost:9000/test"
 ```
 
+## Customer Order Flow
+Follow these steps to test the complete order flow:
+
+```bash
+# 1. Register a new customer
+curl -X POST "http://localhost:9000/api/auth/customers/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "customer@example.com",
+    "password": "password123",
+    "first_name": "Test",
+    "full_name": "Test User",
+    "mobile_no": "1234567890",
+    "status": "active"
+  }'
+
+# 2. Login to get token
+curl -X POST "http://localhost:9000/api/auth/customers/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "customer@example.com",
+    "password": "password123"
+  }'
+
+# 3. Add product to cart (save the token from step 2, replace CUSTOMER_ID)
+curl -X POST "http://localhost:9000/api/carts/add" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "customerId": CUSTOMER_ID,
+    "productVariationId": 1,
+    "qty": 2
+  }'
+
+# 4. Get cart details (replace CUSTOMER_ID)
+curl -X GET "http://localhost:9000/api/carts/CUSTOMER_ID" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# 5. Create delivery address (replace CUSTOMER_ID)
+curl -X POST "http://localhost:9000/api/customers/CUSTOMER_ID/addresses" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "customer_id": CUSTOMER_ID,
+    "full_name": "Test User",
+    "address": "123 Test Street",
+    "city": "Test City",
+    "country": "Test Country",
+    "mobile_no": "1234567890"
+  }'
+
+# 6. Create order (replace CUSTOMER_ID, ADDRESS_ID, CART_ID)
+curl -X POST "http://localhost:9000/api/orders" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "customer_id": CUSTOMER_ID,
+    "delivery_address_id": ADDRESS_ID,
+    "cart_id": CART_ID,
+    "delivery_type": "standard",
+    "payment_type": "cash"
+  }'
+
+# 7. View all customer orders (replace CUSTOMER_ID)
+curl -X GET "http://localhost:9000/api/orders/CUSTOMER_ID" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# 8. Get order details (replace CUSTOMER_ID, ORDER_ID)
+curl -X GET "http://localhost:9000/api/orders/CUSTOMER_ID/ORDER_ID" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# 9. Track order status (replace CUSTOMER_ID, ORDER_ID)
+curl -X GET "http://localhost:9000/api/orders/CUSTOMER_ID/ORDER_ID/track" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
 ## Admin Endpoints
 
 ### Authentication
@@ -127,18 +203,19 @@ curl -X PUT "http://localhost:9000/admin/users/USER_ID/status" \
 ### Authentication
 ```bash
 # Register New Customer
-curl -X POST "http://localhost:9000/api/auth/register" \
+curl -X POST "http://localhost:9000/api/auth/customers/register" \
   -H "Content-Type: application/json" \
   -d '{
     "first_name": "Test",
     "full_name": "Test Customer",
     "email": "test@example.com",
     "password": "test123",
-    "mobile_no": "1234567890"
+    "mobile_no": "1234567890",
+    "status": "active"
   }'
 
 # Customer Login
-curl -X POST "http://localhost:9000/api/auth/login" \
+curl -X POST "http://localhost:9000/api/auth/customers/login" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -146,14 +223,14 @@ curl -X POST "http://localhost:9000/api/auth/login" \
   }'
 
 # Request Password Reset
-curl -X POST "http://localhost:9000/api/auth/request-password-reset" \
+curl -X POST "http://localhost:9000/api/auth/customers/request-password-reset" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com"
   }'
 
 # Reset Password
-curl -X POST "http://localhost:9000/api/auth/reset-password" \
+curl -X POST "http://localhost:9000/api/auth/customers/reset-password" \
   -H "Content-Type: application/json" \
   -d '{
     "customer_id": "CUSTOMER_ID",
@@ -226,8 +303,28 @@ curl -X POST "http://localhost:9000/api/orders" \
     "payment_type": "cash"
   }'
 
-# Get Customer Orders
+# Get Customer Orders (Basic List)
 curl -X GET "http://localhost:9000/api/orders/CUSTOMER_ID" \
   -H "Authorization: Bearer YOUR_CUSTOMER_TOKEN"
+
+# Get Customer Order History (Detailed with Items Preview)
+curl -X GET "http://localhost:9000/api/orders/CUSTOMER_ID/history" \
+  -H "Authorization: Bearer YOUR_CUSTOMER_TOKEN"
+
+# Get Order Details
+curl -X GET "http://localhost:9000/api/orders/CUSTOMER_ID/orders/ORDER_ID" \
+  -H "Authorization: Bearer YOUR_CUSTOMER_TOKEN"
+
+# Track Order Status
+curl -X GET "http://localhost:9000/api/orders/CUSTOMER_ID/orders/ORDER_ID/track" \
+  -H "Authorization: Bearer YOUR_CUSTOMER_TOKEN"
+
+# Cancel Order
+curl -X POST "http://localhost:9000/api/orders/CUSTOMER_ID/orders/ORDER_ID/cancel" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_CUSTOMER_TOKEN" \
+  -d '{
+    "reason": "Changed my mind about this product"
+  }'
 ```
 
