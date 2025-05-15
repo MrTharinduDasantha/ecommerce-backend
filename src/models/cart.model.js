@@ -35,7 +35,7 @@ async function getCartByCustomerId(customerId) {
         p.Description as ProductName,
         p.Main_Image_Url as ProductImage,
         d.Discount_Value,
-        d.Dicaunt_Type as DiscountType
+        d.Discount_Type as DiscountType
       FROM Cart_has_Product cp
       JOIN Product_Variations pv ON 
       cp.Product_Variations_idProduct_Variations = pv.idProduct_Variations
@@ -100,7 +100,7 @@ async function addProductToCart(cartId, productVariationId, qty, rate) {
   // Calculate discount amount if applicable
   if (discounts.length > 0) {
     discountId = discounts[0].idDiscounts;
-    if (discounts[0].Dicaunt_Type === "percentage") {
+    if (discounts[0].Discount_Type === "percentage") {
       discountPercentage = discounts[0].Discount_Value;
       discountAmount = (rate * qty * discountPercentage) / 100;
     } else {
@@ -209,7 +209,7 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
     );
 
     if (discount.length > 0) {
-      if (discount[0].Dicaunt_Type === "percentage") {
+      if (discount[0].Discount_Type === "percentage") {
         discountPercentage = discount[0].Discount_Value;
         discountAmount = (totalAmount * discountPercentage) / 100;
       } else {
@@ -429,7 +429,7 @@ async function convertCartToOrder(
       item.Total_Amount, // Gross total for the item line
       item.Discount_Percentage,
       item.Discount_Amount,
-      item.NetAmount,    // Net total for the item line (after discount)
+      item.NetAmount, // Net total for the item line (after discount)
       item.Note,
       item.Discounts_idDiscounts,
     ]);

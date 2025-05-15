@@ -608,6 +608,9 @@ async function getAllProducts() {
       [product.idProduct]
     );
     product.subcategories = subCats;
+
+    // Get active discounts for each product
+    product.discounts = await getActiveDiscountsByProductId(product.idProduct);
   }
 
   return products;
@@ -743,6 +746,9 @@ async function getProductById(productId) {
   );
   product.subcategories = subCats;
 
+  // Get active discounts for this product
+  product.discounts = await getActiveDiscountsByProductId(product.idProduct);
+
   return product;
 }
 
@@ -839,6 +845,18 @@ async function deleteProduct(productId) {
 // ---------------------------
 // Discount Related Functions
 // ---------------------------
+
+// Get active discounts for a specific product
+async function getActiveDiscountsByProductId(productId) {
+  const query = `
+    SELECT * FROM Discounts
+    WHERE Product_idProduct = ?
+    AND Status = 'active'
+    AND CURDATE() BETWEEN STR_TO_DATE(Start_Date, '%Y-%m-%d') AND STR_TO_DATE(End_Date, '%Y-%m-%d')
+  `;
+  const [discounts] = await pool.query(query, [productId]);
+  return discounts;
+}
 
 // Get all discounts
 async function getAllDiscounts() {
