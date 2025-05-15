@@ -245,10 +245,10 @@ const ProductPage = () => {
                 ref={popupImageRef}
                 src={mainImage}
                 alt={product.name}
-                className="w-full h-full object-contain"
+                className="w-full h-auto max-h-[80vh] object-cover transition-transform duration-300"
+                style={zoomStyle}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                style={zoomStyle}
               />
             </div>
           </div>
