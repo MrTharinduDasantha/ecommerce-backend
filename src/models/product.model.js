@@ -887,7 +887,7 @@ async function createDiscount(discountData) {
     INSERT INTO Discounts (
       Product_idProduct,
       Description,
-      Dicaunt_Type,
+      Discount_Type,
       Discount_Value,
       Start_Date,
       End_Date,
@@ -915,7 +915,7 @@ async function updateDiscount(discountId, discountData) {
     SET
       Product_idProduct = ?,
       Description = ?,
-      Dicaunt_Type = ?,
+      Discount_Type = ?,
       Discount_Value = ?,
       Start_Date = ?,
       End_Date = ?,
