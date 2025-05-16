@@ -46,6 +46,8 @@ async function addToCart(req, res) {
   try {
     const { customerId, productVariationId, qty } = req.body;
 
+    console.log("Adding to cart:", { customerId, productVariationId, qty });
+
     if (!customerId || !productVariationId || !qty) {
       return res.status(400).json({
         message: "Customer ID, product variation ID, and quantity are required",
@@ -72,6 +74,8 @@ async function addToCart(req, res) {
       return res.status(404).json({ message: "Product variation not found" });
     }
 
+    console.log("Product variation found:", productVariation[0]);
+
     // Check if qunatity is avaiable
     if (productVariation[0].Qty < qty) {
       return res.status(400).json({
@@ -86,8 +90,10 @@ async function addToCart(req, res) {
 
     if (!cart) {
       cartId = await Cart.createCart(customerId);
+      console.log("Created new cart with ID:", cartId);
     } else {
       cartId = cart.idCart;
+      console.log("Using existing cart with ID:", cartId);
     }
 
     // Get product price
@@ -96,9 +102,13 @@ async function addToCart(req, res) {
       [productVariation[0].Product_idProduct]
     );
 
+    console.log("Product found:", product[0]);
+
     // Use the selling price from the Product table if the Product_Variations rate is 0
-    variationRate = parseFloat(productVariation[0].Rate);
+    let variationRate = parseFloat(productVariation[0].Rate) || 0;
     const rate = variationRate === 0 ? product[0].Selling_Price : variationRate;
+
+    console.log("Using rate:", rate);
 
     // Add product to cart
     await Cart.addProductToCart(cartId, productVariationId, qty, rate);
@@ -111,7 +121,11 @@ async function addToCart(req, res) {
       .json({ message: "Product added to cart successfully", cart });
   } catch (error) {
     console.error("Error adding product to cart:", error);
-    res.status(500).json({ message: "Failed to add product to cart" });
+    res.status(500).json({ 
+      message: "Failed to add product to cart", 
+      error: error.message,
+      stack: error.stack 
+    });
   }
 }
 

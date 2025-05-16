@@ -1,4 +1,5 @@
 const pool = require('../config/database'); // Import MySQL connection pool
+const bcrypt = require('bcryptjs'); // Import bcrypt for password hashing
 
 // Get all customers
 const getAllCustomers = async () => {
