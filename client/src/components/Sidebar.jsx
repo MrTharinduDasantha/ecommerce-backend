@@ -1,15 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import React from "react";
+import { Link } from "react-router-dom";
+import DoubleArrowIcon from "@mui/icons-material/DoubleArrow";
 
 const Sidebar = () => {
   return (
-    <nav className="w-full lg:w-64 bg-white sidebar">
+    <nav className="w-full lg:w-64 bg-gray-100 sidebar rounded-lg">
       {/* Breadcrumb */}
-      <div className="flex items-center text-xs sm:text-sm py-1 sm:py-2">
-        <Link to="/" className="text-[#1D372E] hover:underline">Home</Link>
+      <div className="flex px-2 items-center text-xs sm:text-sm py-1 sm:py-2">
+        <Link to="/" className="text-[#1D372E] hover:underline">
+          Home
+        </Link>
         <span className="mx-1 sm:mx-2">/</span>
-        <Link to="/seasonal-offers" className="text-[#1D372E]">Seasonal Offers</Link>
+        <Link to="/seasonal-offers" className="text-[#1D372E]">
+          Seasonal Offers
+        </Link>
       </div>
 
       {/* Categories List */}
@@ -21,17 +25,26 @@ const Sidebar = () => {
 
         <ul className="text-gray-700">
           <li>
-            <Link to="/home-needs" className="block px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:text-[#1D372E] transition-colors">
+            <Link
+              to="/home-needs"
+              className="block px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:text-[#1D372E] transition-colors"
+            >
               Home Needs
             </Link>
           </li>
           <li>
-            <Link to="/cosmetics" className="block px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:text-[#1D372E] transition-colors">
+            <Link
+              to="/cosmetics"
+              className="block px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:text-[#1D372E] transition-colors"
+            >
               Cosmetics
             </Link>
           </li>
           <li>
-            <Link to="/clothing" className="block px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:text-[#1D372E] transition-colors">
+            <Link
+              to="/clothing"
+              className="block px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:text-[#1D372E] transition-colors"
+            >
               Clothing
             </Link>
           </li>
@@ -41,4 +54,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

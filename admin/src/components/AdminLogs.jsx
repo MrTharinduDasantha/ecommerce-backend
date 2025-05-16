@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
-import { Eye } from "lucide-react";
+import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { fetchAdminLogs } from "../api/auth";
 import toast from "react-hot-toast";
 
 const AdminLogs = () => {
   const [logs, setLogs] = useState([]);
+  const [filteredLogs, setFilteredLogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const AdminLogs = () => {
         setLoading(true);
         const logData = await fetchAdminLogs();
         setLogs(logData);
+        setFilteredLogs(logData);
       } catch (error) {
         console.error("Error fetching logs:", error);
         toast.error("Failed to fetch logs");
@@ -27,6 +29,30 @@ const AdminLogs = () => {
 
     fetchLogs();
   }, []);
+
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setFilteredLogs(logs);
+      return;
+    }
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    const filtered = logs.filter((log) => {
+      const adminName = log.Admin_Name?.toLowerCase() || "";
+      const timestamp = new Date(log.timestamp).toLocaleString().toLowerCase();
+      return (
+        adminName.includes(lowerSearchTerm) ||
+        timestamp.includes(lowerSearchTerm)
+      );
+    });
+    setFilteredLogs(filtered);
+  };
+
+  // Reset filter when search is cleared
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredLogs(logs);
+    }
+  }, [searchTerm, logs]);
 
   const handleViewDetails = (log) => {
     navigate(`/dashboard/log/view-adminlogs/${log.log_id}`, {
@@ -52,18 +78,14 @@ const AdminLogs = () => {
     return "w-56";
   };
 
-  const filteredLogs = logs.filter((log) => {
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    const adminName = log.Admin_Name?.toLowerCase() || "";
-    const timestamp = new Date(log.timestamp).toLocaleString().toLowerCase();
-
-    return adminName.includes(lowerSearchTerm) || timestamp.includes(lowerSearchTerm);
-  });
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-40">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+      <div className="card bg-white">
+        <div className="card-body">
+          <div className="flex justify-center items-center h-40">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -73,7 +95,9 @@ const AdminLogs = () => {
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4 md:p-6">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-5 bg-[#5CAF90]"></div>
-          <h2 className="text-base font-bold text-[#1D372E]">Admin Logs</h2>
+          <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+            Admin Logs
+          </h2>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 mb-6">
           <div className="relative flex w-full md:max-w-xl md:mx-auto">
@@ -83,103 +107,125 @@ const AdminLogs = () => {
             <input
               type="text"
               placeholder="Search by Name, Date and Time..."
-              className="input input-bordered w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
+              className="input input-bordered input-sm md:input-md w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             />
-            <button className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]">
+            <button
+              onClick={handleSearch}
+              className="btn btn-primary btn-sm md:btn-md ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            >
               Search
             </button>
           </div>
         </div>
         <div className="block w-full overflow-x-auto">
-          <div className="hidden sm:block">
-            <table className="table min-w-[700px] w-full text-center border border-[#B7B7B7]">
-              <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                <tr className="border-b border-[#B7B7B7]">
-                  <th className="font-semibold py-2 px-3 text-xs">Admin Name</th>
-                  <th className="font-semibold py-2 px-3 text-xs">Action</th>
-                  <th className="font-semibold py-2 px-3 text-xs">Date and Time</th>
-                  <th className="font-semibold py-2 px-3 text-xs">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-[#1D372E]">
-                {filteredLogs.map((log) => (
-                  <tr
-                    key={log.log_id}
-                    className="border-b border-[#B7B7B7] bg-[#F7FDFF]"
-                  >
-                    <td className="py-2 px-3 text-xs">{log.Admin_Name || "N/A"}</td>
-                    <td className="py-2 px-3 text-xs">
-                      <div className="flex justify-center">
-                        <span
-                          className={`${getActionBadgeWidth(
-                            log.action
-                          )} py-1 inline-flex items-center justify-center text-xs leading-4 font-semibold rounded-full border border-black-300 ${getActionStyle(
-                            log.action
-                          )}`}
-                        >
-                          {log.action}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-2 px-3 text-xs">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td className="py-2 px-3 text-xs">
-                      <div className="flex justify-center">
-                        <button
-                          onClick={() => handleViewDetails(log)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] p-1"
-                          title="View Details"
-                        >
-                          <Eye className="w-3 h-3 text-white" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {filteredLogs.length === 0 ? (
+            <div className="alert bg-[#1D372E] border-[#1D372E]">
+              <span>No admin logs found.</span>
+            </div>
+          ) : (
+            <>
+              <div className="hidden sm:block">
+                <table className="table min-w-[700px] w-full text-center border border-[#1D372E]">
+                  <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                    <tr className="border-b border-[#1D372E]">
+                      <th className="font-semibold py-2 px-3 text-xs lg:text-sm">
+                        Admin Name
+                      </th>
+                      <th className="font-semibold py-2 px-3 text-xs lg:text-sm">
+                        Action
+                      </th>
+                      <th className="font-semibold py-2 px-3 text-xs lg:text-sm">
+                        Date and Time
+                      </th>
+                      <th className="font-semibold py-2 px-3 text-xs lg:text-sm">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[#1D372E]">
+                    {filteredLogs.map((log) => (
+                      <tr
+                        key={log.log_id}
+                        className="border-b border-[#1D372E]"
+                      >
+                        <td className="py-2 px-3 text-xs lg:text-sm">
+                          {log.Admin_Name || "N/A"}
+                        </td>
+                        <td className="py-2 px-3 text-xs lg:text-sm">
+                          <div className="flex justify-center">
+                            <span
+                              className={`${getActionBadgeWidth(
+                                log.action
+                              )} py-1 inline-flex items-center justify-center text-xs leading-4 font-semibold rounded-full border border-black-300 ${getActionStyle(
+                                log.action
+                              )}`}
+                            >
+                              {log.action}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2 px-3 text-xs lg:text-sm">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 text-xs lg:text-sm">
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => handleViewDetails(log)}
+                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] p-1"
+                              title="View Details"
+                            >
+                              <FaEye className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          <div className="sm:hidden space-y-3">
-            {filteredLogs.map((log) => (
-              <div
-                key={log.log_id}
-                className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="space-y-1">
-                    <div className="font-medium text-[#1D372E] text-xs">
-                      {log.Admin_Name || "N/A"}
+              <div className="sm:hidden space-y-3">
+                {filteredLogs.map((log) => (
+                  <div
+                    key={log.log_id}
+                    className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="space-y-1">
+                        <div className="font-medium text-[#1D372E] text-xs">
+                          {log.Admin_Name || "N/A"}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                      <span
+                        className={`${getActionBadgeWidth(
+                          log.action
+                        )} py-1 text-xs font-semibold rounded-full border border-black-300 text-center ${getActionStyle(
+                          log.action
+                        )}`}
+                      >
+                        {log.action}
+                      </span>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(log.timestamp).toLocaleString()}
+                    <div className="flex justify-center mt-3 pt-2 border-t border-gray-200">
+                      <button
+                        onClick={() => handleViewDetails(log)}
+                        className="flex items-center text-[#5CAF90] hover:text-[#4a9277] text-xs"
+                      >
+                        <FaEye className="w-3 h-3 mr-1" />
+                        View
+                      </button>
                     </div>
                   </div>
-                  <span
-                    className={`${getActionBadgeWidth(
-                      log.action
-                    )} py-1 text-xs font-semibold rounded-full border border-black-300 text-center ${getActionStyle(
-                      log.action
-                    )}`}
-                  >
-                    {log.action}
-                  </span>
-                </div>
-                <div className="flex justify-center mt-3 pt-2 border-t border-gray-200">
-                  <button
-                    onClick={() => handleViewDetails(log)}
-                    className="flex items-center text-[#5CAF90] hover:text-[#4a9277] text-xs"
-                  >
-                    <Eye className="w-3 h-3 mr-1" />
-                    View
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

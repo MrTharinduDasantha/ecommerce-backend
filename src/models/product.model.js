@@ -327,8 +327,8 @@ async function getBrands() {
 async function createProduct(productData) {
   const query = `
     INSERT INTO Product 
-      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH)
-      VALUES (?,?,?,?,?,?,?)
+      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH, Seasonal_Offer, Rush_Delivery, For_You)
+      VALUES (?,?,?,?,?,?,?,?,?,?)
   `;
 
   const [result] = await pool.query(query, [
@@ -339,6 +339,9 @@ async function createProduct(productData) {
     productData.Main_Image_Url,
     productData.Long_Description,
     productData.SIH,
+    productData.Seasonal_Offer || 0,
+    productData.Rush_Delivery || 0,
+    productData.For_You || 0,
   ]);
   return result;
 }
@@ -400,7 +403,7 @@ async function updateProduct(productId, productData, associatedData) {
   // Update main product details
   const query = `
     UPDATE Product
-    SET Description = ?, Product_Brand_idProduct_Brand = ?, Market_Price = ?, Selling_Price = ?, Main_Image_Url = ?, Long_Description = ?, SIH = ?
+    SET Description = ?, Product_Brand_idProduct_Brand = ?, Market_Price = ?, Selling_Price = ?, Main_Image_Url = ?, Long_Description = ?, SIH = ?, Seasonal_Offer = ?, Rush_Delivery = ?, For_You = ?
     WHERE idProduct = ?
   `;
 
@@ -412,6 +415,9 @@ async function updateProduct(productId, productData, associatedData) {
     productData.Main_Image_Url,
     productData.Long_Description,
     productData.SIH,
+    productData.Seasonal_Offer || 0,
+    productData.Rush_Delivery || 0,
+    productData.For_You || 0,
     productId,
   ]);
 
@@ -602,6 +608,9 @@ async function getAllProducts() {
       [product.idProduct]
     );
     product.subcategories = subCats;
+
+    // Get active discounts for each product
+    product.discounts = await getActiveDiscountsByProductId(product.idProduct);
   }
 
   return products;
@@ -617,7 +626,7 @@ async function getProductCount() {
 // Get top sold products
 async function getProductsSoldQty() {
   const query = `
-    SELECT idProduct, Description, Sold_Qty
+    SELECT idProduct, Description, Sold_Qty, Main_Image_Url,Selling_Price,Market_Price
     FROM Product
     WHERE Sold_Qty > 0
     ORDER BY Sold_Qty DESC
@@ -737,6 +746,9 @@ async function getProductById(productId) {
   );
   product.subcategories = subCats;
 
+  // Get active discounts for this product
+  product.discounts = await getActiveDiscountsByProductId(product.idProduct);
+
   return product;
 }
 
@@ -834,6 +846,18 @@ async function deleteProduct(productId) {
 // Discount Related Functions
 // ---------------------------
 
+// Get active discounts for a specific product
+async function getActiveDiscountsByProductId(productId) {
+  const query = `
+    SELECT * FROM Discounts
+    WHERE Product_idProduct = ?
+    AND Status = 'active'
+    AND CURDATE() BETWEEN STR_TO_DATE(Start_Date, '%Y-%m-%d') AND STR_TO_DATE(End_Date, '%Y-%m-%d')
+  `;
+  const [discounts] = await pool.query(query, [productId]);
+  return discounts;
+}
+
 // Get all discounts
 async function getAllDiscounts() {
   const query = `
@@ -863,7 +887,7 @@ async function createDiscount(discountData) {
     INSERT INTO Discounts (
       Product_idProduct,
       Description,
-      Dicaunt_Type,
+      Discount_Type,
       Discount_Value,
       Start_Date,
       End_Date,
@@ -891,7 +915,7 @@ async function updateDiscount(discountId, discountData) {
     SET
       Product_idProduct = ?,
       Description = ?,
-      Dicaunt_Type = ?,
+      Discount_Type = ?,
       Discount_Value = ?,
       Start_Date = ?,
       End_Date = ?,

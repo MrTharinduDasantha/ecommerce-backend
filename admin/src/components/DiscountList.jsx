@@ -177,12 +177,12 @@ const DiscountList = () => {
                         {discount.Description}
                       </td>
                       <td className="text-xs lg:text-sm">
-                        {formatDiscountType(discount.Dicaunt_Type)}
+                        {formatDiscountType(discount.Discount_Type)}
                       </td>
                       <td className="text-xs lg:text-sm">
                         {formatDiscountValue(
                           discount.Discount_Value,
-                          discount.Dicaunt_Type
+                          discount.Discount_Type
                         )}
                       </td>
                       <td className="text-xs lg:text-sm">
@@ -193,7 +193,7 @@ const DiscountList = () => {
                       </td>
                       <td>
                         <span
-                          className={`px-2 py-1 text-xs lg:text-sm font-semibold rounded-full ${
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
                             discount.Status === "active"
                               ? "bg-green-100 text-green-800 border border-green-800"
                               : "bg-red-100 text-red-800 border border-red-800"
@@ -260,14 +260,14 @@ const DiscountList = () => {
                   </p>
                   <div className="text-xs text-[#1D372E] mb-2">
                     <span className="font-medium">Type: </span>{" "}
-                    <span>{formatDiscountType(discount.Dicaunt_Type)}</span>
+                    <span>{formatDiscountType(discount.Discount_Type)}</span>
                   </div>
                   <div className="text-xs text-[#1D372E] mb-2">
                     <span className="font-medium">Value: </span>{" "}
                     <span>
                       {formatDiscountValue(
                         discount.Discount_Value,
-                        discount.Dicaunt_Type
+                        discount.Discount_Type
                       )}
                     </span>
                   </div>

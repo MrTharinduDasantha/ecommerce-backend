@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaCheckSquare, FaRegCheckSquare } from "react-icons/fa";
 import { getProduct, getProductSales } from "../api/product";
 import toast from "react-hot-toast";
 import { Line } from "react-chartjs-2";
@@ -148,9 +148,10 @@ const ProductDetails = () => {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={handleBack}
-            className="btn btn-circle btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            className="btn btn-circle btn-xs md:btn-sm bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            title="Back to All Products"
           >
-            <FaArrowLeft className="w-3 h-3" />
+            <FaArrowLeft className="w-2.5 h-2.5 md:w-3 md:h-3" />
           </button>
           <div className="flex items-center gap-2">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
@@ -165,12 +166,11 @@ const ProductDetails = () => {
           {/* Left Column - Images and Additional Information */}
           <div className="lg:col-span-1 space-y-6">
             {/* Images Section */}
-            <div className="card bg-white border border-[#1D372E]">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold text-[#1D372E] mb-4">
                   Images
                 </h3>
-
                 {/* Main Image */}
                 <div className="mb-4 text-[#1D372E]">
                   <h4 className="font-medium text-sm mb-2">Main Image</h4>
@@ -188,7 +188,6 @@ const ProductDetails = () => {
                     </div>
                   )}
                 </div>
-
                 {/* Sub Images */}
                 <div className="text-[#1D372E]">
                   <h4 className="font-medium text-sm mb-2">Sub Images</h4>
@@ -219,9 +218,9 @@ const ProductDetails = () => {
             </div>
 
             {/* Additional Information Section */}
-            <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white text-[#1D372E] rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold mb-4">
                   Additional Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,9 +244,9 @@ const ProductDetails = () => {
           {/* Right Column - Details and Sales Information */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
-            <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base font-semibold mb-4">
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white text-[#1D372E] rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold mb-4">
                   Basic Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -278,11 +277,9 @@ const ProductDetails = () => {
             </div>
 
             {/* Sub Categories */}
-            <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
-                  Sub Categories
-                </h3>
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white text-[#1D372E] rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold mb-4">Sub Categories</h3>
                 {product.subcategories?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {product.subcategories.map((subCat) => (
@@ -302,59 +299,153 @@ const ProductDetails = () => {
               </div>
             </div>
 
+            {/* Special Offers */}
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white text-[#1D372E] rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold mb-4">Special Offers</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-2">
+                    {product.Seasonal_Offer === 1 ? (
+                      <>
+                        <span>Seasonal Offer</span>
+                        <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Seasonal Offer</span>
+                        <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {product.Rush_Delivery === 1 ? (
+                      <>
+                        <span>Rush Delivery</span>
+                        <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Rush Delivery</span>
+                        <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {product.For_You === 1 ? (
+                      <>
+                        <span>For You</span>
+                        <FaCheckSquare className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>For You</span>
+                        <FaRegCheckSquare className="text-[#1D372E] w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Variations */}
-            <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold text-[#1D372E] mb-4">
                   Variations
                 </h3>
-                {product.variations?.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="table table-fixed min-w-[450px] text-center border border-[#1D372E] w-full">
-                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                        <tr className="border-b border-[#1D372E]">
-                          <th className="font-semibold w-[175px]">Color</th>
-                          <th className="font-semibold w-[150px]">Size</th>
-                          <th className="font-semibold w-[125px]">Quantity</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-[#1D372E]">
-                        {product.variations.map((variation) => (
-                          <tr
-                            key={variation.idProduct_Variations}
-                            className="border-b border-[#1D372E]"
-                          >
-                            <td>
-                              <div className="flex items-center justify-center gap-2">
-                                {variation.Colour &&
-                                  variation.Colour !== "No color selected" && (
-                                    <div
-                                      className="w-5 h-5 border border-base-300 rounded-md"
-                                      style={{
-                                        backgroundColor: variation.Colour,
-                                      }}
-                                    />
-                                  )}
-                                <span>{variation.Colour}</span>
-                              </div>
-                            </td>
-                            <td>{variation.Size || "N/A"}</td>
-                            <td>{variation.Qty}</td>
+                {/* Desktop View */}
+                <div className="hidden md:block">
+                  {product.variations?.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="table table-fixed min-w-[450px] text-center border border-[#B7B7B7] w-full">
+                        <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                          <tr className="border-b border-[#B7B7B7]">
+                            <th className="font-semibold w-[175px]">Color</th>
+                            <th className="font-semibold w-[150px]">Size</th>
+                            <th className="font-semibold w-[125px]">
+                              Quantity
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-sm opacity-70">No variations available</p>
-                )}
+                        </thead>
+                        <tbody className="text-[#1D372E]">
+                          {product.variations.map((variation) => (
+                            <tr
+                              key={variation.idProduct_Variations}
+                              className="border-b border-[#B7B7B7]"
+                            >
+                              <td>
+                                <div className="flex items-center justify-center gap-2">
+                                  {variation.Colour &&
+                                    variation.Colour !==
+                                      "No color selected" && (
+                                      <div
+                                        className="w-5 h-5 border border-base-300 rounded-md"
+                                        style={{
+                                          backgroundColor: variation.Colour,
+                                        }}
+                                      />
+                                    )}
+                                  <span>{variation.Colour}</span>
+                                </div>
+                              </td>
+                              <td>{variation.Size || "N/A"}</td>
+                              <td>{variation.Qty}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-sm opacity-70">
+                      No variations available
+                    </p>
+                  )}
+                </div>
+                {/* Mobile View */}
+                <div className="md:hidden space-y-3">
+                  {product.variations?.length > 0 ? (
+                    product.variations.map((variation) => (
+                      <div
+                        key={variation.idProduct_Variations}
+                        className="bg-white rounded-lg p-4 shadow-sm border border-[#B7B7B7] text-[#1D372E]"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-xs">Color:</span>
+                          {variation.Colour !== "No color selected" && (
+                            <div
+                              className="w-5 h-5 border border-base-300 rounded-md"
+                              style={{ backgroundColor: variation.Colour }}
+                            />
+                          )}
+                          <span className="text-xs">{variation.Colour}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-xs">Size:</span>
+                          <span className="text-xs">
+                            {variation.Size || "N/A"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-xs">Quantity:</span>
+                          <span className="text-xs">{variation.Qty}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm opacity-70">
+                      No variations available
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* FAQs */}
-            <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+            <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+              <div className="bg-white text-[#1D372E] rounded-lg p-4 shadow-sm">
+                <h3 className="text-base font-semibold mb-4">
                   Frequently Asked Questions
                 </h3>
                 {product.faqs?.length > 0 ? (
@@ -362,12 +453,10 @@ const ProductDetails = () => {
                     {product.faqs.map((faq) => (
                       <div
                         key={faq.idFAQ}
-                        className="card bg-white border border-[#1D372E]"
+                        className="border border-[#B7B7B7] rounded-md p-2"
                       >
-                        <div className="card-body p-3">
-                          <h4 className="font-medium">Q: {faq.Question}</h4>
-                          <p className="text-sm">A: {faq.Answer}</p>
-                        </div>
+                        <h4 className="font-medium">Q: {faq.Question}</h4>
+                        <p className="text-sm">A: {faq.Answer}</p>
                       </div>
                     ))}
                   </div>
@@ -379,9 +468,9 @@ const ProductDetails = () => {
 
             {/* Sales Information Section */}
             {salesInfo && (
-              <div className="card bg-white text-[#1D372E] border border-[#1D372E]">
-                <div className="card-body p-4">
-                  <h3 className="card-title text-base font-semibold text-[#1D372E] mb-4">
+              <div className="bg-[#F4F4F4] rounded-lg shadow-md p-4">
+                <div className="bg-white text-[#1D372E] rounded-lg p-4 shadow-sm">
+                  <h3 className="text-base font-semibold mb-4">
                     Sales Information for {product.Description}
                   </h3>
                   {salesInfo.weeklySales.length > 0 ? (

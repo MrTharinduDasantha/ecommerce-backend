@@ -551,6 +551,9 @@ async function createProduct(req, res) {
       variations,
       faqs,
       subCategoryIds,
+      Seasonal_Offer,
+      Rush_Delivery,
+      For_You,
     } = req.body;
 
     let mainImageUrl = null;
@@ -581,6 +584,9 @@ async function createProduct(req, res) {
       Main_Image_Url: mainImageUrl,
       Long_Description,
       SIH: 0,
+      Seasonal_Offer: Seasonal_Offer === "true" ? 1 : 0,
+      Rush_Delivery: Rush_Delivery === "true" ? 1 : 0,
+      For_You: For_You === "true" ? 1 : 0,
     };
 
     let totalQty = 0;
@@ -658,6 +664,9 @@ async function createProduct(req, res) {
       variations: variationData,
       faqs: faqData,
       sub_categories: subCategoryDescriptions,
+      seasonal_offer: Seasonal_Offer === "true" ? "Yes" : "No",
+      rush_delivery: Rush_Delivery === "true" ? "Yes" : "No",
+      for_you: For_You === "true" ? "Yes" : "No",
     };
 
     await pool.query(
@@ -692,6 +701,9 @@ async function updateProduct(req, res) {
       variations,
       faqs,
       subCategoryIds,
+      Seasonal_Offer,
+      Rush_Delivery,
+      For_You,
     } = req.body;
 
     const existingProduct = await Product.getProductById(id);
@@ -741,6 +753,9 @@ async function updateProduct(req, res) {
       Main_Image_Url: mainImageUrl,
       Long_Description,
       SIH: 0,
+      Seasonal_Offer: Seasonal_Offer === "true" ? 1 : 0,
+      Rush_Delivery: Rush_Delivery === "true" ? 1 : 0,
+      For_You: For_You === "true" ? 1 : 0,
     };
 
     let variationData = null;
@@ -838,6 +853,9 @@ async function updateProduct(req, res) {
         variations: originalVariations || [],
         faqs: originalFaqs || [],
         sub_categories: originalSubCategories || [],
+        seasonal_offer: existingProduct.Seasonal_Offer ? "Yes" : "No",
+        rush_delivery: existingProduct.Rush_Delivery ? "Yes" : "No",
+        for_you: existingProduct.For_You ? "Yes" : "No",
       },
       updatedData: {
         description: Description,
@@ -851,6 +869,9 @@ async function updateProduct(req, res) {
         variations: variationData || [],
         faqs: faqData || [],
         sub_categories: subCategoryDescriptions || [],
+        seasonal_offer: Seasonal_Offer === "true" ? "Yes" : "No",
+        rush_delivery: Rush_Delivery === "true" ? "Yes" : "No",
+        for_you: For_You === "true" ? "Yes" : "No",
       },
     };
 
@@ -1018,7 +1039,7 @@ async function getProductsSoldQty(req, res) {
     }
 
     const query = `
-      SELECT idProduct, Description, Sold_Qty
+      SELECT idProduct, Description, Sold_Qty, Main_Image_Url,Selling_Price,Market_Price
       FROM Product
       WHERE Sold_Qty > 0
       ORDER BY Sold_Qty DESC
@@ -1361,7 +1382,7 @@ async function updateDiscount(req, res) {
     const logData = {
       originalData: {
         description: existingDiscount.Description,
-        discountType: existingDiscount.Dicaunt_Type,
+        discountType: existingDiscount.Discount_Type,
         discountValue: existingDiscount.Discount_Value,
         startDate: existingDiscount.Start_Date,
         endDate: existingDiscount.End_Date,

@@ -1,8 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CategoryDropdown from '../Navbar/CategoryDropdown';
-import { products } from '../products';
 import logo from './logo.png';
 import { 
   FaSearch, 
@@ -24,8 +23,26 @@ function Navbar() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [products, setProducts] = useState([]);
   const { isAuthenticated, logout, user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Fetch products for search functionality
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("http://localhost:9000/api/products");
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
@@ -33,9 +50,9 @@ function Navbar() {
 
     if (query.length > 0) {
       const filtered = products.filter(item => 
-        item.name.toLowerCase().includes(query.toLowerCase()) ||
-        item.category.toLowerCase().includes(query.toLowerCase()) ||
-        item.description.toLowerCase().includes(query.toLowerCase())
+        item.name?.toLowerCase().includes(query.toLowerCase()) ||
+        item.category?.toLowerCase().includes(query.toLowerCase()) ||
+        item.description?.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredItems(filtered);
       setIsModalOpen(true);
@@ -55,7 +72,8 @@ function Navbar() {
     setIsModalOpen(false);
   };
 
-  React.useEffect(() => {
+  // Initialize cart count from localStorage on component mount
+  useEffect(() => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     setCartCount(cart.reduce((total, item) => total + item.quantity, 0));
   }, []);
@@ -72,10 +90,10 @@ function Navbar() {
         <div className="flex items-center justify-between px-6 h-full">
           {/* Logo */}
           <div className="flex items-center ml-6">
-  <Link to="/"> {/* Set the path to your home page */}
-    <img src={logo} alt="Logo" className="h-[85px] w-auto cursor-pointer" />
-  </Link>
-</div>
+            <Link to="/"> {/* Set the path to your home page */}
+              <img src={logo} alt="Logo" className="h-[85px] w-auto cursor-pointer" />
+            </Link>
+          </div>
 
           {/* Search bar with item suggestions */}
           <div className="flex flex-1 max-w-2xl mx-30 font-poppins ml-75 relative">
@@ -159,61 +177,59 @@ function Navbar() {
         <CategoryDropdown />
 
         <Link to="/seasonal-offers">
-      <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-        <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-          <FaGift />
-        </motion.span>
-        <span>Seasonal Offers</span>
-      </div>
-    </Link>
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+              <FaGift />
+            </motion.span>
+            <span>Seasonal Offers</span>
+          </div>
+        </Link>
 
+        {/* Buttons that adopt Seasonal Offer styling on hover */}
+        <Link to="/rush-delivery">
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+              <FaRocket />
+            </motion.span>
+            <span>Rush Delivery</span>
+          </div>
+        </Link>
 
-  {/* Buttons that adopt Seasonal Offer styling on hover */}
-  <Link to="/rush-delivery">
-    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-      <FaRocket />
-      </motion.span>
-      <span>Rush Delivery</span>
-</div>
-  </Link>
+        <Link to="/on-sale">
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+              <FaTags />
+            </motion.span>
+            <span>On Sale</span>
+          </div>
+        </Link>
 
-  <Link to="/on-sale">
-    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-      <FaTags />
-      </motion.span>
-      <span>On Sale</span>
-    </div>
-  </Link>
+        <Link to="/Events">
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+              <FaCalendarAlt />
+            </motion.span>
+            <span>Events</span>
+          </div>
+        </Link>
 
-  <Link to="/Events">
-    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-      <FaCalendarAlt />
-      </motion.span>
-      <span>Events</span>
-    </div>
-  </Link>
+        <Link to="/brands">
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+              <FaNetworkWired />
+            </motion.span>
+            <span>Brands</span>
+          </div>
+        </Link>
 
-  <Link to="/brands">
-    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-    <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-      <FaNetworkWired />
-</motion.span>
-      <span>Brands</span>
-    </div>
-  </Link>
-
-  <Link to="/for-you">
-    <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-      <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
-      <FaHeart />
-      </motion.span>
-      <span>For You</span>
-    </div>
-  </Link>
-
+        <Link to="/for-you">
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
+            <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}>
+              <FaHeart />
+            </motion.span>
+            <span>For You</span>
+          </div>
+        </Link>
       </div>
 
       {isModalOpen && (

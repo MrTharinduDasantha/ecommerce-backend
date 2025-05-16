@@ -59,7 +59,7 @@ const App = () => {
       {/* Display loading animation only on login route  */}
       {location.pathname === "/" && loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-r from-[#1D372E] via-[#5CAF90] to-[#1D372E] z-50">
-          <TbPackage className="h-16 w-16 text-white animate-spin-3d" />
+          <TbPackage className="w-12 h-12 md:h-16 md:w-16 text-white animate-spin-3d" />
         </div>
       )}
 

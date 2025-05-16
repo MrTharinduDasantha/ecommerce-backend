@@ -110,6 +110,9 @@ CREATE TABLE Product (
     Latest_Rating DECIMAL(3,1) DEFAULT 0,
     History_Status VARCHAR(45) DEFAULT 'new arrivals',
     Status VARCHAR(45) DEFAULT 'active',
+    Seasonal_Offer TINYINT DEFAULT 0,
+    Rush_Delivery TINYINT DEFAULT 0,
+    For_You TINYINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_Brand_idProduct_Brand) REFERENCES Product_Brand(idProduct_Brand)
@@ -185,7 +188,7 @@ CREATE TABLE Discounts (
     idDiscounts INT AUTO_INCREMENT PRIMARY KEY,
     Product_idProduct INT,
     Description VARCHAR(45),
-    Dicaunt_Type VARCHAR(45),
+    Discount_Type VARCHAR(45),
     Discount_Value DECIMAL(10,2),
     Start_Date VARCHAR(45),
     End_Date VARCHAR(45),
@@ -214,6 +217,21 @@ CREATE TABLE `Order` (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Delivery_Address_idDelivery_Address) REFERENCES Delivery_Address(idDelivery_Address)
+);
+
+-- Order_History
+CREATE TABLE Order_History (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    status_from VARCHAR(45),
+    status_to VARCHAR(45), 
+    status_type VARCHAR(45),
+    reason TEXT,
+    notes TEXT,
+    changed_by INT, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    FOREIGN KEY (order_id) REFERENCES `Order`(idOrder),
+    FOREIGN KEY (changed_by) REFERENCES User(idUser)
 );
 
 -- Order_has_Product_Variations Table
@@ -263,7 +281,7 @@ CREATE TABLE FAQ (
 );
 
 -- Header Footer Setting Table
-CREATE TABLE IF NOT EXISTS Header_Footer_Setting (
+CREATE TABLE Header_Footer_Setting (
   idHeader_Footer_Setting INT AUTO_INCREMENT PRIMARY KEY,
   Navbar_Logo_Url TEXT,
   Footer_Copyright VARCHAR(255),
