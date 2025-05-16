@@ -861,10 +861,13 @@ async function getActiveDiscountsByProductId(productId) {
 // Get all discounts
 async function getAllDiscounts() {
   const query = `
-    SELECT d.*, p.Description as ProductName
+    SELECT d.*,
+      p.Description as ProductName,
+      (SELECT COUNT(*) FROM Order_has_Product_Variations ohpv
+      WHERE ohpv.Discounts_idDiscounts = d.idDiscounts) > 0 as hasOrders
     FROM Discounts d
     JOIN Product p ON d.Product_idProduct = p.idProduct
-    ORDER BY d.created_at DESC
+    ORDER BY created_at DESC
   `;
   const [discounts] = await pool.query(query);
   return discounts;
