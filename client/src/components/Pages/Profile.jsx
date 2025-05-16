@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -11,8 +11,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CurrentOrders from '../CurrentOrders';
 import OrderHistory from '../OrderHistory';
+import { AuthContext } from '../../context/AuthContext';
 
 const Profile = () => {
+    const { user } = useContext(AuthContext);
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
     const [isEditProfileOpen, setIsEditProfileOpen] = React.useState(false);
     const [isAddAddressModalOpen, setIsAddAddressModalOpen] = React.useState(false);
@@ -53,13 +55,23 @@ const Profile = () => {
         }
     ]);
     const [profileData, setProfileData] = React.useState({
-        name: 'Sarah Jasmine',
-        contactNo: '07032219923',
-        email: 'sarah@gmail.com',
+        name: '',
+        contactNo: '',
+        email: '',
         address: '104/piliyandala.boralasgomuwa',
         dateOfBirth: '2024/08/09',
         password: '************************'
     });
+
+    useEffect(() => {
+        if (user) {
+            setProfileData(prevData => ({
+                ...prevData,
+                name: user.name || '',
+                email: user.email || '',
+            }));
+        }
+    }, [user]);
 
     const [profileErrors, setProfileErrors] = React.useState({
         name: '',
