@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CategoryDropdown from '../Navbar/CategoryDropdown';
-import { products } from '../products'; // Make sure the products file path is correct
+import { products } from '../products';
 import logo from './logo.png';
 import { 
   FaSearch, 
@@ -14,14 +14,18 @@ import {
   FaCalendarAlt, 
   FaHeart,
   FaNetworkWired, 
-  FaGift
+  FaGift,
+  FaSignOutAlt
 } from 'react-icons/fa';
+import { AuthContext } from '../../context/AuthContext';
 
 function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const { isAuthenticated, logout, user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
@@ -51,11 +55,15 @@ function Navbar() {
     setIsModalOpen(false);
   };
 
-  // Initialize cart count from localStorage on component mount
   React.useEffect(() => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     setCartCount(cart.reduce((total, item) => total + item.quantity, 0));
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/sign-in");
+  };
 
   return (
     <>
@@ -83,7 +91,7 @@ function Navbar() {
             </button>
           </div>
 
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
             <Link to="/cart" className="relative">
               <motion.div
                 whileHover={{ scale: 1.1 }}
@@ -109,15 +117,39 @@ function Navbar() {
               </motion.div>
             </Link>
 
-            <Link to="/profile">
-              <motion.div
+            {isAuthenticated && user ? (
+              <Link to="/profile" title={`Logged in as ${user.name}`}>
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                >
+                  <FaUser className="text-[15px] cursor-pointer" />
+                </motion.div>
+              </Link>
+            ) : (
+              <Link to="/sign-in" title="Login/Register">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                >
+                  <FaUser className="text-[15px] cursor-pointer" />
+                </motion.div>
+              </Link>
+            )}
+
+            {isAuthenticated && (
+              <motion.button
+                onClick={handleLogout}
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}
-                className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] ml-2"
+                title="Logout"
               >
-                <FaUser className="text-[15px] cursor-pointer" title="Me" />
-              </motion.div>
-            </Link>
+                <FaSignOutAlt className="text-[15px] cursor-pointer" />
+              </motion.button>
+            )}
           </div>
         </div>
       </div>
