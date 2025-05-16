@@ -313,10 +313,10 @@ const ProductPage = () => {
             {activeDiscount && (
               <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
                 {activeDiscount.Discount_Type === "fixed"
-                  ? `LKR ${parseFloat(activeDiscount.Discount_Value).toFixed(
+                  ? `Extra LKR ${parseFloat(activeDiscount.Discount_Value).toFixed(
                       2
                     )} OFF`
-                  : `${parseInt(activeDiscount.Discount_Value)}% OFF`}
+                  : `Extra ${parseInt(activeDiscount.Discount_Value)}% OFF`}
               </span>
             )}
           </div>
@@ -479,11 +479,11 @@ const ProductPage = () => {
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
             Related <span className="text-[#5CAF90]">Products</span>
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-3 sm:mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-8 mt-3 sm:mt-4 h-[320px]">
             {relatedProducts.map((relatedProduct) => (
               <div
                 key={relatedProduct.id}
-                className="border p-2 sm:p-4 rounded-lg cursor-pointer hover:shadow-md transition-shadow"
+                className="border  rounded-lg cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => navigate(`/product-page/${relatedProduct.id}`)}
               >
                 <ProductCard
