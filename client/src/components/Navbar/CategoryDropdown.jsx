@@ -102,7 +102,7 @@ export default function CategoryDropdown() {
       <button
         ref={buttonRef}
         onClick={handleCategoryModal}
-        className="flex items-center space-x-2 bg-[#5CAF90] text-white text-[13.33px] px-4 py-2 rounded"
+        className="flex items-center space-x-2 bg-[#5CAF90] text-white text-[13.33px] px-4 py-1.5 rounded"
       >
         <span>All Categories</span>
         <span className="text-[13.33px]">▼</span>
