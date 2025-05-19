@@ -11,7 +11,7 @@ const ProductCard = ({
   discountAmount,
   id
 }) => (
-  <Link to={`/product-page/${id}`} className="block w-full h-full">
+  <Link to={/product-page/${id}} className="block w-full h-full">
     <div className="rounded-lg bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow cursor-pointer w-full h-full flex flex-col">
       <div className="relative">
         <img
