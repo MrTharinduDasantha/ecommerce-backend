@@ -32,6 +32,7 @@ const ForYou = () => {
             weight: product.SIH || "N/A",
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
+            discountName: product.Discount_Name || "For You Discounts"
           }));
           setProducts(formattedProducts);
         }
@@ -44,38 +45,22 @@ const ForYou = () => {
   }, []);
 
   const handleProductClick = (product) => {
-    // Format the product data before adding to cart
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      price: product.price,
-      quantity: 1,
-      // Only add size property if it's not null
-      ...(product.size && { size: product.size }),
-      // Add color property
-      color: product.color,
-    };
-
-    // Check if the product already exists in the cart
-    const existingItemIndex = addedProducts.findIndex(
-      (item) => item.id === product.id
-    );
-
-    if (existingItemIndex !== -1) {
-      // Update the existing item in the cart
-      const updatedProducts = [...addedProducts];
-      updatedProducts[existingItemIndex] = {
-        ...updatedProducts[existingItemIndex],
-        color: cartItem.color,
-        ...(product.size && { size: cartItem.size }),
-      };
-      setAddedProducts(updatedProducts);
-    } else {
-      // Add the product to cart if it doesn't exist
-      addToCart(cartItem);
-      setAddedProducts((prev) => [...prev, cartItem]);
-    }
+    // Navigate to product page instead of adding to cart
+    navigate(`/product-page/${product.id}`, {
+      state: {
+        product: {
+          id: product.id,
+          name: product.name,
+          image: product.image,
+          price: product.price,
+          oldPrice: product.oldPrice,
+          weight: product.weight,
+          color: product.color,
+          size: product.size,
+          discountName: product.discountName
+        }
+      }
+    });
   };
 
   const handleViewCart = () => {
@@ -123,7 +108,6 @@ const ForYou = () => {
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                  onClick={() => handleProductClick(product)}
                 >
                   <ProductCard
                     image={product.image}
@@ -133,6 +117,7 @@ const ForYou = () => {
                     oldPrice={product.oldPrice}
                     weight={product.weight}
                     id={product.id}
+                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>

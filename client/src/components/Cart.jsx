@@ -77,13 +77,14 @@ const Cart = () => {
 
     const parsePrice = (priceString) => {
         if (!priceString) return 0;
-        const numericPrice = priceString.replace('Rs. ', '').replace(/,/g, '');
+        // Remove 'LKR ' prefix and any commas, then parse to float
+        const numericPrice = priceString.replace('LKR ', '').replace(/,/g, '');
         return parseFloat(numericPrice) || 0;
     };
 
     const formatPrice = (price) => {
-        if (isNaN(price)) return 'Rs. 0';
-        return `Rs. ${price.toLocaleString()}`;
+        if (isNaN(price)) return 'LKR 0';
+        return `LKR ${price.toLocaleString()}`;
     };
 
     const calculateItemTotal = (item) => {
@@ -322,7 +323,7 @@ const Cart = () => {
                                                 </div>
                                             </div>
                                             <div className="my-auto">
-                                                <p className="text-[#1D372E] font-medium">{formatPrice(parsePrice(item.price) * item.quantity)}</p>
+                                                <p className="text-[#1D372E] font-medium">{formatPrice(parsePrice(item.price))}</p>
                                             </div>
                                             <div className="my-auto">
                                                 <input
@@ -335,7 +336,7 @@ const Cart = () => {
                                             </div>
                                             <div className="my-auto">
                                                 <p className="text-[#1D372E] font-medium ml-auto">
-                                                    {formatPrice(parsePrice(item.price) * item.quantity)}
+                                                    {formatItemPrice(item)}
                                                 </p>
                                             </div>
                                             <div className="my-auto">
@@ -357,7 +358,7 @@ const Cart = () => {
                         <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto">
                             <div className="flex justify-between items-center mb-6">
                                 <span className="text-lg font-medium">Total</span>
-                                <span className="text-lg">{formatPrice(calculateTotal())}</span>
+                                <span className="text-lg">{formatPrice(total)}</span>
                             </div>
 
                             <Link to="/"
