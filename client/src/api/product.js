@@ -236,3 +236,4 @@ export const getSubCategoryById = async (id) => {
   const data = await response.json();
   return data; // Ensure this structure has a 'description' field as expected
 };
+

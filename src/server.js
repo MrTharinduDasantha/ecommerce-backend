@@ -22,14 +22,16 @@ const io = socketIo(server, {
   cors: {
     origin: ["http://localhost:3000", "http://localhost:5173"], // Allow both ports
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    credentials: true
+    credentials: true,
   },
 });
 
-app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use("/src/uploads", express.static("src/uploads"));
 
@@ -43,7 +45,8 @@ app.use("/api/products", productRoutes); // Use the product routes
 app.use("/api/settings", settingRoutes); // Use the setting routes
 app.use("/api/carts", cartRoutes); // Use the cart routes
 app.use("/api/orders", customerOrderRoutes); // Use the customer order routes
-app.use("/api/customers", customerAddressRoutes); // Use the customer address routes
+app.use("/api/customer-addresses", customerAddressRoutes); // Provide a dedicated route for customer addresses
+app.use("/api/customers", adminCustomerRoutes); // Restoring previous functionality for /api/customers
 app.use("/admin/orders", orderRoutes); // Use the admin order routes
 app.use("/admin/notifications", notificationRoutes); // Use the notification routes
 app.use("/api/admin/users", adminRoutes); // Use the admin user routes
