@@ -761,7 +761,8 @@ async function getProductSalesInfo(productId) {
     JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
     JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
     WHERE pv.Product_idProduct = ?
-    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`,
+    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    AND o.Payment_Stats = 'paid'`,
     [productId]
   );
 
@@ -773,6 +774,7 @@ async function getProductSalesInfo(productId) {
     JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
     WHERE pv.Product_idProduct = ?
     AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    AND o.Payment_Stats = 'paid'
     GROUP BY week
     ORDER BY week`,
     [productId]

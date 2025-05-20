@@ -313,9 +313,9 @@ const ProductPage = () => {
             {activeDiscount && (
               <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
                 {activeDiscount.Discount_Type === "fixed"
-                  ? `Extra LKR ${parseFloat(activeDiscount.Discount_Value).toFixed(
-                      2
-                    )} OFF`
+                  ? `Extra LKR ${parseFloat(
+                      activeDiscount.Discount_Value
+                    ).toFixed(2)} OFF`
                   : `Extra ${parseInt(activeDiscount.Discount_Value)}% OFF`}
               </span>
             )}
