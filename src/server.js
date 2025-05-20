@@ -20,7 +20,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:5173"], // Allow both ports
+    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"], // Added port 3001
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   },
@@ -28,7 +28,7 @@ const io = socketIo(server, {
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"], // Added port 3001
     credentials: true,
   })
 );
