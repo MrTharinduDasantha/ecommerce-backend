@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   TbDashboard,
@@ -8,6 +8,7 @@ import {
   TbTruck,
   TbBell,
 } from "react-icons/tb";
+import { IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
 import { MdOutlineDiscount } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
@@ -45,6 +46,19 @@ const Sidebar = ({ isSidebarOpen }) => {
     setIsUsersSubMenuOpen(!isUsersSubMenuOpen);
   };
 
+  // Open submenus based on active state
+  useEffect(() => {
+    if (isManageProductsActive) setIsProductSubMenuOpen(true);
+  }, [isManageProductsActive]);
+
+  useEffect(() => {
+    if (isManageDiscountsActive) setIsDiscountSubMenuOpen(true);
+  }, [isManageDiscountsActive]);
+
+  useEffect(() => {
+    if (isManageUsersActive) setIsUsersSubMenuOpen(true);
+  }, [isManageUsersActive]);
+
   // Logout handler
   const handleLogout = () => {
     logout();
@@ -53,14 +67,14 @@ const Sidebar = ({ isSidebarOpen }) => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-30 h-screen pt-16 transition-transform bg-[#1D372E] border-r border-emerald-950
-        w-56 md:w-64 ${
+      className={`fixed top-0 left-0 z-30 h-screen pt-16 transition-transform border-r border-emerald-950
+        w-56 md:w-[15.5rem] ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
       aria-label="Sidebar"
     >
-      <div className="h-full px-3 py-4 overflow-y-auto">
-        <ul className="menu menu-sm space-y-1 font-medium">
+      <div className="h-full px-1 py-4 overflow-y-auto">
+        <ul className="menu  menu-sm space-y-1 font-medium">
           {/* Dashboard */}
           <li>
             <NavLink
@@ -80,22 +94,27 @@ const Sidebar = ({ isSidebarOpen }) => {
           </li>
 
           {/* Manage Products */}
-          <li className="menu-collapse">
-            <details open={isProductSubMenuOpen || isManageProductsActive}>
-              <summary
-                onClick={toggleProductSubMenu}
-                className={`flex items-center justify-between rounded-md px-3 py-2 text-xs md:text-sm transition-colors
-                  hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
-                    isManageProductsActive
-                      ? "bg-[#5CAF90] text-primary-content font-medium"
-                      : "text-base-content/85"
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <TbShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span>Manage Products</span>
-                </div>
-              </summary>
+          <li>
+            <button
+              onClick={toggleProductSubMenu}
+              className={`flex items-center justify-between w-full rounded-md px-3 py-2 text-xs md:text-sm transition-colors
+              hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
+                isManageProductsActive
+                  ? "bg-[#5CAF90] text-primary-content font-medium"
+                  : "text-base-content/85"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <TbShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>Manage Products</span>
+              </div>
+              {isProductSubMenuOpen ? (
+                <IoMdArrowDropupCircle className="w-4 h-4" />
+              ) : (
+                <IoMdArrowDropdownCircle className="w-4 h-4" />
+              )}
+            </button>
+            {isProductSubMenuOpen && (
               <ul className="menu-sub pl-6 mt-1 space-y-1">
                 <li>
                   <NavLink
@@ -143,26 +162,31 @@ const Sidebar = ({ isSidebarOpen }) => {
                   </NavLink>
                 </li>
               </ul>
-            </details>
+            )}
           </li>
 
           {/* Manage Discounts */}
-          <li className="menu-collapse">
-            <details open={isDiscountSubMenuOpen || isManageDiscountsActive}>
-              <summary
-                onClick={toggleDiscountSubMenu}
-                className={`flex items-center justify-between rounded-md px-3 py-2 text-xs md:text-sm transition-colors
-                  hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
-                    isManageDiscountsActive
-                      ? "bg-[#5CAF90] text-primary-content font-medium"
-                      : "text-base-content/85"
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <MdOutlineDiscount className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span>Manage Discounts</span>
-                </div>
-              </summary>
+          <li>
+            <button
+              onClick={toggleDiscountSubMenu}
+              className={`flex items-center justify-between w-full rounded-md px-3 py-2 text-xs md:text-sm transition-colors
+              hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
+                isManageDiscountsActive
+                  ? "bg-[#5CAF90] text-primary-content font-medium"
+                  : "text-base-content/85"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <MdOutlineDiscount className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>Manage Discounts</span>
+              </div>
+              {isDiscountSubMenuOpen ? (
+                <IoMdArrowDropupCircle className="w-4 h-4" />
+              ) : (
+                <IoMdArrowDropdownCircle className="w-4 h-4" />
+              )}
+            </button>
+            {isDiscountSubMenuOpen && (
               <ul className="menu-sub pl-6 mt-1 space-y-1">
                 <li>
                   <NavLink
@@ -195,26 +219,30 @@ const Sidebar = ({ isSidebarOpen }) => {
                   </NavLink>
                 </li>
               </ul>
-            </details>
+            )}
           </li>
 
-          {/* Manage Users */}
-          <li className="menu-collapse">
-            <details open={isUsersSubMenuOpen || isManageUsersActive}>
-              <summary
-                onClick={toggleUsersSubMenu}
-                className={`flex items-center justify-between rounded-md px-3 py-2 text-xs md:text-sm transition-colors
-                  hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
-                    isManageUsersActive
-                      ? "bg-[#5CAF90] text-primary-content font-medium"
-                      : "text-base-content/85"
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <TbUsers className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  <span>Manage Users</span>
-                </div>
-              </summary>
+          <li>
+            <button
+              onClick={toggleUsersSubMenu}
+              className={`flex items-center justify-between w-full rounded-md px-3 py-2 text-xs md:text-sm transition-colors
+            hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
+              isManageUsersActive
+                ? "bg-[#5CAF90] text-primary-content font-medium"
+                : "text-base-content/85"
+            }`}
+            >
+              <div className="flex items-center gap-3">
+                <TbUsers className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>Manage Users</span>
+              </div>
+              {isUsersSubMenuOpen ? (
+                <IoMdArrowDropupCircle className="w-4 h-4" />
+              ) : (
+                <IoMdArrowDropdownCircle className="w-4 h-4" />
+              )}
+            </button>
+            {isUsersSubMenuOpen && (
               <ul className="menu-sub pl-6 mt-1 space-y-1">
                 <li>
                   <NavLink
@@ -262,7 +290,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   </NavLink>
                 </li>
               </ul>
-            </details>
+            )}
           </li>
 
           {/* Manage Orders */}
