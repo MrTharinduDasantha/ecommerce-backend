@@ -1,45 +1,34 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; 
+import { useParams, useLocation } from "react-router-dom"; 
 import Sidebar from '../Sidebar';
 import ProductCard from '../ProductCard';
 import ForYouBanner from '../ForYouBanner';
-import { getCategories, getProductsBySubCategoryId } from '../../api/product';
+import { getProductsBySubCategoryId } from '../../api/product';
 
 const SubCategory = () => {
-    const { id } = useParams(); // Get subcategory ID from the URL
-    const [categories, setCategories] = useState([]);
+    const { id } = useParams();
+    const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [products, setProducts] = useState([]);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await getCategories();
-                if (data && data.categories) {
-                    setCategories(data.categories);
-                } else {
-                    setError("Unexpected data structure: " + JSON.stringify(data));
-                }
-            } catch (error) {
-                console.error("Failed to load categories:", error.message);
-                setError(error.message || "Failed to load categories");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCategories();
-    }, []);
+    const [subcategoryName, setSubcategoryName] = useState(location.state?.subcategoryName || '');
+    const [categoryName, setCategoryName] = useState(location.state?.categoryName || '');
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const data = await getProductsBySubCategoryId(id); // Fetch products directly by subcategory ID
-                setProducts(data.products || []);
+                setLoading(true);
+                const data = await getProductsBySubCategoryId(id);
+                if (data && data.products) {
+                    setProducts(data.products);
+                } else {
+                    setProducts([]);
+                }
             } catch (error) {
                 console.error(`Failed to load products for subcategory ${id}:`, error.message);
                 setError(error.message || "Failed to load products");
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -48,8 +37,17 @@ const SubCategory = () => {
         }
     }, [id]);
 
-    if (loading) return <div>Loading categories...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-lg text-gray-600">Loading products...</div>
+        </div>
+    );
+    
+    if (error) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-lg text-red-600">Error: {error}</div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
@@ -58,8 +56,19 @@ const SubCategory = () => {
                     <div className="w-full lg:w-64 xl:w-72">
                         <Sidebar />
                     </div>
-                    <div className="flex-1 overflow-hidden">
-                        <ForYouBanner className="mb-4 sm:mb-6" />
+                    <div className="flex-1">
+                        <ForYouBanner className="mb-4 sm:py-6" />
+                        
+                        <div className="mb-6">
+                            {categoryName && (
+                                <div className="text-sm text-gray-600 mb-2">
+                                    Category: {categoryName}
+                                </div>
+                            )}
+                            <h2 className="text-2xl font-semibold text-gray-800">
+                                {subcategoryName || 'Products'}
+                            </h2>
+                        </div>
 
                         {products.length > 0 ? (
                             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -68,8 +77,8 @@ const SubCategory = () => {
                                         key={product.idProduct}
                                         image={product.Main_Image_Url}
                                         title={product.Description}
-                                        price={product.Selling_Price}
-                                        oldPrice={product.Market_Price}
+                                        price={`LKR ${product.Selling_Price}`}
+                                        oldPrice={`LKR ${product.Market_Price}`}
                                         weight={product.SIH || 'N/A'}
                                         id={product.idProduct}
                                         discountName={product.Discount_Name}
@@ -79,7 +88,9 @@ const SubCategory = () => {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-sm text-gray-500">No products available for this subcategory.</p>
+                            <div className="text-center py-8">
+                                <p className="text-gray-500">No products available for this subcategory.</p>
+                            </div>
                         )}
                     </div>
                 </div>
