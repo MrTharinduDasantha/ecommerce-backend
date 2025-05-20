@@ -61,3 +61,5 @@ test_medusa_api.py
 
 # upload files
 src/uploads
+
+.lhignore
