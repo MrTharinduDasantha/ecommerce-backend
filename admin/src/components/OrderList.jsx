@@ -8,6 +8,7 @@ import {
 import { FaEye, FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
+import Pagination from "./common/Pagination";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
@@ -434,35 +435,11 @@ const OrderList = () => {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
-                currentPage === 1
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-[#5CAF90] text-white hover:bg-opacity-90"
-              }`}
-            >
-              Previous
-            </button>
-            <span className="text-[#1D372E] text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
-                currentPage === totalPages
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-[#5CAF90] text-white hover:bg-opacity-90"
-              }`}
-            >
-              Next
-            </button>
-          </div>
-        )}
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
 
         {/* Order Status Modal */}
         {showOrderStatusModal && orderStatusChangeData && (
