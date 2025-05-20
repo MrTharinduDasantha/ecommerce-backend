@@ -74,7 +74,7 @@ const OnSale = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
+      <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow overflow-x-hidden">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
@@ -82,7 +82,7 @@ const OnSale = () => {
           </div>
           
           {/* Main Content Area */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1">
             {/* Banner */}
             <OnSaleBanner className="mb-4 sm:mb-6" />
             

@@ -53,10 +53,18 @@ export default function CategoryDropdown() {
   };
 
   const handleSubcategoryClick = (subcategory) => {
-    // Navigate to the SubCategory page with the selected subcategory ID
-    navigate(`/subcategory/${subcategory.idSub_Category}`);
+    // Close the dropdowns
     setShowSubcategories(false);
+    setShowCategories(false);
     setSelectedCategory(null);
+    
+    // Navigate to the SubCategory page with the selected subcategory ID
+    navigate(`/subcategory/${subcategory.idSub_Category}`, {
+      state: {
+        subcategoryName: subcategory.Description,
+        categoryName: selectedCategory.Description
+      }
+    });
   };
 
   const handleBackToCategories = () => {
