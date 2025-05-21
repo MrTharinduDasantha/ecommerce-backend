@@ -115,7 +115,7 @@ function Navbar() {
             </Link>
 
             {/* Profile */}
-            <Link to="/profile">
+            <Link to="/sign-in">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}

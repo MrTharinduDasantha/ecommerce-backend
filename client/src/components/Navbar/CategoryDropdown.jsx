@@ -53,7 +53,9 @@ export default function CategoryDropdown() {
   };
 
   const handleSubcategoryClick = (subcategory) => {
-    // Close the dropdowns
+
+    navigate(`/subCategory/${subcategory.idSub_Category}`);
+
     setShowSubcategories(false);
     setShowCategories(false);
     setSelectedCategory(null);
