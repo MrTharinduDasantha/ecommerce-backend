@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -12,16 +13,21 @@ const SignUp = () => {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [mobileNo, setMobileNo] = useState("");
+  const [mobileNoError, setMobileNoError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   // Validate email format
   const validateEmail = (email) => {
     return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let isValid = true;
+    setSubmitError("");
 
     // Validate name
     if (!name) {
@@ -61,10 +67,58 @@ const SignUp = () => {
       setConfirmPasswordError("");
     }
 
+    // Validate mobile number
+    if (!mobileNo) {
+      setMobileNoError("This field is required.");
+      isValid = false;
+    } else {
+      setMobileNoError("");
+    }
+
     // If all fields are valid, proceed with sign-up logic
     if (isValid) {
-      console.log("Signing up with:", name, email, password);
-      // Add your sign-up logic here
+      try {
+        const response = await fetch("http://localhost:9000/api/auth/customers/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            first_name: name,
+            full_name: name,
+            mobile_no: mobileNo,
+            status: "active"
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Registration failed");
+        }
+
+        // If registration is successful, automatically log the user in
+        const loginResponse = await fetch("http://localhost:9000/api/auth/customers/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const loginData = await loginResponse.json();
+
+        if (!loginResponse.ok) {
+          throw new Error(loginData.message || "Login failed after registration");
+        }
+
+        // Login with the token and user data
+        login(loginData.token, loginData.user);
+        
+        // Navigate to home or dashboard
+        navigate("/");
+      } catch (error) {
+        console.error("Registration error:", error);
+        setSubmitError(error.message || "Registration failed. Please try again.");
+      }
     }
   };
 
@@ -72,6 +126,11 @@ const SignUp = () => {
     <div className="min-h-full p-8 flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+        {submitError && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {submitError}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2" htmlFor="name">
@@ -107,6 +166,24 @@ const SignUp = () => {
             />
             {emailError && (
               <p className="text-red-500 text-sm mt-1">{emailError}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2" htmlFor="mobileNo">
+              Mobile Number
+            </label>
+            <input
+              type="text"
+              id="mobileNo"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
+                mobileNoError ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter your mobile number"
+              value={mobileNo}
+              onChange={(e) => setMobileNo(e.target.value)}
+            />
+            {mobileNoError && (
+              <p className="text-red-500 text-sm mt-1">{mobileNoError}</p>
             )}
           </div>
           <div className="mb-4 relative">

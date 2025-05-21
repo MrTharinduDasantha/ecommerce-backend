@@ -761,7 +761,8 @@ async function getProductSalesInfo(productId) {
     JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
     JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
     WHERE pv.Product_idProduct = ?
-    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`,
+    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    AND o.Payment_Stats = 'paid'`,
     [productId]
   );
 
@@ -773,6 +774,7 @@ async function getProductSalesInfo(productId) {
     JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
     WHERE pv.Product_idProduct = ?
     AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    AND o.Payment_Stats = 'paid'
     GROUP BY week
     ORDER BY week`,
     [productId]
@@ -861,10 +863,13 @@ async function getActiveDiscountsByProductId(productId) {
 // Get all discounts
 async function getAllDiscounts() {
   const query = `
-    SELECT d.*, p.Description as ProductName
+    SELECT d.*,
+      p.Description as ProductName,
+      (SELECT COUNT(*) FROM Order_has_Product_Variations ohpv
+      WHERE ohpv.Discounts_idDiscounts = d.idDiscounts) > 0 as hasOrders
     FROM Discounts d
     JOIN Product p ON d.Product_idProduct = p.idProduct
-    ORDER BY d.created_at DESC
+    ORDER BY created_at DESC
   `;
   const [discounts] = await pool.query(query);
   return discounts;
