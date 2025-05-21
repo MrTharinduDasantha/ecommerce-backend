@@ -53,8 +53,7 @@ export default function CategoryDropdown() {
   };
 
   const handleSubcategoryClick = (subcategory) => {
-    // Navigate to the SubCategory page with the selected subcategory ID
-    navigate(`/subcategory/${subcategory.idSub_Category}`);
+    navigate(`/subCategory/${subcategory.idSub_Category}`);
     setShowSubcategories(false);
     setSelectedCategory(null);
   };
