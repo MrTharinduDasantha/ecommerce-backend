@@ -10,6 +10,7 @@ const cartRoutes = require("./routes/customer/cart.routes");
 const orderRoutes = require("./routes/admin/order.routes");
 const adminRoutes = require("./routes/admin/user.routes");
 const notificationRoutes = require("./routes/admin/notification.routes");
+const customerAuthRoutes = require("./routes/customer/auth.routes");
 
 require("dotenv").config(); // Load environment variables from .env file
 
@@ -33,6 +34,9 @@ app.use(
 
 app.use(express.json());
 app.use("/src/uploads", express.static("src/uploads"));
+
+// Public routes - no authentication needed
+app.use("/api/auth/customers", customerAuthRoutes);
 
 app.use("/api/customers", customerRoutes); // Use the customer routes
 app.use("/api/admin/users", adminRoutes); // Use the admin user routes
