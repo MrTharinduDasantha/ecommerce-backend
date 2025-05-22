@@ -15,8 +15,11 @@ const storage = multer.diskStorage({
   },
 });
 
-// Configure Multer to accept navbar logo
+// Initialize Multer with storage configuration
 const upload = multer({ storage });
+
+// Configure Multer to accept any fields
+const uploadFiles = upload.any();
 
 // -----------------------------
 // Header Footer Setting Routes
@@ -29,7 +32,7 @@ router.get(
 router.put(
   "/header-footer",
   authenticate,
-  upload.single("navbarLogo"),
+  uploadFiles,
   settingController.updateHeaderFooterSetting
 );
 
