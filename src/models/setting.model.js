@@ -40,7 +40,6 @@ async function updateHeaderFooterSetting(HeaderFooterSettingData) {
         HeaderFooterSettingData.Navbar_Logo_Url,
         HeaderFooterSettingData.Footer_Copyright,
         HeaderFooterSettingData.Nav_Icons,
-        HeaderFooterSettingData.Nav_Icons,
         HeaderFooterSettingData.Country_Blocks,
         HeaderFooterSettingData.Footer_Links,
         HeaderFooterSettingData.Social_Icons,
