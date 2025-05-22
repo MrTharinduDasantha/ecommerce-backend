@@ -44,8 +44,9 @@ async function getCart(req, res) {
 // Add product to cart
 async function addToCart(req, res) {
   try {
+    console.log(req,res,"-----------------reshel1111")
     const { customerId, productVariationId, qty } = req.body;
-
+console.log("salam111")
     console.log("Adding to cart:", { customerId, productVariationId, qty });
 
     if (!customerId || !productVariationId || !qty) {
@@ -147,6 +148,16 @@ async function updateCartItem(req, res) {
       return res.status(404).json({ message: "Cart not found" });
     }
 
+    // Get current cart item to check existing quantity
+    const [cartItem] = await pool.query(
+      "SELECT * FROM Cart_has_Product WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?",
+      [cart.idCart, productVariationId]
+    );
+
+    if (cartItem.length === 0) {
+      return res.status(404).json({ message: "Cart item not found" });
+    }
+
     // Check if product variation exists
     const [productVariation] = await pool.query(
       "SELECT * FROM Product_Variations WHERE idProduct_Variations = ?",
@@ -157,11 +168,15 @@ async function updateCartItem(req, res) {
       return res.status(404).json({ message: "Product variation not found" });
     }
 
-    // Check if quantity is available
-    if (productVariation[0].Qty < qty) {
+    // Calculate the difference between new quantity and current cart quantity
+    const currentCartQty = cartItem[0].Qty;
+    const qtyDifference = qty - currentCartQty;
+
+    // Check if the new total quantity (including what's already in cart) is available
+    if (productVariation[0].Qty < qtyDifference) {
       return res.status(400).json({
         message: "Requested quantity not available",
-        availableQty: productVariation[0].Qty,
+        availableQty: productVariation[0].Qty + currentCartQty,
       });
     }
 

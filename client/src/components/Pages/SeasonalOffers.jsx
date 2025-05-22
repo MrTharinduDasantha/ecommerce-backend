@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { getProducts } from "../../api/product"; // Import the API function
 import Sidebar from "../Sidebar";
@@ -7,7 +6,7 @@ import Banner from "../Banner";
 import ProductCard from "../ProductCard";
 
 const SeasonalOffers = () => {
-  const { addToCart } = useCart();
+
   const navigate = useNavigate();
   const [addedProducts, setAddedProducts] = useState([]);
   const [products, setProducts] = useState([]);
@@ -29,6 +28,7 @@ const SeasonalOffers = () => {
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Seasonal Discounts",
+            category:product.subcategories?.[0]?.Description || ""
           }));
           setProducts(formattedProducts);
         }
@@ -50,10 +50,10 @@ const SeasonalOffers = () => {
           image: product.image,
           price: product.price,
           oldPrice: product.oldPrice,
-          weight: product.weight,
           color: product.color,
           size: product.size,
           discountName: product.discountName,
+ 
         }
       }
     });
@@ -106,11 +106,10 @@ const SeasonalOffers = () => {
                 >
                   <ProductCard
                     image={product.image}
-                    category="Seasonal Offers"
+                    category={product.category}
                     title={product.name}
                     price={product.price}
                     oldPrice={product.oldPrice}
-                    weight={product.weight}
                     id={product.id}
                     onProductClick={() => handleProductClick(product)}
                     className="h-full"

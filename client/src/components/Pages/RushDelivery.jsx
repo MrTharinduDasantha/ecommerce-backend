@@ -33,6 +33,7 @@ const RushDelivery = () => {
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Rush Discounts",
+            category:product.subcategories?.[0]?.Description || ""
           }));
           setProducts(formattedProducts);
         }
@@ -74,8 +75,8 @@ const RushDelivery = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+      <div className="container mx-auto px-3 xs:px-4 sm:px-5 lg:px-2 py-4 sm:py-6 lg:py-8 flex-grow">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-4">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <Sidebar />
@@ -110,7 +111,7 @@ const RushDelivery = () => {
                 >
                   <ProductCard
                     image={product.image}
-                    category="Rush Delivery"
+                    category={product.category}
                     title={product.name}
                     price={product.price}
                     oldPrice={product.oldPrice}

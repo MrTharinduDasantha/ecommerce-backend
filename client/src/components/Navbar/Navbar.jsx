@@ -2,8 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import CategoryDropdown from "../Navbar/CategoryDropdown";
-import { products } from "../products"; // Make sure the path is correct
 import logo from "./logo.png";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import CategoryDropdown from './CategoryDropdown';
+import products from '../Products.jsx'; // Make sure the path is correct
+import logo from './logo.png';
 import {
   FaSearch,
   FaShoppingCart,
@@ -129,7 +134,7 @@ function Navbar() {
             </Link>
 
             {/* Profile */}
-            <Link to="/profile">
+            <Link to="/sign-in">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}

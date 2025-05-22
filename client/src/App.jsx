@@ -9,10 +9,10 @@ import Footer from "./components/Footer/Footer";
 import NavBar from "./components/NavBar/NavBar";
 import Brands from "./routes/Brands/brands";
 import BrandDetails from "./routes/Brands/BrandDetails";
-import SignIn from "./Components/SignIn";
-import SignUp from "./Components/SignUp";
+import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
 import ForgotPassword from "./Components/ForgotPassword";
-import ResetPassword from "./Components/ResetPassword";
+import ResetPassword from "./components/ResetPassword";
 import ProductPage from "./components/ProductPage";
 import OrderTracking from "./Components/OrderTracking";
 import Checkout from "./components/Checkout";
@@ -62,7 +62,8 @@ const App = () => {
           <Route path="/on-sale" element={<OnSale />} />
           <Route path="/AllCategories/:categoryId" element={<AllCategories />} />
           <Route path="/AllProducts" element={<AllProducts />} />
-          <Route path="/subCategory/:categoryId/:subCategoryId" element={<SubCategory />} />
+          <Route path="/subCategory/:id" element={<SubCategory />} />
+
         </Routes>
         <Footer />
       </CartProvider>

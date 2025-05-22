@@ -24,13 +24,22 @@ import MacbookAir from "../assets/OnSale/MacbookAir.jpg";
 import DELLLaptop from "../assets/OnSale/DELLLaptop.jpg";
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, loading, error, getTotal } = useCart();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
   const source = location.state?.source;
   const selectedProduct = location.state?.selectedProduct;
+
+  // Initialize selected items when cart items change
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      setSelectedItems(cartItems.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  }, [cartItems]);
 
   const handleItemSelect = (itemId) => {
     setSelectedItems((prev) => {
@@ -82,36 +91,14 @@ const Cart = () => {
     }
   }, [selectedProduct, cartItems]);
 
-  const parsePrice = (priceString) => {
-    if (!priceString) return 0;
-    // Remove 'LKR ' prefix and any commas, then parse to float
-    const numericPrice = priceString.replace("LKR ", "").replace(/,/g, "");
-    return parseFloat(numericPrice) || 0;
+  const calculateItemTotal = (item) => {
+    return item.price * item.quantity;
   };
 
   const formatPrice = (price) => {
     if (isNaN(price)) return "LKR 0";
     return `LKR ${price.toLocaleString()}`;
   };
-
-  const calculateItemTotal = (item) => {
-    const price = parsePrice(item.price);
-    return price * item.quantity;
-  };
-
-  const formatItemPrice = (item) => {
-    return formatPrice(calculateItemTotal(item));
-  };
-
-  const calculateTotal = () => {
-    if (cartItems.length === 0) return 0;
-    return cartItems.reduce((sum, item) => {
-      const price = parsePrice(item.price);
-      return sum + price * item.quantity;
-    }, 0);
-  };
-
-  const total = calculateTotal();
 
   // Related products based on source
   const getRelatedProducts = () => {
@@ -271,176 +258,184 @@ const Cart = () => {
             </button>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Cart Items Section */}
-            <div className="flex-1">
-              {cartItems.length === 0 ? (
-                <div className="text-gray-500 text-lg text-center py-8 bg-white rounded-lg border border-gray-200">
-                  Your cart is empty
-                </div>
-              ) : (
-                <div className="space-y-6 my-auto">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      id={`product-${item.id}`}
-                      className={`grid grid-cols-6 text-center w-auto border-b-2 border-gray-200 pb-4 transition-all duration-500 ${
-                        selectedProduct && selectedProduct.id === item.id
-                          ? "highlight-product"
-                          : ""
-                      }`}
-                    >
-                      <div className="col-span-2 flex items-center">
-                        <div
-                          className="flex items-center space-x-4 cursor-pointer"
-                          onClick={() => handleItemSelect(item.id)}
-                        >
-                          {selectedItems.includes(item.id) ? (
-                            <CheckCircleIcon className="text-[#5CAF90] text-xl" />
-                          ) : (
-                            <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
-                          )}
-                          <Link
-                            to={`/product-page/${item.id}`}
-                            state={{ fromCart: true, selectedVariant: item }}
-                            className="flex items-center space-x-4"
-                          >
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-20 h-20 object-cover rounded"
-                            />
-                            <div className="text-left">
-                              <h3 className="font-medium">{item.name}</h3>
-                              {item.color && (
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-sm text-gray-600">
-                                    Color:
-                                  </span>
-                                  <span className="text-sm font-medium">
-                                    {item.color}
-                                  </span>
-                                  {item.colorCode && (
-                                    <div
-                                      className="w-4 h-4 rounded-full border border-gray-300"
-                                      style={{
-                                        backgroundColor: item.colorCode,
-                                      }}
-                                    />
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5CAF90] mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading cart...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">
+              <p>{error}</p>
+            </div>
+          ) : (
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Cart Items Section */}
+              <div className="flex-1">
+                {cartItems.length === 0 ? (
+                  <div className="text-gray-500 text-lg text-center py-8 bg-white rounded-lg border border-gray-200">
+                    Your cart is empty
+                  </div>
+                ) : (
+                  <div className="space-y-6 my-auto">
+                    {cartItems.map((item) => (
+                      <div
+                        key={item.id}
+                        id={`product-${item.id}`}
+                        className={`grid grid-cols-6 text-center w-auto border-b-2 border-gray-200 pb-4 transition-all duration-500 ${
+                          selectedProduct && selectedProduct.id === item.id
+                            ? "highlight-product"
+                            : ""
+                        }`}
+                      >
+                        <div className="col-span-2">
+                          <div className="flex items-center space-x-4">
+                            <Link to={`/product/${item.id}`} className="flex items-center space-x-4">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-20 h-20 object-cover rounded"
+                              />
+                              <div className="flex flex-col">
+                                <h3 className="font-medium">{item.name}</h3>
+                                <div className="flex items-center gap-4">
+                                  {item.color && (
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-sm text-gray-600">
+                                        Color:
+                                      </span>
+                                      <span className="text-sm font-medium">
+                                        {item.color}
+                                      </span>
+                                      {item.colorCode && (
+                                        <div
+                                          className="w-4 h-4 rounded-full border border-gray-300"
+                                          style={{
+                                            backgroundColor: item.colorCode,
+                                          }}
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                                  {item.size && (
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-sm text-gray-600">
+                                        Size:
+                                      </span>
+                                      <span className="text-sm font-medium">
+                                        {item.size}
+                                      </span>
+                                    </div>
                                   )}
                                 </div>
-                              )}
-                              {item.size && (
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-sm text-gray-600">
-                                    Size:
-                                  </span>
-                                  <span className="text-sm font-medium">
-                                    {item.size}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </Link>
+                              </div>
+                            </Link>
+                          </div>
+                        </div>
+                        <div className="my-auto">
+                          <p className="text-[#1D372E] font-medium">{formatPrice(item.price)}</p>
+                        </div>
+                        <div className="my-auto">
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            min="1"
+                            onChange={(e) => {
+                              const newQuantity = parseInt(e.target.value);
+                              if (newQuantity > 0) {
+                                updateQuantity(item.id, newQuantity)
+                                  .catch(error => {
+                                    // Show error message to user
+                                    alert(error.message);
+                                    // Reset to previous quantity
+                                    e.target.value = item.quantity;
+                                  });
+                              }
+                            }}
+                            className="w-16 text-center border rounded py-1 ml-4"
+                          />
+                        </div>
+                        <div className="my-auto">
+                          <p className="text-[#1D372E] font-medium ml-auto">
+                            {formatPrice(item.price)}
+                          </p>
+                        </div>
+                        <div className="my-auto">
+                          <button
+                            onClick={() => removeFromCart(item.id)}
+                            className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50 ml-4"
+                            aria-label="Remove item"
+                          >
+                            <DeleteIcon sx={{ fontSize: 20 }} />
+                          </button>
                         </div>
                       </div>
-                      <div className="my-auto">
-                        <p className="text-[#1D372E] font-medium">
-                          {formatPrice(parsePrice(item.price))}
-                        </p>
-                      </div>
-                      <div className="my-auto">
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          min="1"
-                          onChange={(e) =>
-                            updateQuantity(item.id, parseInt(e.target.value))
-                          }
-                          className="w-16 text-center border rounded py-1 ml-4"
-                        />
-                      </div>
-                      <div className="my-auto">
-                        <p className="text-[#1D372E] font-medium ml-auto">
-                          {formatItemPrice(item)}
-                        </p>
-                      </div>
-                      <div className="my-auto">
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50 ml-4"
-                          aria-label="Remove item"
-                        >
-                          <DeleteIcon sx={{ fontSize: 20 }} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Order Summary Card */}
-            <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-lg font-medium">Total</span>
-                <span className="text-lg">{formatPrice(total)}</span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <Link
-                to="/"
-                className="block w-full bg-[#1D372E] text-white text-center py-3 rounded hover:bg-[#1D372E] transition-colors mb-4"
-              >
-                ← Keep Shopping
-              </Link>
+              {/* Order Summary Card */}
+              <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <span className="text-lg font-medium">Total</span>
+                  <span className="text-lg">{formatPrice(getTotal())}</span>
+                </div>
 
-              {cartItems.length > 0 && (
-                <button
-                  onClick={handleCheckout}
-                  disabled={selectedItems.length === 0}
-                  className={`w-full text-white text-center py-3 rounded transition-colors mb-8 ${
-                    selectedItems.length > 0
-                      ? "bg-[#5CAF90] hover:bg-[#5CAF90]"
-                      : "bg-gray-400 cursor-not-allowed"
-                  }`}
+                <Link
+                  to="/"
+                  className="block w-full bg-[#1D372E] text-white text-center py-3 rounded hover:bg-[#1D372E] transition-colors mb-4"
                 >
-                  Checkout{" "}
-                  {selectedItems.length > 0
-                    ? `(${selectedItems.length} items)`
-                    : ""}
-                </button>
-              )}
+                  ← Keep Shopping
+                </Link>
 
-              <div className="text-center">
-                <p className="text-[#6B7280] text-sm mb-4">
-                  SECURE PAYMENTS PROVIDED BY
-                </p>
-                <div className="flex justify-center items-center gap-4">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg"
-                    alt="Visa"
-                    className="h-4 opacity-40"
-                  />
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
-                    alt="Mastercard"
-                    className="h-4 opacity-40"
-                  />
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg"
-                    alt="American Express"
-                    className="h-4 opacity-40"
-                  />
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg"
-                    alt="PayPal"
-                    className="h-4 opacity-40"
-                  />
-                  <AppleIcon sx={{ fontSize: 16, color: "#9CA3AF" }} />
+                {cartItems.length > 0 && (
+                  <button
+                    onClick={handleCheckout}
+                    disabled={selectedItems.length === 0}
+                    className={`w-full text-white text-center py-3 rounded transition-colors mb-8 ${
+                      selectedItems.length > 0
+                        ? "bg-[#5CAF90] hover:bg-[#5CAF90]"
+                        : "bg-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Checkout{" "}
+                    {selectedItems.length > 0
+                      ? `(${selectedItems.length} items)`
+                      : ""}
+                  </button>
+                )}
+
+                <div className="text-center">
+                  <p className="text-[#6B7280] text-sm mb-4">
+                    SECURE PAYMENTS PROVIDED BY
+                  </p>
+                  <div className="flex justify-center items-center gap-4">
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg"
+                      alt="Visa"
+                      className="h-4 opacity-40"
+                    />
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
+                      alt="Mastercard"
+                      className="h-4 opacity-40"
+                    />
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg"
+                      alt="American Express"
+                      className="h-4 opacity-40"
+                    />
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg"
+                      alt="PayPal"
+                      className="h-4 opacity-40"
+                    />
+                    <AppleIcon sx={{ fontSize: 16, color: "#9CA3AF" }} />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Related Products Section */}
           <div className="mt-24">
