@@ -38,7 +38,7 @@ export const getCart = async (customerId) => {
 export const addToCart = async (data) => {
   try {
     const response = await api.post("/api/carts/add", data);
-     console.log(response,"rashel")
+    console.log(response, "rashel");
     return response.data;
   } catch (error) {
     throw error.response.data;

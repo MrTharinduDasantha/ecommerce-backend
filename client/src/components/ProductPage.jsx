@@ -141,35 +141,39 @@ const ProductPage = () => {
   const hasColor =
     currentVariant.color && currentVariant.color !== "No color selected";
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product && currentVariant.quantity > 0) {
       const cartItem = {
-        id: product.id,
+        id: currentVariant.id,
         name: product.name,
         image: mainImage,
-        price: `LKR ${currentVariant.price.toFixed(2)}`,
+        price: currentVariant.price,
         quantity: quantity,
         ...(hasSize && { size: selectedSize }),
         ...(currentVariant.colorName && { color: currentVariant.colorName }),
         ...(currentVariant.color && { colorCode: currentVariant.color }),
       };
 
-      if (isFromCart) {
-        updateCartItem(cartItem);
+      try {
+        if (isFromCart) {
+          await updateCartItem(cartItem);
+        } else {
+          await addToCart(cartItem);
+        }
         navigate("/cart", {
           state: {
             selectedProduct: cartItem,
             source: "product-page",
           },
         });
-      } else {
-        addToCart(cartItem);
-        navigate("/cart", {
-          state: {
-            selectedProduct: cartItem,
-            source: "product-page",
-          },
-        });
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        if (error.message === "User must be logged in to add items to cart") {
+          alert("Please log in to add items to cart");
+          navigate("/sign-in");
+        } else {
+          alert("Failed to add item to cart: " + error.message);
+        }
       }
     }
   };

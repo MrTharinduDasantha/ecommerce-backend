@@ -20,7 +20,11 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:5173",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   },
@@ -28,7 +32,11 @@ const io = socketIo(server, {
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:5173",
+    ],
     credentials: true,
   })
 );
@@ -65,21 +73,21 @@ app.set("io", io);
 
 const PORT = process.env.PORT || 9000;
 
-
 // Function to start the server
 const startServer = (port) => {
-  server.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  }).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`Port ${port} is busy, trying ${port + 1}...`);
-      startServer(port + 1);
-    } else {
-      console.error('Server error:', err);
-    }
-  });
+  server
+    .listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    })
+    .on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.log(`Port ${port} is busy, trying ${port + 1}...`);
+        startServer(port + 1);
+      } else {
+        console.error("Server error:", err);
+      }
+    });
 };
 
 // Start the server
 startServer(PORT);
-

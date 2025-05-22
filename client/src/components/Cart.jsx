@@ -24,7 +24,14 @@ import MacbookAir from "../assets/OnSale/MacbookAir.jpg";
 import DELLLaptop from "../assets/OnSale/DELLLaptop.jpg";
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, loading, error, getTotal } = useCart();
+  const {
+    cartItems,
+    removeFromCart,
+    updateQuantity,
+    loading,
+    error,
+    getTotal,
+  } = useCart();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const location = useLocation();
@@ -35,7 +42,7 @@ const Cart = () => {
   // Initialize selected items when cart items change
   useEffect(() => {
     if (cartItems.length > 0) {
-      setSelectedItems(cartItems.map(item => item.id));
+      setSelectedItems(cartItems.map((item) => item.id));
     } else {
       setSelectedItems([]);
     }
@@ -289,7 +296,10 @@ const Cart = () => {
                       >
                         <div className="col-span-2">
                           <div className="flex items-center space-x-4">
-                            <Link to={`/product/${item.id}`} className="flex items-center space-x-4">
+                            <Link
+                              to={`/product/${item.id}`}
+                              className="flex items-center space-x-4"
+                            >
                               <img
                                 src={item.image}
                                 alt={item.name}
@@ -332,7 +342,9 @@ const Cart = () => {
                           </div>
                         </div>
                         <div className="my-auto">
-                          <p className="text-[#1D372E] font-medium">{formatPrice(item.price)}</p>
+                          <p className="text-[#1D372E] font-medium">
+                            {formatPrice(item.price)}
+                          </p>
                         </div>
                         <div className="my-auto">
                           <input
@@ -342,13 +354,14 @@ const Cart = () => {
                             onChange={(e) => {
                               const newQuantity = parseInt(e.target.value);
                               if (newQuantity > 0) {
-                                updateQuantity(item.id, newQuantity)
-                                  .catch(error => {
+                                updateQuantity(item.id, newQuantity).catch(
+                                  (error) => {
                                     // Show error message to user
                                     alert(error.message);
                                     // Reset to previous quantity
                                     e.target.value = item.quantity;
-                                  });
+                                  }
+                                );
                               }
                             }}
                             className="w-16 text-center border rounded py-1 ml-4"
