@@ -24,22 +24,21 @@ async function getHeaderFooterSetting(req, res) {
 // Update header footer setting
 async function updateHeaderFooterSetting(req, res) {
   try {
-    // Get current header and footer setting
     const currentHeaderFooterSetting = await Setting.getHeaderFooterSetting();
-
-    // Get new header and footer setting
     const footerCopyright = req.body.footerCopyright;
     let navbarLogoUrl = currentHeaderFooterSetting
       ? currentHeaderFooterSetting.Navbar_Logo_Url
       : null;
 
-    // If new navbar logo is provided, update it and remove old one
-    if (req.file) {
+    // Find navbar logo file
+    const navbarLogoFile = req.files.find(
+      (file) => file.fieldname === "navbarLogo"
+    );
+    if (navbarLogoFile) {
       if (
         currentHeaderFooterSetting &&
         currentHeaderFooterSetting.Navbar_Logo_Url
       ) {
-        // Convert URL to file path
         const oldPath = currentHeaderFooterSetting.Navbar_Logo_Url.replace(
           `${req.protocol}://${req.get("host")}/`,
           ""
@@ -49,17 +48,49 @@ async function updateHeaderFooterSetting(req, res) {
         });
       }
       navbarLogoUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
-        req.file.filename
+        navbarLogoFile.filename
       }`;
     }
 
-    // Build new header and footer setting object
+    // Parse navigation icons
+    const navIcons = req.body.navIcons ? JSON.parse(req.body.navIcons) : [];
+
+    // Filter nav icon images
+    const navIconImages = req.files.filter((file) =>
+      file.fieldname.startsWith("navIconImage_")
+    );
+
+    // Associate images with nav icons based on index
+    navIconImages.forEach((file) => {
+      const index = parseInt(file.fieldname.replace("navIconImage_", ""), 10);
+      if (!isNaN(index) && index < navIcons.length) {
+        const iconImageUrl = `${req.protocol}://${req.get(
+          "host"
+        )}/src/uploads/${file.filename}`;
+        navIcons[index].iconImageUrl = iconImageUrl;
+      }
+    });
+
+    // Process other fields
+    const countryBlocks = req.body.countryBlocks
+      ? JSON.parse(req.body.countryBlocks)
+      : [];
+    const footerLinks = req.body.footerLinks
+      ? JSON.parse(req.body.footerLinks)
+      : [];
+    const socialIcons = req.body.socialIcons
+      ? JSON.parse(req.body.socialIcons)
+      : [];
+
     const newHeaderFooterSetting = {
       Navbar_Logo_Url: navbarLogoUrl,
       Footer_Copyright: footerCopyright,
+      Nav_Icons: JSON.stringify(navIcons),
+      Country_Blocks: JSON.stringify(countryBlocks),
+      Footer_Links: JSON.stringify(footerLinks),
+      Social_Icons: JSON.stringify(socialIcons),
     };
 
-    // Update or create header and footer setting in database
     const updatedHeaderFooterSetting = await Setting.updateHeaderFooterSetting(
       newHeaderFooterSetting
     );
