@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import CategoryDropdown from '../Navbar/CategoryDropdown';
-import { products } from '../products'; // Make sure the path is correct
+import CategoryDropdown from './CategoryDropdown';
+import products from '../Products.jsx'; // Make sure the path is correct
 import logo from './logo.png';
 import {
   FaSearch,

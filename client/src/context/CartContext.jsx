@@ -4,6 +4,9 @@ import { useAuth } from './AuthContext'; // Import the auth context
 
 const CartContext = createContext();
 
+// Helper function to format price
+const formatPrice = (price) => `LKR ${Number(price).toFixed(2)}`;
+
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -29,7 +32,21 @@ export const CartProvider = ({ children }) => {
       try {
         setLoading(true);
         const response = await getCart(user.id);
-        setCartItems(response.items || []);
+        if (response.cart && response.cart.items) {
+          const mappedItems = response.cart.items.map(item => ({
+            id: item.Product_Variations_idProduct_Variations,
+            name: item.Product_Name,
+            image: item.ProductImage,
+            price: Number(item.NetAmount).toFixed(2),
+            quantity: item.Qty,
+            color: item.Color,
+            size: item.Size,
+            colorCode: item.Color_Code
+          }));
+          setCartItems(mappedItems);
+        } else {
+          setCartItems([]);
+        }
       } catch (err) {
         setError(err.message || 'Failed to fetch cart');
         console.error('Error fetching cart:', err);
@@ -50,13 +67,25 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const data = {
         customerId: user.id,
-        productId: product.id,
-        quantity: 1,
-        // Add any other required fields from your API
+        productVariationId: product.id,
+        qty: product.quantity || 1
       };
 
       const response = await addToCartAPI(data);
-      setCartItems(response.items || []);
+      if (response.cart && response.cart.items) {
+        console.log(response.cart,"test")
+        const mappedItems = response.cart.items.map(item => ({
+          id: item.Product_Variations_idProduct_Variations,
+          name: item.ProductName,
+          image: item.ProductImage,
+          price: Number(item.NetAmount).toFixed(2),
+          quantity: item.Qty,
+          color: item.Color,
+          size: item.Size,
+          colorCode: item.Color_Code
+        }));
+        setCartItems(mappedItems);
+      }
       return response;
     } catch (err) {
       setError(err.message || 'Failed to add item to cart');
@@ -76,11 +105,23 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const data = {
         customerId: user.id,
-        productId
+        productVariationId: productId
       };
 
       const response = await removeFromCartAPI(data);
-      setCartItems(response.items || []);
+      if (response.cart && response.cart.items) {
+        const mappedItems = response.cart.items.map(item => ({
+          id: item.Product_Variations_idProduct_Variations,
+          name: item.ProductName,
+          image: item.ProductImage,
+          price: Number(item.Rate),
+          quantity: item.Qty,
+          color: item.Color,
+          size: item.Size,
+          colorCode: item.Color_Code
+        }));
+        setCartItems(mappedItems);
+      }
       return response;
     } catch (err) {
       setError(err.message || 'Failed to remove item from cart');
@@ -91,28 +132,42 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateQuantity = async (productId, newQuantity) => {
+  const updateQuantity = async (productId, quantity) => {
     if (!user?.id) {
       throw new Error('User must be logged in to update cart');
     }
 
-    if (newQuantity < 1) return;
-    
     try {
       setLoading(true);
       const data = {
         customerId: user.id,
-        productId,
-        quantity: newQuantity
+        productVariationId: productId,
+        qty: quantity
       };
 
       const response = await updateCartItemAPI(data);
-      setCartItems(response.items || []);
+      if (response.cart && response.cart.items) {
+        const mappedItems = response.cart.items.map(item => ({
+          id: item.Product_Variations_idProduct_Variations,
+          name: item.ProductName,
+          image: item.ProductImage,
+          price:Number(item.NetAmount).toFixed(2),
+          quantity: item.Qty,
+          color: item.Color,
+          size: item.Size,
+          colorCode: item.Color_Code
+        }));
+        setCartItems(mappedItems);
+      }
       return response;
     } catch (err) {
-      setError(err.message || 'Failed to update cart item');
-      console.error('Error updating cart item:', err);
-      throw err;
+      const errorMessage = err.response?.data?.message || 'Failed to update cart item';
+      const availableQty = err.response?.data?.availableQty;
+      const message = availableQty 
+        ? `${errorMessage}. Available quantity: ${availableQty}`
+        : errorMessage;
+      setError(message);
+      throw new Error(message);
     } finally {
       setLoading(false);
     }
@@ -129,7 +184,6 @@ export const CartProvider = ({ children }) => {
         customerId: user.id,
         productId: updatedItem.id,
         quantity: updatedItem.quantity,
-        // Add any other fields that need to be updated
       };
 
       const response = await updateCartItemAPI(data);
@@ -152,9 +206,8 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const data = { customerId: user.id };
-      const response = await clearCartAPI(data);
+      await clearCartAPI(data);
       setCartItems([]);
-      return response;
     } catch (err) {
       setError(err.message || 'Failed to clear cart');
       console.error('Error clearing cart:', err);
@@ -164,6 +217,16 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const getTotal = () => {
+    return cartItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
+  };
+
+  // Calculate total price
+  const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+
   const value = {
     cartItems,
     loading,
@@ -172,7 +235,10 @@ export const CartProvider = ({ children }) => {
     removeFromCart,
     updateQuantity,
     updateCartItem,
-    clearCart
+    clearCart,
+    totalPrice,
+    formatPrice,
+    getTotal
   };
 
   return (

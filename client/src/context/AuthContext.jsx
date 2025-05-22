@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
           // Fetch user data
-          const response = await axios.get('http://localhost:9000/api/auth/me');
+          const response = await axios.get('http://localhost:9000/admin/api/auth/me');
           setUser(response.data);
         }
       } catch (err) {
@@ -44,11 +44,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:9000/api/auth/login', {
+      const response = await axios.post('http://localhost:9000/api/auth/customers/login', {
         email,
         password
       });
-
+console.log(response)
       const { token, user: userData } = response.data;
       
       // Store token
