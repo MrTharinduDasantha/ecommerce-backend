@@ -43,8 +43,8 @@ export const CartProvider = ({ children }) => {
             id: item.Product_Variations_idProduct_Variations,
             name: item.Product_Name,
             image: item.ProductImage,
-            price: Number(item.NetAmount).toFixed(2),
-            quantity: item.Qty,
+            price: Number(item.CartRate).toFixed(2),
+            quantity: item.CartQty,
             color: item.Color,
             size: item.Size,
             colorCode: item.Color_Code,
@@ -84,8 +84,8 @@ export const CartProvider = ({ children }) => {
           id: item.Product_Variations_idProduct_Variations,
           name: item.ProductName,
           image: item.ProductImage,
-          price: Number(item.NetAmount).toFixed(2),
-          quantity: item.Qty,
+          price: Number(item.CartRate).toFixed(2),
+          quantity: item.CartQty,
           color: item.Color,
           size: item.Size,
           colorCode: item.Color_Code,
@@ -96,42 +96,6 @@ export const CartProvider = ({ children }) => {
     } catch (err) {
       setError(err.message || "Failed to add item to cart");
       console.error("Error adding to cart:", err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const removeFromCart = async (productId) => {
-    if (!user?.id) {
-      throw new Error("User must be logged in to remove items from cart");
-    }
-
-    try {
-      setLoading(true);
-      const data = {
-        customerId: user.id,
-        productVariationId: productId,
-      };
-
-      const response = await removeFromCartAPI(data);
-      if (response.cart && response.cart.items) {
-        const mappedItems = response.cart.items.map((item) => ({
-          id: item.Product_Variations_idProduct_Variations,
-          name: item.ProductName,
-          image: item.ProductImage,
-          price: Number(item.Rate),
-          quantity: item.Qty,
-          color: item.Color,
-          size: item.Size,
-          colorCode: item.Color_Code,
-        }));
-        setCartItems(mappedItems);
-      }
-      return response;
-    } catch (err) {
-      setError(err.message || "Failed to remove item from cart");
-      console.error("Error removing from cart:", err);
       throw err;
     } finally {
       setLoading(false);
@@ -157,8 +121,8 @@ export const CartProvider = ({ children }) => {
           id: item.Product_Variations_idProduct_Variations,
           name: item.ProductName,
           image: item.ProductImage,
-          price: Number(item.NetAmount).toFixed(2),
-          quantity: item.Qty,
+          price: Number(item.CartRate).toFixed(2),
+          quantity: item.CartQty,
           color: item.Color,
           size: item.Size,
           colorCode: item.Color_Code,
@@ -205,6 +169,44 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const removeFromCart = async (productId) => {
+    if (!user?.id) {
+      throw new Error("User must be logged in to remove items from cart");
+    }
+
+    try {
+      setLoading(true);
+      const data = {
+        customerId: user.id,
+        productVariationId: productId,
+      };
+
+      const response = await removeFromCartAPI(data);
+      if (response.cart && response.cart.items) {
+        const mappedItems = response.cart.items.map((item) => ({
+          id: item.Product_Variations_idProduct_Variations,
+          name: item.ProductName,
+          image: item.ProductImage,
+          price: Number(item.CartRate).toFixed(2),
+          quantity: item.CartQty,
+          color: item.Colour,
+          size: item.Size,
+          colorCode: item.Color_Code,
+        }));
+        setCartItems(mappedItems);
+      } else {
+        setCartItems([]);
+      }
+      return response;
+    } catch (err) {
+      setError(err.message || "Failed to remove item from cart");
+      console.error("Error removing from cart:", err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const clearCart = async () => {
     if (!user?.id) {
       throw new Error("User must be logged in to clear cart");
@@ -242,9 +244,9 @@ export const CartProvider = ({ children }) => {
     loading,
     error,
     addToCart,
-    removeFromCart,
     updateQuantity,
     updateCartItem,
+    removeFromCart,
     clearCart,
     totalPrice,
     formatPrice,

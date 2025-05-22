@@ -30,15 +30,28 @@ async function getCartByCustomerId(customerId) {
   const [cartItems] = await pool.query(
     `
       SELECT
-        cp.*,
-        pv.*,
-        p.Description as ProductName,
-        p.Main_Image_Url as ProductImage,
+        cp.Cart_idCart,
+        cp.Product_Variations_idProduct_Variations,
+        cp.Rate AS CartRate,
+        cp.Qty AS CartQty,
+        cp.Total_Amount,
+        cp.Discount_Percentage,
+        cp.Discount_Amount,
+        cp.NetAmount,
+        cp.Discounts_idDiscounts,
+        pv.idProduct_Variations,
+        pv.Product_idProduct,
+        pv.Colour,
+        pv.Size,
+        pv.SIH,
+        pv.Qty AS AvailableQty,
+        p.Description AS ProductName,
+        p.Main_Image_Url AS ProductImage,
         d.Discount_Value,
-        d.Discount_Type as DiscountType
+        d.Discount_Type AS DiscountType
       FROM Cart_has_Product cp
       JOIN Product_Variations pv ON 
-      cp.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+        cp.Product_Variations_idProduct_Variations = pv.idProduct_Variations
       JOIN Product p ON pv.Product_idProduct = p.idProduct
       LEFT JOIN Discounts d ON cp.Discounts_idDiscounts = d.idDiscounts
       WHERE cp.Cart_idCart = ?

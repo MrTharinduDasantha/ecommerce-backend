@@ -44,10 +44,7 @@ async function getCart(req, res) {
 // Add product to cart
 async function addToCart(req, res) {
   try {
-    console.log(req,res,"-----------------reshel1111")
     const { customerId, productVariationId, qty } = req.body;
-console.log("salam111")
-    console.log("Adding to cart:", { customerId, productVariationId, qty });
 
     if (!customerId || !productVariationId || !qty) {
       return res.status(400).json({
@@ -122,10 +119,10 @@ console.log("salam111")
       .json({ message: "Product added to cart successfully", cart });
   } catch (error) {
     console.error("Error adding product to cart:", error);
-    res.status(500).json({ 
-      message: "Failed to add product to cart", 
+    res.status(500).json({
+      message: "Failed to add product to cart",
       error: error.message,
-      stack: error.stack 
+      stack: error.stack,
     });
   }
 }
