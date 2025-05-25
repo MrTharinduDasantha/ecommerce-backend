@@ -143,45 +143,38 @@ const CustomerDetails = () => {
                       <div className="text-gray-700">
                         <p className="flex items-center">
                           <span className="text-gray-600 w-24 text-sm">
-                            {" "}
                             Order ID:
                           </span>
                           <span className="font-medium text-sm">
-                            {" "}
-                            {order.idOrder || order.id}{" "}
+                            {order.idOrder || order.id}
                           </span>
                         </p>
                         <div className="flex items-center">
                           <span className="text-gray-600 w-24 text-sm">
-                            {" "}
-                            Amount:{" "}
+                            Amount:
                           </span>
                           <span className="font-medium text-sm">
-                            {" "}
-                            ${order.Total_Amount}{" "}
+                            Rs. {order.Total_Amount}
                           </span>
                         </div>
                       </div>
                       <div className="text-gray-700">
                         <div className="flex items-center">
                           <span className="text-gray-600 w-24 text-sm">
-                            {" "}
-                            Date:{" "}
+                            Date:
                           </span>
                           <span className="font-medium text-sm">
-                            {order.Date_Time}{" "}
+                            {order.Date_Time}
                           </span>
                         </div>
                         <div className="flex items-center">
                           <span className="text-gray-600 w-24 text-sm">
-                            {" "}
-                            Address:{" "}
+                            Address:
                           </span>
                           <span className="font-medium text-sm">
-                            {" "}
                             {history.deliveryAddresses.length > 0
                               ? `${history.deliveryAddresses[0].Address}, ${history.deliveryAddresses[0].City}, ${history.deliveryAddresses[0].Country}`
-                              : "N/A"}{" "}
+                              : "N/A"}
                           </span>
                         </div>
                       </div>
