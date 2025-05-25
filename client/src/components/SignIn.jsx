@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -8,13 +9,17 @@ const SignIn = () => {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useContext(AuthContext);
+
+  const from = location.state?.from?.pathname || "/";
 
   // Validate email format
   const validateEmail = (email) => {
     return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let isValid = true;
 
@@ -40,7 +45,36 @@ const SignIn = () => {
     // If all fields are valid, proceed with sign-in logic
     if (isValid) {
       console.log("Signing in with:", email, password);
-      // Add your sign-in logic here
+      setPasswordError(""); // Clear previous errors
+      try {
+        const response = await fetch(
+          "http://localhost:9000/api/auth/customers/login",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          }
+        );
+        console.log(response, "waqas");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to sign in");
+        }
+        console.log(data);
+        const token = data.token;
+        const user = data.user; // Get user from response
+
+        login(email, password); // Call login from AuthContext with token and user
+
+        // Navigate to home or dashboard
+        navigate("/");
+      } catch (error) {
+        console.error("Sign-in error:", error);
+        setPasswordError(
+          error.message || "Sign-in failed. Please check your credentials."
+        );
+      }
     }
   };
 

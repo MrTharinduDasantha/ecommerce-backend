@@ -217,9 +217,15 @@ const DiscountList = () => {
                             <FaEdit />
                           </button>
                           <button
-                            onClick={() =>
-                              setDeleteDiscountId(discount.idDiscounts)
-                            }
+                            onClick={() => {
+                              if (discount.hasOrders) {
+                                toast.error(
+                                  "This discount cannot be deleted since it is associated with existing orders"
+                                );
+                              } else {
+                                setDeleteDiscountId(discount.idDiscounts);
+                              }
+                            }}
                             className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                             title="Delete Discount"
                           >
@@ -294,9 +300,16 @@ const DiscountList = () => {
                       <FaEdit />
                     </button>
                     <button
-                      onClick={() => setDeleteDiscountId(discount.idDiscounts)}
+                      onClick={() => {
+                        if (discount.hasOrders) {
+                          toast.error(
+                            "This discount cannot be deleted since it is associated with existing orders"
+                          );
+                        } else {
+                          setDeleteDiscountId(discount.idDiscounts);
+                        }
+                      }}
                       className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                      title="Delete Discount"
                     >
                       <RiDeleteBin5Fill />
                     </button>

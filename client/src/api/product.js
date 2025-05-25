@@ -166,7 +166,7 @@ export const updateProduct = async (id, formData) => {
 // Get products with active discounts
 export const getDiscountedProducts = async () => {
   try {
-    const response = await api.get("/api/products/discounted-products/all");
+    const response = await api.get("/api/products/discountd-products/all");
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -236,3 +236,4 @@ export const getSubCategoryById = async (id) => {
   const data = await response.json();
   return data; // Ensure this structure has a 'description' field as expected
 };
+

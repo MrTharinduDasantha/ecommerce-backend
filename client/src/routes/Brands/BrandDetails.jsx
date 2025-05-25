@@ -186,11 +186,11 @@ const BrandDetails = () => {
                   </h3>
                   <div className="mt-2 flex items-center space-x-2">
                     <span className="text-[16px] font-semibold text-[#5E5E5E] pl-4">
-                      ${Number(product.Selling_Price).toFixed(2)}
+                      LKR {Number(product.Selling_Price).toFixed(2)}
                     </span>
                     {product.Market_Price > product.Selling_Price && (
                       <span className="text-[13.33px] text-gray-400 line-through text-[#CCCCCC]">
-                        ${Number(product.Market_Price).toFixed(2)}
+                        LKR {Number(product.Market_Price).toFixed(2)}
                       </span>
                     )}
                   </div>

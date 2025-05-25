@@ -18,10 +18,14 @@ async function updateHeaderFooterSetting(HeaderFooterSettingData) {
   if (currentHeaderFooterSetting) {
     // Update existing header footer setting
     await pool.query(
-      "UPDATE Header_Footer_Setting SET Navbar_Logo_Url = ?, Footer_Copyright = ?, updated_at = CURRENT_TIMESTAMP WHERE idHeader_Footer_Setting = ?",
+      "UPDATE Header_Footer_Setting SET Navbar_Logo_Url = ?, Footer_Copyright = ?, Nav_Icons = ?, Country_Blocks = ?, Footer_Links = ?, Social_Icons = ?, updated_at = CURRENT_TIMESTAMP WHERE idHeader_Footer_Setting = ?",
       [
         HeaderFooterSettingData.Navbar_Logo_Url,
         HeaderFooterSettingData.Footer_Copyright,
+        HeaderFooterSettingData.Nav_Icons,
+        HeaderFooterSettingData.Country_Blocks,
+        HeaderFooterSettingData.Footer_Links,
+        HeaderFooterSettingData.Social_Icons,
         currentHeaderFooterSetting.idHeader_Footer_Setting,
       ]
     );
@@ -31,10 +35,14 @@ async function updateHeaderFooterSetting(HeaderFooterSettingData) {
   } else {
     // Create new header footer setting
     const result = await pool.query(
-      "INSERT INTO Header_Footer_Setting (Navbar_Logo_Url, Footer_Copyright) VALUES (?,?)",
+      "INSERT INTO Header_Footer_Setting (Navbar_Logo_Url, Footer_Copyright, Nav_Icons, Country_Blocks, Footer_Links, Social_Icons) VALUES (?,?,?,?,?,?)",
       [
         HeaderFooterSettingData.Navbar_Logo_Url,
         HeaderFooterSettingData.Footer_Copyright,
+        HeaderFooterSettingData.Nav_Icons,
+        HeaderFooterSettingData.Country_Blocks,
+        HeaderFooterSettingData.Footer_Links,
+        HeaderFooterSettingData.Social_Icons,
       ]
     );
     // Return newly created header footer setting

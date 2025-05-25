@@ -53,10 +53,20 @@ export default function CategoryDropdown() {
   };
 
   const handleSubcategoryClick = (subcategory) => {
-    // Navigate to the SubCategory page with the selected subcategory ID
-    navigate(`/subcategory/${subcategory.idSub_Category}`);
+
+    navigate(`/subCategory/${subcategory.idSub_Category}`);
+
     setShowSubcategories(false);
+    setShowCategories(false);
     setSelectedCategory(null);
+    
+    // Navigate to the SubCategory page with the selected subcategory ID
+    navigate(`/subcategory/${subcategory.idSub_Category}`, {
+      state: {
+        subcategoryName: subcategory.Description,
+        categoryName: selectedCategory.Description
+      }
+    });
   };
 
   const handleBackToCategories = () => {
@@ -102,7 +112,7 @@ export default function CategoryDropdown() {
       <button
         ref={buttonRef}
         onClick={handleCategoryModal}
-        className="flex items-center space-x-2 bg-[#5CAF90] text-white text-[13.33px] px-4 py-2 rounded"
+        className="flex items-center space-x-2 bg-[#5CAF90] text-white text-[13.33px] px-4 py-1.5 rounded"
       >
         <span>All Categories</span>
         <span className="text-[13.33px]">▼</span>

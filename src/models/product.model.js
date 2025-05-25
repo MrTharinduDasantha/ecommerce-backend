@@ -608,6 +608,9 @@ async function getAllProducts() {
       [product.idProduct]
     );
     product.subcategories = subCats;
+
+    // Get active discounts for each product
+    product.discounts = await getActiveDiscountsByProductId(product.idProduct);
   }
 
   return products;
@@ -743,6 +746,9 @@ async function getProductById(productId) {
   );
   product.subcategories = subCats;
 
+  // Get active discounts for this product
+  product.discounts = await getActiveDiscountsByProductId(product.idProduct);
+
   return product;
 }
 
@@ -755,7 +761,8 @@ async function getProductSalesInfo(productId) {
     JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
     JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
     WHERE pv.Product_idProduct = ?
-    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`,
+    AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    AND o.Payment_Stats = 'paid'`,
     [productId]
   );
 
@@ -767,6 +774,7 @@ async function getProductSalesInfo(productId) {
     JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
     WHERE pv.Product_idProduct = ?
     AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    AND o.Payment_Stats = 'paid'
     GROUP BY week
     ORDER BY week`,
     [productId]
@@ -840,13 +848,28 @@ async function deleteProduct(productId) {
 // Discount Related Functions
 // ---------------------------
 
+// Get active discounts for a specific product
+async function getActiveDiscountsByProductId(productId) {
+  const query = `
+    SELECT * FROM Discounts
+    WHERE Product_idProduct = ?
+    AND Status = 'active'
+    AND CURDATE() BETWEEN STR_TO_DATE(Start_Date, '%Y-%m-%d') AND STR_TO_DATE(End_Date, '%Y-%m-%d')
+  `;
+  const [discounts] = await pool.query(query, [productId]);
+  return discounts;
+}
+
 // Get all discounts
 async function getAllDiscounts() {
   const query = `
-    SELECT d.*, p.Description as ProductName
+    SELECT d.*,
+      p.Description as ProductName,
+      (SELECT COUNT(*) FROM Order_has_Product_Variations ohpv
+      WHERE ohpv.Discounts_idDiscounts = d.idDiscounts) > 0 as hasOrders
     FROM Discounts d
     JOIN Product p ON d.Product_idProduct = p.idProduct
-    ORDER BY d.created_at DESC
+    ORDER BY created_at DESC
   `;
   const [discounts] = await pool.query(query);
   return discounts;

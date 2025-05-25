@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom"; 
-import Sidebar from '../Sidebar';
+import { useLocation } from "react-router-dom"; 
+import Sidebar1 from '../Sidebar1';
 import ProductCard from '../ProductCard';
 import ForYouBanner from '../ForYouBanner';
 import { getCategories, getProductsBySubCategoryId } from '../../api/product';
@@ -8,7 +8,6 @@ import { getCategories, getProductsBySubCategoryId } from '../../api/product';
 const AllCategories = () => {
     const location = useLocation(); 
     const selectedCategoryId = location.state?.selectedCategoryId;
-    const navigate = useNavigate();
 
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,54 +58,41 @@ const AllCategories = () => {
     if (loading) return <div>Loading categories...</div>;
     if (error) return <div>Error: {error}</div>;
 
+    // Flatten all products from all subcategories into a single array
+    const allProducts = Object.values(productsBySubCategory).flat();
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
                 <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
                     <div className="w-full lg:w-64 xl:w-72">
-                        <Sidebar />
+                        <Sidebar1 subcategories={selectedCategory?.subcategories || []} />
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <ForYouBanner className="mb-4 sm:mb-6" />
                        
                         {selectedCategory ? (
                             <div className="space-y-4 mt-4">
-                                {selectedCategory.subcategories && selectedCategory.subcategories.length > 0 ? (
-                                    selectedCategory.subcategories.map((subcategory) => (
-                                        <div key={subcategory.idSub_Category} >
-                                            <div className="p-4 bg-gray-100 text-lg font-medium text-gray-800">
-                                                {subcategory.Description}
-                                            </div>
-                                            <div className="pl-6 pb-4 pt-2">
-                                                {productsBySubCategory[subcategory.idSub_Category]?.length > 0 ? (
-                                                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                                                       {productsBySubCategory[subcategory.idSub_Category].map(product => (
-    <ProductCard 
-        key={product.idProduct}
-        image={product.Main_Image_Url}
-        category={subcategory.Description}
-        title={product.Description}
-        price={product.Selling_Price}
-        oldPrice={product.Market_Price}
-        weight={product.SIH || 'N/A'}
-        id={product.idProduct}
-        
-        // Assuming the discount fields are coming from your API data
-        discountName={product.Discount_Name}
-        discountAmount={product.Discount_Amount}
-        
-        className="h-full"
-    />
-))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-sm text-gray-500">No products available for this subcategory.</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
+                                {allProducts.length > 0 ? (
+                                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        {allProducts.map(product => (
+                                            <ProductCard 
+                                                key={product.idProduct}
+                                                image={product.Main_Image_Url}
+                                                category={selectedCategory.Description} // Use category description instead of subcategory
+                                                title={product.Description}
+                                                price={product.Selling_Price}
+                                                oldPrice={product.Market_Price}
+                                                weight={product.SIH || 'N/A'}
+                                                id={product.idProduct}
+                                                discountName={product.Discount_Name}
+                                                discountAmount={product.Discount_Amount}
+                                                className="h-full"
+                                            />
+                                        ))}
+                                    </div>
                                 ) : (
-                                    <div>No subcategories available for this category.</div>
+                                    <p className="text-sm text-gray-500">No products available for this category.</p>
                                 )}
                             </div>
                         ) : (

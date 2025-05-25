@@ -11,3 +11,18 @@ AFTER Delivery_Status;
 
 -- Change the name of the Dicaunt_Type column in the Discounts table to Discount_Type
 ALTER TABLE Discounts CHANGE Dicaunt_Type Discount_Type VARCHAR(45);
+
+-- Add reset_password_otp and reset_password_otp_expires columns to the Customer table
+ALTER TABLE Customer
+ADD COLUMN reset_password_otp VARCHAR(10) NULL,
+ADD COLUMN reset_password_otp_expires TIMESTAMP NULL;
+
+-- Modify the Password column in the Customer table to have a maximum length of 255 characters
+ALTER TABLE Customer MODIFY COLUMN Password VARCHAR(255);
+
+-- Add new columns to the Header_Footer_Setting table
+ALTER TABLE Header_Footer_Setting
+ADD COLUMN Nav_Icons JSON AFTER Navbar_Logo_Url,
+ADD COLUMN Country_Blocks JSON AFTER Nav_Icons,
+ADD COLUMN Footer_Links JSON AFTER Country_Blocks,
+ADD COLUMN Social_Icons JSON AFTER Footer_Links;
