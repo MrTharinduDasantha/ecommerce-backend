@@ -1,13 +1,22 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCart, addToCart as addToCartAPI, updateCartItem as updateCartItemAPI, removeFromCart as removeFromCartAPI, clearCart as clearCartAPI } from '../api/cart';
-import { useAuth } from './AuthContext'; // Import the auth context
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  getCart,
+  addToCart as addToCartAPI,
+  updateCartItem as updateCartItemAPI,
+  removeFromCart as removeFromCartAPI,
+  clearCart as clearCartAPI,
+} from "../api/cart";
+import { useAuth } from "./AuthContext"; // Import the auth context
 
 const CartContext = createContext();
+
+// Helper function to format price
+const formatPrice = (price) => `LKR ${Number(price).toFixed(2)}`;
 
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };
@@ -29,10 +38,24 @@ export const CartProvider = ({ children }) => {
       try {
         setLoading(true);
         const response = await getCart(user.id);
-        setCartItems(response.items || []);
+        if (response.cart && response.cart.items) {
+          const mappedItems = response.cart.items.map((item) => ({
+            id: item.Product_Variations_idProduct_Variations,
+            name: item.Product_Name,
+            image: item.ProductImage,
+            price: Number(item.CartRate).toFixed(2),
+            quantity: item.CartQty,
+            color: item.Color,
+            size: item.Size,
+            colorCode: item.Color_Code,
+          }));
+          setCartItems(mappedItems);
+        } else {
+          setCartItems([]);
+        }
       } catch (err) {
-        setError(err.message || 'Failed to fetch cart');
-        console.error('Error fetching cart:', err);
+        setError(err.message || "Failed to fetch cart");
+        console.error("Error fetching cart:", err);
       } finally {
         setLoading(false);
       }
@@ -43,76 +66,79 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product) => {
     if (!user?.id) {
-      throw new Error('User must be logged in to add items to cart');
+      throw new Error("User must be logged in to add items to cart");
     }
 
     try {
       setLoading(true);
       const data = {
         customerId: user.id,
-        productId: product.id,
-        quantity: 1,
-        // Add any other required fields from your API
+        productVariationId: product.id,
+        qty: product.quantity || 1,
       };
 
       const response = await addToCartAPI(data);
-      setCartItems(response.items || []);
+      if (response.cart && response.cart.items) {
+        console.log(response.cart, "test");
+        const mappedItems = response.cart.items.map((item) => ({
+          id: item.Product_Variations_idProduct_Variations,
+          name: item.ProductName,
+          image: item.ProductImage,
+          price: Number(item.CartRate).toFixed(2),
+          quantity: item.CartQty,
+          color: item.Color,
+          size: item.Size,
+          colorCode: item.Color_Code,
+        }));
+        setCartItems(mappedItems);
+      }
       return response;
     } catch (err) {
-      setError(err.message || 'Failed to add item to cart');
-      console.error('Error adding to cart:', err);
+      setError(err.message || "Failed to add item to cart");
+      console.error("Error adding to cart:", err);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const removeFromCart = async (productId) => {
+  const updateQuantity = async (productId, quantity) => {
     if (!user?.id) {
-      throw new Error('User must be logged in to remove items from cart');
+      throw new Error("User must be logged in to update cart");
     }
 
     try {
       setLoading(true);
       const data = {
         customerId: user.id,
-        productId
-      };
-
-      const response = await removeFromCartAPI(data);
-      setCartItems(response.items || []);
-      return response;
-    } catch (err) {
-      setError(err.message || 'Failed to remove item from cart');
-      console.error('Error removing from cart:', err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateQuantity = async (productId, newQuantity) => {
-    if (!user?.id) {
-      throw new Error('User must be logged in to update cart');
-    }
-
-    if (newQuantity < 1) return;
-    
-    try {
-      setLoading(true);
-      const data = {
-        customerId: user.id,
-        productId,
-        quantity: newQuantity
+        productVariationId: productId,
+        qty: quantity,
       };
 
       const response = await updateCartItemAPI(data);
-      setCartItems(response.items || []);
+      if (response.cart && response.cart.items) {
+        const mappedItems = response.cart.items.map((item) => ({
+          id: item.Product_Variations_idProduct_Variations,
+          name: item.ProductName,
+          image: item.ProductImage,
+          price: Number(item.CartRate).toFixed(2),
+          quantity: item.CartQty,
+          color: item.Color,
+          size: item.Size,
+          colorCode: item.Color_Code,
+        }));
+        setCartItems(mappedItems);
+      }
       return response;
     } catch (err) {
-      setError(err.message || 'Failed to update cart item');
-      console.error('Error updating cart item:', err);
-      throw err;
+      const errorMessage =
+        err.response?.data?.message || "Failed to update cart item";
+      const availableQty = err.response?.data?.availableQty;
+      const message = availableQty
+        ? `${errorMessage}. Available quantity: ${availableQty}`
+        : errorMessage;
+      setError(message);
+      throw new Error(message);
     } finally {
       setLoading(false);
     }
@@ -120,7 +146,7 @@ export const CartProvider = ({ children }) => {
 
   const updateCartItem = async (updatedItem) => {
     if (!user?.id) {
-      throw new Error('User must be logged in to update cart');
+      throw new Error("User must be logged in to update cart");
     }
 
     try {
@@ -129,15 +155,52 @@ export const CartProvider = ({ children }) => {
         customerId: user.id,
         productId: updatedItem.id,
         quantity: updatedItem.quantity,
-        // Add any other fields that need to be updated
       };
 
       const response = await updateCartItemAPI(data);
       setCartItems(response.items || []);
       return response;
     } catch (err) {
-      setError(err.message || 'Failed to update cart item');
-      console.error('Error updating cart item:', err);
+      setError(err.message || "Failed to update cart item");
+      console.error("Error updating cart item:", err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeFromCart = async (productId) => {
+    if (!user?.id) {
+      throw new Error("User must be logged in to remove items from cart");
+    }
+
+    try {
+      setLoading(true);
+      const data = {
+        customerId: user.id,
+        productVariationId: productId,
+      };
+
+      const response = await removeFromCartAPI(data);
+      if (response.cart && response.cart.items) {
+        const mappedItems = response.cart.items.map((item) => ({
+          id: item.Product_Variations_idProduct_Variations,
+          name: item.ProductName,
+          image: item.ProductImage,
+          price: Number(item.CartRate).toFixed(2),
+          quantity: item.CartQty,
+          color: item.Colour,
+          size: item.Size,
+          colorCode: item.Color_Code,
+        }));
+        setCartItems(mappedItems);
+      } else {
+        setCartItems([]);
+      }
+      return response;
+    } catch (err) {
+      setError(err.message || "Failed to remove item from cart");
+      console.error("Error removing from cart:", err);
       throw err;
     } finally {
       setLoading(false);
@@ -146,40 +209,51 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     if (!user?.id) {
-      throw new Error('User must be logged in to clear cart');
+      throw new Error("User must be logged in to clear cart");
     }
 
     try {
       setLoading(true);
       const data = { customerId: user.id };
-      const response = await clearCartAPI(data);
+      await clearCartAPI(data);
       setCartItems([]);
-      return response;
     } catch (err) {
-      setError(err.message || 'Failed to clear cart');
-      console.error('Error clearing cart:', err);
+      setError(err.message || "Failed to clear cart");
+      console.error("Error clearing cart:", err);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
+  const getTotal = () => {
+    return cartItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
+  };
+
+  // Calculate total price
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
   const value = {
     cartItems,
     loading,
     error,
     addToCart,
-    removeFromCart,
     updateQuantity,
     updateCartItem,
-    clearCart
+    removeFromCart,
+    clearCart,
+    totalPrice,
+    formatPrice,
+    getTotal,
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
-export default CartContext; 
+export default CartContext;

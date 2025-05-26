@@ -287,6 +287,10 @@ CREATE TABLE Header_Footer_Setting (
   idHeader_Footer_Setting INT AUTO_INCREMENT PRIMARY KEY,
   Navbar_Logo_Url TEXT,
   Footer_Copyright VARCHAR(255),
+  Nav_Icons JSON,
+  Country_Blocks JSON,
+  Footer_Links JSON,
+  Social_Icons JSON,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
