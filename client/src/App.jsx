@@ -10,7 +10,7 @@ import NavBar from "./components/NavBar/NavBar";
 import Brands from "./routes/Brands/brands";
 import BrandDetails from "./routes/Brands/BrandDetails";
 import SignIn from "./Components/SignIn";
-import SignUp from "./Components/SignUp";
+import SignUp from "./components/SignUp";
 import ForgotPassword from "./Components/ForgotPassword";
 import ResetPassword from "./Components/ResetPassword";
 import ProductPage from "./components/ProductPage";
