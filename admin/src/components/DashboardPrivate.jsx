@@ -12,7 +12,6 @@ import {
   ArcElement,
 } from "chart.js";
 import { Line, Doughnut } from "react-chartjs-2";
-import { useNavigate } from "react-router-dom";
 import { getProductTotal, getTopSoldProducts } from "../api/product";
 import { fetchCustomerCount } from "../api/customer";
 import { getOrderCountByStatus, getPendingDeliveryCount, getTotalRevenue, getMonthlyTotalRevenue } from "../api/orders";
@@ -31,24 +30,22 @@ ChartJS.register(
 );
 
 const DashboardPrivate = () => {
-  const navigate = useNavigate();
-
   // State for stats
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [pendingDeliveryCount, setPendingDeliveryCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState([]); // New state for monthly revenue
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [loadingPendingDelivery, setLoadingPendingDelivery] = useState(true);
   const [loadingTotalRevenue, setLoadingTotalRevenue] = useState(true);
-  const [loadingMonthlyRevenue, setLoadingMonthlyRevenue] = useState(true);
+  const [loadingMonthlyRevenue, setLoadingMonthlyRevenue] = useState(true); // New loading state
   const [errorProducts, setErrorProducts] = useState(null);
   const [errorCustomers, setErrorCustomers] = useState(null);
   const [errorPendingDelivery, setErrorPendingDelivery] = useState(null);
   const [errorTotalRevenue, setErrorTotalRevenue] = useState(null);
-  const [errorMonthlyRevenue, setErrorMonthlyRevenue] = useState(null);
+  const [errorMonthlyRevenue, setErrorMonthlyRevenue] = useState(null); // New error state
   const [orderStatusCounts, setOrderStatusCounts] = useState([]);
   const [loadingOrderStatus, setLoadingOrderStatus] = useState(true);
   const [errorOrderStatus, setErrorOrderStatus] = useState(null);
@@ -86,14 +83,14 @@ const DashboardPrivate = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false,
+        display: false, // Hide legend
       },
       tooltip: {
         enabled: true,
-        backgroundColor: "rgba(29, 55, 46, 0.8)",
+        backgroundColor: 'rgba(29, 55, 46, 0.8)',
         titleFont: {
           size: 14,
-          weight: "bold",
+          weight: 'bold',
         },
         bodyFont: {
           size: 13,
@@ -104,7 +101,7 @@ const DashboardPrivate = () => {
     scales: {
       x: {
         grid: {
-          display: false,
+          display: false, // Hide x-axis grid lines
         },
         ticks: {
           font: {
@@ -121,21 +118,21 @@ const DashboardPrivate = () => {
           font: {
             size: 12,
           },
-          callback: (value) => `Rs. ${value}`,
+          callback: (value) => `$${value}`, // Add $ to y-axis labels
         },
       },
     },
     interaction: {
-      mode: "nearest",
+      mode: 'nearest',
       intersect: false,
-      axis: "x",
+      axis: 'x'
     },
     animations: {
       tension: {
         duration: 1000,
-        easing: "linear",
-      },
-    },
+        easing: 'linear'
+      }
+    }
   };
 
   // Fetch total products
@@ -226,11 +223,12 @@ const DashboardPrivate = () => {
         const response = await getMonthlyTotalRevenue();
         setMonthlyRevenue(response);
 
-        const labels = response.map((item) => {
-          const [year, month] = item.month.split("-");
-          return new Date(year, month - 1).toLocaleString("default", { month: "short", year: "numeric" });
+        // Transform the API response for the chart
+        const labels = response.map(item => {
+          const [year, month] = item.month.split('-');
+          return new Date(year, month - 1).toLocaleString('default', { month: 'short', year: 'numeric' });
         });
-        const data = response.map((item) => parseFloat(item.monthly_revenue));
+        const data = response.map(item => parseFloat(item.monthly_revenue));
 
         setRevenueData({
           labels,
@@ -282,10 +280,10 @@ const DashboardPrivate = () => {
 
   // Order Status Chart Data
   const orderStatusData = {
-    labels: orderStatusCounts.map((item) => item.Status),
+    labels: orderStatusCounts.map(item => item.Status),
     datasets: [
       {
-        data: orderStatusCounts.map((item) => item.count),
+        data: orderStatusCounts.map(item => item.count),
         backgroundColor: ["#1D372E", "#346352", "#5CAF90", "#65C09E", "#78E5BC"],
         borderWidth: 0,
       },
@@ -308,32 +306,21 @@ const DashboardPrivate = () => {
         },
       },
       tooltip: {
-        backgroundColor: "rgba(29, 55, 46, 0.8)",
+        backgroundColor: 'rgba(29, 55, 46, 0.8)',
         titleFont: {
           size: 14,
-          weight: "bold",
+          weight: 'bold',
         },
         bodyFont: {
           size: 13,
         },
         padding: 12,
-      },
+      }
     },
     animation: {
       animateRotate: true,
-      animateScale: true,
-    },
-  };
-
-  // Navigation handlers
-  const handleCardClick = () => {
-    navigate("/dashboard/users_managed-form");
-  };
-  const handleCardClick2 = () => {
-    navigate("/dashboard/products/edit-product");
-  };
-  const handleCardClick3 = () => {
-    navigate("/dashboard/orders");
+      animateScale: true
+    }
   };
 
   return (
@@ -342,10 +329,7 @@ const DashboardPrivate = () => {
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Total Products */}
-          <div
-            className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden cursor-pointer"
-            onClick={handleCardClick2}
-          >
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
             <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Total Products</h2>
             {loadingProducts ? (
@@ -358,10 +342,7 @@ const DashboardPrivate = () => {
           </div>
 
           {/* Total Customers */}
-          <div
-            className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden cursor-pointer"
-            onClick={handleCardClick}
-          >
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
             <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Total Customers</h2>
             {loadingCustomers ? (
@@ -374,10 +355,7 @@ const DashboardPrivate = () => {
           </div>
 
           {/* Pending Shipments */}
-          <div
-            className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden cursor-pointer"
-            onClick={handleCardClick3}
-          >
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
             <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Pending Shipments</h2>
             {loadingPendingDelivery ? (
@@ -390,10 +368,7 @@ const DashboardPrivate = () => {
           </div>
 
           {/* Total Revenue */}
-          <div
-            className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden cursor-pointer"
-            onClick={handleCardClick3}
-          >
+          <div className="bg-white p-5 rounded-lg shadow-md border-l-4 border-[#5CAF90] transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden">
             <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[#E6F3EF] opacity-60"></div>
             <h2 className="text-lg font-semibold text-[#1D372E]">Total Revenue</h2>
             {loadingTotalRevenue ? (
@@ -401,7 +376,7 @@ const DashboardPrivate = () => {
             ) : errorTotalRevenue ? (
               <p className="text-xl sm:text-2xl text-red-500 font-bold">{errorTotalRevenue}</p>
             ) : (
-              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">Rs. {parseFloat(totalRevenue).toFixed(2)}</p>
+              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">${parseFloat(totalRevenue).toFixed(2)}</p>
             )}
           </div>
         </div>
@@ -425,9 +400,8 @@ const DashboardPrivate = () => {
               )}
             </div>
           </div>
-
-          {/* Top Selling Products */}
-          <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
+            {/* Top Selling Products */}
+            <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg">
             <h2 className="text-lg font-bold text-[#1D372E] mb-4">Top Selling Products</h2>
             {loadingTopProducts ? (
               <div className="flex items-center justify-center h-64">
@@ -449,10 +423,10 @@ const DashboardPrivate = () => {
                   </thead>
                   <tbody>
                     {topSellingProducts.map((product, index) => (
-                      <tr
+                      <tr 
                         key={product.idProduct}
                         className={`transition-colors duration-150 hover:bg-[#f8fdfb] ${
-                          index % 2 === 0 ? "bg-white" : "bg-[#f9fcfb]"
+                          index % 2 === 0 ? 'bg-white' : 'bg-[#f9fcfb]'
                         }`}
                       >
                         <td className="py-3 px-4 text-sm text-gray-700 border-b">{product.idProduct}</td>
@@ -488,6 +462,7 @@ const DashboardPrivate = () => {
             </div>
           </div>
 
+
           {/* Pending Shipments Progress */}
           <div className="bg-white p-5 rounded-lg shadow-md border overflow-hidden transition-all duration-300 hover:shadow-lg h-50">
             <h2 className="text-lg font-bold text-[#1D372E] mb-4">Pending Shipments Progress</h2>
@@ -504,8 +479,8 @@ const DashboardPrivate = () => {
                 <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                   <div
                     className="bg-[#5CAF90] h-4 rounded-full transition-all duration-1000 ease-out"
-                    style={{
-                      width: `${(pendingDeliveryCount / (orderStatusCounts.reduce((sum, item) => sum + item.count, 0) || 1)) * 100}%`,
+                    style={{ 
+                      width: `${(pendingDeliveryCount / (orderStatusCounts.reduce((sum, item) => sum + item.count, 0) || 1)) * 100}%` 
                     }}
                   ></div>
                 </div>

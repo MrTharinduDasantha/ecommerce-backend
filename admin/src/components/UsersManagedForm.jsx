@@ -4,7 +4,6 @@ import { FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { toast } from "react-hot-toast";
 import * as api from "../api/auth";
-import io from "socket.io-client";
 
 const UsersManagedForm = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,14 +17,6 @@ const UsersManagedForm = () => {
     password: "",
     phone_no: "",
     status: "Active",
-  });
-
-  // Initialize Socket.IO client
-  const socket = io("http://localhost:9000", {
-    withCredentials: true,
-    reconnection: true,
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000,
   });
 
   useEffect(() => {
@@ -44,36 +35,17 @@ const UsersManagedForm = () => {
     };
 
     fetchUsers();
-
-    // Socket.IO event listeners
-    socket.on("connect", () => {
-      console.log("Connected to Socket.IO server");
-    });
-
-    socket.on("userAdded", (newUser) => {
-      setUsers((prevUsers) => {
-        const updatedUsers = [...prevUsers, newUser];
-        setFilteredUsers(updatedUsers);
-        return updatedUsers;
-      });
-      toast.success("New user added in real-time!");
-    });
-
-    socket.on("connect_error", (error) => {
-      console.error("Socket.IO connection error:", error);
-      toast.error("Failed to connect to real-time updates");
-    });
-
-    // Cleanup on component unmount
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   const handleAddUserSubmit = async (e) => {
     e.preventDefault();
-    const { full_name, email, password, phone_no } = addUserForm;
-    if (!full_name.trim() || !email.trim() || !password.trim() || !phone_no.trim()) {
+    const { full_name, email, password, phone_no, status } = addUserForm;
+    if (
+      !full_name.trim() ||
+      !email.trim() ||
+      !password.trim() ||
+      !phone_no.trim()
+    ) {
       toast.error("All fields are required");
       return;
     }
@@ -86,7 +58,28 @@ const UsersManagedForm = () => {
       return;
     }
     try {
-      await api.addUser(addUserForm);
+      const response = await api.addUser(addUserForm);
+      try {
+        await api.logAdminAction(
+          "Added new user",
+          navigator.userAgent,
+          JSON.stringify(addUserForm)
+        );
+      } catch (logError) {
+        console.warn("Admin action logging failed:", logError);
+      }
+      setUsers([
+        ...users,
+        {
+          idUser: response.id,
+          Full_Name: full_name,
+          Email: email,
+          Phone_No: phone_no,
+          Status: status,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ]);
       toast.success("User has been added successfully!");
       setShowAddUserModal(false);
       setAddUserForm({
@@ -118,6 +111,7 @@ const UsersManagedForm = () => {
     setFilteredUsers(filtered);
   };
 
+  // Reset filtered users when search term is cleared
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredUsers(users);
@@ -185,61 +179,107 @@ const UsersManagedForm = () => {
               </div>
             ) : (
               <>
+                {/* Desktop Table */}
                 <div className="hidden sm:block">
                   <table className="table min-w-[700px] text-center border border-[#1D372E]">
                     <thead className="bg-[#EAFFF7] text-[#1D372E]">
                       <tr className="border-b border-[#1D372E]">
-                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">Name</th>
-                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">Email</th>
-                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">Phone</th>
-                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">Status</th>
-                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">Created</th>
-                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">Updated</th>
+                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
+                          Name
+                        </th>
+                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
+                          Email
+                        </th>
+                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
+                          Phone
+                        </th>
+                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
+                          Status
+                        </th>
+                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
+                          Created
+                        </th>
+                        <th className="font-semibold py-2 px-3 md:text-xs lg:text-sm">
+                          Updated
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="text-[#1D372E]">
                       {filteredUsers.map((user) => (
-                        <tr key={user.idUser} className="border-b border-[#1D372E]">
-                          <td className="py-2 px-3 text-xs lg:text-sm">{user.Full_Name}</td>
-                          <td className="py-2 px-3 text-xs lg:text-sm">{user.Email}</td>
-                          <td className="py-2 px-3 text-xs lg:text-sm">{user.Phone_No}</td>
+                        <tr
+                          key={user.idUser}
+                          className="border-b border-[#1D372E]"
+                        >
+                          <td className="py-2 px-3 text-xs lg:text-sm">
+                            {user.Full_Name}
+                          </td>
+                          <td className="py-2 px-3 text-xs lg:text-sm">
+                            {user.Email}
+                          </td>
+                          <td className="py-2 px-3 text-xs lg:text-sm">
+                            {user.Phone_No}
+                          </td>
                           <td className="py-2 px-3 text-xs lg:text-sm">
                             <span
                               className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
-                                user.Status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                user.Status === "Active"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
                               }`}
                             >
                               {user.Status}
                             </span>
                           </td>
-                          <td className="py-2 text-xs lg:text-sm">{new Date(user.created_at).toLocaleDateString()}</td>
-                          <td className="py-2 text-xs lg:text-sm">{new Date(user.updated_at).toLocaleDateString()}</td>
+                          <td className="py-2 text-xs lg:text-sm">
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="py-2 text-xs lg:text-sm">
+                            {new Date(user.updated_at).toLocaleDateString()}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
+                {/* Mobile Cards */}
                 <div className="sm:hidden space-y-3">
                   {filteredUsers.map((user) => (
-                    <div key={user.idUser} className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]">
+                    <div
+                      key={user.idUser}
+                      className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
+                    >
                       <div className="flex justify-between items-start mb-2">
                         <div className="space-y-1">
-                          <div className="font-medium text-[#1D372E] text-xs">{user.Full_Name}</div>
-                          <div className="text-xs text-gray-600">{user.Email}</div>
+                          <div className="font-medium text-[#1D372E] text-xs">
+                            {user.Full_Name}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {user.Email}
+                          </div>
                         </div>
                         <span
                           className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
-                            user.Status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                            user.Status === "Active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
                           }`}
                         >
                           {user.Status}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-600 mb-2">{user.Phone_No}</div>
+                      <div className="text-xs text-gray-600 mb-2">
+                        {user.Phone_No}
+                      </div>
                       <div className="text-xs text-gray-500 space-y-1">
-                        <div>Created: {new Date(user.created_at).toLocaleDateString()}</div>
-                        <div>Updated: {new Date(user.updated_at).toLocaleDateString()}</div>
+                        <div>
+                          Created:{" "}
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </div>
+                        <div>
+                          Updated:{" "}
+                          {new Date(user.updated_at).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -253,7 +293,9 @@ const UsersManagedForm = () => {
       {showAddUserModal && (
         <div className="modal modal-open">
           <div className="modal-box max-w-md max-h-[95vh] bg-white text-[#1D372E]">
-            <h3 className="font-bold text-base lg:text-lg mb-4">Add New Admin</h3>
+            <h3 className="font-bold text-base lg:text-lg mb-4">
+              Add New Admin
+            </h3>
             <button
               onClick={() => setShowAddUserModal(false)}
               className="absolute right-6 top-7 text-lg"
@@ -263,12 +305,19 @@ const UsersManagedForm = () => {
             <form onSubmit={handleAddUserSubmit}>
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text text-sm lg:text-base font-medium">Full Name</span>
+                  <span className="abel-text text-sm lg:text-base font-medium">
+                    Full Name
+                  </span>
                 </label>
                 <input
                   type="text"
                   value={addUserForm.full_name}
-                  onChange={(e) => setAddUserForm({ ...addUserForm, full_name: e.target.value })}
+                  onChange={(e) =>
+                    setAddUserForm({
+                      ...addUserForm,
+                      full_name: e.target.value,
+                    })
+                  }
                   className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   placeholder="Enter Name"
                   required
@@ -276,12 +325,16 @@ const UsersManagedForm = () => {
               </div>
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text text-sm lg:text-base font-medium">Email</span>
+                  <span className="abel-text text-sm lg:text-base font-medium">
+                    Email
+                  </span>
                 </label>
                 <input
                   type="email"
                   value={addUserForm.email}
-                  onChange={(e) => setAddUserForm({ ...addUserForm, email: e.target.value })}
+                  onChange={(e) =>
+                    setAddUserForm({ ...addUserForm, email: e.target.value })
+                  }
                   className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   placeholder="Enter Email"
                   required
@@ -289,12 +342,16 @@ const UsersManagedForm = () => {
               </div>
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text text-sm lg:text-base font-medium">Password</span>
+                  <span className="abel-text text-sm lg:text-base font-medium">
+                    Password
+                  </span>
                 </label>
                 <input
                   type="password"
                   value={addUserForm.password}
-                  onChange={(e) => setAddUserForm({ ...addUserForm, password: e.target.value })}
+                  onChange={(e) =>
+                    setAddUserForm({ ...addUserForm, password: e.target.value })
+                  }
                   className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   placeholder="Enter Password"
                   required
@@ -302,12 +359,16 @@ const UsersManagedForm = () => {
               </div>
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text text-sm lg:text-base font-medium">Phone Number</span>
+                  <span className="abel-text text-sm lg:text-base font-medium">
+                    Phone Number
+                  </span>
                 </label>
                 <input
                   type="tel"
                   value={addUserForm.phone_no}
-                  onChange={(e) => setAddUserForm({ ...addUserForm, phone_no: e.target.value })}
+                  onChange={(e) =>
+                    setAddUserForm({ ...addUserForm, phone_no: e.target.value })
+                  }
                   className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   placeholder="Enter Phone Number"
                   required
@@ -315,11 +376,15 @@ const UsersManagedForm = () => {
               </div>
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text text-sm lg:text-base font-medium">Status</span>
+                  <span className="abel-text text-sm lg:text-base font-medium">
+                    Status
+                  </span>
                 </label>
                 <select
                   value={addUserForm.status}
-                  onChange={(e) => setAddUserForm({ ...addUserForm, status: e.target.value })}
+                  onChange={(e) =>
+                    setAddUserForm({ ...addUserForm, status: e.target.value })
+                  }
                   className="select select-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                 >
                   <option value="Active">Active</option>

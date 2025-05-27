@@ -33,6 +33,7 @@ const ProductCard = ({
         <h3 className="text-[13.33px] line-clamp-1 font-bold text-[#1D372E] leading-snug">
           {title}
         </h3>
+
         <div className="mb-2">
           {oldPrice && (
             <div className="text-[13.33px] text-[#5E5E5E] line-through font-semibold">

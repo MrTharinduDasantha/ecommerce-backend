@@ -182,7 +182,7 @@ const CustomerorderDetailsPage = () => {
                   <p className="flex items-center">
                     <span className="text-gray-600 w-32 text-sm">Amount:</span>
                     <span className="font-medium text-xs sm:text-sm">
-                      Rs. {orderDetails.Total_Amount}
+                      ${orderDetails.Total_Amount}
                     </span>
                   </p>
                   <p className="flex items-center">
@@ -190,7 +190,7 @@ const CustomerorderDetailsPage = () => {
                       Delivery Charges:
                     </span>
                     <span className="font-medium text-xs sm:text-sm">
-                      Rs. {orderDetails.Delivery_Charges}
+                      ${orderDetails.Delivery_Charges}
                     </span>
                   </p>
                   <div className="h-px bg-black my-2"></div>
@@ -199,10 +199,10 @@ const CustomerorderDetailsPage = () => {
                       Total Amount:
                     </span>
                     <span className="font-medium text-xs sm:text-sm bg-[#f9ddf2] text-black px-2 py-1 rounded">
-                      Rs. {calculateNetAmount()}
+                      ${calculateNetAmount()}
                     </span>
                   </p>
-                  <div className="h-px bg-black my-2"></div>
+                  ⊗<div className="h-px bg-black my-2"></div>
                   {orderDetails.Payment_Method && (
                     <p className="flex items-center">
                       <span className="text-gray-600 w-32 text-sm">
@@ -293,10 +293,10 @@ const CustomerorderDetailsPage = () => {
                             {item.quantity}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                            Rs. {item.price}
+                            ${item.price}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                            Rs. {item.total}
+                            ${item.total}
                           </td>
                         </tr>
                       ))}

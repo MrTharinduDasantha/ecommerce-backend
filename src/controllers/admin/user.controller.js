@@ -45,25 +45,13 @@ const createUser = async (req, res) => {
     );
 
     // Log admin action with user details
-    const newUserInfo = { full_name, email, phone_no };
+    const newUserInfo = { full_name, email, phone_no }; // Construct the new user info as an object
     await logAdminAction(
       req.user.userId,
       "Added new user",
       req.headers["user-agent"],
       JSON.stringify(newUserInfo)
     );
-
-    // Emit Socket.IO event for new user
-    const io = req.app.get("io");
-    io.emit("userAdded", {
-      idUser: userId,
-      Full_Name: full_name,
-      Email: email,
-      Phone_No: phone_no,
-      Status: status || "Active",
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
 
     res.status(201).json({ id: userId, message: "User added successfully" });
   } catch (error) {
