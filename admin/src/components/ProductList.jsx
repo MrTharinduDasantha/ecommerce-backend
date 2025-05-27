@@ -186,7 +186,9 @@ const ProductList = () => {
                       className="border-b border-[#1D372E]"
                     >
                       <td className="text-xs lg:text-sm">
-                        {product.Description}
+                        {product.Description.length > 15
+                          ? `${product.Description.substring(0, 15)}...`
+                          : product.Description}
                       </td>
                       <td className="text-xs lg:text-sm">
                         {product.Brand_Name || "Other"}
