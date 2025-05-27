@@ -12,7 +12,7 @@ import BrandDetails from "./routes/Brands/BrandDetails";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import ForgotPassword from "./Components/ForgotPassword";
-import ResetPassword from "./Components/ResetPassword";
+import ResetPassword from "./components/ResetPassword";
 import ProductPage from "./components/ProductPage";
 import OrderTracking from "./Components/OrderTracking";
 import Checkout from "./components/Checkout";
