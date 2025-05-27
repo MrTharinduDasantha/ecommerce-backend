@@ -65,32 +65,23 @@ const Settings = () => {
           setCopyrightText(data.Footer_Copyright);
 
           // Set navigation icons if available
-          if (data.Nav_Icons && Array.isArray(JSON.parse(data.Nav_Icons))) {
-            setNavIcons(JSON.parse(data.Nav_Icons));
+          if (data.Nav_Icons && Array.isArray(data.Nav_Icons)) {
+            setNavIcons(data.Nav_Icons);
           }
 
           // Set country blocks if available
-          if (
-            data.Country_Blocks &&
-            Array.isArray(JSON.parse(data.Country_Blocks))
-          ) {
-            setCountryBlocks(JSON.parse(data.Country_Blocks));
+          if (data.Country_Blocks && Array.isArray(data.Country_Blocks)) {
+            setCountryBlocks(data.Country_Blocks);
           }
 
           // Set footer links if available
-          if (
-            data.Footer_Links &&
-            Array.isArray(JSON.parse(data.Footer_Links))
-          ) {
-            setFooterLinks(JSON.parse(data.Footer_Links));
+          if (data.Footer_Links && Array.isArray(data.Footer_Links)) {
+            setFooterLinks(data.Footer_Links);
           }
 
           // Set social icons if available
-          if (
-            data.Social_Icons &&
-            Array.isArray(JSON.parse(data.Social_Icons))
-          ) {
-            setSocialIcons(JSON.parse(data.Social_Icons));
+          if (data.Social_Icons && Array.isArray(data.Social_Icons)) {
+            setSocialIcons(data.Social_Icons);
           }
         }
       } catch (error) {
@@ -222,6 +213,15 @@ const Settings = () => {
     }
   };
 
+  const removeNavIconImagePreview = () => {
+    setNewNavIcon({
+      ...newNavIcon,
+      iconImage: null,
+      iconImagePreview: null,
+    });
+    if (navIconImageRef.current) navIconImageRef.current.value = "";
+  };
+
   // Country Blocks Handlers
   const handleAddCountryBlock = () => {
     if (!newCountryBlock.title || !newCountryBlock.address) {
@@ -284,6 +284,13 @@ const Settings = () => {
     updatedSocialIcons.splice(index, 1);
     setSocialIcons(updatedSocialIcons);
   };
+
+  // Empty state message component
+  const EmptyStateMessage = ({ message }) => (
+    <div className="bg-gray-50 text-[#1D372E] p-4 rounded-md text-center border border-dashed border-[#5CAF90] my-3">
+      <p>{message}</p>
+    </div>
+  );
 
   if (isLoading && !headerFooterSetting) {
     return (
@@ -426,50 +433,54 @@ const Settings = () => {
               </h3>
 
               {/* Existing Navigation Icons */}
-              <div className="overflow-x-auto">
-                <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                  <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                    <tr className="border-b border-[#1D372E]">
-                      <th className="py-2">Icon</th>
-                      <th className="py-2">Label</th>
-                      <th className="py-2">Link</th>
-                      <th className="py-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="border-b border-[#1D372E]">
-                    {navIcons.map((icon, index) => (
-                      <tr key={index} className="border border-[#1D372E]">
-                        <td className="flex items-center justify-center">
-                          {icon.iconImagePreview ? (
-                            <img
-                              src={icon.iconImagePreview}
-                              alt={icon.label}
-                              className="w-8 h-8 object-contain my-1"
-                            />
-                          ) : (
-                            <div className="bg-gray-200 w-8 h-8 flex items-center justify-center rounded">
-                              <span className="text-xs">{icon.icon}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td>{icon.label}</td>
-                        <td>{icon.link}</td>
-                        <td>
-                          {isEditing && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveNavIcon(index)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                            >
-                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </td>
+              {navIcons.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
+                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                      <tr className="border-b border-[#1D372E]">
+                        <th className="py-2">Icon</th>
+                        <th className="py-2">Label</th>
+                        <th className="py-2">Link</th>
+                        {isEditing && <th className="py-2">Actions</th>}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="border-b border-[#1D372E]">
+                      {navIcons.map((icon, index) => (
+                        <tr key={index} className="border border-[#1D372E]">
+                          <td className="flex items-center justify-center">
+                            {icon.iconImageUrl || icon.iconImagePreview ? (
+                              <img
+                                src={icon.iconImageUrl || icon.iconImagePreview}
+                                alt={icon.label}
+                                className="w-8 h-8 object-contain my-1"
+                              />
+                            ) : (
+                              <div className="w-14 h-9 flex items-center justify-center rounded">
+                                <span className="text-sm">No icon</span>
+                              </div>
+                            )}
+                          </td>
+                          <td>{icon.label}</td>
+                          <td>{icon.link}</td>
+                          {isEditing && (
+                            <td>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveNavIcon(index)}
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                              >
+                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <EmptyStateMessage message="No navigation icons found." />
+              )}
 
               {/* Add New Navigation Icon */}
               {isEditing && (
@@ -506,6 +517,22 @@ const Settings = () => {
                         ref={navIconImageRef}
                         className="file-input file-input-bordered file-input-sm w-full bg-white border-[#1D372E] text-[#1D372E]"
                       />
+                      {newNavIcon.iconImagePreview && (
+                        <div className="mt-2 relative inline-block">
+                          <img
+                            src={newNavIcon.iconImagePreview}
+                            alt="Icon Preview"
+                            className="w-16 h-16 object-contain"
+                          />
+                          <button
+                            type="button"
+                            onClick={removeNavIconImagePreview}
+                            className="btn btn-xs bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-square absolute top-1 right-1 text-white"
+                          >
+                            <RiDeleteBin5Fill className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="form-control">
                       <label className="label">
@@ -539,15 +566,6 @@ const Settings = () => {
                       />
                     </div>
                   </div>
-                  {newNavIcon.iconImagePreview && (
-                    <div className="mt-2">
-                      <img
-                        src={newNavIcon.iconImagePreview}
-                        alt="Icon Preview"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                  )}
                   <button
                     type="button"
                     onClick={handleAddNavIcon}
@@ -568,44 +586,48 @@ const Settings = () => {
               </h3>
 
               {/* Existing Country Blocks */}
-              <div className="overflow-x-auto">
-                <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                  <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                    <tr className="border-b border-[#1D372E]">
-                      <th className="py-2">Title</th>
-                      <th className="py-2">Address</th>
-                      <th className="py-2">Hotline</th>
-                      <th className="py-2">Email</th>
-                      <th className="py-2">WhatsApp</th>
-                      <th className="py-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="border-b border-[#1D372E]">
-                    {countryBlocks.map((block, index) => (
-                      <tr key={index} className="border-b border-[#1D372E]">
-                        <td className="py-2">{block.title}</td>
-                        <td className="py-2">
-                          {block.address.substring(0, 20)}...
-                        </td>
-                        <td className="py-2">{block.hotline}</td>
-                        <td className="py-2">{block.email}</td>
-                        <td className="py-2">{block.whatsapp}</td>
-                        <td className="py-2">
-                          {isEditing && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveCountryBlock(index)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                            >
-                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </td>
+              {countryBlocks.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
+                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                      <tr className="border-b border-[#1D372E]">
+                        <th className="py-2">Title</th>
+                        <th className="py-2">Address</th>
+                        <th className="py-2">Hotline</th>
+                        <th className="py-2">Email</th>
+                        <th className="py-2">WhatsApp</th>
+                        {isEditing && <th className="py-2">Actions</th>}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="border-b border-[#1D372E]">
+                      {countryBlocks.map((block, index) => (
+                        <tr key={index} className="border-b border-[#1D372E]">
+                          <td className="py-2">{block.title}</td>
+                          <td className="py-2">
+                            {block.address.substring(0, 20)}...
+                          </td>
+                          <td className="py-2">{block.hotline}</td>
+                          <td className="py-2">{block.email}</td>
+                          <td className="py-2">{block.whatsapp}</td>
+                          {isEditing && (
+                            <td className="py-2">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCountryBlock(index)}
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                              >
+                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <EmptyStateMessage message="No country blocks found." />
+              )}
 
               {/* Add New Country Block */}
               {isEditing && (
@@ -728,36 +750,40 @@ const Settings = () => {
                 </h3>
 
                 {/* Existing Footer Links */}
-                <div className="overflow-x-auto mt-4">
-                  <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                      <tr className="border-b border-[#1D372E]">
-                        <th className="py-2">Text</th>
-                        <th className="py-2">URL</th>
-                        <th className="py-2">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="border-b border-[#1D372E]">
-                      {footerLinks.map((link, index) => (
-                        <tr key={index} className="border-b border-[#1D372E]">
-                          <td className="py-2">{link.text}</td>
-                          <td className="py-2">{link.url}</td>
-                          <td className="py-2">
-                            {isEditing && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFooterLink(index)}
-                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              >
-                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </td>
+                {footerLinks.length > 0 ? (
+                  <div className="overflow-x-auto mt-4">
+                    <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
+                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                        <tr className="border-b border-[#1D372E]">
+                          <th className="py-2">Text</th>
+                          <th className="py-2">URL</th>
+                          {isEditing && <th className="py-2">Actions</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="border-b border-[#1D372E]">
+                        {footerLinks.map((link, index) => (
+                          <tr key={index} className="border-b border-[#1D372E]">
+                            <td className="py-2">{link.text}</td>
+                            <td className="py-2">{link.url}</td>
+                            {isEditing && (
+                              <td className="py-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveFooterLink(index)}
+                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                >
+                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <EmptyStateMessage message="No footer links found." />
+                )}
 
                 {/* Add New Footer Link */}
                 {isEditing && (
@@ -821,36 +847,40 @@ const Settings = () => {
                 </h3>
 
                 {/* Existing Social Icons */}
-                <div className="overflow-x-auto mt-4">
-                  <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                      <tr className="border-b border-[#1D372E]">
-                        <th className="py-2">Platform</th>
-                        <th className="py-2">URL</th>
-                        <th className="py-2">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="border-b border-[#1D372E]">
-                      {socialIcons.map((icon, index) => (
-                        <tr key={index} className="border-b border-[#1D372E]">
-                          <td className="py-2">{icon.platform}</td>
-                          <td className="py-2">{icon.url}</td>
-                          <td className="py-2">
-                            {isEditing && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveSocialIcon(index)}
-                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              >
-                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </td>
+                {socialIcons.length > 0 ? (
+                  <div className="overflow-x-auto mt-4">
+                    <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
+                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                        <tr className="border-b border-[#1D372E]">
+                          <th className="py-2">Platform</th>
+                          <th className="py-2">URL</th>
+                          {isEditing && <th className="py-2">Actions</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="border-b border-[#1D372E]">
+                        {socialIcons.map((icon, index) => (
+                          <tr key={index} className="border-b border-[#1D372E]">
+                            <td className="py-2">{icon.platform}</td>
+                            <td className="py-2">{icon.url}</td>
+                            {isEditing && (
+                              <td className="py-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSocialIcon(index)}
+                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                >
+                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <EmptyStateMessage message="No social icons found." />
+                )}
 
                 {/* Add New Social Icon */}
                 {isEditing && (

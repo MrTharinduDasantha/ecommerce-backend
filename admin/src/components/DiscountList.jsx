@@ -171,10 +171,14 @@ const DiscountList = () => {
                       className="border-b border-[#1D372E]"
                     >
                       <td className="text-xs lg:text-sm">
-                        {discount.ProductName}
+                        {discount.ProductName.length > 18
+                          ? `${discount.ProductName.substring(0, 18)}...`
+                          : discount.ProductName}
                       </td>
                       <td className="text-xs lg:text-sm">
-                        {discount.Description}
+                        {discount.Description.length > 18
+                          ? `${discount.Description.substring(0, 18)}...`
+                          : discount.Description}
                       </td>
                       <td className="text-xs lg:text-sm">
                         {formatDiscountType(discount.Discount_Type)}

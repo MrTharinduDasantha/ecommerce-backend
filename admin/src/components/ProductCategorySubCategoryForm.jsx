@@ -345,7 +345,11 @@ const ProductCategorySubCategoryForm = () => {
                 <tbody className="text-[#1D372E]">
                   {categories.map((cat, index) => (
                     <tr key={index} className="border-b border-[#1D372E]">
-                      <td className="text-xs lg:text-sm">{cat.Description}</td>
+                      <td className="text-xs lg:text-sm">
+                        {cat.Description.length > 15
+                          ? `${cat.Description.substring(0, 15)}...`
+                          : cat.Description}
+                      </td>
                       <td>
                         {cat.Image_Icon_Url ? (
                           <div className="avatar">
