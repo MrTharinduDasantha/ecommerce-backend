@@ -17,6 +17,7 @@ import {
   updateSubCategory,
   deleteSubCategory,
 } from "../api/product";
+import Pagination from "./common/Pagination";
 import toast from "react-hot-toast";
 
 const ProductCategorySubCategoryForm = () => {
@@ -34,11 +35,31 @@ const ProductCategorySubCategoryForm = () => {
   const [subCategoryToEdit, setSubCategoryToEdit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Define items per page
+  const itemsPerPage = 10;
+
+  // Calculate paginated categories
+  const paginatedCategories = categories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Load categories on component mount
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // Add useEffect to adjust currentPage when categories change
+  useEffect(() => {
+    const totalPages = Math.ceil(categories.length / itemsPerPage);
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0) {
+      setCurrentPage(1);
+    }
+  }, [categories, currentPage]);
 
   // Fetch categories from API
   const fetchCategories = async () => {
@@ -156,11 +177,17 @@ const ProductCategorySubCategoryForm = () => {
   };
 
   // Open subcategory popup
-  const openSubCategoryPopup = (index) => {
-    setSelectedCategoryIndex(index);
-    setShowSubCategoryPopup(true);
-    setSubCategoryToEdit(null);
-    setSubCategoryDescription("");
+  // Open subcategory popup with categoryId instead of index
+  const openSubCategoryPopup = (categoryId) => {
+    const index = categories.findIndex(
+      (cat) => cat.idProduct_Category === categoryId
+    );
+    if (index !== -1) {
+      setSelectedCategoryIndex(index);
+      setShowSubCategoryPopup(true);
+      setSubCategoryToEdit(null);
+      setSubCategoryDescription("");
+    }
   };
 
   // Close subcategory popup
@@ -343,8 +370,11 @@ const ProductCategorySubCategoryForm = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
-                  {categories.map((cat, index) => (
-                    <tr key={index} className="border-b border-[#1D372E]">
+                  {paginatedCategories.map((cat) => (
+                    <tr
+                      key={cat.idProduct_Category}
+                      className="border-b border-[#1D372E]"
+                    >
                       <td className="text-xs lg:text-sm">
                         {cat.Description.length > 15
                           ? `${cat.Description.substring(0, 15)}...`
@@ -406,7 +436,9 @@ const ProductCategorySubCategoryForm = () => {
                             <FaEdit />
                           </button>
                           <button
-                            onClick={() => openSubCategoryPopup(index)}
+                            onClick={() =>
+                              openSubCategoryPopup(cat.idProduct_Category)
+                            }
                             className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                             title="Add Sub Category"
                           >
@@ -431,9 +463,9 @@ const ProductCategorySubCategoryForm = () => {
 
             {/* Category Cards for mobile view */}
             <div className="md:hidden grid grid-cols-1 gap-4">
-              {categories.map((cat, index) => (
+              {paginatedCategories.map((cat) => (
                 <div
-                  key={index}
+                  key={cat.idProduct_Category}
                   className="card bg-white shadow-md border border-[#1D372E] p-4"
                 >
                   <div className="flex gap-4">
@@ -497,7 +529,9 @@ const ProductCategorySubCategoryForm = () => {
                       <FaEdit />
                     </button>
                     <button
-                      onClick={() => openSubCategoryPopup(index)}
+                      onClick={() =>
+                        openSubCategoryPopup(cat.idProduct_Category)
+                      }
                       className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                       title="Add Sub Category"
                     >
@@ -516,6 +550,15 @@ const ProductCategorySubCategoryForm = () => {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {categories.length > itemsPerPage && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(categories.length / itemsPerPage)}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </>
         )}
       </div>
