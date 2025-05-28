@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import CategoryDropdown from "../Navbar/CategoryDropdown";
 import logo from "./logo.png";
@@ -15,13 +15,19 @@ import {
   FaHeart,
   FaNetworkWired,
   FaGift,
+  FaChevronDown,
 } from "react-icons/fa";
+import { AuthContext } from "../../context/AuthContext";
 
 function Navbar() {
+  const { user, logout } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -128,16 +134,49 @@ function Navbar() {
               </motion.div>
             </Link>
 
-            {/* Profile */}
-            <Link to="/sign-in">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-                className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
-              >
-                <FaUser className="text-[15px] cursor-pointer" title="Me" />
-              </motion.div>
-            </Link>
+            {/* Profile and Logout */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                >
+                  <FaUser className="text-[15px]" />
+                  <FaChevronDown className="ml-1 text-[12px]" />
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate("/sign-in");
+                        setIsDropdownOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link to="/sign-in">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                >
+                  <FaUser className="text-[15px] cursor-pointer" title="Me" />
+                </motion.div>
+              </Link>
+            )}
           </div>
         </div>
       </div>

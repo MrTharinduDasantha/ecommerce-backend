@@ -15,6 +15,7 @@ import {
   toggleProductStatus,
   deleteProduct,
 } from "../api/product";
+import Pagination from "./common/Pagination";
 import toast from "react-hot-toast";
 
 const ProductList = () => {
@@ -23,8 +24,13 @@ const ProductList = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [deleteProductId, setDeleteProductId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const navigate = useNavigate();
+
+  // Define items per page
+  const itemsPerPage = 10;
 
   // Load products from API
   const loadProducts = async () => {
@@ -33,6 +39,7 @@ const ProductList = () => {
       const data = await getProducts();
       setProducts(data.products);
       setFilteredProducts(data.products);
+      setTotalPages(Math.ceil(data.products.length / itemsPerPage));
     } catch (error) {
       toast.error(error.message || "Failed to load products");
     } finally {
@@ -48,20 +55,29 @@ const ProductList = () => {
   const handleSearch = () => {
     if (!searchQuery.trim()) {
       setFilteredProducts(products);
+      setTotalPages(Math.ceil(products.length / itemsPerPage));
       return;
     }
     const filtered = products.filter((p) =>
       p.Description.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredProducts(filtered);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
   };
 
   // Reset search when search query is empty
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredProducts(products);
+      setTotalPages(Math.ceil(products.length / itemsPerPage));
     }
   }, [searchQuery, products]);
+
+  // Slice the filtered products for the current page
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // View product details - navigate to details page
   const handleViewProduct = (productId) => {
@@ -180,7 +196,7 @@ const ProductList = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
-                  {filteredProducts.map((product) => (
+                  {paginatedProducts.map((product) => (
                     <tr
                       key={product.idProduct}
                       className="border-b border-[#1D372E]"
@@ -299,7 +315,7 @@ const ProductList = () => {
 
             {/* Product Cards for mobile view */}
             <div className="md:hidden grid grid-cols-1 gap-4">
-              {filteredProducts.map((product) => (
+              {paginatedProducts.map((product) => (
                 <div
                   key={product.idProduct}
                   className="card bg-white shadow-md border border-[#1D372E] p-4"
@@ -405,6 +421,15 @@ const ProductList = () => {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {filteredProducts.length > itemsPerPage && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </>
         )}
       </div>

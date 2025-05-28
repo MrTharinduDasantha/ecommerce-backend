@@ -91,6 +91,28 @@ const DiscountForm = () => {
     { value: "fixed", label: "Fixed Amount (Rs.)" },
   ];
 
+  // Calculate discounted price
+  const calculateDiscountedPrice = () => {
+    if (
+      !selectedProductDetails ||
+      !formData.discountType ||
+      !formData.discountValue
+    ) {
+      return selectedProductDetails?.Selling_Price || 0;
+    }
+
+    const originalPrice = parseFloat(selectedProductDetails.Selling_Price);
+    const discountValue = parseFloat(formData.discountValue);
+
+    if (formData.discountType === "percentage") {
+      return originalPrice - (originalPrice * discountValue) / 100;
+    } else if (formData.discountType === "fixed") {
+      return Math.max(0, originalPrice - discountValue);
+    }
+
+    return originalPrice;
+  };
+
   // Load products and discount data if in edit mode
   useEffect(() => {
     const loadData = async () => {
@@ -236,101 +258,180 @@ const DiscountForm = () => {
     }
   };
 
-  // Product Details Component
-  const ProductDetails = ({ product }) => (
-    <div className="bg-[#F4F4F4] p-4 rounded-lg border">
-      <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
-        Product Details
-      </h3>
+  // Modern Product Details Component
+  const ProductDetails = ({ product }) => {
+    const discountedPrice = calculateDiscountedPrice();
+    const originalPrice = parseFloat(product.Selling_Price);
+    const hasDiscount =
+      discountedPrice !== originalPrice && formData.discountValue;
 
-      <div className="space-y-3">
-        <div>
-          <span className="font-medium text-[#1D372E]">Description: </span>
-          <span className="text-gray-700">{product.Description}</span>
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#5CAF90] to-[#4a9a7d] px-6 py-4">
+          <h3 className="text-lg md:text-xl font-bold text-white">
+            Product Preview
+          </h3>
         </div>
 
-        <div>
-          <span className="font-medium text-[#1D372E]">Brand Name: </span>
-          <span className="text-gray-700">{product.Brand_Name || "Other"}</span>
-        </div>
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Product Name */}
+          <div>
+            <h4 className="text-xl text-center font-bold text-[#1D372E] mb-2">
+              {product.Description}
+            </h4>
+          </div>
 
-        <div>
-          <span className="font-medium text-[#1D372E]">Market Price: </span>
-          <span className="text-gray-700">Rs. {product.Market_Price}</span>
-        </div>
+          {/* Product Image */}
+          <div className="flex justify-center">
+            <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+              <img
+                src={product.Main_Image_Url}
+                alt={product.Description}
+                className="w-full h-64 object-contain"
+              />
+            </div>
+          </div>
 
-        <div>
-          <span className="font-medium text-[#1D372E]">Selling Price: </span>
-          <span className="text-gray-700">Rs. {product.Selling_Price}</span>
-        </div>
+          {/* Price Section */}
+          <div className="bg-[#F4F4F4] rounded-lg p-4">
+            <h5 className="text-lg font-semibold text-[#1D372E] mb-3">
+              Pricing
+            </h5>
 
-        <div>
-          <span className="font-medium text-[#1D372E]">Main Image: </span>
-          <img
-            src={product.Main_Image_Url}
-            alt={product.Description}
-            className="w-full h-48 object-contain rounded-md border"
-          />
-        </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Market Price:</span>
+                <span className="font-medium text-gray-800">
+                  Rs. {parseFloat(product.Market_Price).toFixed(2)}
+                </span>
+              </div>
 
-        <div>
-          <p className="font-medium text-[#1D372E]">Sub Categories:</p>
-          {product.subcategories && product.subcategories.length > 0 ? (
-            <ul className="list-disc list-inside ml-4 mt-1">
-              {product.subcategories.map((subcat) => (
-                <li key={subcat.idSub_Category} className="text-gray-700">
-                  {subcat.Description}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 mt-1">No subcategories</p>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Original Selling Price:</span>
+                <span
+                  className={`font-medium ${
+                    hasDiscount
+                      ? "text-gray-500 line-through"
+                      : "text-[#5CAF90] text-lg font-bold"
+                  }`}
+                >
+                  Rs. {originalPrice.toFixed(2)}
+                </span>
+              </div>
+
+              {hasDiscount && (
+                <>
+                  <div className="flex justify-between items-center border-t pt-2">
+                    <span className="text-gray-600">Discount Applied:</span>
+                    <span className="text-red-600 font-medium">
+                      {formData.discountType === "percentage"
+                        ? `${formData.discountValue}%`
+                        : `Rs. ${parseFloat(formData.discountValue).toFixed(
+                            2
+                          )}`}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-green-50 -mx-4 -mb-4 px-4 py-3 mt-3">
+                    <span className="font-semibold text-[#1D372E]">
+                      Final Selling Price:
+                    </span>
+                    <span className="text-[#5CAF90] text-xl font-bold">
+                      Rs. {discountedPrice.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="text-center text-sm text-gray-500 mt-6">
+                    You save: Rs. {(originalPrice - discountedPrice).toFixed(2)}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Brand and Category */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-sm font-medium text-gray-500">Brand</span>
+              <p className="text-[#1D372E] font-medium">
+                {product.Brand_Name || "Other"}
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-500">Stock</span>
+              <p className="text-[#1D372E] font-medium">
+                {product.SIH || "N/A"} units
+              </p>
+            </div>
+          </div>
+
+          {/* Categories */}
+          {product.subcategories && product.subcategories.length > 0 && (
+            <div>
+              <h5 className="text-sm font-medium text-gray-500 mb-2">
+                Categories
+              </h5>
+              <div className="flex flex-wrap gap-2">
+                {product.subcategories.map((subcat) => (
+                  <span
+                    key={subcat.idSub_Category}
+                    className="inline-block bg-[#5CAF90] bg-opacity-10 text-white px-3 py-1 rounded-full text-sm font-medium"
+                  >
+                    {subcat.Description}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
-        </div>
 
-        <div>
-          <span className="font-medium text-[#1D372E]">Variations: </span>
-          {product.variations && product.variations.length > 0 ? (
-            <div className="mt-2 overflow-x-auto">
-              <table className="table-auto w-full text-center text-sm border-collapse text-[#1D372E]">
-                <thead>
-                  <tr className="bg-[#EAFFF7]">
-                    <th className="border px-2 py-1">Color</th>
-                    <th className="border px-2 py-1">Size</th>
-                    <th className="border px-2 py-1">Qty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {product.variations.map((variation) => (
-                    <tr key={variation.idProduct_Variations}>
-                      <td className="border px-2 py-1">
-                        {variation.Colour &&
-                        variation.Colour !== "No color selected" ? (
-                          <div className="flex items-center justify-center gap-1">
+          {/* Variations */}
+          {product.variations && product.variations.length > 0 && (
+            <div>
+              <h5 className="text-sm font-medium text-gray-500 mb-3">
+                Available Variations
+              </h5>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {product.variations.map((variation) => (
+                  <div
+                    key={variation.idProduct_Variations}
+                    className="flex items-center justify-between p-3 bg-[#F4F4F4] rounded-lg"
+                  >
+                    <div className="flex items-center space-x-3">
+                      {variation.Colour &&
+                        variation.Colour !== "No color selected" && (
+                          <div className="flex items-center space-x-2">
                             <div
-                              className="w-4 h-4 rounded-full"
+                              className="w-4 h-4 rounded-full border border-gray-300"
                               style={{ backgroundColor: variation.Colour }}
                             />
-                            <span>{variation.Colour}</span>
+                            <span className="text-sm text-gray-600">
+                              {variation.Colour}
+                            </span>
                           </div>
-                        ) : (
-                          "No color"
                         )}
-                      </td>
-                      <td className="border px-2 py-1">{variation.Size}</td>
-                      <td className="border px-2 py-1">{variation.Qty}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      {variation.Size &&
+                        variation.Size !== "No size selected" && (
+                          <span className="bg-white px-2 py-1 rounded text-sm text-gray-600 border">
+                            {variation.Size}
+                          </span>
+                        )}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-[#1D372E]">
+                        Qty: {variation.Qty}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ) : (
-            <p className="text-gray-500 mt-2">No variations</p>
           )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return (
