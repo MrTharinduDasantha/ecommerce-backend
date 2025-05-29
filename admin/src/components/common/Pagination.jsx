@@ -1,12 +1,10 @@
-import React from "react";
-
-const Pagination = ({ 
-  currentPage, 
-  totalPages, 
+const Pagination = ({
+  currentPage,
+  totalPages,
   onPageChange,
   className = "",
   prevLabel = "Previous",
-  nextLabel = "Next" 
+  nextLabel = "Next",
 }) => {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -47,4 +45,4 @@ const Pagination = ({
   );
 };
 
-export default Pagination; 
+export default Pagination;

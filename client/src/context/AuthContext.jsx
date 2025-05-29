@@ -25,9 +25,9 @@ export const AuthProvider = ({ children }) => {
           // Set default authorization header
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-          // Fetch user data
+          // Fetch user data from the customer endpoint
           const response = await axios.get(
-            "http://localhost:9000/admin/api/auth/me"
+            "http://localhost:9000/api/auth/customers/me"
           );
           setUser(response.data);
         }
