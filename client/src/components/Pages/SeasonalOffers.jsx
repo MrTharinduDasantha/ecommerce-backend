@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { getProducts } from "../../api/product"; // Import the API function
 import Sidebar from "../Sidebar";
@@ -7,7 +6,7 @@ import Banner from "../Banner";
 import ProductCard from "../ProductCard";
 
 const SeasonalOffers = () => {
-  const { addToCart } = useCart();
+
   const navigate = useNavigate();
   const [addedProducts, setAddedProducts] = useState([]);
   const [products, setProducts] = useState([]);
@@ -29,6 +28,7 @@ const SeasonalOffers = () => {
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Seasonal Discounts",
+            category:product.subcategories?.[0]?.Description || ""
           }));
           setProducts(formattedProducts);
         }
@@ -41,37 +41,22 @@ const SeasonalOffers = () => {
   }, []);
 
   const handleProductClick = (product) => {
-    // Format the product data before adding to cart
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      price: product.price,
-      quantity: 1,
-      ...(product.size && { size: product.size }),
-      color: product.color,
-      discountName: product.discountName,
-    };
-
-    // Check if the product already exists in the cart
-    const existingItemIndex = addedProducts.findIndex(
-      (item) => item.id === product.id
-    );
-
-    if (existingItemIndex !== -1) {
-      // Update the existing item in the cart
-      const updatedProducts = [...addedProducts];
-      updatedProducts[existingItemIndex] = {
-        ...updatedProducts[existingItemIndex],
-        color: cartItem.color,
-        ...(product.size && { size: cartItem.size }),
-      };
-      setAddedProducts(updatedProducts);
-    } else {
-      // Add the product to cart if it doesn't exist
-      addToCart(cartItem);
-      setAddedProducts((prev) => [...prev, cartItem]);
-    }
+    // Navigate to product page instead of adding to cart
+    navigate(`/product-page/${product.id}`, {
+      state: {
+        product: {
+          id: product.id,
+          name: product.name,
+          image: product.image,
+          price: product.price,
+          oldPrice: product.oldPrice,
+          color: product.color,
+          size: product.size,
+          discountName: product.discountName,
+ 
+        }
+      }
+    });
   };
 
   const handleViewCart = () => {
@@ -118,17 +103,15 @@ const SeasonalOffers = () => {
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                  onClick={() => handleProductClick(product)}
                 >
                   <ProductCard
                     image={product.image}
-                    category="Seasonal Offers"
+                    category={product.category}
                     title={product.name}
                     price={product.price}
                     oldPrice={product.oldPrice}
-                    weight={product.weight}
                     id={product.id}
-                    // discountName={product.discountName}
+                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>

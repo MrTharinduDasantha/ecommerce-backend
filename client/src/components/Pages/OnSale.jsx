@@ -30,7 +30,8 @@ const OnSale = () => {
             color: product.variations?.[0]?.Colour || 'N/A',
             size: product.variations?.[0]?.Size || null,
             discountName: product.discounts?.[0]?.Description || 'Sale Discounts',
-            discountAmount: product.Market_Price - product.Selling_Price
+            discountAmount: product.Market_Price - product.Selling_Price,
+            category:product.subcategories?.[0]?.Description || ""
           }));
           console.log('Formatted products:', formattedProducts);
           setProducts(formattedProducts);
@@ -44,35 +45,23 @@ const OnSale = () => {
   }, []);
 
   const handleProductClick = (product) => {
-    // Format the product data before adding to cart
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      price: product.price,
-      quantity: 1,
-      ...(product.size && { size: product.size }),
-      color: product.color,
-      discountName: product.discountName
-    };
-    
-    // Check if the product already exists in the cart
-    const existingItemIndex = addedProducts.findIndex(item => item.id === product.id);
-    
-    if (existingItemIndex !== -1) {
-      // Update the existing item in the cart
-      const updatedProducts = [...addedProducts];
-      updatedProducts[existingItemIndex] = {
-        ...updatedProducts[existingItemIndex],
-        color: cartItem.color,
-        ...(product.size && { size: cartItem.size })
-      };
-      setAddedProducts(updatedProducts);
-    } else {
-      // Add the product to cart if it doesn't exist
-      addToCart(cartItem);
-      setAddedProducts(prev => [...prev, cartItem]);
-    }
+    // Navigate to product page instead of adding to cart
+    navigate(`/product-page/${product.id}`, {
+      state: {
+        product: {
+          id: product.id,
+          name: product.name,
+          image: product.image,
+          price: product.price,
+          oldPrice: product.oldPrice,
+          weight: product.weight,
+          color: product.color,
+          size: product.size,
+          discountName: product.discountName,
+          discountAmount: product.discountAmount
+        }
+      }
+    });
   };
 
   const handleViewCart = () => {
@@ -86,15 +75,15 @@ const OnSale = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+      <div className="container mx-auto px-3 xs:px-4 sm:px-5 lg:px-2 py-4 sm:py-6 lg:py-8 flex-grow">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-4">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <Sidebar />
           </div>
           
           {/* Main Content Area */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1">
             {/* Banner */}
             <OnSaleBanner className="mb-4 sm:mb-6" />
             
@@ -118,19 +107,17 @@ const OnSale = () => {
               {products.map((product) => (
                 <div 
                   key={product.id} 
-                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300 cursor-pointer"
-                  onClick={() => handleProductClick(product)}
+                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
                 >
                   <ProductCard 
                     image={product.image}
-                    category="On Sale"
+                    category={product.category}
                     title={product.name}
                     price={product.price}
                     oldPrice={product.oldPrice}
                     weight={product.weight}
                     id={product.id}
-                    // discountName={product.discountName}
-                    // discountAmount={Save LKR ${product.discountAmount.toLocaleString()}}
+                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>

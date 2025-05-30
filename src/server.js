@@ -17,12 +17,20 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173", // Frontend url
-    methods: ["GET", "POST"],
+
+    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"], // Added port 3001
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
   },
 });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"], // Added port 3001
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use("/src/uploads", express.static("src/uploads"));
 
@@ -48,6 +56,22 @@ io.on("connection", (socket) => {
 app.set("io", io);
 
 const PORT = process.env.PORT || 9000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+
+// Function to start the server
+const startServer = (port) => {
+  server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`Port ${port} is busy, trying ${port + 1}...`);
+      startServer(port + 1);
+    } else {
+      console.error('Server error:', err);
+    }
+  });
+};
+
+// Start the server
+startServer(PORT);
+

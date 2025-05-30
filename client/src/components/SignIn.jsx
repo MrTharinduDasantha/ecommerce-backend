@@ -52,19 +52,20 @@ const SignIn = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
-
+console.log(response,"waqas")
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(data.message || "Failed to sign in");
         }
-
+console.log(data)
         const token = data.token;
         const user = data.user; // Get user from response
 
-        login(token, user); // Call login from AuthContext with token and user
+        login(email, password); // Call login from AuthContext with token and user
         
-        navigate(from, { replace: true }); // Redirect to the original page or home
+         // Navigate to home or dashboard
+        navigate("/");
 
       } catch (error) {
         console.error("Sign-in error:", error);
