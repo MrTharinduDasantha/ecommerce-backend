@@ -47,29 +47,35 @@ const SignIn = () => {
       console.log("Signing in with:", email, password);
       setPasswordError(""); // Clear previous errors
       try {
-        const response = await fetch("http://localhost:9000/api/auth/customers/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-console.log(response,"waqas")
+
+        const response = await fetch(
+          "http://localhost:9000/api/auth/customers/login",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          }
+        );
+        console.log(response, "waqas");
+
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(data.message || "Failed to sign in");
         }
-console.log(data)
         const token = data.token;
         const user = data.user; // Get user from response
 
         login(email, password); // Call login from AuthContext with token and user
-        
-         // Navigate to home or dashboard
-        navigate("/");
 
+
+        // Navigate to home or dashboard
+        navigate("/");
       } catch (error) {
         console.error("Sign-in error:", error);
-        setPasswordError(error.message || "Sign-in failed. Please check your credentials.");
+        setPasswordError(
+          error.message || "Sign-in failed. Please check your credentials."
+        );
       }
     }
   };

@@ -4,6 +4,7 @@ import { FaEdit, FaSearch } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IoClose } from "react-icons/io5";
 import { getDiscounts, deleteDiscount } from "../api/product";
+import Pagination from "./common/Pagination";
 import toast from "react-hot-toast";
 
 const DiscountList = () => {
@@ -12,8 +13,13 @@ const DiscountList = () => {
   const [filteredDiscounts, setFilteredDiscounts] = useState([]);
   const [deleteDiscountId, setDeleteDiscountId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const navigate = useNavigate();
+
+  // Define items per page
+  const itemsPerPage = 10;
 
   // Load discounts from API
   const loadDiscounts = async () => {
@@ -22,6 +28,7 @@ const DiscountList = () => {
       const data = await getDiscounts();
       setDiscounts(data.discounts);
       setFilteredDiscounts(data.discounts);
+      setTotalPages(Math.ceil(data.discounts.length / itemsPerPage));
     } catch (error) {
       toast.error(error.message || "Failed to load discounts");
     } finally {
@@ -37,6 +44,7 @@ const DiscountList = () => {
   const handleSearch = () => {
     if (!searchQuery.trim()) {
       setFilteredDiscounts(discounts);
+      setTotalPages(Math.ceil(discounts.length / itemsPerPage));
       return;
     }
     const filtered = discounts.filter(
@@ -45,14 +53,31 @@ const DiscountList = () => {
         d.ProductName.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredDiscounts(filtered);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
   };
 
   // Reset search when search query is empty
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredDiscounts(discounts);
+      setTotalPages(Math.ceil(discounts.length / itemsPerPage));
     }
   }, [searchQuery, discounts]);
+
+  // Calculate paginated discounts
+  const paginatedDiscounts = filteredDiscounts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Adjust current page if it exceeds total pages
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
 
   // Delete discount
   const handleDeleteDiscount = async () => {
@@ -165,16 +190,20 @@ const DiscountList = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
-                  {filteredDiscounts.map((discount) => (
+                  {paginatedDiscounts.map((discount) => (
                     <tr
                       key={discount.idDiscounts}
                       className="border-b border-[#1D372E]"
                     >
                       <td className="text-xs lg:text-sm">
-                        {discount.ProductName}
+                        {discount.ProductName.length > 18
+                          ? `${discount.ProductName.substring(0, 18)}...`
+                          : discount.ProductName}
                       </td>
                       <td className="text-xs lg:text-sm">
-                        {discount.Description}
+                        {discount.Description.length > 18
+                          ? `${discount.Description.substring(0, 18)}...`
+                          : discount.Description}
                       </td>
                       <td className="text-xs lg:text-sm">
                         {formatDiscountType(discount.Discount_Type)}
@@ -241,7 +270,7 @@ const DiscountList = () => {
 
             {/* Discount Cards for smaller screens */}
             <div className="md:hidden grid grid-cols-1 gap-4">
-              {filteredDiscounts.map((discount) => (
+              {paginatedDiscounts.map((discount) => (
                 <div
                   key={discount.idDiscounts}
                   className="card bg-white shadow-md border border-[#1D372E] p-4"
@@ -317,6 +346,15 @@ const DiscountList = () => {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {filteredDiscounts.length > itemsPerPage && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </>
         )}
       </div>

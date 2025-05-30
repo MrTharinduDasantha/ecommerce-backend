@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import CategoryDropdown from '../Navbar/CategoryDropdown';
-import { products } from '../products'; // Make sure the path is correct
-import logo from './logo.png';
+import { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import CategoryDropdown from "../Navbar/CategoryDropdown";
+import logo from "./logo.png";
+import products from "../Products.jsx"; // Make sure the path is correct
 import {
   FaSearch,
   FaShoppingCart,
@@ -14,14 +14,20 @@ import {
   FaCalendarAlt,
   FaHeart,
   FaNetworkWired,
-  FaGift
-} from 'react-icons/fa';
+  FaGift,
+  FaChevronDown,
+} from "react-icons/fa";
+import { AuthContext } from "../../context/AuthContext";
 
 function Navbar() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const { user, logout } = useContext(AuthContext);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -30,10 +36,11 @@ function Navbar() {
 
     if (query.length > 0) {
       // Filter products based on name, category, description
-      const filtered = products.filter(item =>
-        item.name.toLowerCase().includes(query.toLowerCase()) ||
-        item.category.toLowerCase().includes(query.toLowerCase()) ||
-        item.description.toLowerCase().includes(query.toLowerCase())
+      const filtered = products.filter(
+        (item) =>
+          item.name.toLowerCase().includes(query.toLowerCase()) ||
+          item.category.toLowerCase().includes(query.toLowerCase()) ||
+          item.description.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredItems(filtered);
       setIsModalOpen(true);
@@ -55,19 +62,26 @@ function Navbar() {
 
   // Load cart count from local storage
   useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
     setCartCount(cart.reduce((total, item) => total + item.quantity, 0));
   }, []);
 
   return (
     <>
       {/* Top bar */}
-      <div className="fixed top-0 left-0 w-full bg-[#1D372E] text-white z-50 shadow-md font-poppins" style={{ height: '60px' }}>
+      <div
+        className="fixed top-0 left-0 w-full bg-[#1D372E] text-white z-50 shadow-md font-poppins"
+        style={{ height: "60px" }}
+      >
         <div className="flex items-center justify-between px-6 h-full">
           {/* Logo */}
           <div className="flex items-center ml-6">
             <Link to="/">
-              <img src={logo} alt="Logo" className="h-[85px] w-auto cursor-pointer" />
+              <img
+                src={logo}
+                alt="Logo"
+                className="h-[85px] w-auto cursor-pointer"
+              />
             </Link>
           </div>
 
@@ -94,7 +108,10 @@ function Navbar() {
                 transition={{ duration: 0.3 }}
                 className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
               >
-                <FaShoppingCart className="text-[15px] cursor-pointer" title="Cart" />
+                <FaShoppingCart
+                  className="text-[15px] cursor-pointer"
+                  title="Cart"
+                />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                     {cartCount}
@@ -110,20 +127,56 @@ function Navbar() {
                 transition={{ duration: 0.3 }}
                 className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
               >
-                <FaClipboardList className="text-[15px] cursor-pointer" title="Track Orders" />
+                <FaClipboardList
+                  className="text-[15px] cursor-pointer"
+                  title="Track Orders"
+                />
               </motion.div>
             </Link>
 
-            {/* Profile */}
-            <Link to="/sign-in">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-                className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
-              >
-                <FaUser className="text-[15px] cursor-pointer" title="Me" />
-              </motion.div>
-            </Link>
+            {/* Profile and Logout */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                >
+                  <FaUser className="text-[15px]" />
+                  <FaChevronDown className="ml-1 text-[12px]" />
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate("/sign-in");
+                        setIsDropdownOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link to="/sign-in">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                >
+                  <FaUser className="text-[15px] cursor-pointer" title="Me" />
+                </motion.div>
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -158,14 +211,26 @@ function Navbar() {
         <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
           <h2 className="text-xl font-semibold mb-4">Search Results</h2>
           <p className="text-[16px] text-gray-500 mb-4">
-            {filteredItems.length} {filteredItems.length === 1 ? 'result' : 'results'} found
+            {filteredItems.length}{" "}
+            {filteredItems.length === 1 ? "result" : "results"} found
           </p>
           <div className="flex flex-wrap gap-6">
             {filteredItems.length > 0 ? (
-              filteredItems.map(item => (
-                <div key={item.id} className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white">
-                  <Link to={`/product-page/${item.id}`} className="block" onClick={() => handleItemClick(item.name)}>
-                    <img src={item.image} alt={item.name} className="w-full h-32 object-cover rounded-md" />
+              filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white"
+                >
+                  <Link
+                    to={`/product-page/${item.id}`}
+                    className="block"
+                    onClick={() => handleItemClick(item.name)}
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-32 object-cover rounded-md"
+                    />
                     <h3 className="font-semibold mt-2">{item.name}</h3>
                     <p className="text-sm text-gray-500">{item.category}</p>
                     <p className="font-bold mt-2">{item.price}</p>
@@ -192,7 +257,10 @@ function Navbar() {
 function NavIcon({ icon, label }) {
   return (
     <div className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200">
-      <motion.span animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 0.5, ease: 'easeInOut' }}>
+      <motion.span
+        animate={{ rotate: [-10, 10, -10] }}
+        transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}
+      >
         {icon}
       </motion.span>
       <span>{label}</span>

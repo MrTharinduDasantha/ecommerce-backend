@@ -161,7 +161,7 @@ const AllProducts = () => {
                   </div>
                   <div className="mt-2 px-2">
                     <h3 className="text-[11px] text-gray-400 mb-1">{product.Brand_Name}</h3>
-                    <h3 className="text-[13px] font-medium text-gray-700 leading-snug text-[#1D372E] line-clamp-2">
+                    <h3 className="text-[13px] font-medium text-gray-700 leading-snug line-clamp-2">
                       {product.Description}
                     </h3>
                     <div className="mt-2 flex items-center space-x-2">

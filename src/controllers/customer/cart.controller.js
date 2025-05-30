@@ -46,8 +46,6 @@ async function addToCart(req, res) {
   try {
     const { customerId, productVariationId, qty } = req.body;
 
-    console.log("Adding to cart:", { customerId, productVariationId, qty });
-
     if (!customerId || !productVariationId || !qty) {
       return res.status(400).json({
         message: "Customer ID, product variation ID, and quantity are required",
@@ -121,10 +119,10 @@ async function addToCart(req, res) {
       .json({ message: "Product added to cart successfully", cart });
   } catch (error) {
     console.error("Error adding product to cart:", error);
-    res.status(500).json({ 
-      message: "Failed to add product to cart", 
+    res.status(500).json({
+      message: "Failed to add product to cart",
       error: error.message,
-      stack: error.stack 
+      stack: error.stack,
     });
   }
 }
@@ -147,6 +145,16 @@ async function updateCartItem(req, res) {
       return res.status(404).json({ message: "Cart not found" });
     }
 
+    // Get current cart item to check existing quantity
+    const [cartItem] = await pool.query(
+      "SELECT * FROM Cart_has_Product WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?",
+      [cart.idCart, productVariationId]
+    );
+
+    if (cartItem.length === 0) {
+      return res.status(404).json({ message: "Cart item not found" });
+    }
+
     // Check if product variation exists
     const [productVariation] = await pool.query(
       "SELECT * FROM Product_Variations WHERE idProduct_Variations = ?",
@@ -157,11 +165,15 @@ async function updateCartItem(req, res) {
       return res.status(404).json({ message: "Product variation not found" });
     }
 
-    // Check if quantity is available
-    if (productVariation[0].Qty < qty) {
+    // Calculate the difference between new quantity and current cart quantity
+    const currentCartQty = cartItem[0].Qty;
+    const qtyDifference = qty - currentCartQty;
+
+    // Check if the new total quantity (including what's already in cart) is available
+    if (productVariation[0].Qty < qtyDifference) {
       return res.status(400).json({
         message: "Requested quantity not available",
-        availableQty: productVariation[0].Qty,
+        availableQty: productVariation[0].Qty + currentCartQty,
       });
     }
 
