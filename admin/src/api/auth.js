@@ -61,7 +61,6 @@ export const addUser = async (newUser) => {
     throw error.response ? error.response.data : error.message;
   }
 };
-
 export const loginUser = async (email, password) => {
   try {
     const response = await api.post("/api/admin/users/login", { email, password });
