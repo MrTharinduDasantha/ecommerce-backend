@@ -1,11 +1,33 @@
+import React from "react";
 import { useState, useRef, useEffect } from "react";
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import { FaEdit, FaPlus, FaEye, FaEyeSlash } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
+import {
+  FaSearch,
+  FaShoppingCart,
+  FaUser,
+  FaClipboardList,
+  FaRocket,
+  FaTags,
+  FaCalendarAlt,
+  FaHeart,
+  FaNetworkWired,
+  FaGift,
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+  FaWhatsapp,
+} from "react-icons/fa";
+import { MdArrowDropDown } from "react-icons/md";
 import {
   fetchHeaderFooterSetting,
   updateHeaderFooterSetting,
 } from "../api/setting";
 import toast from "react-hot-toast";
+import googleplay from "../assets/googleplay.png";
+import appstore from "../assets/appstore.png";
 
 const Settings = () => {
   const [headerFooterSetting, setHeaderFooterSetting] = useState(null);
@@ -14,7 +36,7 @@ const Settings = () => {
   const [copyrightText, setCopyrightText] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
+  const [showPreview, setShowPreview] = useState(false);
 
   // Navigation Icons State
   const [navIcons, setNavIcons] = useState([]);
@@ -53,6 +75,41 @@ const Settings = () => {
   const logoInputRef = useRef(null);
   const navIconImageRef = useRef(null);
 
+  // Check if all required fields are filled
+  const canShowPreview = () => {
+    // Check if logo and copyright are provided
+    if (!logoPreview || !copyrightText.trim()) return false;
+
+    // Check if at least one navigation icon is added
+    if (navIcons.length === 0) return false;
+
+    // Check if at least one country block is added
+    if (countryBlocks.length === 0) return false;
+
+    // Check if at least one footer link is added
+    if (footerLinks.length === 0) return false;
+
+    // Check if at least one social icon is added
+    if (socialIcons.length === 0) return false;
+
+    return true;
+  };
+
+  // Toggle preview based on validation
+  const togglePreview = () => {
+    if (!showPreview) {
+      if (canShowPreview()) {
+        setShowPreview(true);
+      } else {
+        toast.error(
+          "Please fill in all required fields before viewing the preview"
+        );
+      }
+    } else {
+      setShowPreview(false);
+    }
+  };
+
   // Load header and footer settings when component mounts
   useEffect(() => {
     async function loadHeaderFooterSetting() {
@@ -66,7 +123,14 @@ const Settings = () => {
 
           // Set navigation icons if available
           if (data.Nav_Icons && Array.isArray(data.Nav_Icons)) {
-            setNavIcons(data.Nav_Icons);
+            setNavIcons(
+              data.Nav_Icons.map(({ icon, label, link, iconImageUrl }) => ({
+                icon,
+                label,
+                link,
+                iconImageUrl: iconImageUrl || null,
+              }))
+            );
           }
 
           // Set country blocks if available
@@ -112,6 +176,7 @@ const Settings = () => {
   // When edit is clicked, load the stored settings into the input fields
   const handleEdit = () => {
     setIsEditing(true);
+    setShowPreview(false);
     if (headerFooterSetting) {
       setLogoPreview(headerFooterSetting.Navbar_Logo_Url);
       setCopyrightText(headerFooterSetting.Footer_Copyright);
@@ -135,8 +200,16 @@ const Settings = () => {
       }
       formData.append("footerCopyright", copyrightText);
 
-      // Add navigation icons
-      formData.append("navIcons", JSON.stringify(navIcons));
+      // Prepare navIcons for backend
+      const navIconsForBackend = navIcons.map(
+        ({ icon, label, link, iconImageUrl }) => ({
+          icon,
+          label,
+          link,
+          iconImageUrl: iconImageUrl || undefined,
+        })
+      );
+      formData.append("navIcons", JSON.stringify(navIconsForBackend));
 
       // Add country blocks
       formData.append("countryBlocks", JSON.stringify(countryBlocks));
@@ -171,6 +244,7 @@ const Settings = () => {
 
   const handleCancel = () => {
     setIsEditing(false);
+    setShowPreview(false);
     setLogo(null);
     setLogoPreview(null);
     setCopyrightText("");
@@ -292,6 +366,267 @@ const Settings = () => {
     </div>
   );
 
+  // Header Preview Component
+  const HeaderPreview = () => {
+    return (
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
+          Header Preview
+        </h3>
+        <div className="border rounded-lg overflow-hidden">
+          {/* Top bar */}
+          <div
+            className="bg-[#1D372E] text-white shadow-md font-poppins"
+            style={{ height: "65px" }}
+          >
+            <div className="flex items-center justify-between px-6 h-full">
+              {/* Logo */}
+              <div className="flex items-center ml-6">
+                <img
+                  src={logoPreview || "/placeholder.svg"}
+                  alt="Logo"
+                  className="h-[85px] w-auto cursor-pointer"
+                />
+              </div>
+
+              {/* Search bar */}
+              <div className="flex flex-1 max-w-2xl mx-30 font-poppins relative">
+                <input
+                  type="text"
+                  placeholder="SEARCH THE ENTIRE STORE..."
+                  className="w-full sm:w-[400px] px-4 py-2 text-[#000000] text-[13px] rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
+                  disabled
+                />
+                <button className="bg-[#5CAF90] p-2 w-9 rounded-r-md">
+                  <FaSearch className="text-[#FFFFFF]" />
+                </button>
+              </div>
+
+              {/* Icons */}
+              <div className="flex space-x-2">
+                {/* Cart Icon */}
+                <div className="relative">
+                  <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
+                    <FaShoppingCart
+                      className="text-[15px] cursor-pointer"
+                      title="Cart"
+                    />
+                  </div>
+                </div>
+
+                {/* Track Order */}
+                <div>
+                  <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
+                    <FaClipboardList
+                      className="text-[15px] cursor-pointer"
+                      title="Track Orders"
+                    />
+                  </div>
+                </div>
+
+                {/* User */}
+                <div>
+                  <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]">
+                    <FaUser className="text-[15px] cursor-pointer" title="Me" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom menu */}
+          <div className="bg-[#F4F4F4] text-[#000000] px-15 py-1 flex items-center space-x-2 sm:space-x-17 text-[13.33px] overflow-x-auto font-poppins">
+            <div className="flex items-center space-x-1 px-3 py-1 bg-[#5CAF90] text-white rounded-sm">
+              <span className="whitespace-nowrap">All Categories</span>
+              <MdArrowDropDown className="text-3xl" />
+            </div>
+
+            {/* Navigation Icons */}
+            {navIcons.map((icon, index) => (
+              <div
+                key={index}
+                className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200 cursor-pointer"
+              >
+                {icon.icon === "FaGift" && <FaGift />}
+                {icon.icon === "FaRocket" && <FaRocket />}
+                {icon.icon === "FaTags" && <FaTags />}
+                {icon.icon === "FaCalendarAlt" && <FaCalendarAlt />}
+                {icon.icon === "FaNetworkWired" && <FaNetworkWired />}
+                {icon.icon === "FaHeart" && <FaHeart />}
+                <span className="whitespace-nowrap">{icon.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Footer Preview Component
+  const FooterPreview = () => {
+    return (
+      <div>
+        <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
+          Footer Preview
+        </h3>
+        <div className="border rounded-lg overflow-hidden">
+          <footer
+            className="text-white px-4 md:px-6 py-10 md:py-12"
+            style={{
+              fontFamily: '"Poppins", sans-serif',
+              backgroundColor: "#1D372E",
+            }}
+          >
+            {/* Middle Section */}
+            <div className="text-center mb-10 px-4">
+              <h2 className="text-lg md:text-xl text-white mb-3">
+                JOIN THE HAPPY CROWD
+              </h2>
+              <p className="text-xs md:text-sm font-light text-white mb-4">
+                Get New Arrivals and Exclusive Offers in Your Inbox
+              </p>
+              <button className="text-xs md:text-sm bg-white hover:bg-white text-[#5CAF90] px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium inline-flex items-center gap-2 transition">
+                <FaWhatsapp className="text-base md:text-lg" /> Join Our
+                Whatsapp Channel
+              </button>
+            </div>
+
+            {/* Countries Section */}
+            <div className="overflow-x-auto mb-10">
+              <div className="flex md:grid md:grid-cols-4 gap-6 min-w-[350px] md:min-w-0 px-2">
+                {/* Country Blocks */}
+                {countryBlocks.map((loc, idx) => (
+                  <div
+                    key={idx}
+                    className="flex-shrink-0 w-72 md:w-auto text-center md:text-left"
+                  >
+                    <h3 className="font-bold text-lg text-white mb-2">
+                      {loc.title}
+                    </h3>
+                    <p className="text-xs font-light text-white whitespace-pre-line">
+                      {loc.address}
+                    </p>
+                    {loc.hotline && (
+                      <p className="text-xs font-light text-white mt-2">
+                        (Phone/Fax: {loc.hotline})
+                      </p>
+                    )}
+                    {loc.email && (
+                      <p className="text-xs font-light text-white">
+                        Email:{" "}
+                        <a
+                          href={`mailto:${loc.email}`}
+                          className="hover:underline text-white"
+                        >
+                          {loc.email}
+                        </a>
+                      </p>
+                    )}
+                    {loc.whatsapp && (
+                      <p className="text-xs font-light text-white flex justify-center md:justify-start items-center gap-2 mt-2">
+                        <FaWhatsapp className="text-white" />{" "}
+                        <span>{loc.whatsapp}</span>
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Section */}
+            <div className="max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 text-center px-4">
+              {/* Links & Actions */}
+              <div className="flex flex-col md:flex-row items-center gap-4 text-sm">
+                <button className="bg-white text-black px-3 py-2 rounded font-medium hover:bg-gray-300 text-xs transition">
+                  Sell with TechWave
+                </button>
+
+                <a href="#" className="hover:underline text-xs text-white">
+                  Download <span className="font-semibold">TechWave App</span>
+                </a>
+
+                {/* App Store and Google Play Logos */}
+                <div className="flex gap-2 justify-center">
+                  <img
+                    src={googleplay}
+                    className="h-10 w-auto object-contain"
+                    alt="Google Play"
+                  />
+                  <img
+                    src={appstore}
+                    className="h-10 w-auto object-contain"
+                    alt="App Store"
+                  />
+                </div>
+              </div>
+
+              {/* Footer Links */}
+              <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400 font-light">
+                {footerLinks.map((link, index) => (
+                  <React.Fragment key={index}>
+                    <a href={link.url} className="hover:underline text-white">
+                      {link.text}
+                    </a>
+                    {index < footerLinks.length - 1 && (
+                      <span className="hidden md:inline">|</span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+
+            {/* Copyright */}
+            <div className="text-center text-xs mt-4 text-white font-light">
+              {copyrightText}
+            </div>
+
+            {/* Social Icons */}
+            <div className="border-t border-white pt-6 mt-6 flex justify-center gap-4 text-sm">
+              {socialIcons.map((icon, index) => {
+                let IconComponent;
+                switch (icon.platform) {
+                  case "Facebook":
+                    IconComponent = FaFacebookF;
+                    break;
+                  case "Twitter":
+                    IconComponent = FaTwitter;
+                    break;
+                  case "Instagram":
+                    IconComponent = FaInstagram;
+                    break;
+                  case "LinkedIn":
+                    IconComponent = FaLinkedinIn;
+                    break;
+                  case "YouTube":
+                    IconComponent = FaYoutube;
+                    break;
+                  case "WhatsApp":
+                    IconComponent = FaWhatsapp;
+                    break;
+                  default:
+                    IconComponent = FaFacebookF;
+                }
+
+                return (
+                  <a
+                    key={index}
+                    href={icon.url}
+                    aria-label={icon.platform}
+                    className={`border border-white rounded-full p-2 ${
+                      index % 2 === 0 ? "bg-white text-black" : ""
+                    } hover:scale-105 transition`}
+                  >
+                    <IconComponent />
+                  </a>
+                );
+              })}
+            </div>
+          </footer>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading && !headerFooterSetting) {
     return (
       <div className="card bg-base-100 shadow-md">
@@ -303,6 +638,7 @@ const Settings = () => {
       </div>
     );
   }
+
   return (
     <div className="card bg-white shadow-md">
       <div className="card-body">
@@ -313,122 +649,116 @@ const Settings = () => {
               Manage Settings
             </h2>
           </div>
-          {!isEditing && (
-            <button
-              onClick={handleEdit}
-              className="btn btn-primary gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md"
-            >
-              <FaEdit className="w-4 h-4" /> Edit
-            </button>
-          )}
-        </div>
-
-        {/* Tabs */}
-        <div className="bg-[#1D372E] mb-6 w-fit">
-          <button
-            className={`px-3 py-3 font-medium text-white hover:bg-[#5CAF90] transition border-r cursor-pointer ${
-              activeTab === "general" ? "bg-[#5CAF90]" : ""
-            }`}
-            onClick={() => setActiveTab("general")}
-          >
-            General
-          </button>
-          <button
-            className={`px-3 py-3 font-medium text-white hover:bg-[#5CAF90] transition border-r cursor-pointer ${
-              activeTab === "navIcons" ? "bg-[#5CAF90]" : ""
-            }`}
-            onClick={() => setActiveTab("navIcons")}
-          >
-            Navigation Icons
-          </button>
-          <button
-            className={`px-3 py-3 font-medium text-white hover:bg-[#5CAF90] transition border-r cursor-pointer ${
-              activeTab === "countryBlocks" ? "bg-[#5CAF90]" : ""
-            }`}
-            onClick={() => setActiveTab("countryBlocks")}
-          >
-            Country Blocks
-          </button>
-          <button
-            className={`px-3 py-3 font-medium text-white hover:bg-[#5CAF90] transition border-r cursor-pointer ${
-              activeTab === "footerLinks" ? "bg-[#5CAF90]" : ""
-            }`}
-            onClick={() => setActiveTab("footerLinks")}
-          >
-            Footer Links & Social
-          </button>
-        </div>
-
-        <form onSubmit={handleSave}>
-          {/* General Settings */}
-          {activeTab === "general" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Navbar Logo Input */}
-              <div className="form-control">
-                <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text text-sm md:text-base font-medium">
-                    Navbar Logo
-                  </span>
-                </label>
-                <input
-                  type="file"
-                  onChange={handleLogoChange}
-                  ref={logoInputRef}
-                  className="file-input file-input-bordered file-input-sm md:file-input-md w-full bg-white border-[#1D372E] text-[#1D372E] disabled:bg-white disabled:border-[#1D372E] disabled:text-[#1D372E]"
-                  disabled={!isEditing}
-                />
-                {logoPreview && (
-                  <div className="relative mt-4 w-24 h-24 rounded-lg overflow-hidden">
-                    <img
-                      src={logoPreview}
-                      alt="Logo Preview"
-                      className="object-contain w-full h-full"
-                    />
-                    {isEditing && (
-                      <button
-                        type="button"
-                        onClick={removeLogo}
-                        className="btn btn-xs bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-square absolute top-1.5 right-1 text-white"
-                      >
-                        <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Copyright Input */}
-              <div className="form-control">
-                <label className="label text-[#1D372E] mb-0.5">
-                  <span className="label-text text-sm md:text-base font-medium">
-                    Footer Copyright
-                  </span>
-                </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={copyrightText}
-                    onChange={(e) => setCopyrightText(e.target.value)}
-                    placeholder="Enter copyright text"
-                    className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
-                  />
+          <div className="flex gap-2">
+            {!isEditing && !showPreview && (
+              <button
+                onClick={handleEdit}
+                className="btn btn-primary gap-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md"
+              >
+                <FaEdit className="w-4 h-4" /> Edit
+              </button>
+            )}
+            {!isEditing || canShowPreview() ? (
+              <button
+                onClick={togglePreview}
+                className={`btn gap-2 btn-sm md:btn-md ${
+                  showPreview
+                    ? "bg-[#1D372E] border-[#1D372E] hover:bg-[#162a23]"
+                    : "bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+                }`}
+              >
+                {showPreview ? (
+                  <>
+                    <FaEyeSlash className="w-4 h-4" /> Hide Preview
+                  </>
                 ) : (
-                  <div className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E] flex items-center">
-                    {headerFooterSetting?.Footer_Copyright || (
-                      <span className="text-gray-400">
-                        Enter copyright text
-                      </span>
-                    )}
-                  </div>
+                  <>
+                    <FaEye className="w-4 h-4" /> Show Preview
+                  </>
                 )}
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        {showPreview ? (
+          <div className="space-y-8">
+            <HeaderPreview />
+            <FooterPreview />
+          </div>
+        ) : (
+          <form onSubmit={handleSave}>
+            {/* General Settings */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
+                General Settings
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Navbar Logo Input */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text text-sm md:text-base font-medium">
+                      Navbar Logo
+                    </span>
+                  </label>
+                  <input
+                    type="file"
+                    onChange={handleLogoChange}
+                    ref={logoInputRef}
+                    className="file-input file-input-bordered file-input-sm w-full bg-white border-[#1D372E] text-[#1D372E] disabled:bg-white disabled:border-[#1D372E] disabled:text-[#1D372E]"
+                    disabled={!isEditing}
+                  />
+                  {logoPreview && (
+                    <div className="relative mt-4 w-24 h-24 rounded-lg overflow-hidden">
+                      <img
+                        src={logoPreview || "/placeholder.svg"}
+                        alt="Logo Preview"
+                        className="object-contain bg-[#1D372E] w-full h-full"
+                      />
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="btn btn-xs bg-[#5CAF90] hover:bg-[#4a9a7d] border-[#5CAF90] btn-square absolute top-1.5 right-1 text-white"
+                        >
+                          <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Copyright Input */}
+                <div className="form-control">
+                  <label className="label text-[#1D372E] mb-0.5">
+                    <span className="label-text text-sm md:text-base font-medium">
+                      Footer Copyright
+                    </span>
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={copyrightText}
+                      onChange={(e) => setCopyrightText(e.target.value)}
+                      placeholder="Enter copyright text"
+                      className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E]"
+                    />
+                  ) : (
+                    <div className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E] flex items-center">
+                      {headerFooterSetting?.Footer_Copyright || (
+                        <span className="text-gray-400">
+                          Enter copyright text
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Navigation Icons Settings */}
-          {activeTab === "navIcons" && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-[#1D372E]">
+            {/* Navigation Icons Settings */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
                 Navigation Icons
               </h3>
 
@@ -484,7 +814,7 @@ const Settings = () => {
 
               {/* Add New Navigation Icon */}
               {isEditing && (
-                <div className="p-4 border border-[#1D372E] rounded-lg">
+                <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
                   <h4 className="font-medium text-[#1D372E] mb-3">
                     Add New Navigation Icon
                   </h4>
@@ -520,7 +850,9 @@ const Settings = () => {
                       {newNavIcon.iconImagePreview && (
                         <div className="mt-2 relative inline-block">
                           <img
-                            src={newNavIcon.iconImagePreview}
+                            src={
+                              newNavIcon.iconImagePreview || "/placeholder.svg"
+                            }
                             alt="Icon Preview"
                             className="w-16 h-16 object-contain"
                           />
@@ -576,12 +908,10 @@ const Settings = () => {
                 </div>
               )}
             </div>
-          )}
 
-          {/* Country Blocks Settings */}
-          {activeTab === "countryBlocks" && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-[#1D372E]">
+            {/* Country Blocks Settings */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
                 Country Blocks
               </h3>
 
@@ -631,7 +961,7 @@ const Settings = () => {
 
               {/* Add New Country Block */}
               {isEditing && (
-                <div className="p-4 border border-[#1D372E] rounded-lg">
+                <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
                   <h4 className="font-medium text-[#1D372E] mb-3">
                     Add New Country Block
                   </h4>
@@ -738,20 +1068,22 @@ const Settings = () => {
                 </div>
               )}
             </div>
-          )}
 
-          {/* Footer Links & Social Icons Settings */}
-          {activeTab === "footerLinks" && (
-            <div className="space-y-6">
+            {/* Footer Links & Social Icons Settings */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
+                Footer Links & Social
+              </h3>
+
               {/* Footer Links */}
-              <div>
-                <h3 className="text-lg font-semibold text-[#1D372E]">
+              <div className="mb-6">
+                <h4 className="font-medium text-[#1D372E] mb-3">
                   Footer Links
-                </h3>
+                </h4>
 
                 {/* Existing Footer Links */}
                 {footerLinks.length > 0 ? (
-                  <div className="overflow-x-auto mt-4">
+                  <div className="overflow-x-auto">
                     <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
                       <thead className="bg-[#EAFFF7] text-[#1D372E]">
                         <tr className="border-b border-[#1D372E]">
@@ -841,14 +1173,14 @@ const Settings = () => {
               </div>
 
               {/* Social Icons */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-[#1D372E]">
+              <div>
+                <h4 className="font-medium text-[#1D372E] mb-3">
                   Social Icons
-                </h3>
+                </h4>
 
                 {/* Existing Social Icons */}
                 {socialIcons.length > 0 ? (
-                  <div className="overflow-x-auto mt-4">
+                  <div className="overflow-x-auto">
                     <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
                       <thead className="bg-[#EAFFF7] text-[#1D372E]">
                         <tr className="border-b border-[#1D372E]">
@@ -943,37 +1275,37 @@ const Settings = () => {
                 )}
               </div>
             </div>
-          )}
 
-          {/* Action Buttons */}
-          {isEditing && (
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="btn btn-primary bg-[#1D372E] border-[#1D372E] btn-sm md:btn-md"
-                disabled={isLoading}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md ${
-                  isLoading ? "cursor-not-allowed" : ""
-                }`}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="loading loading-spinner loading-xs"></span>
-                    Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </button>
-            </div>
-          )}
-        </form>
+            {/* Action Buttons */}
+            {isEditing && (
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="btn btn-primary bg-[#1D372E] border-[#1D372E] btn-sm md:btn-md"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md ${
+                    isLoading ? "cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="loading loading-spinner loading-xs"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            )}
+          </form>
+        )}
       </div>
     </div>
   );
