@@ -7,50 +7,9 @@ import {
   updateDiscount,
 } from "../api/product";
 import { FaRegCheckSquare, FaCheckSquare } from "react-icons/fa";
-import Select from "react-select";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-// Custom styles for react-select components
-const customStyles = {
-  menuList: (provided) => ({
-    ...provided,
-    maxHeight: "160px",
-    overflowY: "auto",
-    borderRadius: "0.3rem",
-  }),
-  menu: (provided) => ({
-    ...provided,
-    borderRadius: "0.3rem",
-    borderWidth: "1px",
-    borderColor: "#1D372E",
-  }),
-  control: (provided) => ({
-    ...provided,
-    minHeight: "2.5rem",
-    borderWidth: "1px",
-    borderColor: "#1D372E",
-    borderRadius: "0.3rem",
-    boxShadow: "none",
-    "&:hover": {
-      borderColor: "#1D372E",
-    },
-    // Reduce control height and font size on small screens
-    "@media screen and (max-width: 640px)": {
-      minHeight: "2rem",
-      fontSize: "0.75rem",
-    },
-  }),
-  option: (provided) => ({
-    ...provided,
-    fontSize: "0.875rem",
-    // Reduce option font size on small screens
-    "@media screen and (max-width: 640px)": {
-      fontSize: "0.75rem",
-    },
-  }),
-};
 
 const DiscountForm = () => {
   const { id } = useParams();
@@ -93,23 +52,19 @@ const DiscountForm = () => {
 
   // Calculate discounted price
   const calculateDiscountedPrice = () => {
-    if (
-      !selectedProductDetails ||
-      !formData.discountType ||
-      !formData.discountValue
-    ) {
-      return selectedProductDetails?.Selling_Price || 0;
+    if (!selectedProductDetails) {
+      return 0;
     }
-
-    const originalPrice = parseFloat(selectedProductDetails.Selling_Price);
-    const discountValue = parseFloat(formData.discountValue);
-
+    const originalPrice = parseFloat(selectedProductDetails.Selling_Price) || 0;
+    if (!formData.discountType || !formData.discountValue) {
+      return originalPrice;
+    }
+    const discountValue = parseFloat(formData.discountValue) || 0;
     if (formData.discountType === "percentage") {
       return originalPrice - (originalPrice * discountValue) / 100;
     } else if (formData.discountType === "fixed") {
       return Math.max(0, originalPrice - discountValue);
     }
-
     return originalPrice;
   };
 
@@ -165,22 +120,6 @@ const DiscountForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Handle product select change
-  const handleProductChange = (selectedOption) => {
-    setFormData((prev) => ({ ...prev, productId: selectedOption.value }));
-
-    // Find and set the selected product details
-    const selectedProduct = products.find(
-      (product) => product.idProduct === selectedOption.value
-    );
-    setSelectedProductDetails(selectedProduct);
-  };
-
-  // Handle discount type change
-  const handleDiscountTypeChange = (selectedOption) => {
-    setFormData((prev) => ({ ...prev, discountType: selectedOption.value }));
   };
 
   // Handle date changes
@@ -474,19 +413,40 @@ const DiscountForm = () => {
                       Product
                     </span>
                   </label>
-                  <Select
-                    value={
-                      productOptions.find(
-                        (option) => option.value === formData.productId
-                      ) || null
-                    }
-                    onChange={handleProductChange}
-                    options={productOptions}
-                    styles={customStyles}
-                    placeholder="Select Product"
-                    className="text-[#1D372E]"
-                  />
+                  <select
+                    name="productId"
+                    value={formData.productId}
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+
+                      // Update form data
+                      setFormData((prev) => ({
+                        ...prev,
+                        productId: selectedValue,
+                      }));
+
+                      // Find and set the selected product details
+                      if (selectedValue) {
+                        const selectedProduct = products.find(
+                          (product) =>
+                            product.idProduct === parseInt(selectedValue)
+                        );
+                        setSelectedProductDetails(selectedProduct || null);
+                      } else {
+                        setSelectedProductDetails(null);
+                      }
+                    }}
+                    className="select select-bordered select-sm md:select-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  >
+                    <option value="">Select Product</option>
+                    {productOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
                 {/* Discount Description */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
@@ -525,16 +485,19 @@ const DiscountForm = () => {
                       Discount Type
                     </span>
                   </label>
-                  <Select
-                    value={discountTypeOptions.find(
-                      (option) => option.value === formData.discountType
-                    )}
-                    onChange={handleDiscountTypeChange}
-                    options={discountTypeOptions}
-                    styles={customStyles}
-                    placeholder="Select discount type"
-                    className="text-[#1D372E]"
-                  />
+                  <select
+                    name="discountType"
+                    value={formData.discountType}
+                    onChange={handleChange}
+                    className="select select-bordered select-sm md:select-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  >
+                    <option value="">Select discount type</option>
+                    {discountTypeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Discount Value */}

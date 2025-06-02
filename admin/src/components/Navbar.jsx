@@ -9,9 +9,9 @@ import {
   TbChevronDown,
   TbUser,
   TbLogout,
-  TbPackage,
   TbSettings,
 } from "react-icons/tb";
+import { IoSettingsSharp } from "react-icons/io5";
 import profile from "../assets/userprofile.png";
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
@@ -52,6 +52,10 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
           0%, 100% { color: white; }
           50% { color: #5CAF90; }
         }
+        @keyframes slow-spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
       `}</style>
       <div className="px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -71,8 +75,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
             to="/dashboard/dashboard-private"
             className="flex items-center gap-2"
           >
-            <div className="hidden md:flex items-center justify-center w-8 h-8 rounded-md bg-[#5CAF90] text-primary-content">
-              <TbPackage className="h-4 w-4" />
+            <div className="hidden md:flex items-center justify-center w-8 h-8 rounded-md bg-[#5CAF90] text-primary-content relative">
+              <IoSettingsSharp
+                className="h-4 w-4 text-white absolute animate-slow-spin"
+                style={{ animation: "slow-spin 4s linear infinite" }}
+              />
             </div>
             <span className="font-semibold text-lg">
               {text.map((char, index) => (

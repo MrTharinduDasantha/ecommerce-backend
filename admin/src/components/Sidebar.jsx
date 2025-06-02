@@ -67,7 +67,7 @@ const Sidebar = ({ isSidebarOpen }) => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-30 h-screen pt-16 transition-transform border-r border-emerald-950
+      className={`fixed top-0 left-0 z-30 h-screen pt-16 transition-transform bg-[#1D372E] border-r border-emerald-950
         w-56 md:w-[15.5rem] ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
