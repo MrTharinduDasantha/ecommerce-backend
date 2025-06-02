@@ -95,7 +95,7 @@ const CustomerManagedForm = () => {
 
   const handleHistory = (customer) => {
     setSelectedCustomer(customer);
-    setHistory(null); // Reset history before fetching
+    setHistory(null);
     setShowHistoryModal(true);
   };
 
@@ -106,6 +106,8 @@ const CustomerManagedForm = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation
     if (!editForm.full_name.trim()) {
       toast.error("Full Name is required");
       return;
@@ -118,15 +120,44 @@ const CustomerManagedForm = () => {
       toast.error("Enter a valid 10-digit phone number");
       return;
     }
+
     try {
-      await api.updateCustomer(selectedCustomer.idCustomer, editForm);
-      setCustomers((prevCustomers) =>
-        prevCustomers.map((c) =>
-          c.idCustomer === selectedCustomer.idCustomer
-            ? { ...c, ...editForm }
-            : c
-        )
+      // Call API to update customer
+      await api.updateCustomer(selectedCustomer.idCustomer, {
+        full_name: editForm.full_name,
+        email: editForm.email,
+        mobile_no: editForm.mobile_no,
+        status: editForm.status,
+      });
+
+      // Immediately update the local customers array
+      const updatedCustomer = {
+        ...selectedCustomer,
+        Full_Name: editForm.full_name,
+        Email: editForm.email,
+        Mobile_No: editForm.mobile_no,
+        Status: editForm.status,
+      };
+
+      const updatedCustomers = customers.map((c) =>
+        c.idCustomer === selectedCustomer.idCustomer ? updatedCustomer : c
       );
+      setCustomers(updatedCustomers);
+
+      // Reapply search filter
+      if (!searchTerm.trim()) {
+        setFilteredCustomers(updatedCustomers);
+      } else {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const filtered = updatedCustomers.filter((customer) =>
+          customer.idCustomer?.toString().includes(lowerSearchTerm) ||
+          customer.Full_Name?.toLowerCase().includes(lowerSearchTerm) ||
+          customer.Email?.toLowerCase().includes(lowerSearchTerm) ||
+          customer.Mobile_No?.includes(lowerSearchTerm)
+        );
+        setFilteredCustomers(filtered);
+      }
+
       toast.success("Customer updated successfully");
       setShowEditModal(false);
     } catch (error) {
@@ -138,7 +169,23 @@ const CustomerManagedForm = () => {
   const confirmDelete = async () => {
     try {
       await api.deleteCustomer(customerToDelete);
-      setCustomers(customers.filter((c) => c.idCustomer !== customerToDelete));
+      const updatedCustomers = customers.filter((c) => c.idCustomer !== customerToDelete);
+      setCustomers(updatedCustomers);
+
+      // Reapply search filter
+      if (!searchTerm.trim()) {
+        setFilteredCustomers(updatedCustomers);
+      } else {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const filtered = updatedCustomers.filter((customer) =>
+          customer.idCustomer?.toString().includes(lowerSearchTerm) ||
+          customer.Full_Name?.toLowerCase().includes(lowerSearchTerm) ||
+          customer.Email?.toLowerCase().includes(lowerSearchTerm) ||
+          customer.Mobile_No?.includes(lowerSearchTerm)
+        );
+        setFilteredCustomers(filtered);
+      }
+
       toast.success("Customer deleted successfully");
       setShowDeleteModal(false);
     } catch (error) {
@@ -161,6 +208,7 @@ const CustomerManagedForm = () => {
 
   return (
     <div>
+      {/* Header & Search */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4 md:p-6">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-5 bg-[#5CAF90]"></div>
@@ -190,6 +238,7 @@ const CustomerManagedForm = () => {
           </div>
         </div>
 
+        {/* Customer Table */}
         <div className="block w-full overflow-x-auto">
           {filteredCustomers.length === 0 ? (
             <div className="alert bg-[#1D372E] border-[#1D372E]">
@@ -197,54 +246,28 @@ const CustomerManagedForm = () => {
             </div>
           ) : (
             <>
+              {/* Desktop Table */}
               <div className="hidden sm:block">
                 <table className="table min-w-[700px] text-center border border-[#1D372E]">
                   <thead className="bg-[#EAFFF7] text-[#1D372E]">
                     <tr className="border-b border-[#1D372E]">
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        ID
-                      </th>
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        Name
-                      </th>
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        Email
-                      </th>
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        Phone
-                      </th>
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        Status
-                      </th>
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        Created
-                      </th>
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        Updated
-                      </th>
-                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">
-                        Actions
-                      </th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">ID</th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">Name</th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">Email</th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">Phone</th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">Status</th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">Created</th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">Updated</th>
+                      <th className="py-2 px-3 font-semibold text-xs lg:text-sm">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="text-[#1D372E]">
                     {filteredCustomers.map((customer) => (
-                      <tr
-                        key={customer.idCustomer}
-                        className="border-b border-[#1D372E]"
-                      >
-                        <td className="py-2 px-3 text-xs lg:text-sm">
-                          {customer.idCustomer}
-                        </td>
-                        <td className="py-2 px-3 text-xs lg:text-sm">
-                          {customer.Full_Name}
-                        </td>
-                        <td className="py-2 px-3 text-xs lg:text-sm">
-                          {customer.Email}
-                        </td>
-                        <td className="py-2 px-3 text-xs lg:text-sm">
-                          {customer.Mobile_No}
-                        </td>
+                      <tr key={customer.idCustomer} className="border-b border-[#1D372E]">
+                        <td className="py-2 px-3 text-xs lg:text-sm">{customer.idCustomer}</td>
+                        <td className="py-2 px-3 text-xs lg:text-sm">{customer.Full_Name}</td>
+                        <td className="py-2 px-3 text-xs lg:text-sm">{customer.Email}</td>
+                        <td className="py-2 px-3 text-xs lg:text-sm">{customer.Mobile_No}</td>
                         <td className="py-2 px-3 text-xs">
                           <span
                             className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
@@ -283,13 +306,6 @@ const CustomerManagedForm = () => {
                               <FaEdit className="w-3 h-3" />
                             </button>
                             <button
-                              onClick={() => handleHistory(customer)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              title="View History"
-                            >
-                              <FaHistory className="w-3 h-3" />
-                            </button>
-                            <button
                               onClick={() => handleDelete(customer.idCustomer)}
                               className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                               title="Delete Customer"
@@ -303,6 +319,7 @@ const CustomerManagedForm = () => {
                   </tbody>
                 </table>
               </div>
+              {/* Mobile view */}
               <div className="sm:hidden space-y-3">
                 {filteredCustomers.map((customer) => (
                   <div
@@ -314,9 +331,7 @@ const CustomerManagedForm = () => {
                         <div className="font-medium text-[#1D372E] text-xs">
                           {customer.Full_Name}
                         </div>
-                        <div className="text-xs text-gray-600">
-                          {customer.Email}
-                        </div>
+                        <div className="text-xs text-gray-600">{customer.Email}</div>
                       </div>
                       <span
                         className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-black-300 ${
@@ -360,13 +375,7 @@ const CustomerManagedForm = () => {
                       >
                         <FaEdit className="w-3 h-3" />
                       </button>
-                      <button
-                        onClick={() => handleHistory(customer)}
-                        className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                        title="View History"
-                      >
-                        <FaHistory className="w-3 h-3" />
-                      </button>
+                    
                       <button
                         onClick={() => handleDelete(customer.idCustomer)}
                         className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
@@ -383,12 +392,11 @@ const CustomerManagedForm = () => {
         </div>
       </div>
 
+      {/* Edit Customer Modal */}
       {showEditModal && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-md bg-white text-[#1D372E]">
-            <h3 className="font-bold text-base lg:text-lg mb-4">
-              Edit Customer
-            </h3>
+          <div className="modal-box max-w-md bg-white text-[#1D372E] relative">
+            <h3 className="font-bold text-base lg:text-lg mb-4">Edit Customer</h3>
             <button
               onClick={() => setShowEditModal(false)}
               className="absolute right-6 top-7 text-lg"
@@ -396,6 +404,7 @@ const CustomerManagedForm = () => {
               <IoClose className="w-5 h-5" />
             </button>
             <form onSubmit={handleEditSubmit}>
+              {/* Full Name */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -413,6 +422,7 @@ const CustomerManagedForm = () => {
                   required
                 />
               </div>
+              {/* Email */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -430,6 +440,7 @@ const CustomerManagedForm = () => {
                   required
                 />
               </div>
+              {/* Phone Number */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -447,6 +458,7 @@ const CustomerManagedForm = () => {
                   required
                 />
               </div>
+              {/* Status */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -464,12 +476,13 @@ const CustomerManagedForm = () => {
                   <option value="Inactive">Inactive</option>
                 </select>
               </div>
+              {/* Submit button */}
               <div className="modal-action">
                 <button
                   type="submit"
                   className="btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md hover:bg-[#4a9a7d]"
                 >
-                  Edit
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -477,12 +490,11 @@ const CustomerManagedForm = () => {
         </div>
       )}
 
+      {/* Customer History Modal */}
       {showHistoryModal && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-lg max-h-[90vh] bg-white text-[#1D372E]">
-            <h3 className="font-bold text-base lg:text-lg mb-4">
-              Customer History
-            </h3>
+          <div className="modal-box max-w-lg max-h-[90vh] bg-white text-[#1D372E] relative overflow-y-auto">
+            <h3 className="font-bold text-base lg:text-lg mb-4">Customer History</h3>
             <button
               onClick={() => setShowHistoryModal(false)}
               className="absolute right-6 top-7 text-[#1D372E]"
@@ -531,6 +543,7 @@ const CustomerManagedForm = () => {
         </div>
       )}
 
+      {/* Delete Customer Modal */}
       {showDeleteModal && (
         <div className="modal modal-open">
           <div className="modal-box bg-white text-[#1D372E]">
@@ -541,12 +554,10 @@ const CustomerManagedForm = () => {
             >
               <IoClose className="w-5 h-5" />
             </button>
-
             <p className="mb-6">
               Are you sure you want to delete this customer? This action cannot
               be undone.
             </p>
-
             <div className="modal-action">
               <button
                 onClick={() => setShowDeleteModal(false)}
