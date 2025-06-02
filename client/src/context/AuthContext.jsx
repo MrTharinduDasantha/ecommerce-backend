@@ -29,7 +29,11 @@ export const AuthProvider = ({ children }) => {
           const response = await axios.get(
             "http://localhost:9000/api/auth/customers/me"
           );
-          setUser(response.data);
+          // Fix: Ensure user object has 'id' property
+          setUser({
+            ...response.data,
+            id: response.data.id, // Ensure id is present
+          });
         }
       } catch (err) {
         console.error("Auth check failed:", err);
@@ -62,7 +66,10 @@ export const AuthProvider = ({ children }) => {
       // Set default authorization header
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      setUser(userData);
+      setUser({
+        ...userData,
+        id: userData.id, // Ensure id is present
+      });
       setError(null);
       return userData;
     } catch (err) {
