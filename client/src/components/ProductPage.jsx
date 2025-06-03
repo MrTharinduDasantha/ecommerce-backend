@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { getProduct, getProducts } from "../api/product";
+import { formatPrice } from "./FormatPrice";
 import ProductCard from "./ProductCard";
 
 const ProductPage = () => {
@@ -106,6 +107,7 @@ const ProductPage = () => {
                 weight: product.SIH || "N/A",
                 color: product.variations?.[0]?.Colour || "N/A",
                 size: product.variations?.[0]?.Size || null,
+                category: product.subcategories?.[0]?.Description || "",
               }));
 
             setRelatedProducts(filteredRelated);
@@ -308,18 +310,22 @@ const ProductPage = () => {
 
           {/* Price and Discount */}
           <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
-            LKR {currentVariant.price.toFixed(2)}
+            {formatPrice(`LKR ${currentVariant.price.toFixed(2)}`)}
+
             {product.marketPrice > currentVariant.price && (
               <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
-                LKR {product.marketPrice.toFixed(2)}
+                {formatPrice(`LKR ${product.marketPrice.toFixed(2)}`)}
               </span>
             )}
+
             {activeDiscount && (
               <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
                 {activeDiscount.Discount_Type === "fixed"
-                  ? `Extra LKR ${parseFloat(
-                      activeDiscount.Discount_Value
-                    ).toFixed(2)} OFF`
+                  ? `Extra ${formatPrice(
+                      `LKR ${parseFloat(activeDiscount.Discount_Value).toFixed(
+                        2
+                      )}`
+                    )} OFF`
                   : `Extra ${parseInt(activeDiscount.Discount_Value)}% OFF`}
               </span>
             )}
@@ -362,25 +368,33 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Color Selection - Only show if colors exist */}
+          {/* Color Selection – show colors for the chosen size, plus any “no‐size” variants */}
           {hasColor && (
             <div className="mt-2 sm:mt-4">
               <span className="font-semibold">Color:</span>
               <div className="flex gap-2 mt-2">
                 {product.variants
-                  .filter((v) => v.color && v.color !== "No color selected")
+                  .filter(
+                    (v) =>
+                      v.color &&
+                      v.color !== "No color selected" &&
+                      (v.size === selectedSize || v.size == null)
+                  )
                   .map((variant, index) => (
                     <button
                       key={index}
                       className={`cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
-                        selectedVariant === product.variants.indexOf(variant)
+                        selectedVariant ===
+                        product.variants.findIndex((x) => x.id === variant.id)
                           ? "border-gray-800"
                           : "border-gray-300"
                       }`}
                       style={{ backgroundColor: variant.color }}
                       onClick={() => {
-                        setSelectedVariant(product.variants.indexOf(variant));
-                        setSelectedSize(""); // Clear size selection
+                        const newIndex = product.variants.findIndex(
+                          (x) => x.id === variant.id
+                        );
+                        setSelectedVariant(newIndex);
                       }}
                     />
                   ))}
@@ -483,7 +497,7 @@ const ProductPage = () => {
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
             Related <span className="text-[#5CAF90]">Products</span>
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-8 mt-3 sm:mt-4 h-[320px]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-8 mt-3 sm:mt-4 h-[300px]">
             {relatedProducts.map((relatedProduct) => (
               <div
                 key={relatedProduct.id}
@@ -492,7 +506,7 @@ const ProductPage = () => {
               >
                 <ProductCard
                   image={relatedProduct.image}
-                  category="Related Product"
+                  category={relatedProduct.category}
                   title={relatedProduct.name}
                   price={relatedProduct.price}
                   oldPrice={relatedProduct.oldPrice}
