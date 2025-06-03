@@ -1,5 +1,6 @@
 import { FaShoppingCart } from 'react-icons/fa';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { formatPrice } from './FormatPrice';
 
 // Helper function to safely parse prices (handles both strings and numbers)
 const parsePrice = (price) => {
@@ -56,14 +57,6 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   const productTotals = getProductTotals();
   const totalSavings = productTotals.reduce((sum, item) => sum + item.discount, 0);
 
-  // Format price for display (adds commas and Rs. prefix)
-  const formatDisplayPrice = (price) => {
-    return `Rs. ${parsePrice(price).toLocaleString('en-IN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })}`;
-  };
-
   return (
     <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-[#E8E8E8]">
       <div className="p-6">
@@ -116,11 +109,11 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
       </p>
       <div className="flex items-center gap-2 mt-1">
         <p className="text-black font-semibold">
-          {formatDisplayPrice(item.price)}
+          {formatPrice(item.price)}
         </p>
         {item.marketPrice && (
           <p className="text-gray-500 line-through text-sm">
-            {formatDisplayPrice(item.marketPrice)}
+            {formatPrice(item.marketPrice)}
           </p>
         )}
       </div>
@@ -141,7 +134,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
       )}
       <div className="mt-1 text-sm text-gray-600">
         <span className="font-medium">Item Total:</span>{" "}
-        {formatDisplayPrice(productTotals[index].total)}
+        {formatPrice(productTotals[index].total)}
       </div>
     </div>
   </div>
@@ -153,7 +146,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
         <div className="space-y-3 border-t border-[#E8E8E8] pt-4 mt-4">
           <div className="flex justify-between">
             <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">{formatDisplayPrice(subtotal)}</span>
+            <span className="font-medium">{formatPrice(subtotal)}</span>
           </div>
           {totalSavings > 0 && (
             <div className="flex justify-between">
@@ -163,11 +156,11 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
           )}
           <div className="flex justify-between">
             <span className="text-gray-600">Delivery Fee</span>
-            <span className="font-medium">{formatDisplayPrice(deliveryFee)}</span>
+            <span className="font-medium">{formatPrice(deliveryFee)}</span>
           </div>
           <div className="flex justify-between pt-3 border-t border-[#E8E8E8] mt-2">
             <span className="font-semibold">Total</span>
-            <span className="font-bold text-lg">{formatDisplayPrice(total)}</span>
+            <span className="font-bold text-lg">{formatPrice(total)}</span>
           </div>
         </div>
         
