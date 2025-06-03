@@ -26,7 +26,7 @@ const ProductCard = ({
       </div>
 
       <div className="mt-3 px-4 text-center">
-        <p className="text-[11.11px] text-[#7A7A7A]  font-bold ">{category}</p>
+        <p className="text-[11.11px] text-[#7A7A7A]  font-bold text-center ">{category}</p>
         <h3 className="text-[13.33px] line-clamp-1 font-bold text-[#1D372E] leading-snug">
           {title}
         </h3>

@@ -106,10 +106,13 @@ async function addToCart(req, res) {
     let variationRate = parseFloat(productVariation[0].Rate) || 0;
     const rate = variationRate === 0 ? product[0].Selling_Price : variationRate;
 
+    let variationMarketRate = parseFloat(productVariation[0].Market_Rate) || 0;
+    const mktRate = variationMarketRate === 0 ? product[0].Market_Price : variationMarketRate;
+
     console.log("Using rate:", rate);
 
     // Add product to cart
-    await Cart.addProductToCart(cartId, productVariationId, qty, rate);
+    await Cart.addProductToCart(cartId, productVariationId, qty, rate, mktRate);
 
     // Get updated cart
     cart = await Cart.getCartByCustomerId(customerId);
