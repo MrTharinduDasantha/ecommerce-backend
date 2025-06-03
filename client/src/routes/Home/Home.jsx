@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 const ProductCard = ({ image, category, title, price, oldPrice, discountLabel, id }) => (
   <Link
     to={`/product-page/${id}`}
-    className="bg-white border border-[#E8E8E8] hover:shadow-lg transition-shadow w-full h-[268px] max-w-[210px] mx-auto"
+    className="bg-white border border-[#E8E8E8] hover:shadow-lg transition-shadow w-full max-w-[210px] mx-auto"
     style={{ aspectRatio: '220/290' }}
   >
     <div className="relative">
