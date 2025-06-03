@@ -177,7 +177,7 @@ const Checkout = () => {
     deliveryDate: new Date(
       Date.now() + 5 * 24 * 60 * 60 * 1000
     ).toLocaleDateString(),
-    address: addresses.find(a => a.id === selectedAddress)?.value || "",
+    address: addresses.find(a => a.id === selectedAddress)?.address || "",
   }
 
   // Format price helper function
