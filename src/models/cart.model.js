@@ -33,6 +33,7 @@ async function getCartByCustomerId(customerId) {
         cp.Cart_idCart,
         cp.Product_Variations_idProduct_Variations,
         cp.Rate AS CartRate,
+        cp.Market_Rate AS MarketPrice,
         cp.Qty AS CartQty,
         cp.Total_Amount,
         cp.Discount_Percentage,
@@ -65,7 +66,13 @@ async function getCartByCustomerId(customerId) {
 }
 
 // Add product to cart
-async function addProductToCart(cartId, productVariationId, qty, rate) {
+async function addProductToCart(
+  cartId,
+  productVariationId,
+  qty,
+  rate,
+  mktRate
+) {
   // Check if product variation exists in cart
   const [existingItem] = await pool.query(
     `
@@ -128,11 +135,12 @@ async function addProductToCart(cartId, productVariationId, qty, rate) {
     // Update existing cart item
     const query = `
       UPDATE Cart_has_Product
-      SET Qty = ?, Rate = ?, Total_Amount = ?, Discount_Percentage = ?, Discount_Amount = ?, NetAmount = ?, Discounts_idDiscounts = ?
+      SET Qty = ?, Market_Rate = ?, Rate = ?, Total_Amount = ?, Discount_Percentage = ?, Discount_Amount = ?, NetAmount = ?, Discounts_idDiscounts = ?
       WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
     `;
     await pool.query(query, [
       qty,
+      mktRate,
       rate,
       totalAmount,
       discountPercentage,
@@ -148,6 +156,7 @@ async function addProductToCart(cartId, productVariationId, qty, rate) {
       INSERT INTO Cart_has_Product(
         Cart_idCart, 
         Product_Variations_idProduct_Variations, 
+        Market_Rate,
         Rate, 
         Qty, 
         Total_Amount, 
@@ -156,11 +165,12 @@ async function addProductToCart(cartId, productVariationId, qty, rate) {
         NetAmount, 
         Discounts_idDiscounts
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     await pool.query(query, [
       cartId,
       productVariationId,
+      mktRate,
       rate,
       qty,
       totalAmount,
