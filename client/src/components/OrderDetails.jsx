@@ -1,36 +1,31 @@
 import { FaShoppingCart } from 'react-icons/fa';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-// Helper function to format numbers with commas
-const formatPrice = (price) => {
-  return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-};
-
-// Helper function to parse price strings
-const parsePrice = (str) => {
-  if (!str) return 0;
-  try {
-    return parseFloat(str.replace(/[^\d.]/g, '')) || 0;
-  } catch (error) {
-    console.error('Error parsing price:', error);
-    return 0;
+// Helper function to safely parse prices (handles both strings and numbers)
+const parsePrice = (price) => {
+  if (typeof price === 'number') return price;
+  if (typeof price === 'string') {
+    // Remove currency symbols and commas
+    const cleaned = price.replace(/[^\d.-]/g, '');
+    return parseFloat(cleaned) || 0;
   }
+  return 0;
 };
 
 const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  console.log(location.state)
   const selectedItems = location.state?.selectedItems || [];
+
   // Calculate subtotal and discount for selected items
   const subtotal = selectedItems.reduce((sum, item) => {
-    const price = parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''));
+    const price = parsePrice(item.price);
     return sum + (price * item.quantity);
   }, 0);
 
   // Calculate total market price
   const totalMarketPrice = selectedItems.reduce((sum, item) => {
-    const marketPrice = parseFloat(item.marketPrice?.replace('Rs. ', '').replace(/,/g, '') || 0);
+    const marketPrice = parsePrice(item.marketPrice);
     return sum + (marketPrice * item.quantity);
   }, 0);
 
@@ -42,8 +37,8 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   // Calculate individual product totals and discounts
   const getProductTotals = () => {
     return selectedItems.map(item => {
-      const price = parseFloat(item.price.replace('Rs. ', '').replace(/,/g, ''));
-      const marketPrice = parseFloat(item.marketPrice?.replace('Rs. ', '').replace(/,/g, '') || 0);
+      const price = parsePrice(item.price);
+      const marketPrice = parsePrice(item.marketPrice);
       const itemTotal = price * item.quantity;
       const itemDiscount = marketPrice > price ? (marketPrice - price) * item.quantity : 0;
       
@@ -59,12 +54,17 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   };
 
   const productTotals = getProductTotals();
-
-  // Calculate total savings
   const totalSavings = productTotals.reduce((sum, item) => sum + item.discount, 0);
-  
+
+  // Format price for display (adds commas and Rs. prefix)
+  const formatDisplayPrice = (price) => {
+    return `Rs. ${parsePrice(price).toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  };
+
   return (
-    
     <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-[#E8E8E8]">
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-700 mb-6">
@@ -90,14 +90,12 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
                 <div className="mt-1 space-y-1">
                   {item.size && (
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Size:</span>{" "}
-                      {item.size}
+                      <span className="font-medium">Size:</span> {item.size}
                     </p>
                   )}
                   {item.color && (
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Color:</span>{" "}
-                      {item.color}
+                      <span className="font-medium">Color:</span> {item.color}
                     </p>
                   )}
                 </div>
@@ -106,15 +104,15 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-black font-semibold">
-                    Rs. {parseFloat(item.price.replace('Rs. ', '').replace(/,/g, '')).toLocaleString()}
+                    {formatDisplayPrice(item.price)}
                   </p>
                   {item.marketPrice && (
                     <p className="text-gray-500 line-through text-sm">
-                      Rs. {parseFloat(item.marketPrice.replace('Rs. ', '').replace(/,/g, '')).toLocaleString()}
+                      {formatDisplayPrice(item.marketPrice)}
                     </p>
                   )}
                 </div>
-                {item.marketPrice && parseFloat(item.marketPrice.replace('Rs. ', '').replace(/,/g, '')) > parseFloat(item.price.replace('Rs. ', '').replace(/,/g, '')) && (
+                {item.marketPrice && parsePrice(item.marketPrice) > parsePrice(item.price) && (
                   <div className="mt-1">
                     <span className="text-[12px] text-[#5CAF90] font-medium">
                       {item.discountName || (
@@ -131,7 +129,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
                 )}
                 <div className="mt-1 text-sm text-gray-600">
                   <span className="font-medium">Item Total:</span>{" "}
-                  Rs. {productTotals[index].total.toLocaleString()}
+                  {formatDisplayPrice(productTotals[index].total)}
                 </div>
               </div>
             </div>
@@ -142,7 +140,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
         <div className="space-y-3 border-t border-[#E8E8E8] pt-4 mt-4">
           <div className="flex justify-between">
             <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">Rs. {subtotal.toLocaleString()}</span>
+            <span className="font-medium">{formatDisplayPrice(subtotal)}</span>
           </div>
           {totalSavings > 0 && (
             <div className="flex justify-between">
@@ -152,11 +150,11 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
           )}
           <div className="flex justify-between">
             <span className="text-gray-600">Delivery Fee</span>
-            <span className="font-medium">Rs. {deliveryFee.toLocaleString()}</span>
+            <span className="font-medium">{formatDisplayPrice(deliveryFee)}</span>
           </div>
           <div className="flex justify-between pt-3 border-t border-[#E8E8E8] mt-2">
             <span className="font-semibold">Total</span>
-            <span className="font-bold text-lg">Rs. {total.toLocaleString()}</span>
+            <span className="font-bold text-lg">{formatDisplayPrice(total)}</span>
           </div>
         </div>
         

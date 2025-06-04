@@ -31,8 +31,15 @@ const createUser = async (req, res) => {
   try {
     const { full_name, email, password, phone_no, status } = req.body;
 
+    // Validate required fields
     if (!full_name || !email || !password || !phone_no) {
       return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Check if email already exists
+    const existingUser = await User.getUserByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({ error: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -44,8 +51,8 @@ const createUser = async (req, res) => {
       status || "Active"
     );
 
-    // Log admin action with user details
-    const newUserInfo = { full_name, email, phone_no }; // Construct the new user info as an object
+    // Log admin action
+    const newUserInfo = { full_name, email, phone_no };
     await logAdminAction(
       req.user.userId,
       "Added new user",
@@ -55,10 +62,10 @@ const createUser = async (req, res) => {
 
     res.status(201).json({ id: userId, message: "User added successfully" });
   } catch (error) {
+    console.error("createUser error:", error);
     res.status(500).json({ error: "Database error", details: error.message });
   }
 };
-
 // Update user
 const updateUser = async (req, res) => {
   try {
