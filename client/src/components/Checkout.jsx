@@ -14,6 +14,9 @@ import { useAuth } from "../context/AuthContext"
 import { getCustomerById } from "../api/customer"
 import CloseIcon from "@mui/icons-material/Close"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import { createOrder } from "../api/order"
+import { addAddress, getAddressByCustomerId } from "../api/address"
+import { getCart } from "../api/cart"
 
 const Checkout = () => {
   const navigate = useNavigate()
@@ -48,6 +51,8 @@ const Checkout = () => {
 
   const [showAddSuccessMessage, setShowAddSuccessMessage] = useState(false)
 
+  const [cartId, setCartId] = useState(null)
+
   const { user } = useAuth()
 
   //fetch user data when component mounts
@@ -65,6 +70,35 @@ const Checkout = () => {
       }
     }
     fetchUserData()
+  }, [user.id])
+
+  useEffect(() => {
+    const fetchUserAddresses = async () => {
+      try {
+        const customerAddresses = await getAddressByCustomerId(user.id)
+        const formattedAddresses = customerAddresses.map(address => ({
+          id: address.idDelivery_Address,
+          address: `${address.Address}, ${address.City}, ${address.Country}`,
+          isDefault: false,
+        }))
+        setAddresses(formattedAddresses)
+      } catch (error) {
+        console.error("Error fetching customer addresses: ", error)
+      }
+    }
+    fetchUserAddresses()
+  }, [user.id])
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const cart = await getCart(user.id)
+        setCartId(cart.cart.id)
+      } catch (error) {
+        console.error("Error fetching customer cart: ", error)
+      }
+    }
+    fetchCart()
   }, [user.id])
 
   const validateForm = () => {
@@ -103,7 +137,7 @@ const Checkout = () => {
     return isValid
   }
 
-  const handleAddAddress = () => {
+  const handleAddAddress = async () => {
     if (validateForm()) {
       const newId = Math.max(...addresses.map(a => a.id), 0) + 1
       const formattedAddress = `${newAddressDetails.address.trim()}, ${newAddressDetails.city.trim()}, ${newAddressDetails.country.trim()}`
@@ -127,7 +161,13 @@ const Checkout = () => {
         country: "",
         mobile: "",
       })
-
+      addAddress(user.id, {
+        full_name: formData.name,
+        address: newAddressDetails.address,
+        city: newAddressDetails.city,
+        country: newAddressDetails.country,
+        mobile_no: formData.contactNumber,
+      })
       // Show success message
       setShowAddSuccessMessage(true)
 
@@ -227,16 +267,22 @@ const Checkout = () => {
     orderInfo.address = addresses.find(a => a.id === addressId)?.value || ""
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault()
-    console.log({
-      ...formData,
-      deliveryAddress: orderInfo.address,
-      orderItems: cartItems,
-      totalAmount: total,
-    })
-    alert("Order placed successfully!")
-    navigate("/")
+    try {
+      const orderData = {
+        customer_id: user.id,
+        delivery_address_id: selectedAddress,
+        cart_id: cartId,
+        payment_type: formData.paymentMethod,
+      }
+      await createOrder(orderData)
+      alert("Order placed successfully!")
+      navigate("/")
+    } catch (error) {
+      console.error("Error creating order: ", error)
+      alert(error.message || "Failed to place order. Please try again.")
+    }
   }
 
   const handleCancel = () => {
