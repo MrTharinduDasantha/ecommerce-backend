@@ -1,4 +1,4 @@
-const pool = require("../config/database");
+const pool = require("../config/database")
 
 class Order {
   static async findAll(limit, offset) {
@@ -10,12 +10,12 @@ class Order {
         "JOIN Customer c ON da.Customer_idCustomer = c.idCustomer " +
         "ORDER BY o.idOrder DESC LIMIT ? OFFSET ?",
       [limit, offset]
-    );
+    )
 
     // If we have orders, fetch image for each order's first product
     if (orders.length > 0) {
       // Get an array of order IDs
-      const orderIds = orders.map((order) => order.idOrder);
+      const orderIds = orders.map(order => order.idOrder)
 
       // Get product images for the first product in each order
       const [productImages] = await pool.query(
@@ -26,34 +26,34 @@ class Order {
           "WHERE ohpv.Order_idOrder IN (?) " +
           "GROUP BY ohpv.Order_idOrder",
         [orderIds]
-      );
+      )
 
       // Create a map of order ID to product image
-      const imageMap = {};
-      productImages.forEach((item) => {
-        imageMap[item.Order_idOrder] = item.product_image;
-      });
+      const imageMap = {}
+      productImages.forEach(item => {
+        imageMap[item.Order_idOrder] = item.product_image
+      })
 
       // Add the product_image field to each order
-      orders.forEach((order) => {
-        order.product_image = imageMap[order.idOrder] || null;
-      });
+      orders.forEach(order => {
+        order.product_image = imageMap[order.idOrder] || null
+      })
     }
 
-    return orders;
+    return orders
   }
 
   static async findById(id) {
     // Parse id to integer and validate it
-    const orderId = parseInt(id, 10);
+    const orderId = parseInt(id, 10)
 
     // Check if orderId is a valid number
     if (isNaN(orderId)) {
-      console.error("Invalid order ID, not a number:", id);
-      return null;
+      console.error("Invalid order ID, not a number:", id)
+      return null
     }
 
-    console.log("Finding order with ID:", orderId);
+    console.log("Finding order with ID:", orderId)
 
     const [orders] = await pool.query(
       "SELECT o.*, da.Full_Name, da.Address, da.City, da.Country, c.Email " +
@@ -62,12 +62,12 @@ class Order {
         "JOIN Customer c ON da.Customer_idCustomer = c.idCustomer " +
         "WHERE o.idOrder = ?",
       [orderId]
-    );
+    )
 
-    console.log("Orders found:", orders.length);
+    console.log("Orders found:", orders.length)
 
     if (orders.length === 0) {
-      return null;
+      return null
     }
 
     // Get order items with product images
@@ -78,27 +78,27 @@ class Order {
         "JOIN Product p ON pv.Product_idProduct = p.idProduct " +
         "WHERE oi.Order_idOrder = ?",
       [orderId]
-    );
+    )
 
-    console.log("Order items found:", orderItems.length);
-    
+    console.log("Order items found:", orderItems.length)
+
     return {
       order: orders[0],
       items: orderItems,
-    };
+    }
   }
 
   static async findByCustomerId(customerId) {
     // Ensure customerId is an integer
-    const customerIdInt = parseInt(customerId, 10);
-    
+    const customerIdInt = parseInt(customerId, 10)
+
     if (isNaN(customerIdInt)) {
-      console.error("Invalid customer ID:", customerId);
-      return [];
+      console.error("Invalid customer ID:", customerId)
+      return []
     }
-    
-    console.log("Finding orders for customer ID:", customerIdInt);
-    
+
+    console.log("Finding orders for customer ID:", customerIdInt)
+
     const [orders] = await pool.query(
       `
       SELECT o.*, da.Full_Name, da.Address, da.City, da.Country 
@@ -108,10 +108,10 @@ class Order {
       WHERE c.idCustomer = ?
     `,
       [customerIdInt]
-    );
-    
-    console.log("Orders found:", orders.length);
-    return orders;
+    )
+
+    console.log("Orders found:", orders.length)
+    return orders
   }
 
   static async create(orderData) {
@@ -122,10 +122,10 @@ class Order {
       delivery_charges,
       net_amount,
       payment_type,
-    } = orderData;
+    } = orderData
 
     const [order] = await pool.query(
-      "INSERT INTO `Order` (Date_Time, Delivery_Address_idDelivery_Address, Total_Amount, Delivery_Type, Delivery_Charges, Net_Amount, Payment_Type, Payment_Stats, Delivery_Status, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO `Order` (Date_Time, Delivery_Address_idDelivery_Address, Total_Amount, Delivery_Type, Delivery_Charges, Net_Amount, Payment_Type, Payment_Stats, Delivery_Status, Delivery_Date, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         new Date().toISOString(),
         delivery_address_id,
@@ -136,11 +136,14 @@ class Order {
         payment_type,
         "pending",
         "processing",
+        new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         "active",
       ]
-    );
+    )
 
-    return order.insertId;
+    return order.insertId
   }
 
   static async addOrderItem(orderItem) {
@@ -153,7 +156,7 @@ class Order {
       discount_percentage,
       discount_amount,
       total_amount,
-    } = orderItem;
+    } = orderItem
 
     await pool.query(
       "INSERT INTO Order_has_Product_Variations (Order_idOrder, Product_Variations_idProduct_Variations, Rate, Qty, Total, Discount_Percentage, Discount_Amount, Total_Amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -167,46 +170,46 @@ class Order {
         discount_amount || 0,
         total_amount,
       ]
-    );
+    )
   }
 
   static async updateStatus(id, status) {
     const [result] = await pool.query(
       "UPDATE `Order` SET Status = ? WHERE idOrder = ?",
       [status, id]
-    );
+    )
 
-    return result.affectedRows;
+    return result.affectedRows
   }
 
   static async updateDeliveryDate(id, deliveryDate) {
     const [result] = await pool.query(
       "UPDATE `Order` SET Delivery_Date = ? WHERE idOrder = ?",
       [deliveryDate, id]
-    );
+    )
 
-    return result.affectedRows;
+    return result.affectedRows
   }
 
   static async updatePaymentStatus(id, paymentStatus) {
     const [result] = await pool.query(
       "UPDATE `Order` SET Payment_Stats = ? WHERE idOrder = ?",
       [paymentStatus, id]
-    );
+    )
 
-    return result.affectedRows;
+    return result.affectedRows
   }
 
   static async count() {
-    const [result] = await pool.query("SELECT COUNT(*) as count FROM `Order`");
-    return result[0].count;
+    const [result] = await pool.query("SELECT COUNT(*) as count FROM `Order`")
+    return result[0].count
   }
 
   static async getTotalRevenue() {
     const [result] = await pool.query(
       "SELECT SUM(Total_Amount) as revenue FROM `Order`"
-    );
-    return result[0].revenue || 0;
+    )
+    return result[0].revenue || 0
   }
 
   static async getRecentOrders(limit = 5) {
@@ -216,9 +219,9 @@ class Order {
         "JOIN Customer c ON da.Customer_idCustomer = c.idCustomer " +
         "ORDER BY o.idOrder DESC LIMIT ?",
       [limit]
-    );
+    )
 
-    return recentOrders;
+    return recentOrders
   }
 
   static async getSalesData(days = 7) {
@@ -229,42 +232,42 @@ class Order {
         "GROUP BY DATE(Date_Time) " +
         "ORDER BY date",
       [days]
-    );
+    )
 
-    return salesData;
+    return salesData
   }
 
   static async countByStatus() {
     const [result] = await pool.query(
       "SELECT Status, COUNT(*) as count FROM `Order` GROUP BY Status"
-    );
-    return result;
+    )
+    return result
   }
 
   static async countPendingDelivery() {
     const [result] = await pool.query(
       "SELECT COUNT(*) as count FROM `Order` WHERE Delivery_Status = ?",
       ["pending"]
-    );
-    return result[0].count;
+    )
+    return result[0].count
   }
   static async getTotalRevenue() {
     const [result] = await pool.query(
       "SELECT SUM(Net_Amount) as total_revenue FROM `Order` WHERE Payment_Stats = 'paid'"
-    );
-    return result[0].total_revenue || 0; // Ensure we handle null values
+    )
+    return result[0].total_revenue || 0 // Ensure we handle null values
   }
 
   static async getMonthlyTotalRevenue() {
     const [result] = await pool.query(
       "SELECT DATE_FORMAT(Date_Time, '%Y-%m') AS month, SUM(Net_Amount) AS monthly_revenue " +
-      "FROM `Order` " +
-      "WHERE Payment_Stats = 'paid' " +
-      "GROUP BY month " +
-      "ORDER BY month DESC"
-    );
-    return result; // This will return an array of monthly revenue objects
+        "FROM `Order` " +
+        "WHERE Payment_Stats = 'paid' " +
+        "GROUP BY month " +
+        "ORDER BY month DESC"
+    )
+    return result // This will return an array of monthly revenue objects
   }
 }
 
-module.exports = Order;
+module.exports = Order
