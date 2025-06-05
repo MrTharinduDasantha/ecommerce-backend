@@ -107,7 +107,7 @@ const ProductPage = () => {
                 weight: product.SIH || "N/A",
                 color: product.variations?.[0]?.Colour || "N/A",
                 size: product.variations?.[0]?.Size || null,
-                category:product.subcategories?.[0]?.Description || "",
+                category: product.subcategories?.[0]?.Description || "",
               }));
 
             setRelatedProducts(filteredRelated);
@@ -368,25 +368,33 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Color Selection - Only show if colors exist */}
+          {/* Color Selection – show colors for the chosen size, plus any “no‐size” variants */}
           {hasColor && (
             <div className="mt-2 sm:mt-4">
               <span className="font-semibold">Color:</span>
               <div className="flex gap-2 mt-2">
                 {product.variants
-                  .filter((v) => v.color && v.color !== "No color selected")
+                  .filter(
+                    (v) =>
+                      v.color &&
+                      v.color !== "No color selected" &&
+                      (v.size === selectedSize || v.size == null)
+                  )
                   .map((variant, index) => (
                     <button
                       key={index}
                       className={`cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
-                        selectedVariant === product.variants.indexOf(variant)
+                        selectedVariant ===
+                        product.variants.findIndex((x) => x.id === variant.id)
                           ? "border-gray-800"
                           : "border-gray-300"
                       }`}
                       style={{ backgroundColor: variant.color }}
                       onClick={() => {
-                        setSelectedVariant(product.variants.indexOf(variant));
-                        setSelectedSize(""); // Clear size selection
+                        const newIndex = product.variants.findIndex(
+                          (x) => x.id === variant.id
+                        );
+                        setSelectedVariant(newIndex);
                       }}
                     />
                   ))}

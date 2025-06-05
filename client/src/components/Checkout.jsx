@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react"
 import {
   FaShoppingCart,
   FaMapMarkerAlt,
@@ -6,27 +6,178 @@ import {
   FaMoneyBillWave,
   FaPlus,
   FaTimes,
-} from "react-icons/fa";
-import { products } from "./Products";
-import { useNavigate } from "react-router-dom";
-import OrderDetails from "./OrderDetails";
+} from "react-icons/fa"
+import { products } from "./Products"
+import { useNavigate } from "react-router-dom"
+import OrderDetails from "./OrderDetails"
+import { useAuth } from "../context/AuthContext"
+import { getCustomerById } from "../api/customer"
+import CloseIcon from "@mui/icons-material/Close"
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import { createOrder } from "../api/order"
+import { addAddress, getAddressByCustomerId } from "../api/address"
+import { getCart } from "../api/cart"
 
 const Checkout = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: "",
     contactNumber: "",
     paymentMethod: "cash",
     installmentPlan: "",
-  });
+  })
 
   const [addresses, setAddresses] = useState([
-    { id: 1, value: "123 Main St, City A", isDefault: true },
-    { id: 2, value: "456 Oak Ave, City B", isDefault: false },
-  ]);
-  const [selectedAddress, setSelectedAddress] = useState(1);
-  const [newAddress, setNewAddress] = useState("");
-  const [showAddAddress, setShowAddAddress] = useState(false);
+    { id: 1, address: "123 Main St, City A", isDefault: true },
+    { id: 2, address: "456 Oak Ave, City B", isDefault: false },
+  ])
+  const [selectedAddress, setSelectedAddress] = useState(1)
+
+  const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false)
+
+  const [formErrors, setFormErrors] = useState({
+    address: "",
+    city: "",
+    country: "",
+    mobile: "",
+  })
+
+  const [newAddressDetails, setNewAddressDetails] = useState({
+    address: "",
+    city: "",
+    country: "",
+    mobile: "",
+  })
+
+  const [showAddSuccessMessage, setShowAddSuccessMessage] = useState(false)
+
+  const [cartId, setCartId] = useState(null)
+
+  const { user } = useAuth()
+
+  //fetch user data when component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const customerData = await getCustomerById(user.id)
+        setFormData(prev => ({
+          ...prev,
+          name: customerData.Full_Name,
+          contactNumber: customerData.Mobile_No,
+        }))
+      } catch (error) {
+        console.error("Error fetching customer data:", error)
+      }
+    }
+    fetchUserData()
+  }, [user.id])
+
+  useEffect(() => {
+    const fetchUserAddresses = async () => {
+      try {
+        const customerAddresses = await getAddressByCustomerId(user.id)
+        const formattedAddresses = customerAddresses.map(address => ({
+          id: address.idDelivery_Address,
+          address: `${address.Address}, ${address.City}, ${address.Country}`,
+          isDefault: false,
+        }))
+        setAddresses(formattedAddresses)
+      } catch (error) {
+        console.error("Error fetching customer addresses: ", error)
+      }
+    }
+    fetchUserAddresses()
+  }, [user.id])
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const cart = await getCart(user.id)
+        setCartId(cart.cart.id)
+      } catch (error) {
+        console.error("Error fetching customer cart: ", error)
+      }
+    }
+    fetchCart()
+  }, [user.id])
+
+  const validateForm = () => {
+    let isValid = true
+    const errors = {
+      address: "",
+      city: "",
+      country: "",
+      mobile: "",
+    }
+
+    if (!newAddressDetails.address.trim()) {
+      errors.address = "Address is required"
+      isValid = false
+    }
+
+    if (!newAddressDetails.city.trim()) {
+      errors.city = "City is required"
+      isValid = false
+    }
+
+    if (!newAddressDetails.country.trim()) {
+      errors.country = "Country is required"
+      isValid = false
+    }
+
+    if (!newAddressDetails.mobile.trim()) {
+      errors.mobile = "Mobile number is required"
+      isValid = false
+    } else if (!/^\d{10}$/.test(newAddressDetails.mobile.trim())) {
+      errors.mobile = "Mobile number must be exactly 10 digits"
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
+  const handleAddAddress = async () => {
+    if (validateForm()) {
+      const newId = Math.max(...addresses.map(a => a.id), 0) + 1
+      const formattedAddress = `${newAddressDetails.address.trim()}, ${newAddressDetails.city.trim()}, ${newAddressDetails.country.trim()}`
+      setAddresses(prevAddresses => [
+        ...prevAddresses,
+        {
+          id: newId,
+          address: formattedAddress,
+          isDefault: false,
+        },
+      ])
+      setNewAddressDetails({
+        address: "",
+        city: "",
+        country: "",
+        mobile: "",
+      })
+      setFormErrors({
+        address: "",
+        city: "",
+        country: "",
+        mobile: "",
+      })
+      addAddress(user.id, {
+        full_name: formData.name,
+        address: newAddressDetails.address,
+        city: newAddressDetails.city,
+        country: newAddressDetails.country,
+        mobile_no: formData.contactNumber,
+      })
+      // Show success message
+      setShowAddSuccessMessage(true)
+
+      // Close the modal after a delay
+      setTimeout(() => {
+        setIsAddAddressModalOpen(false)
+        setShowAddSuccessMessage(false)
+      }, 1500)
+    }
+  }
 
   // Sample cart items
   const cartItems = [
@@ -45,111 +196,107 @@ const Checkout = () => {
       variant: products[4].variants[0],
       quantity: 1,
     },
-  ];
+  ]
 
   // Calculate order totals
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.variant.price * item.quantity,
     0
-  );
+  )
   const discount = cartItems.reduce(
     (sum, item) =>
       sum + (item.marketPrice - item.variant.price) * item.quantity,
     0
-  );
-  const deliveryFee = 500.0;
-  const total = subtotal - discount + deliveryFee;
-console.log(subtotal,discount,deliveryFee)
+  )
+  const deliveryFee = 500.0
+  const total = subtotal - discount + deliveryFee
+  console.log(subtotal, discount, deliveryFee)
   // Order information
   const orderInfo = {
     orderNo: `#${Math.floor(100000 + Math.random() * 900000)}`,
     deliveryDate: new Date(
       Date.now() + 5 * 24 * 60 * 60 * 1000
     ).toLocaleDateString(),
-    address: addresses.find((a) => a.id === selectedAddress)?.value || "",
-  };
+    address: addresses.find(a => a.id === selectedAddress)?.address || "",
+  }
 
   // Format price helper function
-  const formatPrice = (price) => {
-    return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
-console.log(cartItems)
+  const formatPrice = price => {
+    return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  }
+  console.log(cartItems)
   // Calculate individual product discounts
   const getProductDiscounts = () => {
-    return cartItems.map(item => {
-      if (item.marketPrice > item.variant.price) {
-        const itemDiscount = (item.marketPrice - item.variant.price) * item.quantity;
-        return {
-          name: item.name,
-          discount: itemDiscount,
-          discountName: item.discountName || (
-            item.category === 'Seasonal Offers' ? 'Seasonal Discounts' :
-            item.category === 'Rush Delivery' ? 'Rush Discounts' :
-            item.category === 'For You' ? 'For You Discounts' :
-            'Sale Discounts'
-          ),
-          discountPrice: item.marketPrice - item.sellingPrice
-        };
-      }
-      return null;
-    }).filter(Boolean);
-  };
+    return cartItems
+      .map(item => {
+        if (item.marketPrice > item.variant.price) {
+          const itemDiscount =
+            (item.marketPrice - item.variant.price) * item.quantity
+          return {
+            name: item.name,
+            discount: itemDiscount,
+            discountName:
+              item.discountName ||
+              (item.category === "Seasonal Offers"
+                ? "Seasonal Discounts"
+                : item.category === "Rush Delivery"
+                ? "Rush Discounts"
+                : item.category === "For You"
+                ? "For You Discounts"
+                : "Sale Discounts"),
+            discountPrice: item.marketPrice - item.sellingPrice,
+          }
+        }
+        return null
+      })
+      .filter(Boolean)
+  }
 
-  const productDiscounts = getProductDiscounts();
-console.log(productDiscounts,"waqas")
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const productDiscounts = getProductDiscounts()
+  console.log(productDiscounts, "waqas")
+  const handleInputChange = e => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
       [name]: value,
-    });
-  };
+    })
+  }
 
-  const handleAddressChange = (addressId) => {
-    setSelectedAddress(addressId);
-    orderInfo.address = addresses.find((a) => a.id === addressId)?.value || "";
-  };
+  const handleAddressChange = addressId => {
+    setSelectedAddress(addressId)
+    orderInfo.address = addresses.find(a => a.id === addressId)?.value || ""
+  }
 
-  const handleAddAddress = () => {
-    if (newAddress.trim()) {
-      const newId =
-        addresses.length > 0 ? Math.max(...addresses.map((a) => a.id)) + 1 : 1;
-      const updatedAddresses = [
-        ...addresses,
-        { id: newId, value: newAddress, isDefault: false },
-      ];
-      setAddresses(updatedAddresses);
-      setSelectedAddress(newId);
-      orderInfo.address = newAddress;
-      setNewAddress("");
-      setShowAddAddress(false);
+  const handleSubmit = async e => {
+    e.preventDefault()
+    try {
+      const orderData = {
+        customer_id: user.id,
+        delivery_address_id: selectedAddress,
+        cart_id: cartId,
+        payment_type: formData.paymentMethod,
+      }
+      await createOrder(orderData)
+      alert("Order placed successfully!")
+      navigate("/")
+    } catch (error) {
+      console.error("Error creating order: ", error)
+      alert(error.message || "Failed to place order. Please try again.")
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log({
-      ...formData,
-      deliveryAddress: orderInfo.address,
-      orderItems: cartItems,
-      totalAmount: total,
-    });
-    alert("Order placed successfully!");
-    navigate("/");
-  };
+  }
 
   const handleCancel = () => {
-    navigate("/cart");
-  };
+    navigate("/cart")
+  }
 
   return (
-    <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+    <div className="min-h-screen px-4 py-8 bg-white sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <h1 className="mb-8 text-3xl font-bold text-center text-gray-800">
           Order<span className="text-[#5CAF90]"> Checkout</span>
         </h1>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
           {/* Left Side - Order Details (40% width) */}
           <div className="lg:w-[40%]">
             <OrderDetails
@@ -165,20 +312,21 @@ console.log(productDiscounts,"waqas")
 
           {/* Right Side - Checkout Form (60% width) */}
           <div className="lg:w-[60%]">
-            <div className="bg-gray-50 rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div className="overflow-hidden border border-gray-200 shadow-lg bg-gray-50 rounded-xl">
               <div className="p-6 sm:p-8">
                 <form onSubmit={handleSubmit}>
                   {/* Personal Information */}
                   <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <h2 className="flex items-center mb-6 text-xl font-semibold text-gray-800">
                       <FaShoppingCart className="mr-3 text-[#5CAF90]" />
-                      Personal<span className="text-[#5CAF90]">&nbsp; Information</span>
+                      Personal
+                      <span className="text-[#5CAF90]">&nbsp; Information</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
                         <label
                           htmlFor="name"
-                          className="block text-sm font-medium text-gray-700 mb-2"
+                          className="block mb-2 text-sm font-medium text-gray-700"
                         >
                           Full Name
                         </label>
@@ -196,7 +344,7 @@ console.log(productDiscounts,"waqas")
                       <div>
                         <label
                           htmlFor="contactNumber"
-                          className="block text-sm font-medium text-gray-700 mb-2"
+                          className="block mb-2 text-sm font-medium text-gray-700"
                         >
                           Contact Number
                         </label>
@@ -216,12 +364,13 @@ console.log(productDiscounts,"waqas")
 
                   {/* Delivery Address */}
                   <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <h2 className="flex items-center mb-6 text-xl font-semibold text-gray-800">
                       <FaMapMarkerAlt className="mr-3 text-[#5CAF90]" />
-                      Delivery <span className="text-[#5CAF90]">&nbsp;Address</span>
+                      Delivery{" "}
+                      <span className="text-[#5CAF90]">&nbsp;Address</span>
                     </h2>
                     <div className="space-y-3">
-                      {addresses.map((address) => (
+                      {addresses.map(address => (
                         <div
                           key={address.id}
                           className={`p-3 border bg-gray-100 rounded-lg cursor-pointer transition-all ${
@@ -243,11 +392,11 @@ console.log(productDiscounts,"waqas")
                             />
                             <label
                               htmlFor={`address-${address.id}`}
-                              className="ml-3 block text-sm text-gray-700"
+                              className="block ml-3 text-sm text-gray-700"
                             >
-                              {address.value}{" "}
+                              {address.address}{" "}
                               {address.isDefault && (
-                                <span className="text-xs border border-gray-400 text-gray-600 px-2 py-1 rounded ml-2 ">
+                                <span className="px-2 py-1 ml-2 text-xs text-gray-600 border border-gray-400 rounded ">
                                   Default
                                 </span>
                               )}
@@ -256,55 +405,27 @@ console.log(productDiscounts,"waqas")
                         </div>
                       ))}
 
-                      {showAddAddress ? (
-                        <div className="mt-4 space-y-3">
-                          <textarea
-                            value={newAddress}
-                            onChange={(e) => setNewAddress(e.target.value)}
-                            placeholder="Enter full address including city and postal code"
-                            rows="3"
-                            className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5CAF90] focus:border-transparent"
-                          />
-                          <div className="flex space-x-3">
-                            <button
-                              type="button"
-                              onClick={handleAddAddress}
-                              className="flex-1 px-4 py-2 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4a9a7a] cursor-pointer flex items-center justify-center"
-                            >
-                              <FaPlus className="mr-2" />
-                              Save Address
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setShowAddAddress(false)}
-                              className="px-4 py-2 border border-gray-400 text-gray-700 rounded-lg hover:bg-gray-300 bg-gray-200 cursor-pointer"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex justify-center">
-                          <button
-                            type="button"
-                            onClick={() => setShowAddAddress(true)}
-                            className="mt-2 px-4 py-2 hover:bg-gray-300 bg-gray-200 cursor-pointer border border-gray-400 text-gray-700 rounded-lg flex items-center justify-center"
-                          >
-                            <FaPlus className="mr-2" />
-                            Add New Address
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddAddressModalOpen(true)}
+                          className="flex items-center justify-center px-4 py-2 mt-2 text-gray-700 bg-gray-200 border border-gray-400 rounded-lg cursor-pointer hover:bg-gray-300"
+                        >
+                          <FaPlus className="mr-2" />
+                          Add New Address
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Payment Method */}
                   <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <h2 className="flex items-center mb-6 text-xl font-semibold text-gray-800">
                       <FaCreditCard className="mr-3 text-[#5CAF90]" />
-                      Payment <span className="text-[#5CAF90]">&nbsp;Method</span>
+                      Payment{" "}
+                      <span className="text-[#5CAF90]">&nbsp;Method</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 ">
                       <div
                         className={`p-4 border bg-gray-100 rounded-lg cursor-pointer transition-all ${
                           formData.paymentMethod === "cash"
@@ -327,9 +448,9 @@ console.log(productDiscounts,"waqas")
                           />
                           <label
                             htmlFor="cash"
-                            className="ml-3 flex items-center"
+                            className="flex items-center ml-3"
                           >
-                            <FaMoneyBillWave className="mr-3 text-gray-500 text-lg" />
+                            <FaMoneyBillWave className="mr-3 text-lg text-gray-500" />
                             <div>
                               <p className="font-medium text-gray-800">
                                 Cash on Delivery
@@ -363,9 +484,9 @@ console.log(productDiscounts,"waqas")
                           />
                           <label
                             htmlFor="card"
-                            className="ml-3 flex items-center"
+                            className="flex items-center ml-3"
                           >
-                            <FaCreditCard className="mr-3 text-gray-500 text-lg" />
+                            <FaCreditCard className="mr-3 text-lg text-gray-500" />
                             <div>
                               <p className="font-medium text-gray-800">
                                 Credit/Debit Card
@@ -381,11 +502,11 @@ console.log(productDiscounts,"waqas")
                   </div>
 
                   {/* Submit and Cancel Buttons */}
-                  <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 mt-8 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={handleCancel}
-                      className="w-full px-6 py-3 border bg-gray-200 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-medium flex items-center justify-center"
+                      className="flex items-center justify-center w-full px-6 py-3 font-medium text-gray-700 bg-gray-200 border border-gray-400 rounded-lg cursor-pointer hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
                       Cancel
                     </button>
@@ -402,8 +523,173 @@ console.log(productDiscounts,"waqas")
           </div>
         </div>
       </div>
+      {isAddAddressModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="w-full max-w-md p-6 bg-white rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-800">
+                Add New Address
+              </h3>
+              <button
+                onClick={() => setIsAddAddressModalOpen(false)}
+                className="text-gray-500 transition-all duration-300 hover:text-gray-700 hover:scale-110"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="space-y-4">
+              {showAddSuccessMessage ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <CheckCircleIcon className="text-[#5CAF90] text-5xl mb-3" />
+                  <p className="text-lg font-medium text-gray-800">
+                    Address Successfully Added
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label
+                      htmlFor="newAddress"
+                      className="block mb-1 text-sm font-medium text-gray-700"
+                    >
+                      Address <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      id="newAddress"
+                      value={newAddressDetails.address}
+                      onChange={e =>
+                        setNewAddressDetails({
+                          ...newAddressDetails,
+                          address: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 border ${
+                        formErrors.address
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                      rows="3"
+                      placeholder="Enter your street address"
+                    />
+                    {formErrors.address && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {formErrors.address}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="newCity"
+                      className="block mb-1 text-sm font-medium text-gray-700"
+                    >
+                      City <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="newCity"
+                      value={newAddressDetails.city}
+                      onChange={e =>
+                        setNewAddressDetails({
+                          ...newAddressDetails,
+                          city: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 border ${
+                        formErrors.city ? "border-red-500" : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                      placeholder="Enter your city"
+                    />
+                    {formErrors.city && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {formErrors.city}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="newCountry"
+                      className="block mb-1 text-sm font-medium text-gray-700"
+                    >
+                      Country <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="newCountry"
+                      value={newAddressDetails.country}
+                      onChange={e =>
+                        setNewAddressDetails({
+                          ...newAddressDetails,
+                          country: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 border ${
+                        formErrors.country
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                      placeholder="Enter your country"
+                    />
+                    {formErrors.country && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {formErrors.country}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="newMobile"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Mobile No <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      id="newMobile"
+                      value={newAddressDetails.mobile}
+                      onChange={e =>
+                        setNewAddressDetails({
+                          ...newAddressDetails,
+                          mobile: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 border ${
+                        formErrors.mobile ? "border-red-500" : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
+                      placeholder="Enter your mobile number"
+                      maxLength="10"
+                      pattern="\d{10}"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Mobile number must be 10 digits
+                    </p>
+                    {formErrors.mobile && (
+                      <p className="text-sm text-red-500">
+                        {formErrors.mobile}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex justify-end mt-6 space-x-3">
+                    <button
+                      onClick={() => setIsAddAddressModalOpen(false)}
+                      className="px-4 py-2 text-gray-700 transition-all duration-300 rounded-md hover:text-gray-900 hover:bg-gray-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddAddress}
+                      className="px-4 py-2 bg-[#5CAF90] text-white rounded-md hover:bg-[#1D372E] hover:opacity-80 hover:scale-105 hover:shadow-lg transform transition-all duration-300"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default Checkout;
+export default Checkout
