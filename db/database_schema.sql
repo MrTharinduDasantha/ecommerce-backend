@@ -171,6 +171,7 @@ CREATE TABLE Cart_has_Product (
     Cart_idCart INT,
     Product_Variations_idProduct_Variations INT,
     Rate DECIMAL(10,2),
+    COLUMN Market_Rate FLOAT(10,2),
     Qty INT,
     Total_Amount DECIMAL(10,2),
     Discount_Percentage DECIMAL(5,2),
@@ -286,6 +287,10 @@ CREATE TABLE FAQ (
 CREATE TABLE Header_Footer_Setting (
   idHeader_Footer_Setting INT AUTO_INCREMENT PRIMARY KEY,
   Navbar_Logo_Url TEXT,
+  COLUMN Nav_Icons JSON,
+  COLUMN Country_Blocks JSON,
+  COLUMN Footer_Links JSON,
+  COLUMN Social_Icons JSON,
   Footer_Copyright VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

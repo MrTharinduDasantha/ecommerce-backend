@@ -21,3 +21,14 @@ ADD COLUMN reset_password_otp_expires TIMESTAMP NULL;
 ALTER TABLE Customer MODIFY COLUMN Password VARCHAR(255);
 
 ALTER TABLE User ADD CONSTRAINT unique_email UNIQUE (Email);
+
+-- Add Nav_Icons, Country_Blocks, Footer_Links, and Social_Icons columns to the Header_Footer_Setting table
+ALTER TABLE Header_Footer_Setting
+ADD COLUMN Nav_Icons JSON AFTER Navbar_Logo_Url,
+ADD COLUMN Country_Blocks JSON AFTER Nav_Icons,
+ADD COLUMN Footer_Links JSON AFTER Country_Blocks,
+ADD COLUMN Social_Icons JSON AFTER Footer_Links;
+
+-- Add Market_Rate column to the cart_has_product table
+ALTER TABLE cart_has_product
+ADD COLUMN Market_Rate FLOAT(10,2) DEFAULT NULL AFTER Rate;

@@ -24,11 +24,7 @@ const uploadFiles = upload.any();
 // -----------------------------
 // Header Footer Setting Routes
 // -----------------------------
-router.get(
-  "/header-footer",
-
-  settingController.getHeaderFooterSetting
-);
+router.get("/header-footer", settingController.getHeaderFooterSetting);
 router.put(
   "/header-footer",
   authenticate,
