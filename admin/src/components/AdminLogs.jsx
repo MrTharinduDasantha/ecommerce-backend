@@ -1,16 +1,67 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
+import { FaSearch, FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { fetchAdminLogs } from "../api/auth";
 import toast from "react-hot-toast";
+
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className = "",
+  prevLabel = "Previous",
+  nextLabel = "Next",
+}) => {
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      onPageChange(newPage);
+    }
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className={`flex justify-between items-center mt-4 ${className}`}>
+      <button
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
+          currentPage === 1
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-[#5CAF90] text-white hover:bg-opacity-90"
+        }`}
+      >
+        {prevLabel}
+      </button>
+      <span className="text-[#1D372E] text-sm">
+        Page {currentPage} of {totalPages}
+      </span>
+      <button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
+          currentPage === totalPages
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-[#5CAF90] text-white hover:bg-opacity-90"
+        }`}
+      >
+        {nextLabel}
+      </button>
+    </div>
+  );
+};
 
 const AdminLogs = () => {
   const [logs, setLogs] = useState([]);
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
+
+  // Define items per page
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -19,6 +70,7 @@ const AdminLogs = () => {
         const logData = await fetchAdminLogs();
         setLogs(logData);
         setFilteredLogs(logData);
+        setTotalPages(Math.ceil(logData.length / itemsPerPage));
       } catch (error) {
         console.error("Error fetching logs:", error);
         toast.error("Failed to fetch logs");
@@ -30,9 +82,17 @@ const AdminLogs = () => {
     fetchLogs();
   }, []);
 
+  // Slice the filtered logs for the current page
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const handleSearch = () => {
     if (!searchTerm.trim()) {
       setFilteredLogs(logs);
+      setTotalPages(Math.ceil(logs.length / itemsPerPage));
+      setCurrentPage(1); // Reset to first page on search
       return;
     }
     const lowerSearchTerm = searchTerm.toLowerCase();
@@ -45,12 +105,16 @@ const AdminLogs = () => {
       );
     });
     setFilteredLogs(filtered);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page on search
   };
 
   // Reset filter when search is cleared
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredLogs(logs);
+      setTotalPages(Math.ceil(logs.length / itemsPerPage));
+      setCurrentPage(1); // Reset to first page when cleared
     }
   }, [searchTerm, logs]);
 
@@ -76,6 +140,35 @@ const AdminLogs = () => {
     if (length <= 16) return "w-40";
     if (length <= 20) return "w-48";
     return "w-56";
+  };
+
+  const getActionStyle = (action) => {
+    switch (action) {
+      case "Logged In":
+        return "bg-blue-100 text-blue-800";
+      case "Added new user":
+        return "bg-green-100 text-green-800";
+      case "Updated customer":
+        return "bg-yellow-100 text-yellow-800";
+      case "Deleted customer":
+        return "bg-red-100 text-red-800";
+      case "Created category":
+      case "Created subcategory":
+      case "Created product":
+      case "Created brand":
+        return "bg-emerald-100 text-emerald-800";
+      case "Updated category":
+      case "Updated product":
+      case "Toggled category status":
+        return "bg-amber-100 text-amber-800";
+      case "Deleted subcategory":
+      case "Deleted product":
+        return "bg-rose-100 text-rose-800";
+      case "Updated order status":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
   if (loading) {
@@ -146,7 +239,7 @@ const AdminLogs = () => {
                     </tr>
                   </thead>
                   <tbody className="text-[#1D372E]">
-                    {filteredLogs.map((log) => (
+                    {paginatedLogs.map((log) => (
                       <tr
                         key={log.log_id}
                         className="border-b border-[#1D372E]"
@@ -188,7 +281,7 @@ const AdminLogs = () => {
               </div>
 
               <div className="sm:hidden space-y-3">
-                {filteredLogs.map((log) => (
+                {paginatedLogs.map((log) => (
                   <div
                     key={log.log_id}
                     className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
@@ -224,41 +317,21 @@ const AdminLogs = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination */}
+              {filteredLogs.length > itemsPerPage && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </>
           )}
         </div>
       </div>
     </div>
   );
-};
-
-const getActionStyle = (action) => {
-  switch (action) {
-    case "Logged In":
-      return "bg-blue-100 text-blue-800";
-    case "Added new user":
-      return "bg-green-100 text-green-800";
-    case "Updated customer":
-      return "bg-yellow-100 text-yellow-800";
-    case "Deleted customer":
-      return "bg-red-100 text-red-800";
-    case "Created category":
-    case "Created subcategory":
-    case "Created product":
-    case "Created brand":
-      return "bg-emerald-100 text-emerald-800";
-    case "Updated category":
-    case "Updated product":
-    case "Toggled category status":
-      return "bg-amber-100 text-amber-800";
-    case "Deleted subcategory":
-    case "Deleted product":
-      return "bg-rose-100 text-rose-800";
-    case "Updated order status":
-      return "bg-purple-100 text-purple-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
 };
 
 export default AdminLogs;
