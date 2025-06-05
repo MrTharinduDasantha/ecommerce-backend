@@ -18,14 +18,16 @@ import {
   FaChevronDown,
 } from "react-icons/fa";
 import { AuthContext } from "../../context/AuthContext";
+import { useCart } from "../../context/CartContext.jsx";
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const { cartItems } = useCart();
 
   const navigate = useNavigate();
 
@@ -59,12 +61,6 @@ function Navbar() {
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
-  // Load cart count from local storage
-  useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    setCartCount(cart.reduce((total, item) => total + item.quantity, 0));
-  }, []);
 
   return (
     <>
@@ -106,15 +102,15 @@ function Navbar() {
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}
-                className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
+                className="relative p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
               >
                 <FaShoppingCart
                   className="text-[15px] cursor-pointer"
                   title="Cart"
                 />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                    {cartCount}
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    {cartItems.length}
                   </span>
                 )}
               </motion.div>
