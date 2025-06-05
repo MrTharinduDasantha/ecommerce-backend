@@ -7,7 +7,7 @@ const router = express.Router();
 // Apply authentication middleware to all customer routes
 
 // Admin Customer Routes
-router.get("/", authenticateToken, customerController.getCustomers);
+router.get("/", customerController.getCustomers);
 router.get("/count", customerController.getCustomerCount);
 router.get("/:id", authenticateToken, customerController.getCustomer);
 router.post("/", authenticateToken, customerController.createCustomer);
