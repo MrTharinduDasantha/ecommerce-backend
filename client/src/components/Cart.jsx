@@ -7,13 +7,8 @@ import { getProducts } from "../api/product";
 import { formatPrice } from "./FormatPrice";
 
 const Cart = () => {
-  const {
-    cartItems,
-    removeFromCart,
-    updateQuantity,
-    loading,
-    error,
-  } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, loading, error } =
+    useCart();
 
   const [selectedItems, setSelectedItems] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -72,8 +67,7 @@ const Cart = () => {
     const selectedCartItems = cartItems
       .filter((item) => selectedItems.includes(item.id))
       .map((item) => ({
-        ...item
-    
+        ...item,
       }));
 
     navigate("/checkout", {
@@ -158,6 +152,9 @@ const Cart = () => {
   return (
     <>
       <div className="min-h-screen bg-white w-full flex flex-col">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-3 mt-6">
+          Cart <span className="text-[#5CAF90]">Page</span>
+        </h2>
         <div className="flex-1 mt-[10px]">
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Cart Header */}
@@ -172,7 +169,7 @@ const Cart = () => {
               {/* Cart Items Section */}
               <div className="flex-1">
                 {cartItems.length === 0 ? (
-                  <div className="text-gray-500 text-lg text-center py-24.5 bg-white rounded-lg border-2 border-gray-200 mt-8.5">
+                  <div className="text-gray-500 text-lg text-center py-24.5 bg-white rounded-lg border-2 border-gray-200 mt-6">
                     Your cart is empty
                   </div>
                 ) : (
@@ -272,26 +269,45 @@ const Cart = () => {
                             <p className="text-[#1D372E] font-semibold">
                               {formatPrice(item.price)}
                             </p>
-                            
                           </div>
-                          <div className="my-auto">
-                            <input
-                              type="number"
-                              value={item.quantity}
-                              max={item.availableQty}
-                              min="1"
-                              onChange={(e) => {
-                                const newQuantity = parseInt(e.target.value);
-                                if (newQuantity > 0) {
-                                  updateQuantity(item.id, newQuantity).catch(
-                                    () => {
-                                      e.target.value = item.quantity;
-                                    }
-                                  );
-                                }
+                          {/* Quantity Selector */}
+                          <div className="m-auto border rounded-lg px-[8px] pb-1">
+                            <button
+                              className="text-lg sm:text-xl cursor-pointer"
+                              onClick={() => {
+                                const newQuantity = Math.max(
+                                  1,
+                                  item.quantity - 1
+                                );
+                                updateQuantity(item.id, newQuantity).catch(
+                                  console.error
+                                );
                               }}
-                              className="w-14 text-center border rounded py-1"
-                            />
+                              disabled={item.availableQty <= 0}
+                            >
+                              -
+                            </button>
+                            <span className="mx-2 sm:mx-2">
+                              {item.quantity}
+                            </span>
+                            <button
+                              className="text-lg sm:text-xl cursor-pointer"
+                              onClick={() => {
+                                const newQuantity = Math.min(
+                                  item.quantity + 1,
+                                  item.availableQty
+                                );
+                                updateQuantity(item.id, newQuantity).catch(
+                                  console.error
+                                );
+                              }}
+                              disabled={
+                                item.quantity >= item.availableQty ||
+                                item.availableQty <= 0
+                              }
+                            >
+                              +
+                            </button>
                           </div>
                           <div className="my-auto">
                             <p className="text-[#1D372E] font-semibold ml-auto">
