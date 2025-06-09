@@ -27,11 +27,9 @@ const Checkout = () => {
     installmentPlan: "",
   })
 
-  const [addresses, setAddresses] = useState([
-    { id: 1, address: "123 Main St, City A", isDefault: true },
-    { id: 2, address: "456 Oak Ave, City B", isDefault: false },
-  ])
-  const [selectedAddress, setSelectedAddress] = useState(1)
+  const [addresses, setAddresses] = useState([])
+
+  const [selectedAddress, setSelectedAddress] = useState(null)
 
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false)
 
@@ -52,6 +50,10 @@ const Checkout = () => {
   const [showAddSuccessMessage, setShowAddSuccessMessage] = useState(false)
 
   const [cartId, setCartId] = useState(null)
+
+  const [orderNo, setOrderNo] = useState(
+    `#${Math.floor(100000 + Math.random() * 900000)}`
+  )
 
   const { user } = useAuth()
 
@@ -82,6 +84,7 @@ const Checkout = () => {
           isDefault: false,
         }))
         setAddresses(formattedAddresses)
+        if(formattedAddresses.length > 0 && !selectedAddress) setSelectedAddress(formattedAddresses[0].id)
       } catch (error) {
         console.error("Error fetching customer addresses: ", error)
       }
@@ -213,7 +216,7 @@ const Checkout = () => {
   console.log(subtotal, discount, deliveryFee)
   // Order information
   const orderInfo = {
-    orderNo: `#${Math.floor(100000 + Math.random() * 900000)}`,
+    orderNo: orderNo,
     deliveryDate: new Date(
       Date.now() + 5 * 24 * 60 * 60 * 1000
     ).toLocaleDateString(),
