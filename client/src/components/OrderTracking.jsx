@@ -1,113 +1,318 @@
-import React from "react";
-import { FaSearch } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import allProducts from "./Products";
+import { useAuth } from "../context/AuthContext";
+import { getCustomerOrders, getOrderDetails, trackOrder } from "../api/order";
 import Map from "../assets/map.png";
 import OrderDetails from "./OrderDetails";
 
 const OrderTracking = () => {
   const { id } = useParams();
-  console.log(allProducts.filter(x => x.orderId == id))
-  // Sample order with multiple products (in a real app, this would come from an API)
-  const order = {
-    orderNo: id,
-    deliveryDate: "2025/01/24",
-    address: "106/A, Piliyandala, Moratuwa",
-    items: allProducts.filter(x => x.orderId == id),
-    // [
-    //   {
-    //     ...products[0],
-    //     variant: products[0].variants[0],
-    //     quantity: 2
-    //   },
-    //   {
-    //     ...products[1],
-    //     variant: { ...products[1].variants[0], size: ['M'] },
-    //     quantity: 1
-    //   },
-    //   {
-    //     ...products[4],
-    //     variant: products[4].variants[0],
-    //     quantity: 3
-    //   }
-    // ],
-    status: [
+  const { user } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [trackingInfo, setTrackingInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Get customer ID from user object
+  const customerId = user?.id;
+
+  // Fetch all orders for the user
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        if (customerId) {
+          console.log("Fetching orders for customer ID:", customerId);
+          const ordersData = await getCustomerOrders(customerId);
+          console.log("Orders response:", ordersData);
+          
+          // Handle both array or object response formats
+          const ordersArray = Array.isArray(ordersData) ? ordersData : ordersData.orders || [];
+          
+          setOrders(ordersArray);
+          
+          // If an ID is provided in the URL, select that order
+          if (id && ordersArray.length > 0) {
+            const order = ordersArray.find(order => order.idOrder.toString() === id);
+            if (order) {
+              setSelectedOrder(order);
+            } else {
+              // If order with ID not found, select the first order
+              setSelectedOrder(ordersArray[0]);
+            }
+          } else if (ordersArray.length > 0) {
+            // If no ID provided, select the first order
+            setSelectedOrder(ordersArray[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+        setError("Failed to load orders. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [customerId, id]);
+
+  // Fetch order details and tracking when selected order changes
+  useEffect(() => {
+    const fetchOrderDetailsAndTracking = async () => {
+      if (selectedOrder && customerId) {
+        try {
+          setLoading(true);
+          
+          // Use idOrder for API calls
+          const orderId = selectedOrder.idOrder;
+          
+          // Fetch order details
+          const detailsResponse = await getOrderDetails(customerId, orderId);
+          console.log("Order details:", detailsResponse);
+          setOrderDetails(detailsResponse);
+          
+          // Fetch tracking information
+          const trackingResponse = await trackOrder(customerId, orderId);
+          console.log("Tracking info:", trackingResponse);
+          setTrackingInfo(trackingResponse);
+          
+        } catch (err) {
+          console.error("Error fetching order details:", err);
+          setError("Failed to load order details. Please try again later.");
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchOrderDetailsAndTracking();
+  }, [selectedOrder, customerId]);
+
+  const handleOrderSelect = (order) => {
+    setSelectedOrder(order);
+  };
+
+  if (!user) {
+    return (
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold">Please sign in to view your orders</h2>
+          <p className="mt-2 text-gray-600">You need to be logged in to track your orders.</p>
+          <p className="mt-2 text-gray-500">User data: {JSON.stringify(user)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && orders.length === 0) {
+    return (
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">Loading your orders...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && orders.length === 0) {
+    return (
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-500">
+          <h2 className="text-xl font-semibold">{error}</h2>
+          <p className="mt-4">Debug info:</p>
+          <p>User ID: {customerId || 'Not available'}</p>
+          <p>User object: {JSON.stringify(user)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold">No orders found</h2>
+          <p className="mt-2 text-gray-600">You haven't placed any orders yet.</p>
+          <p className="mt-2 text-gray-500">User ID: {customerId}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Get tracking status from the tracking info
+  const getOrderStatusItems = () => {
+    // If we have tracking info, use it
+    if (trackingInfo && trackingInfo.status_history) {
+      return trackingInfo.status_history.map((item, index) => {
+        const isActive = index === 0; // Most recent status is active
+        const isCompleted = true; // All history items are completed
+
+        return {
+          id: item.id || index + 1,
+          status: item.status_to || "Status Update",
+          completed: isCompleted,
+          active: isActive,
+          date: item.created_at ? new Date(item.created_at).toLocaleString() : "N/A",
+        };
+      });
+    }
+
+    // Fallback if no tracking info available
+    return [
       {
         id: 1,
         status: "Order Confirmed",
         completed: true,
         active: false,
-        date: "2025/01/20 10:30 AM",
+        date: selectedOrder?.created_at ? new Date(selectedOrder.created_at).toLocaleString() : "N/A",
       },
       {
         id: 2,
-        status: "Order Packed",
-        completed: true,
-        active: false,
-        date: "2025/01/21 02:15 PM",
+        status: "Processing",
+        completed: selectedOrder?.Delivery_Status === "processing",
+        active: selectedOrder?.Delivery_Status === "processing",
+        date: "N/A",
       },
       {
         id: 3,
-        status: "Awaiting Delivery",
-        completed: false,
-        active: true,
-        date: "2025/01/22 09:45 AM",
+        status: "Shipped",
+        completed: selectedOrder?.Delivery_Status === "shipped",
+        active: selectedOrder?.Delivery_Status === "shipped",
+        date: "N/A",
       },
       {
         id: 4,
-        status: "Out for Delivery",
-        completed: false,
-        active: false,
-        date: "Expected by 2025/01/24",
-      },
-      {
-        id: 5,
         status: "Delivered",
-        completed: false,
-        active: false,
-        date: null,
-      },
-    ]
+        completed: selectedOrder?.Delivery_Status === "delivered",
+        active: selectedOrder?.Delivery_Status === "delivered",
+        date: "N/A",
+      }
+    ];
   };
-  order.items.map(x => x.quantity=3)
-  // Calculate order totals
-  const subtotal = order.items.reduce((sum, item) => sum + (item.variants[0].price * item.quantity), 0);
-  const discount = order.items.reduce((sum, item) => sum + ((item.marketPrice - item.variants[0].price) * item.quantity), 0);
-  const deliveryFee = 500.00;
-  const total = subtotal - discount + deliveryFee;
+
+  // Calculate order totals for the selected order
+  const orderItems = orderDetails?.items || [];
+  
+  // Use the fields from the actual API response
+  const subtotal = selectedOrder?.Total_Amount ? parseFloat(selectedOrder.Total_Amount) : 0;
+  const discount = 0; // No discount field in the response
+  const deliveryFee = selectedOrder?.Delivery_Charges ? parseFloat(selectedOrder.Delivery_Charges) : 0;
+  const total = selectedOrder?.Net_Amount ? parseFloat(selectedOrder.Net_Amount) : subtotal + deliveryFee;
+
+  // Current order status from tracking info or selected order
+  const currentStatus = trackingInfo?.current_status || {
+    delivery_date: selectedOrder?.Delivery_Date,
+    delivery_status: selectedOrder?.Delivery_Status,
+    payment_status: selectedOrder?.Payment_Stats
+  };
 
   return (
     <div className="p-6 bg-white min-h-screen">
       <div className="max-w-full mx-auto">
         <h2 className="text-2xl font-semibold text-center">
-          Order <span className="text-[#5CAF90]">Tracking</span>
+          Your <span className="text-[#5CAF90]">Orders</span>
         </h2>
-        <div className="flex justify-center gap-2 mt-4">
-          <input
-            type="text"
-            className="border border-[#E8E8E8] bg-gray-50 p-2 rounded-lg w-80 focus:outline-none text-center"
-            placeholder="Search Using Tracking Code"
-          />
-          <button className="bg-[#5CAF90] text-white p-3 rounded-lg cursor-pointer">
-            <FaSearch />
-          </button>
-        </div>
+        
+        {orders.length > 1 && (
+          <div className="mt-4">
+            <h3 className="text-lg font-medium mb-2">Select an order to track:</h3>
+            <div className="flex flex-wrap gap-2">
+              {orders.map((order) => (
+                <button
+                  key={order.idOrder}
+                  onClick={() => handleOrderSelect(order)}
+                  className={`px-4 py-2 rounded-lg border ${
+                    selectedOrder?.idOrder === order.idOrder
+                      ? "bg-[#5CAF90] text-white border-[#5CAF90]"
+                      : "border-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  Order #{order.idOrder}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
           {/* Left Section - Order Details */}
           <div className="lg:col-span-1">
-            <OrderDetails 
-              cartItems={order.items}
-              subtotal={subtotal}
-              discount={discount}
-              deliveryFee={deliveryFee}
-              total={total}
-              orderInfo={{
-                orderNo: order.orderNo,
-                deliveryDate: order.deliveryDate,
-                address: order.address
-              }}
-            />
+            <div className="bg-gray-50 p-6 rounded-lg shadow border border-[#E8E8E8]">
+              <h3 className="text-lg font-semibold text-center mb-4">
+                Order <span className="text-[#5CAF90]">Summary</span>
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Order #:</span>
+                  <span className="font-medium">{selectedOrder?.idOrder || "N/A"}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="font-medium">{selectedOrder?.Date_Time || "N/A"}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Payment Method:</span>
+                  <span className="font-medium capitalize">{selectedOrder?.Payment_Type || "N/A"}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Payment Status:</span>
+                  <span className={`font-medium capitalize ${
+                    selectedOrder?.Payment_Stats === "paid" ? "text-green-500" : "text-orange-500"
+                  }`}>
+                    {selectedOrder?.Payment_Stats || "N/A"}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Delivery Type:</span>
+                  <span className="font-medium capitalize">{selectedOrder?.Delivery_Type || "N/A"}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Delivery Status:</span>
+                  <span className="font-medium capitalize">{selectedOrder?.Delivery_Status || "N/A"}</span>
+                </div>
+
+                <div className="pt-3 border-t">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  
+                  {discount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Discount:</span>
+                      <span className="font-medium text-green-500">-${discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Delivery Fee:</span>
+                    <span className="font-medium">${deliveryFee.toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between font-semibold mt-2 pt-2 border-t">
+                    <span>Total:</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <h4 className="text-md font-medium mb-2">Delivery Address</h4>
+                <div className="bg-white p-3 rounded border border-gray-200 text-sm">
+                  <p className="font-medium">{selectedOrder?.Full_Name || "N/A"}</p>
+                  <p>{selectedOrder?.Address || "N/A"}</p>
+                  <p>{selectedOrder?.City || "N/A"}, {selectedOrder?.Country || "N/A"}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Center Section - Map (fixed height) */}
@@ -137,7 +342,7 @@ const OrderTracking = () => {
 
               {/* Status Items */}
               <ul className="space-y-4 pl-5">
-                {order.status.map((item) => (
+                {getOrderStatusItems().map((item) => (
                   <li
                     key={item.id}
                     className="relative flex items-center gap-2"
@@ -210,7 +415,14 @@ const OrderTracking = () => {
                 <div>
                   <p className="text-sm font-medium">Estimated Delivery</p>
                   <p className="text-xs text-gray-600">
-                    Friday, January 24, 2025
+                    {selectedOrder?.Delivery_Date 
+                      ? new Date(selectedOrder.Delivery_Date).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        }) 
+                      : "Date not available"}
                   </p>
                 </div>
               </div>
