@@ -741,6 +741,7 @@ const OrderDetails = () => {
               <thead className="bg-[#EAFFF7] text-[#1D372E]">
                 <tr className="border-b border-[#B7B7B7]">
                   <th className="font-semibold">Product</th>
+                  <th className="font-semibold">Variation</th>
                   <th className="font-semibold">Price</th>
                   <th className="font-semibold">Quantity</th>
                   <th className="font-semibold">Total</th>
@@ -753,6 +754,23 @@ const OrderDetails = () => {
                     className="border-b border-[#B7B7B7]"
                   >
                     <td>{item.product_name}</td>
+                    <td>
+                      {(item.Colour !== "No color selected" && item.Colour) && (
+                        <div className="text-xs">
+                          <span className="mr-1">
+                            Color: <span style={{ color: item.Colour.startsWith('#') ? item.Colour : 'inherit' }}>●</span> {item.Colour}
+                          </span>
+                        </div>
+                      )}
+                      {(item.Size !== "No size selected" && item.Size) && (
+                        <div className="text-xs mt-1">
+                          <span>Size: {item.Size}</span>
+                        </div>
+                      )}
+                      {(!item.Colour || item.Colour === "No color selected") && (!item.Size || item.Size === "No size selected") && (
+                        <span className="text-xs text-gray-500">-</span>
+                      )}
+                    </td>
                     <td>Rs. {item.Rate || 0}</td>
                     <td>{item.Qty || 0}</td>
                     <td>Rs. {item.Total || 0}</td>
