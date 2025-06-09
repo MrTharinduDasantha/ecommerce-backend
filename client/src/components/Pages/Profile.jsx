@@ -471,10 +471,14 @@ const Profile = () => {
     }
 
     // Password validation
-    // if (!updatedProfile.password.trim()) {
-    //   errors.password = "Password is required"
-    //   isValid = false
-    // }
+    if (
+      updatedProfile.password &&
+      updatedProfile.password.trim().length > 0 &&
+      updatedProfile.password.trim().length < 6
+    ) {
+      errors.password = "Password must be at least 6 characters"
+      isValid = false
+    }
 
     setProfileErrors(errors)
     return isValid
@@ -503,6 +507,10 @@ const Profile = () => {
         birthday: updatedProfile.birthday.includes("T")
           ? updatedProfile.birthday
           : updatedProfile.birthday + "T00:00:00",
+      }
+      if (!updatedProfile.password || updatedProfile.password.trim() === "") {
+        // Remove password from the object if it's empty
+        delete profileToUpdate.password
       }
       // Update the main address in the addresses list
       if (profileData.address) {
