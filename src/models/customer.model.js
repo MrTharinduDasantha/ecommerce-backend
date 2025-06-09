@@ -9,7 +9,7 @@ const getAllCustomers = async () => {
 
 // Get customer by ID
 const getCustomerById = async (id) => {
-  const [rows] = await pool.query('SELECT idCustomer, Full_Name, Email, Mobile_No, Address, City, Country, Status FROM Customer WHERE idCustomer = ?', [id]);
+  const [rows] = await pool.query('SELECT idCustomer, Full_Name, Birthday, Email, Mobile_No, Address, City, Country, Status FROM Customer WHERE idCustomer = ?', [id]);
   return rows[0];
 };
 
@@ -35,6 +35,11 @@ const updateCustomer = async (id, customerData) => {
   if (customerData.full_name !== undefined) {
       updates.push('Full_Name = ?');
       values.push(customerData.full_name);
+  }
+
+  if (customerData.birthday !== undefined) {
+    updates.push('Birthday = ?')
+    values.push(customerData.birthday)
   }
 
   if (customerData.address !== undefined) {

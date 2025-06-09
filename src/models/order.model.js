@@ -127,7 +127,7 @@ class Order {
     const [order] = await pool.query(
       "INSERT INTO `Order` (Date_Time, Delivery_Address_idDelivery_Address, Total_Amount, Delivery_Type, Delivery_Charges, Net_Amount, Payment_Type, Payment_Stats, Delivery_Status, Delivery_Date, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
-        new Date().toISOString(),
+        new Date().toLocaleString(),
         delivery_address_id,
         total_amount,
         delivery_type,

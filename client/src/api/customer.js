@@ -1,7 +1,9 @@
+import { getToken } from "../utils/auth"
+
 // Fetch customer by customer id
 export const getCustomerById = async customerId => {
   try {
-    const token = localStorage.getItem("token")
+    const token = getToken()
     if (token) {
       const res = await fetch(
         `http://localhost:9000/api/customers/${customerId}`,
@@ -17,5 +19,28 @@ export const getCustomerById = async customerId => {
     }
   } catch (error) {
     console.error("Error fetching customer data: ", error)
+  }
+}
+
+export const updateCustomerDetails = async (customerId, data) => {
+  try {
+    const token = getToken()
+    if (token) {
+      const res = await fetch(
+        `http://localhost:9000/api/customers/${customerId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:`Bearer ${token}`
+          },
+          body:JSON.stringify(data)
+        }
+      )
+      if (!res.ok) throw new Error(`Error: ${res.status}`)
+      return "Customer updated successfully"
+    }
+  } catch (error) {
+    console.error("Error updating customer data: ", error)
   }
 }
