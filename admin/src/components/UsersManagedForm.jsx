@@ -5,12 +5,61 @@ import { IoClose } from "react-icons/io5";
 import { toast } from "react-hot-toast";
 import * as api from "../api/auth";
 
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className = "",
+  prevLabel = "Previous",
+  nextLabel = "Next",
+}) => {
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      onPageChange(newPage);
+    }
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className={`flex justify-between items-center mt-4 ${className}`}>
+      <button
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
+          currentPage === 1
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-[#5CAF90] text-white hover:bg-opacity-90"
+        }`}
+      >
+        {prevLabel}
+      </button>
+      <span className="text-[#1D372E] text-sm">
+        Page {currentPage} of {totalPages}
+      </span>
+      <button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
+          currentPage === totalPages
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-[#5CAF90] text-white hover:bg-opacity-90"
+        }`}
+      >
+        {nextLabel}
+      </button>
+    </div>
+  );
+};
+
 const UsersManagedForm = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [addUserForm, setAddUserForm] = useState({
     full_name: "",
     email: "",
@@ -18,6 +67,9 @@ const UsersManagedForm = () => {
     phone_no: "",
     status: "Active",
   });
+
+  // Define items per page
+  const itemsPerPage = 10;
 
   // Fetch users on mount
   useEffect(() => {
@@ -27,6 +79,7 @@ const UsersManagedForm = () => {
         const data = await api.fetchUsers();
         setUsers(data);
         setFilteredUsers(data);
+        setTotalPages(Math.ceil(data.length / itemsPerPage));
       } catch (error) {
         console.error("Error fetching users:", error);
         toast.error("There was an issue fetching users.");
@@ -36,6 +89,12 @@ const UsersManagedForm = () => {
     };
     fetchUsers();
   }, []);
+
+  // Slice the filtered users for the current page
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleAddUserSubmit = async (e) => {
     e.preventDefault();
@@ -62,7 +121,7 @@ const UsersManagedForm = () => {
 
     try {
       const response = await api.addUser(addUserForm);
-      
+
       // Log admin action (optional)
       try {
         await api.logAdminAction(
@@ -76,7 +135,7 @@ const UsersManagedForm = () => {
 
       // Create the new user object
       const newUser = {
-        idUser: response.id, // ensure your API returns 'id' for new user
+        idUser: response.id,
         Full_Name: full_name,
         Email: email,
         Phone_No: phone_no,
@@ -89,13 +148,16 @@ const UsersManagedForm = () => {
       setUsers((prev) => [...prev, newUser]);
       // Re-filter based on current search term
       setFilteredUsers((prev) => {
-        if (!searchTerm.trim()) return [...prev, newUser];
+        const updated = [...prev, newUser];
+        setTotalPages(Math.ceil(updated.length / itemsPerPage));
+        if (!searchTerm.trim()) return updated;
 
         const searchLower = searchTerm.toLowerCase();
-        return [...prev, newUser].filter((user) =>
-          user.Full_Name?.toLowerCase().includes(searchLower) ||
-          user.Email?.toLowerCase().includes(searchLower) ||
-          user.Phone_No?.toLowerCase().includes(searchLower)
+        return updated.filter(
+          (user) =>
+            user.Full_Name?.toLowerCase().includes(searchLower) ||
+            user.Email?.toLowerCase().includes(searchLower) ||
+            user.Phone_No?.toLowerCase().includes(searchLower)
         );
       });
 
@@ -117,23 +179,27 @@ const UsersManagedForm = () => {
   const handleSearch = () => {
     if (!searchTerm.trim()) {
       setFilteredUsers(users);
+      setTotalPages(Math.ceil(users.length / itemsPerPage));
       return;
     }
     const searchLower = searchTerm.toLowerCase();
-    const filtered = users.filter((user) => {
-      return (
+    const filtered = users.filter(
+      (user) =>
         user.Full_Name?.toLowerCase().includes(searchLower) ||
         user.Email?.toLowerCase().includes(searchLower) ||
         user.Phone_No?.toLowerCase().includes(searchLower)
-      );
-    });
+    );
     setFilteredUsers(filtered);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page on search
   };
 
   // Reset filteredUsers when searchTerm is cleared
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredUsers(users);
+      setTotalPages(Math.ceil(users.length / itemsPerPage));
+      setCurrentPage(1); // Reset to first page when cleared
     }
   }, [searchTerm, users]);
 
@@ -226,7 +292,7 @@ const UsersManagedForm = () => {
                     </tr>
                   </thead>
                   <tbody className="text-[#1D372E]">
-                    {filteredUsers.map((user) => (
+                    {paginatedUsers.map((user) => (
                       <tr
                         key={user.idUser}
                         className="border-b border-[#1D372E]"
@@ -265,7 +331,7 @@ const UsersManagedForm = () => {
 
               {/* Mobile Cards */}
               <div className="sm:hidden space-y-3">
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <div
                     key={user.idUser}
                     className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
@@ -303,6 +369,15 @@ const UsersManagedForm = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination */}
+              {filteredUsers.length > itemsPerPage && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </>
           )}
         </div>
@@ -319,9 +394,7 @@ const UsersManagedForm = () => {
             >
               <IoClose className="w-5 h-5" />
             </button>
-            {/* Add User Form */}
             <form onSubmit={handleAddUserSubmit}>
-              {/* Full Name */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -339,7 +412,6 @@ const UsersManagedForm = () => {
                   required
                 />
               </div>
-              {/* Email */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -357,7 +429,6 @@ const UsersManagedForm = () => {
                   required
                 />
               </div>
-              {/* Password */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -375,7 +446,6 @@ const UsersManagedForm = () => {
                   required
                 />
               </div>
-              {/* Phone Number */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -393,7 +463,6 @@ const UsersManagedForm = () => {
                   required
                 />
               </div>
-              {/* Status */}
               <div className="form-control mb-4">
                 <label className="label text-[#1D372E] mb-0.5">
                   <span className="label-text text-sm lg:text-base font-medium">
@@ -411,7 +480,6 @@ const UsersManagedForm = () => {
                   <option value="Inactive">Inactive</option>
                 </select>
               </div>
-              {/* Submit button */}
               <div className="modal-action">
                 <button
                   type="submit"

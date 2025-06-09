@@ -1,23 +1,54 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const OrderHistory = () => {
+    const { user } = useContext(AuthContext);
     const [searchQuery, setSearchQuery] = useState('');
-    const [orderHistory] = useState([
-        { id: '#01', name: 'Sarah', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 14:30', status: 'Completed' },
-        { id: '#02', name: 'Jessica', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 15:45', status: 'Completed' },
-        { id: '#03', name: 'Sam', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 16:20', status: 'Not Yet' },
-        { id: '#04', name: 'John', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 17:15', status: 'Processing' },
-    ]);
+    const [orderHistory, setOrderHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchOrderHistory = async () => {
+            if (!user?.id) {
+                setError('User not logged in');
+                setLoading(false);
+                return;
+            }
+            try {
+                setLoading(true);
+                const token = localStorage.getItem('token');
+                const response = await axios.get(
+                    `http://localhost:9000/api/orders/${user.id}/history`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                setOrderHistory(response.data);
+                setLoading(false);
+            } catch (err) {
+                setError('Failed to fetch order history');
+                setLoading(false);
+            }
+        };
+        fetchOrderHistory();
+    }, [user]);
 
     // Filter orders based on search query
     const filteredOrders = orderHistory.filter(order => {
         const query = searchQuery.toLowerCase();
+        // Convert idOrder to string before using toLowerCase
+        const idStr = order.idOrder ? String(order.idOrder).toLowerCase() : '';
+        const nameStr = order.name ? order.name.toLowerCase() : '';
         return (
-            order.id.toLowerCase().includes(query) ||
-            order.name.toLowerCase().includes(query)
+            idStr.includes(query) ||
+            nameStr.includes(query)
         );
     });
 
@@ -47,48 +78,70 @@ const OrderHistory = () => {
 
             {/* Orders Table */}
             <div className="overflow-x-auto rounded-lg">
-                <table className="w-full">
-                    <thead>
-                        <tr className="text-left border-b border-gray-200">
-                            <th className="px-5 py-3 text-sm font-medium text-gray-600">Tracking No</th>
-                            <th className="px-5 py-3 text-sm font-medium text-gray-600">Order Date & Time</th>
-                            <th className="px-5 py-3 text-sm font-medium text-gray-600">Order Name</th>
-                            <th className="px-5 py-3 text-sm font-medium text-gray-600">Price</th>
-                            <th className="px-5 py-3 text-sm font-medium text-gray-600">Delivery Date</th>
-                            <th className="px-5 py-3 text-sm font-medium text-gray-600">Order Status</th>
-                            <th className="px-5 py-3 text-sm font-medium text-gray-600 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredOrders.length > 0 ? (
-                            filteredOrders.map((order) => (
-                                <tr key={order.id} className="border-b border-gray-100 hover:bg-white/60">
-                                    <td className="px-5 py-4 text-sm text-gray-800">{order.id}</td>
-                                    <td className="px-5 py-4 text-sm text-gray-800">{order.orderDateTime}</td>
-                                    <td className="px-5 py-4 text-sm text-gray-800">{order.name}</td>
-                                    <td className="px-5 py-4 text-sm text-gray-800">{order.price}</td>
-                                    <td className="px-5 py-4 text-sm text-gray-800">{order.deliveryDate}</td>
-                                    <td className="px-5 py-4 text-sm text-gray-800">{order.status}</td>
-                                    <td className="px-5 py-4">
-                                        <button className="flex items-center space-x-1 bg-[#5CAF90] text-white px-3 py-1.5 rounded-lg hover:bg-[#408a6d] transition-colors">
-                                            <VisibilityIcon className="h-5 w-5" />
-                                            <span className="text-sm">View Order</span>
-                                        </button>
+                {loading ? (
+                    <div>Loading order history...</div>
+                ) : error ? (
+                    <div className="text-red-500">{error}</div>
+                ) : orderHistory.length === 0 ? (
+                    <div>No order history found.</div>
+                ) : (
+                    <table className="w-full">
+                        <thead>
+                            <tr className="bg-gray-50 text-left">
+                                <th className="px-4 py-2">Order ID</th>
+                                <th className="px-4 py-2">Order Date</th>
+                                <th className="px-4 py-2">Total Amount</th>
+                                <th className="px-4 py-2">Status</th>
+                                <th className="px-4 py-2">Items</th>
+                                <th className="px-5 py-3 text-sm font-medium text-gray-600 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredOrders.length > 0 ? (
+                                filteredOrders.map((order) => (
+                                    <tr key={order.idOrder} className="border-b border-gray-100 hover:bg-white/60">
+                                        <td className="px-4 py-2">{order.idOrder}</td>
+                                        <td className="px-4 py-2">
+                                            {order.order_date
+                                                ? new Date(order.order_date).toLocaleString()
+                                                : 'N/A'}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            {order.Net_Amount
+                                                ? Number(order.Net_Amount).toFixed(2)
+                                                : '0.00'}
+                                        </td>
+                                        <td className="px-4 py-2">{order.order_status || order.Status || 'N/A'}</td>
+                                        <td className="px-4 py-2">
+                                            {Array.isArray(order.items) && order.items.length > 0
+                                                ? order.items.map((item, idx) => (
+                                                    <div key={idx}>
+                                                        {item.product_name} x {item.Qty}
+                                                    </div>
+                                                ))
+                                                : <span className="text-gray-400">No items</span>}
+                                        </td>
+                                        <td className="px-5 py-4 text-center">
+                                            <button className="flex items-center space-x-1 bg-[#5CAF90] text-white px-3 py-1.5 rounded-lg hover:bg-[#408a6d] transition-colors">
+                                                <VisibilityIcon className="h-5 w-5" />
+                                                <span className="text-sm">View Order</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                                        No orders found matching your search.
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-                                    No orders found matching your search.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            )}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );
 };
 
-export default OrderHistory; 
+export default OrderHistory;

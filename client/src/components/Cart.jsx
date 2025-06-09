@@ -1,20 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Share, Apple, Delete } from "@mui/icons-material";
+import { Apple, Delete } from "@mui/icons-material";
 import ProductCard from "./ProductCard";
 import { useCart } from "../context/CartContext";
 import { getProducts } from "../api/product";
 import { formatPrice } from "./FormatPrice";
 
 const Cart = () => {
-  const {
-    cartItems,
-    removeFromCart,
-    updateQuantity,
-    loading,
-    error,
-    totalPrice,
-  } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, loading, error } =
+    useCart();
 
   const [selectedItems, setSelectedItems] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -74,15 +68,6 @@ const Cart = () => {
       .filter((item) => selectedItems.includes(item.id))
       .map((item) => ({
         ...item,
-        discountName:
-          item.discountName ||
-          (item.category === "Seasonal Offers"
-            ? "Seasonal Discounts"
-            : item.category === "Rush Delivery"
-            ? "Rush Discounts"
-            : item.category === "For You"
-            ? "For You Discounts"
-            : "Sale Discounts"),
       }));
 
     navigate("/checkout", {
@@ -167,6 +152,9 @@ const Cart = () => {
   return (
     <>
       <div className="min-h-screen bg-white w-full flex flex-col">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-3 mt-6">
+          Cart <span className="text-[#5CAF90]">Page</span>
+        </h2>
         <div className="flex-1 mt-[10px]">
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Cart Header */}
@@ -175,19 +163,13 @@ const Cart = () => {
                 Your Cart: {cartItems.length} item
                 {cartItems.length !== 1 ? "s" : ""}
               </h1>
-              <button
-                className="text-[#5CAF90] hover:text-[#3d2569]"
-                aria-label="Share cart"
-              >
-                <Share sx={{ fontSize: 20 }} />
-              </button>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Cart Items Section */}
               <div className="flex-1">
                 {cartItems.length === 0 ? (
-                  <div className="text-gray-500 text-lg text-center py-8 bg-white rounded-lg border-2 border-gray-200">
+                  <div className="text-gray-500 text-lg text-center py-24.5 bg-white rounded-lg border-2 border-gray-200 mt-6">
                     Your cart is empty
                   </div>
                 ) : (
@@ -252,7 +234,7 @@ const Cart = () => {
                                     {item.color &&
                                       item.color !== "No color selected" && (
                                         <div className="flex items-center space-x-2">
-                                          <span className="text-sm text-gray-600">
+                                          <span className="text-sm text-gray-600 font-semibold">
                                             Color:
                                           </span>
                                           <div
@@ -267,7 +249,7 @@ const Cart = () => {
                                     {item.size &&
                                       item.size !== "No size selected" && (
                                         <div className="flex items-center space-x-2">
-                                          <span className="text-sm text-gray-600">
+                                          <span className="text-sm text-gray-600 font-semibold">
                                             Size:
                                           </span>
                                           <span className="text-sm font-medium">
@@ -281,35 +263,54 @@ const Cart = () => {
                             </Link>
                           </div>
                           <div className="my-auto">
-                            <p className="text-[#5E5E5E] line-through font-medium">
+                            <p className="text-[#5E5E5E] line-through text-[15px] font-semibold">
                               {formatPrice(item.mktPrice)}
                             </p>
-                            <p className="text-[#1D372E] font-medium">
+                            <p className="text-[#1D372E] font-semibold">
                               {formatPrice(item.price)}
                             </p>
-                            
                           </div>
-                          <div className="my-auto">
-                            <input
-                              type="number"
-                              value={item.quantity}
-                              max={item.availableQty}
-                              min="1"
-                              onChange={(e) => {
-                                const newQuantity = parseInt(e.target.value);
-                                if (newQuantity > 0) {
-                                  updateQuantity(item.id, newQuantity).catch(
-                                    () => {
-                                      e.target.value = item.quantity;
-                                    }
-                                  );
-                                }
+                          {/* Quantity Selector */}
+                          <div className="m-auto border rounded-lg px-[8px] pb-1">
+                            <button
+                              className="text-lg sm:text-xl cursor-pointer"
+                              onClick={() => {
+                                const newQuantity = Math.max(
+                                  1,
+                                  item.quantity - 1
+                                );
+                                updateQuantity(item.id, newQuantity).catch(
+                                  console.error
+                                );
                               }}
-                              className="w-14 text-center border rounded py-1"
-                            />
+                              disabled={item.availableQty <= 0}
+                            >
+                              -
+                            </button>
+                            <span className="mx-2 sm:mx-2">
+                              {item.quantity}
+                            </span>
+                            <button
+                              className="text-lg sm:text-xl cursor-pointer"
+                              onClick={() => {
+                                const newQuantity = Math.min(
+                                  item.quantity + 1,
+                                  item.availableQty
+                                );
+                                updateQuantity(item.id, newQuantity).catch(
+                                  console.error
+                                );
+                              }}
+                              disabled={
+                                item.quantity >= item.availableQty ||
+                                item.availableQty <= 0
+                              }
+                            >
+                              +
+                            </button>
                           </div>
                           <div className="my-auto">
-                            <p className="text-[#1D372E] font-medium ml-auto">
+                            <p className="text-[#1D372E] font-semibold ml-auto">
                               {formatPrice(item.price * item.quantity)}
                             </p>
                           </div>
@@ -332,15 +333,15 @@ const Cart = () => {
               {/* Order Summary Card */}
               <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto mt-8.5 ">
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-lg font-medium">Total</span>
-                  <span className="text-lg">
+                  <span className="text-lg font-semibold">Total</span>
+                  <span className="text-lg font-semibold">
                     {formatPrice(calculateSelectedTotal())}
                   </span>
                 </div>
 
                 <Link
                   to="/"
-                  className="block w-full bg-[#1D372E] text-white text-center py-3 rounded hover:bg-[#1D372E] transition-colors mb-4"
+                  className="block w-full bg-[#1D372E] text-white text-center py-3 rounded hover:bg-[#1D372E] transition-colors mb-4 "
                 >
                   ← Keep Shopping
                 </Link>
@@ -349,7 +350,7 @@ const Cart = () => {
                   <button
                     onClick={handleCheckout}
                     disabled={selectedItems.length === 0}
-                    className={`w-full text-white text-center py-3 rounded transition-colors mb-8 ${
+                    className={`w-full text-white cursor-pointer text-center py-3 rounded transition-colors mb-8 ${
                       selectedItems.length > 0
                         ? "bg-[#5CAF90] hover:bg-[#5CAF90]"
                         : "bg-gray-400 cursor-not-allowed"
@@ -364,9 +365,9 @@ const Cart = () => {
                 )}
 
                 <div className="text-center">
-                  <p className="text-black text-sm mb-4">
-                    SECURE PAYMENTS PROVIDED BY
-                  </p>
+                  <h3 className="text-black  mb-4 font-semibold">
+                    Secure Payments Provided By
+                  </h3>
                   <div className="flex justify-center items-center gap-4">
                     {paymentLogos.map((logo, index) =>
                       logo.icon ? (

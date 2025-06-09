@@ -1,148 +1,424 @@
-import React, { useState, useEffect, useContext } from 'react';
-import SearchIcon from '@mui/icons-material/Search';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../../client/src/context/AuthContext';
-import { getCustomerOrders } from '../api/order'; // Adjust the import path based on your project structure
-
-const CurrentOrders = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
-    const { user } = useContext(AuthContext); // Get user from AuthContext
-
-    // Fetch orders when component mounts
-    useEffect(() => {
-        const fetchOrders = async () => {
-            if (!user?.customerId) {
-                setError('User not logged in');
-                setLoading(false);
-                return;
-            }
-
-            try {
-                setLoading(true);
-                const response = await getCustomerOrders(user.customerId); // Call API to get orders
-                // Map API response to match table structure
-                const formattedOrders = response.map(order => ({
-                    id: `#${order.idOrder}`,
-                    name: order.Full_Name || 'Unknown', // From Delivery_Address.Full_Name
-                    price: order.Net_Amount ? order.Net_Amount.toFixed(2) : '0.00', // Use Net_Amount
-                    deliveryDate: order.Delivery_Date ? new Date(order.Delivery_Date).toLocaleDateString() : 'N/A', // Format Delivery_Date
-                    orderDateTime: order.Date_Time ? new Date(order.Date_Time).toLocaleString() : 'N/A', // Format Date_Time
-                    status: order.Status || 'Unknown' // Use Status
-                }));
-                setOrders(formattedOrders);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to fetch orders');
-                setLoading(false);
-                console.error('Error fetching orders:', err);
-            }
-        };
-
-        fetchOrders();
-    }, [user]);
-
-    // Filter orders based on search query
-    const filteredOrders = orders.filter(order => {
-        const query = searchQuery.toLowerCase();
-        return (
-            order.id.toLowerCase().includes(query) ||
-            order.name.toLowerCase().includes(query)
-        );
+import React from 'react';
+import Navbar from '../components/Navbar/Navbar';
+import Footer from '../components/Footer';
+import EditIcon from '@mui/icons-material/Edit';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import CakeIcon from '@mui/icons-material/Cake';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CloseIcon from '@mui/icons-material/Close';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import CurrentOrders from '../components/CurrentOrders';
+import OrderHistory from '../components/OrderHistory';
+//Update profile page 
+const Profile = () => {
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+    const [isEditProfileOpen, setIsEditProfileOpen] = React.useState(false);
+    const [isAddAddressModalOpen, setIsAddAddressModalOpen] = React.useState(false);
+    const [showSuccessMessage, setShowSuccessMessage] = React.useState(false);
+    const [showProfileUpdateSuccess, setShowProfileUpdateSuccess] = React.useState(false);
+    const [newAddress, setNewAddress] = React.useState('');
+    const [isEditAddressModalOpen, setIsEditAddressModalOpen] = React.useState(false);
+    const [editingAddress, setEditingAddress] = React.useState(null);
+    const [addresses, setAddresses] = React.useState([
+        { id: 1, address: '104/piliyandala.boralasgomuwa', isMain: true }
+    ]);
+    const [profileData, setProfileData] = React.useState({
+        name: 'Sarah Jasmine',
+        contactNo: '07032219923',
+        address: '104/piliyandala.boralasgomuwa',
+        dateOfBirth: '2024/08/09',
+        password: '************************'
     });
 
-    // Handle search input change
-    const handleSearchChange = (e) => {
-        setSearchQuery(e.target.value);
+    const handleAddAddress = () => {
+        if (newAddress.trim()) {
+            const newId = Math.max(...addresses.map(a => a.id), 0) + 1;
+            setAddresses(prevAddresses => [...prevAddresses, { id: newId, address: newAddress.trim(), isMain: false }]);
+            setNewAddress('');
+            setShowSuccessMessage(true);
+            setTimeout(() => {
+                setShowSuccessMessage(false);
+                setIsAddAddressModalOpen(false);
+            }, 2000);
+        }
     };
 
-    // Handle view order button click
-    const handleViewOrder = (orderId) => {
-        const numericId = orderId.replace('#', '');
-        navigate(`/order-tracking/${numericId}`);
+    const handleSetMainAddress = (id) => {
+        setAddresses(prevAddresses => 
+            prevAddresses.map(addr => ({
+                ...addr,
+                isMain: addr.id === id
+            }))
+        );
+        // Update the main profile address
+        const mainAddress = addresses.find(addr => addr.id === id);
+        if (mainAddress) {
+            setProfileData(prev => ({
+                ...prev,
+                address: mainAddress.address
+            }));
+        }
+    };
+
+    const handleDeleteAddress = (id) => {
+        setAddresses(prevAddresses => prevAddresses.filter(addr => addr.id !== id));
+    };
+
+    const handleProfileUpdate = () => {
+        // Handle profile update logic here
+        setShowProfileUpdateSuccess(true);
+        setTimeout(() => {
+            setShowProfileUpdateSuccess(false);
+            setIsEditProfileOpen(false);
+        }, 2000);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setProfileData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEditAddress = (address) => {
+        setEditingAddress(address);
+        setIsEditAddressModalOpen(true);
+    };
+
+    const handleUpdateAddress = () => {
+        if (editingAddress && editingAddress.address.trim()) {
+            setAddresses(prevAddresses => 
+                prevAddresses.map(addr => 
+                    addr.id === editingAddress.id 
+                        ? { ...addr, address: editingAddress.address.trim() }
+                        : addr
+                )
+            );
+            setShowSuccessMessage(true);
+            setTimeout(() => {
+                setShowSuccessMessage(false);
+                setIsEditAddressModalOpen(false);
+                setEditingAddress(null);
+            }, 2000);
+        }
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 md:p-5">
-            <h2 className="text-sm sm:text-base md:text-xl font-medium text-gray-800 mb-2 sm:mb-3 md:mb-5">Current Orders</h2>
-            
-            {/* Search Bar */}
-            <div className="relative mb-2 sm:mb-3 md:mb-5 inline-block">
-                <input
-                    type="text"
-                    placeholder="SEARCH ORDER"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    className="w-[200px] sm:w-[250px] md:w-[285px] h-[35px] sm:h-[40px] md:h-[45px] pl-2 sm:pl-3 md:pl-4 pr-[40px] sm:pr-[45px] md:pr-[50px] border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83] focus:border-[#4B2E83] text-[10px] sm:text-xs md:text-sm"
-                />
-                <button className="absolute right-[2px] sm:right-[3px] top-1/2 -translate-y-1/2 h-[31px] sm:h-[35px] md:h-[39px] w-[31px] sm:w-[35px] md:w-[39px] bg-[#4B9B7D] rounded-lg flex items-center justify-center text-white hover:bg-[#408a6d] transition-colors">
-                    <SearchIcon className="h-4 w-4 sm:h-4.5 sm:w-4.5 md:h-5 md:w-5" />
-                </button>
-            </div>
-
-            {/* Orders Table */}
-            <div className="overflow-x-auto -mx-2 sm:-mx-3 md:-mx-5">
-                <table className="w-full">
-                    <thead>
-                        <tr className="text-left bg-gray-50">
-                            <th className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-3 text-[8px] sm:text-xs md:text-sm font-medium text-gray-600">Tracking No</th>
-                            <th className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-3 text-[8px] sm:text-xs md:text-sm font-medium text-gray-600">Order Date & Time</th>
-                            <th className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-3 text-[8px] sm:text-xs md:text-sm font-medium text-gray-600">Order Name</th>
-                            <th className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-3 text-[8px] sm:text-xs md:text-sm font-medium text-gray-600">Price</th>
-                            <th className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-3 text-[8px] sm:text-xs md:text-sm font-medium text-gray-600">Delivery Date</th>
-                            <th className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-3 text-[8px] sm:text-xs md:text-sm font-medium text-gray-600">Order Status</th>
-                            <th className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-3 text-[8px] sm:text-xs md:text-sm font-medium text-gray-600 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan="7" className="px-2 sm:px-3 md:px-5 py-4 sm:py-5 md:py-6 text-center text-[8px] sm:text-xs md:text-sm text-gray-500">
-                                    Loading orders...
-                                </td>
-                            </tr>
-                        ) : error ? (
-                            <tr>
-                                <td colSpan="7" className="px-2 sm:px-3 md:px-5 py-4 sm:py-5 md:py-6 text-center text-[8px] sm:text-xs md:text-sm text-red-500">
-                                    {error}
-                                </td>
-                            </tr>
-                        ) : filteredOrders.length > 0 ? (
-                            filteredOrders.map((order) => (
-                                <tr key={order.id} className="border-b border-gray-100">
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.id}</td>
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.orderDateTime}</td>
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.name}</td>
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">${order.price}</td>
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.deliveryDate}</td>
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.status}</td>
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4">
+        <div className="min-h-screen bg-gray-50 w-full flex flex-col">
+            <Navbar />
+            <div className="flex-1 px-4 py-8 mt-[20px]">
+                <div className="flex flex-col lg:flex-row gap-8 max-w-[1400px] mx-auto">
+                    {/* Left Column - Profile */}
+                    <div className="lg:w-1/4 space-y-6">
+                        {/* Profile Card */}
+                        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6 max-w-sm mx-auto lg:mx-0">
+                            <div className="flex items-start mb-6">
+                                <div className="flex items-center">
+                                    <div className="relative">
+                                        <AccountCircleIcon className="text-gray-400" style={{ fontSize: '52px' }} />
+                                    </div>
+                                    <div className="ml-4">
+                                        <h1 className="text-lg md:text-xl font-medium text-gray-800">{profileData.name}</h1>
+                                        <p className="text-sm text-gray-500 mb-2">#CG1234</p>
                                         <button 
-                                            className="flex items-center space-x-0.5 sm:space-x-1 bg-[#5CAF90] text-white px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-[#408a6d] transition-colors"
-                                            onClick={() => handleViewOrder(order.id)}
+                                            className="flex items-center justify-center bg-[#5CAF90] hover:bg-[#1D372E] text-white rounded-full w-[94px] h-[35.46px] text-sm"
+                                            onClick={() => setIsEditProfileOpen(true)}
                                         >
-                                            <VisibilityIcon className="h-4 w-4 sm:h-4.5 sm:w-4.5 md:h-5 md:w-5" />
-                                            <span className="text-[8px] sm:text-xs md:text-sm">View Order</span>
+                                            <EditIcon className="h-3 w-3" />
+                                            <span className="ml-1">Edit</span>
                                         </button>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="7" className="px-2 sm:px-3 md:px-5 py-4 sm:py-5 md:py-6 text-center text-[8px] sm:text-xs md:text-sm text-gray-500">
-                                    No orders found.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Contact Information and Address */}
+                            <div className="space-y-4">
+                                <div className="flex items-center">
+                                    <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
+                                        <PhoneIcon className="text-gray-500" style={{ fontSize: '20px' }} />
+                                    </div>
+                                    <span className="w-24 text-gray-600">Contact No</span>
+                                    <span className="text-gray-800">{profileData.contactNo}</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
+                                        <EmailIcon className="text-gray-500" style={{ fontSize: '20px' }} />
+                                    </div>
+                                    <span className="w-24 text-gray-600">Email</span>
+                                    <span className="text-gray-800">sarah@gmail.com</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
+                                        <CakeIcon className="text-gray-500" style={{ fontSize: '20px' }} />
+                                    </div>
+                                    <span className="w-24 text-gray-600">Birthday</span>
+                                    <span className="text-gray-800">{profileData.dateOfBirth}</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
+                                        <LocationOnIcon className="text-gray-500" style={{ fontSize: '20px' }} />
+                                    </div>
+                                    <span className="w-24 text-gray-600">Address</span>
+                                    <div className="flex flex-col">
+                                        {addresses.find(addr => addr.isMain)?.address.split('.').map((part, index) => (
+                                            <span key={index} className="text-gray-800 pr-4">{part.trim()}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="pt-4">
+                                    <button 
+                                        className="flex items-center group"
+                                        onClick={() => setIsAddAddressModalOpen(true)}
+                                    >
+                                        <AddCircleIcon className="text-[#5CAF90] group-hover:text-[#1D372E]" style={{ fontSize: '38px' }} />
+                                        <span className="ml-1 text-black group-hover:text-[#1D372E]">Add Address</span>
+                                    </button>
+                                </div>
+                                <div className="space-y-2 mt-4">
+                                    {addresses.map((addr) => (
+                                        <div key={addr.id} className="flex items-center justify-between bg-gray-50 p-3 rounded -ml-[15px]">
+                                            <div className="flex items-center space-x-2 flex-1">
+                                                <input
+                                                    type="radio"
+                                                    name="mainAddress"
+                                                    checked={addr.isMain}
+                                                    onChange={() => handleSetMainAddress(addr.id)}
+                                                    className="text-[#5CAF90] focus:ring-[#5CAF90]"
+                                                />
+                                                <span className="text-gray-800 flex-1 text-sm md:text-base">{addr.address}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-1 ml-4">
+                                                <button 
+                                                    onClick={() => handleEditAddress(addr)}
+                                                    className="text-[#5CAF90] hover:text-[#1D372E]"
+                                                >
+                                                    <EditIcon className="h-5 w-5" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteAddress(addr.id)}
+                                                    className="text-red-500 hover:text-[#1D372E]"
+                                                >
+                                                    <DeleteIcon />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Orders */}
+                    <div className="lg:w-3/4 space-y-8">
+                        <CurrentOrders />
+                        <OrderHistory />
+                    </div>
+                </div>
             </div>
+            <Footer />
+
+            {/* Edit Profile Modal */}
+            {isEditProfileOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-medium">Edit Profile data</h2>
+                            <button 
+                                onClick={() => setIsEditProfileOpen(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            {showProfileUpdateSuccess && (
+                                <div className="flex items-center justify-center text-[#5CAF90] space-x-2 mb-4">
+                                    <CheckCircleIcon />
+                                    <span>Profile Successfully Updated</span>
+                                </div>
+                            )}
+                            <div>
+                                <label className="block text-gray-700 mb-2">Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={profileData.name}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 mb-2">Contact No</label>
+                                <input
+                                    type="text"
+                                    name="contactNo"
+                                    value={profileData.contactNo}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 mb-2">Address</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={profileData.address}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 mb-2">Date of birth</label>
+                                <input
+                                    type="text"
+                                    name="dateOfBirth"
+                                    value={profileData.dateOfBirth}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 mb-2">Change Password</label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={profileData.password}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                />
+                            </div>
+                            <div className="flex justify-center space-x-4 mt-6">
+                                <button
+                                    onClick={() => setIsEditProfileOpen(false)}
+                                    className="w-[168px] h-[43.14px] border-2 border-gray-300 rounded-full text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleProfileUpdate}
+                                    className="w-[168px] h-[43.14px] bg-[#5CAF90] text-white rounded-full hover:bg-[#408a6d]"
+                                >
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Address Modal */}
+            {isAddAddressModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-medium">Add New Address</h2>
+                            <button 
+                                onClick={() => setIsAddAddressModalOpen(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-gray-700 mb-2">Address</label>
+                                <textarea
+                                    value={newAddress}
+                                    onChange={(e) => setNewAddress(e.target.value)}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                    rows="3"
+                                    placeholder="Enter your address"
+                                />
+                            </div>
+                            {showSuccessMessage && (
+                                <div className="flex items-center justify-center text-[#5CAF90] space-x-2">
+                                    <CheckCircleIcon />
+                                    <span>Address Added Successfully</span>
+                                </div>
+                            )}
+                            <div className="flex justify-center space-x-4 mt-6">
+                                <button
+                                    onClick={() => setIsAddAddressModalOpen(false)}
+                                    className="w-[168px] h-[43.14px] border-2 border-gray-300 rounded-full text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleAddAddress}
+                                    className="w-[168px] h-[43.14px] bg-[#5CAF90] text-white rounded-full hover:bg-[#408a6d]"
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Address Modal */}
+            {isEditAddressModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-medium">Edit Address</h2>
+                            <button 
+                                onClick={() => {
+                                    setIsEditAddressModalOpen(false);
+                                    setEditingAddress(null);
+                                }}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-gray-700 mb-2">Address</label>
+                                <textarea
+                                    value={editingAddress?.address || ''}
+                                    onChange={(e) => setEditingAddress(prev => ({ ...prev, address: e.target.value }))}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4B2E83]"
+                                    rows="3"
+                                    placeholder="Enter your address"
+                                />
+                            </div>
+                            {showSuccessMessage && (
+                                <div className="flex items-center justify-center text-[#5CAF90] space-x-2 mb-4">
+                                    <CheckCircleIcon />
+                                    <span>Address Successfully Updated</span>
+                                </div>
+                            )}
+                            <div className="flex justify-center space-x-4 mt-6">
+                                <button
+                                    onClick={() => {
+                                        setIsEditAddressModalOpen(false);
+                                        setEditingAddress(null);
+                                    }}
+                                    className="w-[168px] h-[43.14px] border-2 border-gray-300 rounded-full text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUpdateAddress}
+                                    className="w-[168px] h-[43.14px] bg-[#5CAF90] text-white rounded-full hover:bg-[#408a6d]"
+                                >
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-export default CurrentOrders;
+export default Profile; 

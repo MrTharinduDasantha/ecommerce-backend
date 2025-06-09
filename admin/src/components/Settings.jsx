@@ -20,6 +20,7 @@ import {
   FaYoutube,
   FaWhatsapp,
 } from "react-icons/fa";
+import { IoMenu, IoClose } from "react-icons/io5";
 import { MdArrowDropDown } from "react-icons/md";
 import {
   fetchHeaderFooterSetting,
@@ -30,6 +31,7 @@ import googleplay from "../assets/googleplay.png";
 import appstore from "../assets/appstore.png";
 
 const Settings = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerFooterSetting, setHeaderFooterSetting] = useState(null);
   const [logo, setLogo] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
@@ -373,89 +375,199 @@ const Settings = () => {
         <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
           Header Preview
         </h3>
-        <div className="border rounded-lg overflow-hidden">
-          {/* Top bar */}
-          <div
-            className="bg-[#1D372E] text-white shadow-md font-poppins"
-            style={{ height: "65px" }}
-          >
-            <div className="flex items-center justify-between px-6 h-full">
-              {/* Logo */}
-              <div className="flex items-center ml-6">
-                <img
-                  src={logoPreview || "/placeholder.svg"}
-                  alt="Logo"
-                  className="h-[85px] w-auto cursor-pointer"
-                />
-              </div>
-
-              {/* Search bar */}
-              <div className="flex flex-1 max-w-2xl mx-30 font-poppins relative">
-                <input
-                  type="text"
-                  placeholder="SEARCH THE ENTIRE STORE..."
-                  className="w-full sm:w-[400px] px-4 py-2 text-[#000000] text-[13px] rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
-                  disabled
-                />
-                <button className="bg-[#5CAF90] p-2 w-9 rounded-r-md">
-                  <FaSearch className="text-[#FFFFFF]" />
-                </button>
-              </div>
-
-              {/* Icons */}
-              <div className="flex space-x-2">
-                {/* Cart Icon */}
-                <div className="relative">
-                  <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
-                    <FaShoppingCart
-                      className="text-[15px] cursor-pointer"
-                      title="Cart"
-                    />
-                  </div>
+        <div className="rounded-lg overflow-hidden">
+          {/* Desktop Header */}
+          <div className="hidden md:block">
+            <div
+              className="bg-[#1D372E] text-white shadow-md font-poppins"
+              style={{ height: "65px" }}
+            >
+              <div className="flex items-center justify-between px-6 h-full">
+                {/* Logo */}
+                <div className="flex items-center ml-6">
+                  <img
+                    src={logoPreview}
+                    alt="Logo"
+                    className="h-[65px] w-auto cursor-pointer"
+                  />
                 </div>
 
-                {/* Track Order */}
-                <div>
-                  <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
-                    <FaClipboardList
-                      className="text-[15px] cursor-pointer"
-                      title="Track Orders"
-                    />
-                  </div>
+                {/* Search bar */}
+                <div className="flex flex-1 max-w-2xl mx-30 font-poppins relative">
+                  <input
+                    type="text"
+                    placeholder="SEARCH THE ENTIRE STORE..."
+                    className="w-full sm:w-[400px] px-4 py-2 text-[#000000] text-[13px] rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
+                    disabled
+                  />
+                  <button className="bg-[#5CAF90] p-2 w-9 rounded-r-md">
+                    <FaSearch className="text-[#FFFFFF]" />
+                  </button>
                 </div>
 
-                {/* User */}
-                <div>
-                  <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]">
-                    <FaUser className="text-[15px] cursor-pointer" title="Me" />
+                {/* Icons */}
+                <div className="flex space-x-2">
+                  {/* Cart Icon */}
+                  <div className="relative">
+                    <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
+                      <FaShoppingCart
+                        className="text-[15px] cursor-pointer"
+                        title="Cart"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Track Order */}
+                  <div>
+                    <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
+                      <FaClipboardList
+                        className="text-[15px] cursor-pointer"
+                        title="Track Orders"
+                      />
+                    </div>
+                  </div>
+
+                  {/* User */}
+                  <div>
+                    <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]">
+                      <FaUser
+                        className="text-[15px] cursor-pointer"
+                        title="Me"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Bottom menu - Desktop */}
+            <div className="bg-[#F4F4F4] text-[#000000] px-15 py-1 flex items-center space-x-2 sm:space-x-17 text-[13.33px] overflow-x-auto font-poppins">
+              <div className="flex items-center space-x-1 px-3 py-1 bg-[#5CAF90] text-white rounded-sm">
+                <span className="whitespace-nowrap">All Categories</span>
+                <MdArrowDropDown className="text-3xl" />
+              </div>
+
+              {/* Navigation Icons */}
+              {navIcons.map((icon, index) => (
+                <div
+                  key={index}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200 cursor-pointer"
+                >
+                  {icon.icon === "FaGift" && <FaGift />}
+                  {icon.icon === "FaRocket" && <FaRocket />}
+                  {icon.icon === "FaTags" && <FaTags />}
+                  {icon.icon === "FaCalendarAlt" && <FaCalendarAlt />}
+                  {icon.icon === "FaNetworkWired" && <FaNetworkWired />}
+                  {icon.icon === "FaHeart" && <FaHeart />}
+                  <span className="whitespace-nowrap">{icon.label}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Bottom menu */}
-          <div className="bg-[#F4F4F4] text-[#000000] px-15 py-1 flex items-center space-x-2 sm:space-x-17 text-[13.33px] overflow-x-auto font-poppins">
-            <div className="flex items-center space-x-1 px-3 py-1 bg-[#5CAF90] text-white rounded-sm">
-              <span className="whitespace-nowrap">All Categories</span>
-              <MdArrowDropDown className="text-3xl" />
+          {/* Mobile/Tablet Header */}
+          <div className="md:hidden">
+            {/* Logo and Menu Toggle */}
+            <div className="bg-[#1D372E] text-white shadow-md font-poppins px-4 py-2">
+              <div className="flex items-center justify-between">
+                {/* Logo */}
+                <div className="flex items-center">
+                  <img
+                    src={logoPreview}
+                    alt="Logo"
+                    className="h-14 sm:h-16 w-auto cursor-pointer"
+                  />
+                </div>
+
+                {/* Menu Toggle */}
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                >
+                  {mobileMenuOpen ? (
+                    <IoClose className="text-sm sm:text-base" />
+                  ) : (
+                    <IoMenu className="text-sm sm:text-base" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Navigation Icons */}
-            {navIcons.map((icon, index) => (
-              <div
-                key={index}
-                className="flex items-center space-x-2 px-4 py-2 rounded-[24px] hover:bg-[#5CAF90] hover:text-white transition-colors duration-200 cursor-pointer"
-              >
-                {icon.icon === "FaGift" && <FaGift />}
-                {icon.icon === "FaRocket" && <FaRocket />}
-                {icon.icon === "FaTags" && <FaTags />}
-                {icon.icon === "FaCalendarAlt" && <FaCalendarAlt />}
-                {icon.icon === "FaNetworkWired" && <FaNetworkWired />}
-                {icon.icon === "FaHeart" && <FaHeart />}
-                <span className="whitespace-nowrap">{icon.label}</span>
+            {/* Search and Icons */}
+            <div className="bg-[#1D372E] text-white px-4 pb-3">
+              <div className="flex items-center justify-between space-x-3">
+                {/* Search bar */}
+                <div className="flex flex-1 max-w-sm">
+                  <input
+                    type="text"
+                    placeholder="SEARCH THE ENTIRE STORE..."
+                    className="w-full px-3 py-2 text-[#000000] text-xs rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
+                    disabled
+                  />
+                  <button className="bg-[#5CAF90] p-2 rounded-r-md">
+                    <FaSearch className="text-[#FFFFFF] text-xs" />
+                  </button>
+                </div>
+
+                {/* Icons */}
+                <div className="flex space-x-2">
+                  {/* Cart Icon */}
+                  <div className="p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]">
+                    <FaShoppingCart
+                      className="text-xs sm:text-sm cursor-pointer"
+                      title="Cart"
+                    />
+                  </div>
+
+                  {/* Track Order */}
+                  <div className="p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]">
+                    <FaClipboardList
+                      className="text-xs sm:text-sm cursor-pointer"
+                      title="Track Orders"
+                    />
+                  </div>
+
+                  {/* User */}
+                  <div className="p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]">
+                    <FaUser
+                      className="text-xs sm:text-sm cursor-pointer"
+                      title="Me"
+                    />
+                  </div>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+              <div className="bg-[#F4F4F4] text-[#000000] px-4 py-2 font-poppins">
+                {/* All Categories */}
+                <div className="flex items-center justify-center space-x-1 px-3 py-2 bg-[#5CAF90] text-white rounded-sm mb-3">
+                  <span className="text-sm">All Categories</span>
+                  <MdArrowDropDown className="text-xl" />
+                </div>
+
+                {/* Navigation Icons - Column Layout */}
+                <div className="space-y-2">
+                  {navIcons.map((icon, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#5CAF90] hover:text-white transition-colors duration-200 cursor-pointer"
+                    >
+                      <div className="text-sm">
+                        {icon.icon === "FaGift" && <FaGift />}
+                        {icon.icon === "FaRocket" && <FaRocket />}
+                        {icon.icon === "FaTags" && <FaTags />}
+                        {icon.icon === "FaCalendarAlt" && <FaCalendarAlt />}
+                        {icon.icon === "FaNetworkWired" && <FaNetworkWired />}
+                        {icon.icon === "FaHeart" && <FaHeart />}
+                      </div>
+                      <span className="text-sm">{icon.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -471,36 +583,36 @@ const Settings = () => {
         </h3>
         <div className="border rounded-lg overflow-hidden">
           <footer
-            className="text-white px-4 md:px-6 py-10 md:py-12"
+            className="text-white px-4 md:px-6 py-6 md:py-10 lg:py-12"
             style={{
               fontFamily: '"Poppins", sans-serif',
               backgroundColor: "#1D372E",
             }}
           >
             {/* Middle Section */}
-            <div className="text-center mb-10 px-4">
-              <h2 className="text-lg md:text-xl text-white mb-3">
+            <div className="text-center mb-6 md:mb-10 px-2 md:px-4">
+              <h2 className="text-base sm:text-lg md:text-xl text-white mb-2 md:mb-3">
                 JOIN THE HAPPY CROWD
               </h2>
-              <p className="text-xs md:text-sm font-light text-white mb-4">
+              <p className="text-xs sm:text-sm font-light text-white mb-3 md:mb-4">
                 Get New Arrivals and Exclusive Offers in Your Inbox
               </p>
-              <button className="text-xs md:text-sm bg-white hover:bg-white text-[#5CAF90] px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium inline-flex items-center gap-2 transition">
-                <FaWhatsapp className="text-base md:text-lg" /> Join Our
-                Whatsapp Channel
+              <button className="text-xs sm:text-sm bg-white hover:bg-white text-[#5CAF90] px-3 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium inline-flex items-center gap-2 transition">
+                <FaWhatsapp className="text-sm md:text-base lg:text-lg" />
+                <span className="hidden sm:inline">
+                  Join Our Whatsapp Channel
+                </span>
+                <span className="sm:hidden">Join WhatsApp</span>
               </button>
             </div>
 
             {/* Countries Section */}
-            <div className="overflow-x-auto mb-10">
-              <div className="flex md:grid md:grid-cols-4 gap-6 min-w-[350px] md:min-w-0 px-2">
+            <div className="mb-6 md:mb-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {/* Country Blocks */}
                 {countryBlocks.map((loc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex-shrink-0 w-72 md:w-auto text-center md:text-left"
-                  >
-                    <h3 className="font-bold text-lg text-white mb-2">
+                  <div key={idx} className="text-center sm:text-left">
+                    <h3 className="font-bold text-sm md:text-base lg:text-lg text-white mb-2">
                       {loc.title}
                     </h3>
                     <p className="text-xs font-light text-white whitespace-pre-line">
@@ -523,8 +635,8 @@ const Settings = () => {
                       </p>
                     )}
                     {loc.whatsapp && (
-                      <p className="text-xs font-light text-white flex justify-center md:justify-start items-center gap-2 mt-2">
-                        <FaWhatsapp className="text-white" />{" "}
+                      <p className="text-xs font-light text-white flex justify-center sm:justify-start items-center gap-2 mt-2">
+                        <FaWhatsapp className="text-white text-xs" />{" "}
                         <span>{loc.whatsapp}</span>
                       </p>
                     )}
@@ -534,9 +646,9 @@ const Settings = () => {
             </div>
 
             {/* Bottom Section */}
-            <div className="max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 text-center px-4">
+            <div className="max-w-7xl mx-auto flex flex-col justify-center items-center gap-4 md:gap-6 text-center px-2 md:px-4">
               {/* Links & Actions */}
-              <div className="flex flex-col md:flex-row items-center gap-4 text-sm">
+              <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 text-xs md:text-sm">
                 <button className="bg-white text-black px-3 py-2 rounded font-medium hover:bg-gray-300 text-xs transition">
                   Sell with TechWave
                 </button>
@@ -549,26 +661,26 @@ const Settings = () => {
                 <div className="flex gap-2 justify-center">
                   <img
                     src={googleplay}
-                    className="h-10 w-auto object-contain"
+                    className="h-8 md:h-10 w-auto object-contain"
                     alt="Google Play"
                   />
                   <img
                     src={appstore}
-                    className="h-10 w-auto object-contain"
+                    className="h-8 md:h-10 w-auto object-contain"
                     alt="App Store"
                   />
                 </div>
               </div>
 
               {/* Footer Links */}
-              <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400 font-light">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-2 sm:gap-4 text-xs text-gray-400 font-light">
                 {footerLinks.map((link, index) => (
                   <React.Fragment key={index}>
                     <a href={link.url} className="hover:underline text-white">
                       {link.text}
                     </a>
                     {index < footerLinks.length - 1 && (
-                      <span className="hidden md:inline">|</span>
+                      <span className="hidden sm:inline">|</span>
                     )}
                   </React.Fragment>
                 ))}
@@ -576,12 +688,12 @@ const Settings = () => {
             </div>
 
             {/* Copyright */}
-            <div className="text-center text-xs mt-4 text-white font-light">
+            <div className="text-center text-xs mt-3 md:mt-4 text-white font-light">
               {copyrightText}
             </div>
 
             {/* Social Icons */}
-            <div className="border-t border-white pt-6 mt-6 flex justify-center gap-4 text-sm">
+            <div className="border-t border-white pt-4 md:pt-6 mt-4 md:mt-6 flex justify-center gap-3 md:gap-4 text-xs md:text-sm">
               {socialIcons.map((icon, index) => {
                 let IconComponent;
                 switch (icon.platform) {
@@ -612,11 +724,11 @@ const Settings = () => {
                     key={index}
                     href={icon.url}
                     aria-label={icon.platform}
-                    className={`border border-white rounded-full p-2 ${
+                    className={`border border-white rounded-full p-1.5 md:p-2 ${
                       index % 2 === 0 ? "bg-white text-black" : ""
                     } hover:scale-105 transition`}
                   >
-                    <IconComponent />
+                    <IconComponent className="text-xs md:text-sm" />
                   </a>
                 );
               })}
@@ -640,16 +752,19 @@ const Settings = () => {
   }
 
   return (
-    <div className="card bg-white shadow-md">
+    <div className="card bg-white shadow-md relative">
       <div className="card-body">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
+        {/* Header Section */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-4">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
             <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
               Manage Settings
             </h2>
           </div>
-          <div className="flex gap-2">
+
+          {/* Action Buttons - Mobile: Below header, Desktop: Top right */}
+          <div className="flex gap-2 md:absolute md:top-6 md:right-6">
             {!isEditing && !showPreview && (
               <button
                 onClick={handleEdit}
@@ -744,12 +859,14 @@ const Settings = () => {
                       className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E]"
                     />
                   ) : (
-                    <div className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E] flex items-center">
-                      {headerFooterSetting?.Footer_Copyright || (
-                        <span className="text-gray-400">
-                          Enter copyright text
-                        </span>
-                      )}
+                    <div className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E] flex items-center min-h-[2rem] overflow-hidden">
+                      <span className="truncate">
+                        {headerFooterSetting?.Footer_Copyright || (
+                          <span className="text-gray-400">
+                            Enter copyright text
+                          </span>
+                        )}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -764,50 +881,100 @@ const Settings = () => {
 
               {/* Existing Navigation Icons */}
               {navIcons.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                      <tr className="border-b border-[#1D372E]">
-                        <th className="py-2">Icon</th>
-                        <th className="py-2">Label</th>
-                        <th className="py-2">Link</th>
-                        {isEditing && <th className="py-2">Actions</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="border-b border-[#1D372E]">
-                      {navIcons.map((icon, index) => (
-                        <tr key={index} className="border border-[#1D372E]">
-                          <td className="flex items-center justify-center">
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="table table-fixed min-w-[500px] text-center border border-[#1D372E] text-[#1D372E] w-full">
+                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                        <tr className="border-b border-[#1D372E]">
+                          <th className="py-2 w-[100px]">Icon</th>
+                          <th className="py-2 w-[150px]">Label</th>
+                          <th className="py-2 w-[150px]">Link</th>
+                          {isEditing && (
+                            <th className="py-2 w-[100px]">Actions</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody className="border-b border-[#1D372E]">
+                        {navIcons.map((icon, index) => (
+                          <tr key={index} className="border border-[#1D372E]">
+                            <td className="flex items-center justify-center">
+                              {icon.iconImageUrl || icon.iconImagePreview ? (
+                                <img
+                                  src={
+                                    icon.iconImageUrl || icon.iconImagePreview
+                                  }
+                                  alt={icon.label}
+                                  className="w-8 h-8 object-contain my-1"
+                                />
+                              ) : (
+                                <div className="w-14 h-9 flex items-center justify-center rounded">
+                                  <span className="text-sm">No icon</span>
+                                </div>
+                              )}
+                            </td>
+                            <td>{icon.label}</td>
+                            <td>{icon.link}</td>
+                            {isEditing && (
+                              <td>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveNavIcon(index)}
+                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                >
+                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-4">
+                    {navIcons.map((icon, index) => (
+                      <div
+                        key={index}
+                        className="border border-[#1D372E] rounded-lg p-4 bg-white"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
                             {icon.iconImageUrl || icon.iconImagePreview ? (
                               <img
                                 src={icon.iconImageUrl || icon.iconImagePreview}
                                 alt={icon.label}
-                                className="w-8 h-8 object-contain my-1"
+                                className="w-8 h-8 object-contain"
                               />
                             ) : (
-                              <div className="w-14 h-9 flex items-center justify-center rounded">
-                                <span className="text-sm">No icon</span>
+                              <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-100">
+                                <span className="text-xs">No icon</span>
                               </div>
                             )}
-                          </td>
-                          <td>{icon.label}</td>
-                          <td>{icon.link}</td>
+                            <div>
+                              <div className="font-medium text-[#1D372E]">
+                                {icon.label}
+                              </div>
+                              <div className="text-sm text-gray-600 truncate">
+                                {icon.link}
+                              </div>
+                            </div>
+                          </div>
                           {isEditing && (
-                            <td>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveNavIcon(index)}
-                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              >
-                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveNavIcon(index)}
+                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            >
+                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                            </button>
                           )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <EmptyStateMessage message="No navigation icons found." />
               )}
@@ -850,9 +1017,7 @@ const Settings = () => {
                       {newNavIcon.iconImagePreview && (
                         <div className="mt-2 relative inline-block">
                           <img
-                            src={
-                              newNavIcon.iconImagePreview || "/placeholder.svg"
-                            }
+                            src={newNavIcon.iconImagePreview}
                             alt="Icon Preview"
                             className="w-16 h-16 object-contain"
                           />
@@ -917,44 +1082,110 @@ const Settings = () => {
 
               {/* Existing Country Blocks */}
               {countryBlocks.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                    <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                      <tr className="border-b border-[#1D372E]">
-                        <th className="py-2">Title</th>
-                        <th className="py-2">Address</th>
-                        <th className="py-2">Hotline</th>
-                        <th className="py-2">Email</th>
-                        <th className="py-2">WhatsApp</th>
-                        {isEditing && <th className="py-2">Actions</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="border-b border-[#1D372E]">
-                      {countryBlocks.map((block, index) => (
-                        <tr key={index} className="border-b border-[#1D372E]">
-                          <td className="py-2">{block.title}</td>
-                          <td className="py-2">
-                            {block.address.substring(0, 20)}...
-                          </td>
-                          <td className="py-2">{block.hotline}</td>
-                          <td className="py-2">{block.email}</td>
-                          <td className="py-2">{block.whatsapp}</td>
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="table table-fixed min-w-[950px] text-center border border-[#1D372E] text-[#1D372E] w-full">
+                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                        <tr className="border-b border-[#1D372E]">
+                          <th className="py-2 w-[50px]">Title</th>
+                          <th className="py-2 w-[200px]">Address</th>
+                          <th className="py-2 w-[175px]">Hotline</th>
+                          <th className="py-2 w-[250px]">Email</th>
+                          <th className="py-2 w-[175px]">WhatsApp</th>
                           {isEditing && (
-                            <td className="py-2">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveCountryBlock(index)}
-                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              >
-                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
+                            <th className="py-2 w-[100px]">Actions</th>
                           )}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="border-b border-[#1D372E]">
+                        {countryBlocks.map((block, index) => (
+                          <tr key={index} className="border-b border-[#1D372E]">
+                            <td className="py-2">{block.title}</td>
+                            <td className="py-2">
+                              {block.address.substring(0, 20)}...
+                            </td>
+                            <td className="py-2">{block.hotline}</td>
+                            <td className="py-2">{block.email}</td>
+                            <td className="py-2">{block.whatsapp}</td>
+                            {isEditing && (
+                              <td className="py-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRemoveCountryBlock(index)
+                                  }
+                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                >
+                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-4">
+                    {countryBlocks.map((block, index) => (
+                      <div
+                        key={index}
+                        className="border border-[#1D372E] rounded-lg p-4 bg-white"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-semibold text-[#1D372E] text-lg">
+                            {block.title}
+                          </h4>
+                          {isEditing && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCountryBlock(index)}
+                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            >
+                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div>
+                            <span className="font-medium text-[#1D372E]">
+                              Address:{" "}
+                            </span>
+                            <span className="text-gray-600">
+                              {block.address}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-[#1D372E]">
+                              Hotline:{" "}
+                            </span>
+                            <span className="text-gray-600">
+                              {block.hotline}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-[#1D372E]">
+                              Email:{" "}
+                            </span>
+                            <span className="text-gray-600 break-all">
+                              {block.email}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-[#1D372E]">
+                              WhatsApp:{" "}
+                            </span>
+                            <span className="text-gray-600">
+                              {block.whatsapp}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <EmptyStateMessage message="No country blocks found." />
               )}
@@ -1083,36 +1314,76 @@ const Settings = () => {
 
                 {/* Existing Footer Links */}
                 {footerLinks.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                        <tr className="border-b border-[#1D372E]">
-                          <th className="py-2">Text</th>
-                          <th className="py-2">URL</th>
-                          {isEditing && <th className="py-2">Actions</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="border-b border-[#1D372E]">
-                        {footerLinks.map((link, index) => (
-                          <tr key={index} className="border-b border-[#1D372E]">
-                            <td className="py-2">{link.text}</td>
-                            <td className="py-2">{link.url}</td>
+                  <>
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="table table-fixed min-w-[500px] text-center border border-[#1D372E] text-[#1D372E] w-full">
+                        <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                          <tr className="border-b border-[#1D372E]">
+                            <th className="py-2 w-[250px]">Text</th>
+                            <th className="py-2 w-[150px]">URL</th>
                             {isEditing && (
-                              <td className="py-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveFooterLink(index)}
-                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                                >
-                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                                </button>
-                              </td>
+                              <th className="py-2 w-[100px]">Actions</th>
                             )}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="border-b border-[#1D372E]">
+                          {footerLinks.map((link, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-[#1D372E]"
+                            >
+                              <td className="py-2">{link.text}</td>
+                              <td className="py-2">{link.url}</td>
+                              {isEditing && (
+                                <td className="py-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleRemoveFooterLink(index)
+                                    }
+                                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                  >
+                                    <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                      {footerLinks.map((link, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#1D372E] rounded-lg p-4 bg-white"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-[#1D372E] mb-1">
+                                {link.text}
+                              </div>
+                              <div className="text-sm text-gray-600 break-all">
+                                {link.url}
+                              </div>
+                            </div>
+                            {isEditing && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFooterLink(index)}
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] ml-2"
+                              >
+                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
                   <EmptyStateMessage message="No footer links found." />
                 )}
@@ -1180,36 +1451,76 @@ const Settings = () => {
 
                 {/* Existing Social Icons */}
                 {socialIcons.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="table-auto text-center border border-[#1D372E] text-[#1D372E] w-full">
-                      <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                        <tr className="border-b border-[#1D372E]">
-                          <th className="py-2">Platform</th>
-                          <th className="py-2">URL</th>
-                          {isEditing && <th className="py-2">Actions</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="border-b border-[#1D372E]">
-                        {socialIcons.map((icon, index) => (
-                          <tr key={index} className="border-b border-[#1D372E]">
-                            <td className="py-2">{icon.platform}</td>
-                            <td className="py-2">{icon.url}</td>
+                  <>
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="table table-fixed min-w-[550px] text-center border border-[#1D372E] text-[#1D372E] w-full">
+                        <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                          <tr className="border-b border-[#1D372E]">
+                            <th className="py-2 w-[150px]">Platform</th>
+                            <th className="py-2 w-[300px]">URL</th>
                             {isEditing && (
-                              <td className="py-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveSocialIcon(index)}
-                                  className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                                >
-                                  <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                                </button>
-                              </td>
+                              <th className="py-2 w-[100px]">Actions</th>
                             )}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="border-b border-[#1D372E]">
+                          {socialIcons.map((icon, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-[#1D372E]"
+                            >
+                              <td className="py-2">{icon.platform}</td>
+                              <td className="py-2">{icon.url}</td>
+                              {isEditing && (
+                                <td className="py-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleRemoveSocialIcon(index)
+                                    }
+                                    className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                  >
+                                    <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                      {socialIcons.map((icon, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#1D372E] rounded-lg p-4 bg-white"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-[#1D372E] mb-1">
+                                {icon.platform}
+                              </div>
+                              <div className="text-sm text-gray-600 break-all">
+                                {icon.url}
+                              </div>
+                            </div>
+                            {isEditing && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSocialIcon(index)}
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] ml-2"
+                              >
+                                <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
                   <EmptyStateMessage message="No social icons found." />
                 )}

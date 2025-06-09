@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { FaSearch, FaTimes } from "react-icons/fa";
+import { Link, useLocation } from "react-router-dom";
 import { getProducts } from "../../../client/src/api/product"; // Adjust import path
 
 const AllProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
 
   // Load products on mount
   useEffect(() => {
@@ -25,27 +24,37 @@ const AllProducts = () => {
     loadProducts();
   }, []);
 
-  // Handle search input change
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    setIsPopupOpen(value.length > 0);
-  };
-
-  // Handle clicking alphabet buttons
-  const handleAlphabetClick = (letter) => {
-    setSearchTerm(letter);
-    setIsPopupOpen(true);
-  };
+  // Get the search filter from the URL query string
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const letter = params.get("letter");
+    const search = params.get("search");
+    if (search && search.trim().length > 0) {
+      setSearchTerm(search);
+    } else if (letter && /^[A-Z]$/i.test(letter)) {
+      setSearchTerm(letter.toUpperCase());
+    } else {
+      setSearchTerm("");
+    }
+  }, [location.search]);
 
   // Filtering logic
   const filteredProducts = products.filter((product) => {
     if (searchTerm.length === 1 && /^[A-Z]$/i.test(searchTerm)) {
-      // If search is a single alphabet letter, filter products starting with that letter
-      return product.Description.toUpperCase().startsWith(searchTerm.toUpperCase());
+      return product.Description?.toUpperCase().startsWith(searchTerm.toUpperCase());
     }
-    // Otherwise, filter by substring match
-    return product.Description.toUpperCase().includes(searchTerm.toUpperCase());
+    if (searchTerm.trim().length > 0) {
+      const query = searchTerm.trim().toLowerCase();
+      const words = query.split(/\s+/);
+      // Match if all words are present in any of the searchable fields
+      return words.every(word =>
+        (product.Description && product.Description.toLowerCase().includes(word)) ||
+        (product.Brand_Name && product.Brand_Name.toLowerCase().includes(word)) ||
+        (product.Category && product.Category.toLowerCase().includes(word)) ||
+        (product.Long_Description && product.Long_Description.toLowerCase().includes(word))
+      );
+    }
+    return true;
   });
 
   if (loading) {
@@ -86,52 +95,6 @@ const AllProducts = () => {
   return (
     <div className="bg-white min-h-screen px-4 py-8 md:px-16 font-poppins">
       {/* Search Header */}
-      <h2 className="text-[33.18px] font-semibold text-[#1D372E] mb-6 text-left">
-        Products
-      </h2>
-
-      {/* Alphabet filter buttons */}
-      <div className="flex flex-wrap mb-4 space-x-2">
-        {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter) => (
-          <button
-            key={letter}
-            className={`px-3 py-1 border border-gray-300 rounded-md text-sm ${
-              searchTerm.toUpperCase() === letter ? 'bg-[#5CAF90] text-white' : ''
-            }`}
-            onClick={() => handleAlphabetClick(letter)}
-          >
-            {letter}
-          </button>
-        ))}
-        {/* Optional: Add a button to clear filter */}
-        {searchTerm && (
-          <button
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-gray-200"
-            onClick={() => {
-              setSearchTerm('');
-              setIsPopupOpen(false);
-            }}
-          >
-            Clear
-          </button>
-        )}
-      </div>
-
-      {/* Search Bar */}
-      <div className="flex justify-center mb-6">
-        <div className="flex items-center border border-[#E8E8E8] rounded-md overflow-hidden w-full sm:w-[400px]">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="w-full px-4 py-2 text-[#000000] text-[13px] outline-none bg-[#FFFFFF]"
-          />
-          <button className="bg-[#5CAF90] p-2 w-9">
-            <FaSearch className="text-[#FFFFFF]" />
-          </button>
-        </div>
-      </div>
 
       {/* Filtered Products */}
       <div className="mt-12">
@@ -141,7 +104,7 @@ const AllProducts = () => {
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {filteredProducts.map((product, index) => (
-              <Link to={`/product/${product.idProduct}`} key={index}>
+              <Link to={`/product-page/${product.idProduct}`} key={index}>
                 <div
                   className="bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow"
                   style={{ width: '220px', height: '290px' }}
