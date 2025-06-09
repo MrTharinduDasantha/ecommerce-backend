@@ -1,56 +1,17 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../../client/src/context/AuthContext';
-import { getCustomerOrders } from '../api/order'; // Adjust the import path based on your project structure
 
 const CurrentOrders = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext); // Get user from AuthContext
-
-    // Fetch orders when component mounts
-    useEffect(() => {
-        const fetchOrders = async () => {
-            // Fix: Use user?.id instead of user?.customerId
-            if (!user?.id) {
-                setError('User not logged in');
-                setLoading(false);
-                return;
-            }
-
-            try {
-                setLoading(true);
-                const response = await getCustomerOrders(user.id); // Use user.id
-                // Map API response to match table structure
-                const formattedOrders = response.map(order => {
-                    // Ensure Net_Amount is a number before calling toFixed
-                    let netAmount = Number(order.Net_Amount);
-                    if (isNaN(netAmount)) netAmount = 0;
-                    return {
-                        id: `#${order.idOrder}`,
-                        name: order.Full_Name || 'Unknown', // From Delivery_Address.Full_Name
-                        price: netAmount.toFixed(2), // Use Net_Amount safely
-                        deliveryDate: order.Delivery_Date ? new Date(order.Delivery_Date).toLocaleDateString() : 'N/A', // Format Delivery_Date
-                        orderDateTime: order.Date_Time ? new Date(order.Date_Time).toLocaleString() : 'N/A', // Format Date_Time
-                        status: order.Status || 'Unknown' // Use Status
-                    };
-                });
-                setOrders(formattedOrders);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to fetch orders');
-                setLoading(false);
-                console.error('Error fetching orders:', err);
-            }
-        };
-
-        fetchOrders();
-    }, [user]);
+    const orders = [
+        { id: '#01', name: 'Sarah', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 14:30', status: 'Completed' },
+        { id: '#02', name: 'Jessica', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 15:45', status: 'Completed' },
+        { id: '#03', name: 'Sam', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 16:20', status: 'Not Yet' },
+        { id: '#04', name: 'John', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 17:15', status: 'Processing' }
+    ];
 
     // Filter orders based on search query
     const filteredOrders = orders.filter(order => {
@@ -68,6 +29,7 @@ const CurrentOrders = () => {
 
     // Handle view order button click
     const handleViewOrder = (orderId) => {
+        // Extract the numeric part from the order ID (e.g., '01' from '#01')
         const numericId = orderId.replace('#', '');
         navigate(`/order-tracking/${numericId}`);
     };
@@ -105,25 +67,13 @@ const CurrentOrders = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan="7" className="px-2 sm:px-3 md:px-5 py-4 sm:py-5 md:py-6 text-center text-[8px] sm:text-xs md:text-sm text-gray-500">
-                                    Loading orders...
-                                </td>
-                            </tr>
-                        ) : error ? (
-                            <tr>
-                                <td colSpan="7" className="px-2 sm:px-3 md:px-5 py-4 sm:py-5 md:py-6 text-center text-[8px] sm:text-xs md:text-sm text-red-500">
-                                    {error}
-                                </td>
-                            </tr>
-                        ) : filteredOrders.length > 0 ? (
+                        {filteredOrders.length > 0 ? (
                             filteredOrders.map((order) => (
                                 <tr key={order.id} className="border-b border-gray-100">
                                     <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.id}</td>
                                     <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.orderDateTime}</td>
                                     <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.name}</td>
-                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">${order.price}</td>
+                                    <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.price}</td>
                                     <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.deliveryDate}</td>
                                     <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4 text-[8px] sm:text-xs md:text-sm text-gray-800">{order.status}</td>
                                     <td className="px-2 sm:px-3 md:px-5 py-2 sm:py-2.5 md:py-4">
@@ -140,7 +90,7 @@ const CurrentOrders = () => {
                         ) : (
                             <tr>
                                 <td colSpan="7" className="px-2 sm:px-3 md:px-5 py-4 sm:py-5 md:py-6 text-center text-[8px] sm:text-xs md:text-sm text-gray-500">
-                                    No orders found.
+                                    No orders found matching your search.
                                 </td>
                             </tr>
                         )}
@@ -151,4 +101,4 @@ const CurrentOrders = () => {
     );
 };
 
-export default CurrentOrders;
+export default CurrentOrders; 

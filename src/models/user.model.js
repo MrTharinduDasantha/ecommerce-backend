@@ -22,7 +22,7 @@ const addUser = async (full_name, email, password, phone_no, status) => {
     "INSERT INTO User (Full_Name, Email, Password, Phone_No, Status) VALUES (?, ?, ?, ?, ?)",
     [full_name, email, password, phone_no, status]
   );
-  return result.insertId; // Returning the ID after inserting
+  return result.insertId;
 };
 
 // Update user in database

@@ -158,7 +158,7 @@ const CustomerDetails = () => {
                           </span>
                           <span className="font-medium text-sm">
                             {" "}
-                            ${order.Total_Amount}{" "}
+                            Rs.{order.Total_Amount}{" "}
                           </span>
                         </div>
                       </div>

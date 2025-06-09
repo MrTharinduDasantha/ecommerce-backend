@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import CategoryDropdown from "../Navbar/CategoryDropdown";
 import logo from "./logo.png";
+import products from "../Products.jsx"; // Make sure the path is correct
 import {
   FaSearch,
   FaShoppingCart,
@@ -17,41 +18,37 @@ import {
   FaChevronDown,
 } from "react-icons/fa";
 import { AuthContext } from "../../context/AuthContext";
+import { useCart } from "../../context/CartContext.jsx";
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
-  const [cartCount, setCartCount] = useState(0);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const { cartItems } = useCart();
 
   const navigate = useNavigate();
 
-  // Only handle navigation for AllProducts filtering
+  // Handle search input change
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
 
-    // If a single English letter, navigate to AllProducts with letter filter
-    if (/^[a-zA-Z]$/.test(query)) {
-      navigate(`/AllProducts?letter=${query.toUpperCase()}`);
-      return;
-    }
-    // For any other search, navigate to AllProducts with search param
-    if (query.trim().length > 0) {
-      navigate(`/AllProducts?search=${encodeURIComponent(query.trim())}`);
-    }
-  };
-
-  // Add this handler for the search button
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (
-      searchQuery.trim().length === 1 &&
-      /^[a-zA-Z]$/.test(searchQuery.trim())
-    ) {
-      navigate(`/AllProducts?letter=${searchQuery.trim().toUpperCase()}`);
-    } else if (searchQuery.trim().length > 0) {
-      navigate(`/AllProducts?search=${encodeURIComponent(searchQuery.trim())}`);
+    if (query.length > 0) {
+      // Filter products based on name, category, description
+      const filtered = products.filter(
+        (item) =>
+          item.name.toLowerCase().includes(query.toLowerCase()) ||
+          item.category.toLowerCase().includes(query.toLowerCase()) ||
+          item.description.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredItems(filtered);
+      setIsModalOpen(true);
+    } else {
+      setFilteredItems([]);
+      setIsModalOpen(false);
     }
   };
 
@@ -64,12 +61,6 @@ function Navbar() {
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
-  // Load cart count from local storage
-  useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    setCartCount(cart.reduce((total, item) => total + item.quantity, 0));
-  }, []);
 
   return (
     <>
@@ -92,22 +83,16 @@ function Navbar() {
 
           {/* Search bar */}
           <div className="flex flex-1 max-w-2xl mx-30 font-poppins ml-75 relative">
-            <form className="flex w-full" onSubmit={handleSearchSubmit}>
-              <input
-                type="text"
-                placeholder="SEARCH THE ENTIRE STORE..."
-                className="w-full sm:w-[400px] px-4 py-2 text-[#000000] text-[13px] rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-              <button
-                type="submit"
-                className="bg-[#5CAF90] p-2 w-9 rounded-r-md flex items-center justify-center"
-                aria-label="Search"
-              >
-                <FaSearch className="text-[#FFFFFF]" />
-              </button>
-            </form>
+            <input
+              type="text"
+              placeholder="SEARCH THE ENTIRE STORE..."
+              className="w-full sm:w-[400px] px-4 py-2 text-[#000000] text-[13px] rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            <button className="bg-[#5CAF90] p-2 w-9 rounded-r-md">
+              <FaSearch className="text-[#FFFFFF]" />
+            </button>
           </div>
 
           {/* Icons */}
@@ -117,15 +102,15 @@ function Navbar() {
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}
-                className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
+                className="relative p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
               >
                 <FaShoppingCart
                   className="text-[15px] cursor-pointer"
                   title="Cart"
                 />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                    {cartCount}
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    {cartItems.length}
                   </span>
                 )}
               </motion.div>
@@ -216,6 +201,50 @@ function Navbar() {
           <NavIcon icon={<FaHeart />} label="For You" />
         </Link>
       </div>
+
+      {/* Search Results Modal */}
+      {isModalOpen && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full sm:w-[680px] bg-white p-6 rounded-lg shadow-lg z-50">
+          <h2 className="text-xl font-semibold mb-4">Search Results</h2>
+          <p className="text-[16px] text-gray-500 mb-4">
+            {filteredItems.length}{" "}
+            {filteredItems.length === 1 ? "result" : "results"} found
+          </p>
+          <div className="flex flex-wrap gap-6">
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white"
+                >
+                  <Link
+                    to={`/product-page/${item.id}`}
+                    className="block"
+                    onClick={() => handleItemClick(item.name)}
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-32 object-cover rounded-md"
+                    />
+                    <h3 className="font-semibold mt-2">{item.name}</h3>
+                    <p className="text-sm text-gray-500">{item.category}</p>
+                    <p className="font-bold mt-2">{item.price}</p>
+                  </Link>
+                </div>
+              ))
+            ) : (
+              <p>No items found</p>
+            )}
+          </div>
+          <button
+            onClick={closeModal}
+            className="mt-4 text-[#5CAF90] font-semibold border border-[#5CAF90] rounded-full py-2 px-4"
+          >
+            Close
+          </button>
+        </div>
+      )}
     </>
   );
 }

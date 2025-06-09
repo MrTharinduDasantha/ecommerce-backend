@@ -7,50 +7,9 @@ import {
   updateDiscount,
 } from "../api/product";
 import { FaRegCheckSquare, FaCheckSquare } from "react-icons/fa";
-import Select from "react-select";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-// Custom styles for react-select components
-const customStyles = {
-  menuList: (provided) => ({
-    ...provided,
-    maxHeight: "160px",
-    overflowY: "auto",
-    borderRadius: "0.3rem",
-  }),
-  menu: (provided) => ({
-    ...provided,
-    borderRadius: "0.3rem",
-    borderWidth: "1px",
-    borderColor: "#1D372E",
-  }),
-  control: (provided) => ({
-    ...provided,
-    minHeight: "2.5rem",
-    borderWidth: "1px",
-    borderColor: "#1D372E",
-    borderRadius: "0.3rem",
-    boxShadow: "none",
-    "&:hover": {
-      borderColor: "#1D372E",
-    },
-    // Reduce control height and font size on small screens
-    "@media screen and (max-width: 640px)": {
-      minHeight: "2rem",
-      fontSize: "0.75rem",
-    },
-  }),
-  option: (provided) => ({
-    ...provided,
-    fontSize: "0.875rem",
-    // Reduce option font size on small screens
-    "@media screen and (max-width: 640px)": {
-      fontSize: "0.75rem",
-    },
-  }),
-};
 
 const DiscountForm = () => {
   const { id } = useParams();
@@ -93,23 +52,19 @@ const DiscountForm = () => {
 
   // Calculate discounted price
   const calculateDiscountedPrice = () => {
-    if (
-      !selectedProductDetails ||
-      !formData.discountType ||
-      !formData.discountValue
-    ) {
-      return selectedProductDetails?.Selling_Price || 0;
+    if (!selectedProductDetails) {
+      return 0;
     }
-
-    const originalPrice = parseFloat(selectedProductDetails.Selling_Price);
-    const discountValue = parseFloat(formData.discountValue);
-
+    const originalPrice = parseFloat(selectedProductDetails.Selling_Price) || 0;
+    if (!formData.discountType || !formData.discountValue) {
+      return originalPrice;
+    }
+    const discountValue = parseFloat(formData.discountValue) || 0;
     if (formData.discountType === "percentage") {
       return originalPrice - (originalPrice * discountValue) / 100;
     } else if (formData.discountType === "fixed") {
       return Math.max(0, originalPrice - discountValue);
     }
-
     return originalPrice;
   };
 
@@ -165,22 +120,6 @@ const DiscountForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Handle product select change
-  const handleProductChange = (selectedOption) => {
-    setFormData((prev) => ({ ...prev, productId: selectedOption.value }));
-
-    // Find and set the selected product details
-    const selectedProduct = products.find(
-      (product) => product.idProduct === selectedOption.value
-    );
-    setSelectedProductDetails(selectedProduct);
-  };
-
-  // Handle discount type change
-  const handleDiscountTypeChange = (selectedOption) => {
-    setFormData((prev) => ({ ...prev, discountType: selectedOption.value }));
   };
 
   // Handle date changes
@@ -258,7 +197,7 @@ const DiscountForm = () => {
     }
   };
 
-  // Modern Product Details Component
+  // Product Details Component
   const ProductDetails = ({ product }) => {
     const discountedPrice = calculateDiscountedPrice();
     const originalPrice = parseFloat(product.Selling_Price);
@@ -269,7 +208,7 @@ const DiscountForm = () => {
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#5CAF90] to-[#4a9a7d] px-6 py-4">
-          <h3 className="text-lg md:text-xl font-bold text-white">
+          <h3 className="text-base md:text-lg font-bold text-white">
             Product Preview
           </h3>
         </div>
@@ -278,7 +217,7 @@ const DiscountForm = () => {
         <div className="p-6 space-y-6">
           {/* Product Name */}
           <div>
-            <h4 className="text-xl text-center font-bold text-[#1D372E] mb-2">
+            <h4 className="text-lg md:text-xl text-center font-bold text-[#1D372E] mb-2">
               {product.Description}
             </h4>
           </div>
@@ -289,14 +228,14 @@ const DiscountForm = () => {
               <img
                 src={product.Main_Image_Url}
                 alt={product.Description}
-                className="w-full h-64 object-contain"
+                className="w-full h-56 md:h-64 object-contain"
               />
             </div>
           </div>
 
           {/* Price Section */}
           <div className="bg-[#F4F4F4] rounded-lg p-4">
-            <h5 className="text-lg font-semibold text-[#1D372E] mb-3">
+            <h5 className="text-base md:text-lg font-semibold text-[#1D372E] mb-3">
               Pricing
             </h5>
 
@@ -335,10 +274,10 @@ const DiscountForm = () => {
                   </div>
 
                   <div className="flex justify-between items-center bg-green-50 -mx-4 -mb-4 px-4 py-3 mt-3">
-                    <span className="font-semibold text-[#1D372E]">
+                    <span className="font-semibold text-base md:text-lg text-[#1D372E]">
                       Final Selling Price:
                     </span>
-                    <span className="text-[#5CAF90] text-xl font-bold">
+                    <span className="text-[#5CAF90] text-lg md:text-xl font-bold">
                       Rs. {discountedPrice.toFixed(2)}
                     </span>
                   </div>
@@ -377,7 +316,7 @@ const DiscountForm = () => {
                 {product.subcategories.map((subcat) => (
                   <span
                     key={subcat.idSub_Category}
-                    className="inline-block bg-[#5CAF90] bg-opacity-10 text-white px-3 py-1 rounded-full text-sm font-medium"
+                    className="inline-block bg-[#5CAF90] bg-opacity-10 text-white px-3 py-1 rounded-full text-xs md:text-sm font-medium"
                   >
                     {subcat.Description}
                   </span>
@@ -403,23 +342,23 @@ const DiscountForm = () => {
                         variation.Colour !== "No color selected" && (
                           <div className="flex items-center space-x-2">
                             <div
-                              className="w-4 h-4 rounded-full border border-gray-300"
+                              className="w-3 h-3 md:w-4 md:h-4 rounded-full border border-gray-300"
                               style={{ backgroundColor: variation.Colour }}
                             />
-                            <span className="text-sm text-gray-600">
+                            <span className="text-xs md:text-sm text-gray-600">
                               {variation.Colour}
                             </span>
                           </div>
                         )}
                       {variation.Size &&
                         variation.Size !== "No size selected" && (
-                          <span className="bg-white px-2 py-1 rounded text-sm text-gray-600 border">
+                          <span className="bg-white px-2 py-1 rounded text-xs md:text-sm text-gray-600 border">
                             {variation.Size}
                           </span>
                         )}
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-[#1D372E]">
+                      <div className="text-xs md:text-sm font-medium text-[#1D372E]">
                         Qty: {variation.Qty}
                       </div>
                     </div>
@@ -464,7 +403,9 @@ const DiscountForm = () => {
               {/* Product and Description */}
               <div
                 className={`grid gap-4 ${
-                  selectedProductDetails ? "grid-cols-1" : "grid-cols-2"
+                  selectedProductDetails
+                    ? "grid-cols-1"
+                    : "grid-cols-1 sm:grid-cols-2"
                 }`}
               >
                 {/* Product Selection */}
@@ -474,19 +415,47 @@ const DiscountForm = () => {
                       Product
                     </span>
                   </label>
-                  <Select
-                    value={
-                      productOptions.find(
-                        (option) => option.value === formData.productId
-                      ) || null
-                    }
-                    onChange={handleProductChange}
-                    options={productOptions}
-                    styles={customStyles}
-                    placeholder="Select Product"
-                    className="text-[#1D372E]"
-                  />
+                  <select
+                    name="productId"
+                    value={formData.productId}
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+
+                      // Update form data
+                      setFormData((prev) => ({
+                        ...prev,
+                        productId: selectedValue,
+                      }));
+
+                      // Find and set the selected product details
+                      if (selectedValue) {
+                        const selectedProduct = products.find(
+                          (product) =>
+                            product.idProduct === parseInt(selectedValue)
+                        );
+                        setSelectedProductDetails(selectedProduct || null);
+                      } else {
+                        setSelectedProductDetails(null);
+                      }
+                    }}
+                    className="select select-bordered select-sm md:select-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  >
+                    <option value="">Select Product</option>
+                    {productOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* Mobile Product Details - Show below product selection on mobile */}
+                {selectedProductDetails && (
+                  <div className="block lg:hidden">
+                    <ProductDetails product={selectedProductDetails} />
+                  </div>
+                )}
+
                 {/* Discount Description */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
@@ -505,17 +474,12 @@ const DiscountForm = () => {
                 </div>
               </div>
 
-              {/* Mobile Product Details - Show below product selection on mobile */}
-              {selectedProductDetails && (
-                <div className="block lg:hidden">
-                  <ProductDetails product={selectedProductDetails} />
-                </div>
-              )}
-
               {/* Discount Type and Discount Value*/}
               <div
                 className={`grid gap-4 ${
-                  selectedProductDetails ? "grid-cols-1" : "grid-cols-2"
+                  selectedProductDetails
+                    ? "grid-cols-1"
+                    : "grid-cols-1 sm:grid-cols-2"
                 }`}
               >
                 {/* Discount Type */}
@@ -525,16 +489,19 @@ const DiscountForm = () => {
                       Discount Type
                     </span>
                   </label>
-                  <Select
-                    value={discountTypeOptions.find(
-                      (option) => option.value === formData.discountType
-                    )}
-                    onChange={handleDiscountTypeChange}
-                    options={discountTypeOptions}
-                    styles={customStyles}
-                    placeholder="Select discount type"
-                    className="text-[#1D372E]"
-                  />
+                  <select
+                    name="discountType"
+                    value={formData.discountType}
+                    onChange={handleChange}
+                    className="select select-bordered select-sm md:select-md w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  >
+                    <option value="">Select discount type</option>
+                    {discountTypeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Discount Value */}
@@ -564,7 +531,9 @@ const DiscountForm = () => {
               {/* Date Range and Status */}
               <div
                 className={`grid gap-4 ${
-                  selectedProductDetails ? "grid-cols-1" : "grid-cols-3"
+                  selectedProductDetails
+                    ? "grid-cols-1"
+                    : "grid-cols-1 md:grid-cols-3"
                 }`}
               >
                 {/* Start Date */}

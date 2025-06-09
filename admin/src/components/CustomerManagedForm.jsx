@@ -1,10 +1,57 @@
 import React, { useState, useEffect } from "react";
 import { RiDeleteBin5Fill } from "react-icons/ri";
-import { FaEye, FaEdit, FaSearch, FaHistory } from "react-icons/fa";
+import { FaEye, FaEdit, FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api/customer";
+
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className = "",
+  prevLabel = "Previous",
+  nextLabel = "Next",
+}) => {
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      onPageChange(newPage);
+    }
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className={`flex justify-between items-center mt-4 ${className}`}>
+      <button
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
+          currentPage === 1
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-[#5CAF90] text-white hover:bg-opacity-90"
+        }`}
+      >
+        {prevLabel}
+      </button>
+      <span className="text-[#1D372E] text-sm">
+        Page {currentPage} of {totalPages}
+      </span>
+      <button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`px-3 py-1 sm:px-4 sm:py-2 rounded text-sm ${
+          currentPage === totalPages
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-[#5CAF90] text-white hover:bg-opacity-90"
+        }`}
+      >
+        {nextLabel}
+      </button>
+    </div>
+  );
+};
 
 const CustomerManagedForm = () => {
   const [customers, setCustomers] = useState([]);
@@ -16,6 +63,8 @@ const CustomerManagedForm = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [editForm, setEditForm] = useState({
     full_name: "",
     email: "",
@@ -24,6 +73,9 @@ const CustomerManagedForm = () => {
   });
   const [history, setHistory] = useState(null);
   const navigate = useNavigate();
+
+  // Define items per page
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchCustomers();
@@ -34,6 +86,7 @@ const CustomerManagedForm = () => {
       const data = await api.fetchCustomers();
       setCustomers(data);
       setFilteredCustomers(data);
+      setTotalPages(Math.ceil(data.length / itemsPerPage));
       setLoading(false);
     } catch (error) {
       console.error("Error fetching customers:", error);
@@ -42,26 +95,37 @@ const CustomerManagedForm = () => {
     }
   };
 
+  // Slice the filtered customers for the current page
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const handleSearch = () => {
     if (!searchTerm.trim()) {
       setFilteredCustomers(customers);
+      setTotalPages(Math.ceil(customers.length / itemsPerPage));
+      setCurrentPage(1); // Reset to first page on search
       return;
     }
     const lowerSearchTerm = searchTerm.toLowerCase();
-    const filtered = customers.filter((customer) => {
-      return (
+    const filtered = customers.filter(
+      (customer) =>
         customer.idCustomer?.toString().includes(lowerSearchTerm) ||
         customer.Full_Name?.toLowerCase().includes(lowerSearchTerm) ||
         customer.Email?.toLowerCase().includes(lowerSearchTerm) ||
         customer.Mobile_No?.includes(lowerSearchTerm)
-      );
-    });
+    );
     setFilteredCustomers(filtered);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page on search
   };
 
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredCustomers(customers);
+      setTotalPages(Math.ceil(customers.length / itemsPerPage));
+      setCurrentPage(1); // Reset to first page when cleared
     }
   }, [searchTerm, customers]);
 
@@ -95,7 +159,7 @@ const CustomerManagedForm = () => {
 
   const handleHistory = (customer) => {
     setSelectedCustomer(customer);
-    setHistory(null); // Reset history before fetching
+    setHistory(null);
     setShowHistoryModal(true);
   };
 
@@ -106,6 +170,8 @@ const CustomerManagedForm = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation
     if (!editForm.full_name.trim()) {
       toast.error("Full Name is required");
       return;
@@ -118,15 +184,44 @@ const CustomerManagedForm = () => {
       toast.error("Enter a valid 10-digit phone number");
       return;
     }
+
     try {
-      await api.updateCustomer(selectedCustomer.idCustomer, editForm);
-      setCustomers((prevCustomers) =>
-        prevCustomers.map((c) =>
-          c.idCustomer === selectedCustomer.idCustomer
-            ? { ...c, ...editForm }
-            : c
-        )
+      await api.updateCustomer(selectedCustomer.idCustomer, {
+        full_name: editForm.full_name,
+        email: editForm.email,
+        mobile_no: editForm.mobile_no,
+        status: editForm.status,
+      });
+
+      const updatedCustomer = {
+        ...selectedCustomer,
+        Full_Name: editForm.full_name,
+        Email: editForm.email,
+        Mobile_No: editForm.mobile_no,
+        Status: editForm.status,
+      };
+
+      const updatedCustomers = customers.map((c) =>
+        c.idCustomer === selectedCustomer.idCustomer ? updatedCustomer : c
       );
+      setCustomers(updatedCustomers);
+
+      if (!searchTerm.trim()) {
+        setFilteredCustomers(updatedCustomers);
+        setTotalPages(Math.ceil(updatedCustomers.length / itemsPerPage));
+      } else {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const filtered = updatedCustomers.filter(
+          (customer) =>
+            customer.idCustomer?.toString().includes(lowerSearchTerm) ||
+            customer.Full_Name?.toLowerCase().includes(lowerSearchTerm) ||
+            customer.Email?.toLowerCase().includes(lowerSearchTerm) ||
+            customer.Mobile_No?.includes(lowerSearchTerm)
+        );
+        setFilteredCustomers(filtered);
+        setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+      }
+
       toast.success("Customer updated successfully");
       setShowEditModal(false);
     } catch (error) {
@@ -138,7 +233,27 @@ const CustomerManagedForm = () => {
   const confirmDelete = async () => {
     try {
       await api.deleteCustomer(customerToDelete);
-      setCustomers(customers.filter((c) => c.idCustomer !== customerToDelete));
+      const updatedCustomers = customers.filter(
+        (c) => c.idCustomer !== customerToDelete
+      );
+      setCustomers(updatedCustomers);
+
+      if (!searchTerm.trim()) {
+        setFilteredCustomers(updatedCustomers);
+        setTotalPages(Math.ceil(updatedCustomers.length / itemsPerPage));
+      } else {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const filtered = updatedCustomers.filter(
+          (customer) =>
+            customer.idCustomer?.toString().includes(lowerSearchTerm) ||
+            customer.Full_Name?.toLowerCase().includes(lowerSearchTerm) ||
+            customer.Email?.toLowerCase().includes(lowerSearchTerm) ||
+            customer.Mobile_No?.includes(lowerSearchTerm)
+        );
+        setFilteredCustomers(filtered);
+        setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+      }
+
       toast.success("Customer deleted successfully");
       setShowDeleteModal(false);
     } catch (error) {
@@ -228,7 +343,7 @@ const CustomerManagedForm = () => {
                     </tr>
                   </thead>
                   <tbody className="text-[#1D372E]">
-                    {filteredCustomers.map((customer) => (
+                    {paginatedCustomers.map((customer) => (
                       <tr
                         key={customer.idCustomer}
                         className="border-b border-[#1D372E]"
@@ -283,13 +398,6 @@ const CustomerManagedForm = () => {
                               <FaEdit className="w-3 h-3" />
                             </button>
                             <button
-                              onClick={() => handleHistory(customer)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              title="View History"
-                            >
-                              <FaHistory className="w-3 h-3" />
-                            </button>
-                            <button
                               onClick={() => handleDelete(customer.idCustomer)}
                               className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                               title="Delete Customer"
@@ -304,7 +412,7 @@ const CustomerManagedForm = () => {
                 </table>
               </div>
               <div className="sm:hidden space-y-3">
-                {filteredCustomers.map((customer) => (
+                {paginatedCustomers.map((customer) => (
                   <div
                     key={customer.idCustomer}
                     className="bg-[#F7FDFF] p-3 rounded-lg border border-[#B7B7B7]"
@@ -361,13 +469,6 @@ const CustomerManagedForm = () => {
                         <FaEdit className="w-3 h-3" />
                       </button>
                       <button
-                        onClick={() => handleHistory(customer)}
-                        className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                        title="View History"
-                      >
-                        <FaHistory className="w-3 h-3" />
-                      </button>
-                      <button
                         onClick={() => handleDelete(customer.idCustomer)}
                         className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                         title="Delete Customer"
@@ -378,14 +479,24 @@ const CustomerManagedForm = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination */}
+              {filteredCustomers.length > itemsPerPage && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </>
           )}
         </div>
       </div>
 
+      {/* Edit Customer Modal */}
       {showEditModal && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-md bg-white text-[#1D372E]">
+          <div className="modal-box max-w-md bg-white text-[#1D372E] relative">
             <h3 className="font-bold text-base lg:text-lg mb-4">
               Edit Customer
             </h3>
@@ -469,7 +580,7 @@ const CustomerManagedForm = () => {
                   type="submit"
                   className="btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md hover:bg-[#4a9a7d]"
                 >
-                  Edit
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -477,9 +588,10 @@ const CustomerManagedForm = () => {
         </div>
       )}
 
+      {/* Customer History Modal */}
       {showHistoryModal && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-lg max-h-[90vh] bg-white text-[#1D372E]">
+          <div className="modal-box max-w-lg max-h-[90vh] bg-white text-[#1D372E] relative overflow-y-auto">
             <h3 className="font-bold text-base lg:text-lg mb-4">
               Customer History
             </h3>
@@ -531,6 +643,7 @@ const CustomerManagedForm = () => {
         </div>
       )}
 
+      {/* Delete Customer Modal */}
       {showDeleteModal && (
         <div className="modal modal-open">
           <div className="modal-box bg-white text-[#1D372E]">
@@ -541,12 +654,10 @@ const CustomerManagedForm = () => {
             >
               <IoClose className="w-5 h-5" />
             </button>
-
             <p className="mb-6">
-              Are you sure you want to delete this customer? This action cannot
-              be undone.
+              Are you sure you want to delete this customer? This action cannot be
+              undone.
             </p>
-
             <div className="modal-action">
               <button
                 onClick={() => setShowDeleteModal(false)}
