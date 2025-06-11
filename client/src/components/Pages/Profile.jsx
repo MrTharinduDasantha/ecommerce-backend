@@ -181,54 +181,17 @@ const Profile = () => {
     return isValid
   }
 
-  // const handleAddAddress = () => {
-  //   if (validateForm()) {
-  //     const newId = Math.max(...addresses.map(a => a.id), 0) + 1
-  //     setAddresses(prevAddresses => [
-  //       ...prevAddresses,
-  //       {
-  //         id: newId,
-  //         address: newAddressDetails.address.trim(),
-  //         city: newAddressDetails.city.trim(),
-  //         country: newAddressDetails.country.trim(),
-  //         mobile: newAddressDetails.mobile.trim(),
-  //         isMain: addresses.length <= 0,
-  //       },
-  //     ])
-  //     setNewAddressDetails({
-  //       address: "",
-  //       city: "",
-  //       country: "",
-  //       mobile: "",
-  //     })
-  //     setFormErrors({
-  //       address: "",
-  //       city: "",
-  //       country: "",
-  //       mobile: "",
-  //     })
-  //     addAddress(user.id, {
-  //       full_name: profileData.name,
-  //       address: newAddressDetails.address,
-  //       city: newAddressDetails.city,
-  //       country: newAddressDetails.country,
-  //       mobile_no: profileData.mobile_no,
-  //     })
-  //     // Show success message
-  //     setShowAddSuccessMessage(true)
-
-  //     // Close the modal after a delay
-  //     setTimeout(() => {
-  //       setIsAddAddressModalOpen(false)
-  //       setShowAddSuccessMessage(false)
-  //     }, 1500)
-  //   }
-  // }
-
   const handleAddAddress = async () => {
     if (validateForm()) {
       try {
-        const res = await addAddress(user.id, profileData)
+        const addressData = {
+          full_name: profileData.full_name,
+          address: newAddressDetails.address,
+          city: newAddressDetails.city,
+          country: newAddressDetails.country,
+          mobile_no: newAddressDetails.mobile_no,
+        }
+        const res = await addAddress(user.id, addressData)
         const newAddressId = res.id || res.idDelivery_Address
         const isFirstAddress = addresses.length === 0
         const newAddress = {
