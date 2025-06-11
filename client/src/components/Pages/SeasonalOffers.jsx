@@ -6,7 +6,6 @@ import Banner from "../Banner";
 import ProductCard from "../ProductCard";
 
 const SeasonalOffers = () => {
-
   const navigate = useNavigate();
   const [addedProducts, setAddedProducts] = useState([]);
   const [products, setProducts] = useState([]);
@@ -17,8 +16,12 @@ const SeasonalOffers = () => {
       try {
         const data = await getProducts();
         if (data.message === "Products fetched successfully") {
+          // Filter products where Seasonal_Offer is 1
+          const seasonalOfferProducts = data.products.filter(
+            (product) => product.Seasonal_Offer === 1
+          );
           // Map backend data to the required format
-          const formattedProducts = data.products.map((product) => ({
+          const formattedProducts = seasonalOfferProducts.map((product) => ({
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
@@ -28,7 +31,7 @@ const SeasonalOffers = () => {
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Seasonal Discounts",
-            category:product.subcategories?.[0]?.Description || ""
+            category: product.subcategories?.[0]?.Description || "",
           }));
           setProducts(formattedProducts);
         }
@@ -53,9 +56,8 @@ const SeasonalOffers = () => {
           color: product.color,
           size: product.size,
           discountName: product.discountName,
- 
-        }
-      }
+        },
+      },
     });
   };
 
