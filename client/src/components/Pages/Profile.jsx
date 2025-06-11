@@ -85,13 +85,29 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         const customerData = await getCustomerById(user.id)
+        // Fix for birthday date shift issue by adding one day
+        let birthdayValue = customerData.Birthday || ""
+        if (birthdayValue) {
+          const dateParts = birthdayValue.split("T")[0].split("-")
+          const year = parseInt(dateParts[0])
+          const month = parseInt(dateParts[1]) - 1
+          const day = parseInt(dateParts[2])
+          const date = new Date(year, month, day)
+          date.setDate(date.getDate() + 1) // Add one day to fix the timezone shift
+          const adjustedYear = date.getFullYear()
+          const adjustedMonth = (date.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")
+          const adjustedDay = date.getDate().toString().padStart(2, "0")
+          birthdayValue = `${adjustedYear}-${adjustedMonth}-${adjustedDay}`
+        }
         setProfileData(prev => ({
           ...prev,
           full_name: customerData.Full_Name,
           mobile_no: customerData.Mobile_No,
           email: customerData.Email,
           address: customerData.Address || "",
-          birthday: customerData.Birthday || "",
+          birthday: birthdayValue,
         }))
       } catch (error) {
         console.error("Error fetching customer data:", error)
@@ -631,9 +647,7 @@ const Profile = () => {
                   <span className="w-24 text-gray-600">Birthday</span>
                   <span className="text-gray-800">
                     {profileData.birthday
-                      ? new Date(
-                          profileData.birthday.split("T")[0].replace(/-/g, "/")
-                        ).toLocaleDateString()
+                      ? profileData.birthday.split("T")[0]
                       : ""}
                   </span>
                 </div>
@@ -1287,4 +1301,4 @@ const Profile = () => {
   )
 }
 
-export default Profile;
+export default Profile
