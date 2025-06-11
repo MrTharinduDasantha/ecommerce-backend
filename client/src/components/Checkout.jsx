@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext"
 import { getCustomerById } from "../api/customer"
 import CloseIcon from "@mui/icons-material/Close"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import CancelIcon from "@mui/icons-material/Cancel"
 import { createOrder } from "../api/order"
 import { addAddress, getAddressByCustomerId } from "../api/address"
 import { getCart } from "../api/cart"
@@ -49,6 +50,8 @@ const Checkout = () => {
   const [showAddSuccessMessage, setShowAddSuccessMessage] = useState(false)
 
   const [showOrderSuccessMessage, setShowOrderSuccessMessage] = useState(false)
+
+  const [showOrderErrorMessage, setShowOrderErrorMessage] = useState(false)
 
   const [cartId, setCartId] = useState(null)
 
@@ -291,7 +294,9 @@ const Checkout = () => {
       }, 1500)
     } catch (error) {
       console.error("Error creating order: ", error)
-      alert(error.message || "Failed to place order. Please try again.")
+      setTimeout(() => {
+        setShowOrderErrorMessage(true)
+      }, 1500)
     }
   }
 
@@ -308,6 +313,18 @@ const Checkout = () => {
               <CheckCircleIcon className="text-[#5CAF90] text-5xl mb-3" />
               <p className="text-lg font-medium text-gray-800">
                 Order Placed Successfully
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {showOrderErrorMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="w-full max-w-md p-6 bg-white rounded-lg">
+            <div className="flex flex-col items-center justify-center py-8">
+              <CancelIcon className="mb-3 text-5xl text-red-500" />
+              <p className="text-lg font-medium text-gray-800">
+                Failed to place order. Please try again.
               </p>
             </div>
           </div>
