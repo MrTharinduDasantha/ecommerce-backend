@@ -273,6 +273,9 @@ const CustomerorderDetailsPage = () => {
                           Product
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Variation
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Quantity
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -286,17 +289,34 @@ const CustomerorderDetailsPage = () => {
                     <tbody className="bg-white">
                       {orderDetails.items.map((item, index) => (
                         <tr key={index} className="border-t border-gray-200">
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <td className="px-4 py-4 text-sm text-gray-600">
                             {item.product_name}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {item.quantity}
+                          <td className="px-4 py-4 text-sm text-gray-600">
+                            {(item.Colour !== "No color selected" && item.Colour) && (
+                              <div className="text-xs">
+                                <span className="mr-1">
+                                  Color: <span style={{ color: item.Colour.startsWith('#') ? item.Colour : 'inherit' }}>●</span> {item.Colour}
+                                </span>
+                              </div>
+                            )}
+                            {(item.Size !== "No size selected" && item.Size) && (
+                              <div className="text-xs mt-1">
+                                <span>Size: {item.Size}</span>
+                              </div>
+                            )}
+                            {(!item.Colour || item.Colour === "No color selected") && (!item.Size || item.Size === "No size selected") && (
+                              <span className="text-xs text-gray-500">-</span>
+                            )}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                            Rs.{item.price}
+                            {item.quantity || item.Qty}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                            Rs.{item.total}
+                            Rs.{item.price || item.Rate}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                            Rs.{item.total || item.Total}
                           </td>
                         </tr>
                       ))}

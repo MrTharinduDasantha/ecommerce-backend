@@ -20,6 +20,7 @@ import {
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { IoClose } from "react-icons/io5";
 import { io } from "socket.io-client";
+import Pagination from "../components/common/Pagination";
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -35,10 +36,15 @@ const NotificationPage = () => {
   const [addMessage, setAddMessage] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editMessage, setEditMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const toastTimerRef = useRef(null);
   const socketRef = useRef(null);
 
   const { updateUnreadCount } = useNotifications();
+
+  // Define items per page
+  const itemsPerPage = 10;
 
   useEffect(() => {
     socketRef.current = io("http://localhost:9000");
@@ -90,6 +96,7 @@ const NotificationPage = () => {
       const data = await getNotifications();
       setNotifications(data);
       setFilteredNotifications(data);
+      setTotalPages(Math.ceil(data.length / itemsPerPage));
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
       toast.error(error.message || "Failed to load notifications");
@@ -201,6 +208,8 @@ const NotificationPage = () => {
   const handleSearch = () => {
     if (!searchTerm.trim()) {
       setFilteredNotifications(notifications);
+      setTotalPages(Math.ceil(notifications.length / itemsPerPage));
+      setCurrentPage(1);
       return;
     }
     const filtered = notifications.filter((notification) => {
@@ -212,11 +221,15 @@ const NotificationPage = () => {
       );
     });
     setFilteredNotifications(filtered);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    setCurrentPage(1);
   };
 
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredNotifications(notifications);
+      setTotalPages(Math.ceil(notifications.length / itemsPerPage));
+      setCurrentPage(1);
     }
   }, [searchTerm, notifications]);
 
@@ -228,25 +241,33 @@ const NotificationPage = () => {
     }
   }, [showAddModal, showEditModal, showViewModal]);
 
+  // Slice the filtered notifications for the current page
+  const paginatedNotifications = filteredNotifications.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="card bg-white shadow-md">
       <div className="card-body p-4 md:p-6">
-        <div className="flex items-center justify-between mb-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
           <div className="flex items-center gap-2">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
-            <h2 className="text-xl font-bold text-[#1D372E]">
+            <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
               Admin Notifications
             </h2>
           </div>
           <button
             onClick={handleOpenAddModal}
-            className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+            className="btn btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] btn-sm md:btn-md w-full md:w-auto"
           >
-            <MdOutlineNotificationAdd className="w-5 h-5 mr-1" /> Add
-            Notification
+            <MdOutlineNotificationAdd className="w-4 h-4 md:w-5 md:h-5 mr-1" />
+            Add Notification
           </button>
         </div>
 
+        {/* Search Bar */}
         <div className="flex flex-col sm:flex-row gap-2 mb-6">
           <div className="relative flex w-full md:max-w-xl md:mx-auto">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
@@ -258,17 +279,18 @@ const NotificationPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Search notifications..."
-              className="input input-bordered w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
+              className="input input-bordered input-sm md:input-md w-full pl-8 md:pl-10 bg-white border-[#1D372E] text-[#1D372E]"
             />
             <button
               onClick={handleSearch}
-              className="btn btn-primary ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
+              className="btn btn-primary btn-sm md:btn-md ml-2 bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]"
             >
               Search
             </button>
           </div>
         </div>
 
+        {/* Notifications Display */}
         {loading ? (
           <div className="flex justify-center items-center h-40">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -278,103 +300,216 @@ const NotificationPage = () => {
             <span>No notifications found.</span>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table min-w-[700px] text-center border border-[#1D372E]">
-              <thead className="bg-[#EAFFF7] text-[#1D372E]">
-                <tr className="border-b border-[#1D372E]">
-                  <th className="font-semibold">Notification</th>
-                  <th className="font-semibold">Created By</th>
-                  <th className="font-semibold">Date & Time</th>
-                  <th className="font-semibold">Status</th>
-                  <th className="font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-[#1D372E]">
-                {filteredNotifications.map((notification) => (
-                  <tr
-                    key={notification.id}
-                    className="border-b border-[#1D372E]"
-                  >
-                    <td>
-                      <div className="font-medium">{notification.title}</div>
-                      <div className="text-sm text-gray-500 mt-1 line-clamp-2">
-                        {notification.message}
-                      </div>
-                    </td>
-                    <td>
-                      <div>{notification.creator_name}</div>
-                      <div className="text-xs text-gray-500">
-                        {notification.creator_email}
-                      </div>
-                    </td>
-                    <td>
-                      <div>
-                        {new Date(notification.created_at).toLocaleDateString()}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(notification.created_at).toLocaleTimeString()}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center justify-center gap-2">
-                        <span>Read</span>
-                        <button
-                          onClick={() =>
-                            notification.is_read
-                              ? handleMarkAsUnread(notification.id)
-                              : handleMarkAsRead(notification.id)
-                          }
-                          className="text-[#5CAF90]"
-                        >
-                          {notification.is_read ? (
-                            <FaCheckSquare className="w-4 h-4" />
-                          ) : (
-                            <FaRegCheckSquare className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => handleOpenViewModal(notification)}
-                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          title="View Notification"
-                        >
-                          <FaEye />
-                        </button>
-                        {currentUserId === notification.created_by && (
-                          <>
-                            <button
-                              onClick={() => handleOpenEditModal(notification)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              title="Edit Notification"
-                            >
-                              <FaEdit />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(notification)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                              title="Delete Notification"
-                            >
-                              <RiDeleteBin5Fill />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
+          <>
+            {/* Table for larger screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="table table-fixed min-w-[800px] text-center border border-[#1D372E]">
+                <thead className="bg-[#EAFFF7] text-[#1D372E]">
+                  <tr className="border-b border-[#1D372E]">
+                    <th className="font-semibold text-xs lg:text-sm w-[200px]">
+                      Notification
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[250px]">
+                      Created By
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[150px]">
+                      Date & Time
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Status
+                    </th>
+                    <th className="font-semibold text-xs lg:text-sm w-[100px]">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="text-[#1D372E]">
+                  {paginatedNotifications.map((notification) => (
+                    <tr
+                      key={notification.id}
+                      className="border-b border-[#1D372E]"
+                    >
+                      <td>
+                        <div className="font-medium text-xs lg:text-sm">
+                          {notification.title}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          {notification.message}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="text-xs lg:text-sm">
+                          {notification.creator_name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {notification.creator_email}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="text-xs lg:text-sm">
+                          {new Date(
+                            notification.created_at
+                          ).toLocaleDateString()}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(
+                            notification.created_at
+                          ).toLocaleTimeString()}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-xs lg:text-sm">Read</span>
+                          <button
+                            onClick={() =>
+                              notification.is_read
+                                ? handleMarkAsUnread(notification.id)
+                                : handleMarkAsRead(notification.id)
+                            }
+                            className="text-[#5CAF90]"
+                          >
+                            {notification.is_read ? (
+                              <FaCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            ) : (
+                              <FaRegCheckSquare className="w-3 h-3 lg:w-4 lg:h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleOpenViewModal(notification)}
+                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                            title="View Notification"
+                          >
+                            <FaEye />
+                          </button>
+                          {currentUserId === notification.created_by && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleOpenEditModal(notification)
+                                }
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                title="Edit Notification"
+                              >
+                                <FaEdit />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(notification)}
+                                className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                                title="Delete Notification"
+                              >
+                                <RiDeleteBin5Fill />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Notification Cards for mobile view */}
+            <div className="md:hidden grid grid-cols-1 gap-4">
+              {paginatedNotifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className="card bg-white shadow-md border border-[#1D372E] p-4"
+                >
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-[#1D372E]">
+                        {notification.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {notification.message}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <p className="text-xs text-[#1D372E]">
+                        <span className="font-medium">Created by:</span>{" "}
+                        {notification.creator_name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {notification.creator_email}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(notification.created_at).toLocaleDateString()}{" "}
+                        {new Date(notification.created_at).toLocaleTimeString()}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#1D372E]">Read</span>
+                      <button
+                        onClick={() =>
+                          notification.is_read
+                            ? handleMarkAsUnread(notification.id)
+                            : handleMarkAsRead(notification.id)
+                        }
+                        className="text-[#5CAF90]"
+                      >
+                        {notification.is_read ? (
+                          <FaCheckSquare className="w-4 h-4" />
+                        ) : (
+                          <FaRegCheckSquare className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      onClick={() => handleOpenViewModal(notification)}
+                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                      title="View Notification"
+                    >
+                      <FaEye />
+                    </button>
+                    {currentUserId === notification.created_by && (
+                      <>
+                        <button
+                          onClick={() => handleOpenEditModal(notification)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="Edit Notification"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(notification)}
+                          className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
+                          title="Delete Notification"
+                        >
+                          <RiDeleteBin5Fill />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {filteredNotifications.length > itemsPerPage && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
+          </>
         )}
       </div>
 
       {/* Add Notification Modal */}
       {showAddModal && (
         <div className="modal modal-open">
-          <div className="modal-box bg-white text-[#1D372E]">
+          <div className="modal-box bg-white text-[#1D372E] mx-4 max-w-lg">
             <h3 className="font-bold text-lg mb-4">Create New Notification</h3>
             <button
               onClick={() => setShowAddModal(false)}
@@ -424,7 +559,7 @@ const NotificationPage = () => {
       {/* Edit Notification Modal */}
       {showEditModal && currentNotification && (
         <div className="modal modal-open">
-          <div className="modal-box bg-white text-[#1D372E]">
+          <div className="modal-box bg-white text-[#1D372E] mx-4 max-w-lg">
             <h3 className="font-bold text-lg mb-4">Edit Notification</h3>
             <button
               onClick={() => setShowEditModal(false)}
@@ -474,7 +609,7 @@ const NotificationPage = () => {
       {/* View Notification Modal */}
       {showViewModal && currentNotification && (
         <div className="modal modal-open">
-          <div className="modal-box bg-white text-[#1D372E]">
+          <div className="modal-box bg-white text-[#1D372E] mx-4 max-w-lg">
             <h3 className="font-bold text-lg mb-4">
               {currentNotification.title}
             </h3>
@@ -513,7 +648,7 @@ const NotificationPage = () => {
       {/* Delete Notification Confirmation Modal */}
       {deleteNotificationId && (
         <div className="modal modal-open">
-          <div className="modal-box bg-white text-[#1D372E]">
+          <div className="modal-box bg-white text-[#1D372E] mx-4 max-w-lg">
             <h3 className="font-bold text-lg mb-4">Delete Notification</h3>
             <button
               onClick={() => setDeleteNotificationId(null)}

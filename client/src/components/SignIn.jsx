@@ -47,28 +47,11 @@ const SignIn = () => {
       console.log("Signing in with:", email, password);
       setPasswordError(""); // Clear previous errors
       try {
-        const response = await fetch(
-          "http://localhost:9000/api/auth/customers/login",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          }
-        );
-        console.log(response, "waqas");
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to sign in");
-        }
-        console.log(data);
-        const token = data.token;
-        const user = data.user; // Get user from response
-
-        login(email, password); // Call login from AuthContext with token and user
-
+        // Use the login function from AuthContext
+        await login(email, password);
+        
         // Navigate to home or dashboard
-        navigate("/");
+        navigate(from);
       } catch (error) {
         console.error("Sign-in error:", error);
         setPasswordError(
@@ -123,7 +106,9 @@ const SignIn = () => {
                 type="button"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
                 onClick={() => setShowPassword(!showPassword)}
-              ></button>
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
             </div>
             {passwordError && (
               <p className="text-red-500 text-sm mt-1">{passwordError}</p>
