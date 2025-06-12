@@ -289,8 +289,6 @@ const Checkout = () => {
       await clearCart({ customerId : user.id})
       setTimeout(() => {
         setShowOrderSuccessMessage(false)
-      }, 1500)
-      setInterval(() => {
         navigate("/")
       }, 1500)
     } catch (error) {
