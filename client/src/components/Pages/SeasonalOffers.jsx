@@ -12,7 +12,7 @@ const SeasonalOffers = () => {
 
   // Fetch seasonal offers products using the API function
   useEffect(() => {
-    const fetchProducts = async () => {
+     const fetchProducts = async () => {
       try {
         const data = await getProducts();
         if (data.message === "Products fetched successfully") {
@@ -39,6 +39,8 @@ const SeasonalOffers = () => {
         console.error("Error fetching seasonal offers products:", error);
       }
     };
+
+
 
     fetchProducts();
   }, []);
