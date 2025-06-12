@@ -45,7 +45,7 @@ function Navbar() {
   useEffect(() => {
     const fetchHeaderFooterSettings = async () => {
       try {
-        const data = await fetchHeaderFooterSettin();
+        const data = await fetchHeaderFooterSetting();
         if (data) {
           setLogoUrl(data.Navbar_Logo_Url);
           setNavIcons(data.Nav_Icons || []);
