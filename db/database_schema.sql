@@ -30,6 +30,7 @@ CREATE TABLE Customer (
     idCustomer INT AUTO_INCREMENT PRIMARY KEY,
     First_Name VARCHAR(45),
     Full_Name VARCHAR(45),
+    Birthday DATE NULL,
     Address TEXT,
     City VARCHAR(45),
     Country VARCHAR(45),
