@@ -16,7 +16,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import CancelIcon from "@mui/icons-material/Cancel"
 import { createOrder } from "../api/order"
 import { addAddress, getAddressByCustomerId } from "../api/address"
-import { getCart, clearCart } from "../api/cart"
+import { getCart } from "../api/cart"
+import { useCart } from "../context/CartContext"
 
 const Checkout = () => {
   const navigate = useNavigate()
@@ -60,6 +61,8 @@ const Checkout = () => {
   )
 
   const { user } = useAuth()
+
+  const { clearCart } = useCart()
 
   //fetch user data when component mounts
   useEffect(() => {
@@ -286,7 +289,7 @@ const Checkout = () => {
       }
       await createOrder(orderData)
       setShowOrderSuccessMessage(true)
-      await clearCart({ customerId : user.id})
+      clearCart()
       setTimeout(() => {
         setShowOrderSuccessMessage(false)
         navigate("/")
