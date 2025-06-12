@@ -169,7 +169,7 @@ const Cart = () => {
               {/* Cart Items Section */}
               <div className="flex-1">
                 {cartItems.length === 0 ? (
-                  <div className="text-gray-500 text-lg text-center py-24.5 bg-white rounded-lg border-2 border-gray-200 mt-6">
+                  <div className="text-gray-500 text-lg text-center py-24.5 bg-white rounded-lg border-2 border-gray-200 mt-8.5">
                     Your cart is empty
                   </div>
                 ) : (
