@@ -13,12 +13,16 @@ const SeasonalOffers = () => {
 
   // Fetch seasonal offers products using the API function
   useEffect(() => {
-    const fetchProducts = async () => {
+     const fetchProducts = async () => {
       try {
         const data = await getProducts();
         if (data.message === "Products fetched successfully") {
+          // Filter products where Seasonal_Offer is 1
+          const seasonalOfferProducts = data.products.filter(
+            (product) => product.Seasonal_Offer === 1
+          );
           // Map backend data to the required format
-          const formattedProducts = data.products.map((product) => ({
+          const formattedProducts = seasonalOfferProducts.map((product) => ({
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
@@ -28,7 +32,7 @@ const SeasonalOffers = () => {
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Seasonal Discounts",
-            category:product.subcategories?.[0]?.Description || ""
+            category: product.subcategories?.[0]?.Description || "",
           }));
           setProducts(formattedProducts);
         }
@@ -36,6 +40,8 @@ const SeasonalOffers = () => {
         console.error("Error fetching seasonal offers products:", error);
       }
     };
+
+
 
     fetchProducts();
   }, []);

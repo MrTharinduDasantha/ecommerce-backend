@@ -567,8 +567,15 @@ async function getAllProducts() {
       B.Brand_Image_Url,
       B.ShortDescription,
       (SELECT COUNT(*) FROM order_has_product_variations ohpv
-       JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
-       WHERE pv.Product_idProduct = P.idProduct) > 0 as hasOrders
+        JOIN Product_Variations pv 
+          ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+        WHERE pv.Product_idProduct = P.idProduct
+      ) > 0 as hasOrders,
+      (SELECT COUNT(*) FROM Cart_has_Product chp
+        JOIN Product_Variations pv 
+        ON chp.Product_Variations_idProduct_Variations = pv.idProduct_Variations 
+      WHERE pv.Product_idProduct = P.idProduct
+      ) > 0 as hasCart
     FROM Product P
     LEFT JOIN Product_Brand B 
       ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
@@ -839,6 +846,11 @@ async function deleteProduct(productId) {
 
   // Delete faqs
   await pool.query("DELETE FROM FAQ WHERE Product_idProduct = ?", [productId]);
+
+  // Delete discounts
+  await pool.query("DELETE FROM Discounts WHERE Product_idProduct = ?", [
+    productId,
+  ]);
 
   // Delete product
   await pool.query("DELETE FROM Product WHERE idProduct = ?", [productId]);
