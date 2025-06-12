@@ -5,7 +5,6 @@ import {
   FaCreditCard,
   FaMoneyBillWave,
   FaPlus,
-  FaTimes,
 } from "react-icons/fa"
 import { products } from "./Products"
 import { useNavigate } from "react-router-dom"
@@ -14,6 +13,7 @@ import { useAuth } from "../context/AuthContext"
 import { getCustomerById } from "../api/customer"
 import CloseIcon from "@mui/icons-material/Close"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import CancelIcon from "@mui/icons-material/Cancel"
 import { createOrder } from "../api/order"
 import { addAddress, getAddressByCustomerId } from "../api/address"
 import { getCart } from "../api/cart"
@@ -48,6 +48,10 @@ const Checkout = () => {
   })
 
   const [showAddSuccessMessage, setShowAddSuccessMessage] = useState(false)
+
+  const [showOrderSuccessMessage, setShowOrderSuccessMessage] = useState(false)
+
+  const [showOrderErrorMessage, setShowOrderErrorMessage] = useState(false)
 
   const [cartId, setCartId] = useState(null)
 
@@ -84,7 +88,8 @@ const Checkout = () => {
           isDefault: false,
         }))
         setAddresses(formattedAddresses)
-        if(formattedAddresses.length > 0 && !selectedAddress) setSelectedAddress(formattedAddresses[0].id)
+        if (formattedAddresses.length > 0 && !selectedAddress)
+          setSelectedAddress(formattedAddresses[0].id)
       } catch (error) {
         console.error("Error fetching customer addresses: ", error)
       }
@@ -280,11 +285,18 @@ const Checkout = () => {
         payment_type: formData.paymentMethod,
       }
       await createOrder(orderData)
-      alert("Order placed successfully!")
-      navigate("/")
+      setShowOrderSuccessMessage(true)
+      setTimeout(() => {
+        setShowOrderSuccessMessage(false)
+      }, 1500)
+      setInterval(() => {
+        navigate("/")
+      }, 1500)
     } catch (error) {
       console.error("Error creating order: ", error)
-      alert(error.message || "Failed to place order. Please try again.")
+      setTimeout(() => {
+        setShowOrderErrorMessage(true)
+      }, 1500)
     }
   }
 
@@ -294,6 +306,30 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen px-4 py-8 bg-white sm:px-6 lg:px-8">
+      {showOrderSuccessMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="w-full max-w-md p-6 bg-white rounded-lg">
+            <div className="flex flex-col items-center justify-center py-8">
+              <CheckCircleIcon className="text-[#5CAF90] text-5xl mb-3" />
+              <p className="text-lg font-medium text-gray-800">
+                Order Placed Successfully
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {showOrderErrorMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="w-full max-w-md p-6 bg-white rounded-lg">
+            <div className="flex flex-col items-center justify-center py-8">
+              <CancelIcon className="mb-3 text-5xl text-red-500" />
+              <p className="text-lg font-medium text-gray-800">
+                Failed to place order. Please try again.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mx-auto max-w-7xl">
         <h1 className="mb-8 text-3xl font-bold text-center text-gray-800">
           Order<span className="text-[#5CAF90]"> Checkout</span>
