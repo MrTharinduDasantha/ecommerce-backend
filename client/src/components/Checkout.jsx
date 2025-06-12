@@ -16,7 +16,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import CancelIcon from "@mui/icons-material/Cancel"
 import { createOrder } from "../api/order"
 import { addAddress, getAddressByCustomerId } from "../api/address"
-import { getCart } from "../api/cart"
+import { getCart, clearCart } from "../api/cart"
 
 const Checkout = () => {
   const navigate = useNavigate()
@@ -286,6 +286,7 @@ const Checkout = () => {
       }
       await createOrder(orderData)
       setShowOrderSuccessMessage(true)
+      await clearCart({ customerId : user.id})
       setTimeout(() => {
         setShowOrderSuccessMessage(false)
       }, 1500)
