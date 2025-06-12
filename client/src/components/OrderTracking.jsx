@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getCustomerOrders, getOrderDetails, trackOrder } from "../api/order";
 import Map from "../assets/map.png";
 import OrderDetails from "./OrderDetails";
+import { formatPrice } from "./FormatPrice";
 
 const OrderTracking = () => {
   const { id } = useParams();
@@ -282,24 +283,24 @@ const OrderTracking = () => {
                 <div className="pt-3 border-t">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
-                      <span className="font-medium text-green-500">-${discount.toFixed(2)}</span>
+                      <span className="font-medium text-green-500">-{formatPrice(discount)}</span>
                     </div>
                   )}
                   
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Delivery Fee:</span>
-                    <span className="font-medium">${deliveryFee.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(deliveryFee)}</span>
                   </div>
                   
                   <div className="flex justify-between font-semibold mt-2 pt-2 border-t">
                     <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
               </div>
