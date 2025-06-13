@@ -7,10 +7,10 @@ const CurrentOrders = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
     const orders = [
-        { id: '#01', name: 'Sarah', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 14:30', status: 'Completed' },
-        { id: '#02', name: 'Jessica', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 15:45', status: 'Completed' },
-        { id: '#03', name: 'Sam', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 16:20', status: 'Not Yet' },
-        { id: '#04', name: 'John', price: '07032219923', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 17:15', status: 'Processing' }
+        { id: '#01', name: 'Sarah', price: '$450', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 14:30', status: 'Completed' },
+        { id: '#02', name: 'Jessica', price: '$370', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 15:45', status: 'Completed' },
+        { id: '#03', name: 'Sam', price: '$550', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 16:20', status: 'Not Yet' },
+        { id: '#04', name: 'John', price: '$560', deliveryDate: '2025/01/7', orderDateTime: '2024-03-15 17:15', status: 'Processing' }
     ];
 
     // Filter orders based on search query
