@@ -185,22 +185,22 @@ function Navbar() {
             <div className="flex space-x-2">
               {/* Cart Icon */}
               <Link to="/cart" className="relative">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-                className="relative p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
-              >
-                <FaShoppingCart
-                  className="text-[15px] cursor-pointer"
-                  title="Cart"
-                />
-                {cartItems.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                    {cartItems.length}
-                  </span>
-                )}
-              </motion.div>
-            </Link>
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2"
+                >
+                  <FaShoppingCart
+                    className="text-[15px] cursor-pointer"
+                    title="Cart"
+                  />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      {cartItems.length}
+                    </span>
+                  )}
+                </motion.div>
+              </Link>
 
               {/* Track Order */}
               <Link to="/track-order/:id">
