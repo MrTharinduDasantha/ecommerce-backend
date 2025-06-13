@@ -73,7 +73,11 @@ const SubCategory = () => {
           `Failed to load products for subcategory ${id}:`,
           error.message
         );
-        setError(error.message || "Failed to load products");
+        if (error.message?.includes("No products found")) {
+          setProducts([]);
+        } else {
+          setError(error.message || "Failed to load products");
+        }
       } finally {
         setLoading(false);
       }
