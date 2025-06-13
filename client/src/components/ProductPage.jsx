@@ -503,7 +503,7 @@ const ProductPage = () => {
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
             Related <span className="text-[#5CAF90]">Products</span>
           </h2>
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {relatedProducts.map((product) => (
               <div
                 key={product.id}
