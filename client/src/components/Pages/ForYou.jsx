@@ -79,9 +79,9 @@ const ForYou = () => {
       <div className="container mx-auto px-3 xs:px-4 sm:px-5 lg:px-2 py-4 sm:py-6 lg:py-8 flex-grow">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-4">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
-          <div className="w-full lg:w-64 xl:w-72">
+          {/* <div className="w-full lg:w-64 xl:w-72">
             <Sidebar />
-          </div>
+          </div> */}
 
           {/* Main Content Area */}
           <div className="flex-1">
@@ -104,7 +104,7 @@ const ForYou = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
               {products.map((product) => (
                 <div
                   key={product.id}

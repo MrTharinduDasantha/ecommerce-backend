@@ -97,7 +97,7 @@ const ProductPage = () => {
           if (relatedResponse.message === "Products fetched successfully") {
             const filteredRelated = relatedResponse.products
               .filter((p) => p.idProduct !== productData.idProduct)
-              .slice(0, 4)
+              .slice(0, 5)
               .map((product) => ({
                 id: product.idProduct,
                 name: product.Description,
@@ -235,7 +235,10 @@ const ProductPage = () => {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       {/* Image Popup Modal */}
       {isImagePopupOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-200">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/20"
+          onClick={() => setIsImagePopupOpen(false)}
+        >
           <div className="relative max-w-4xl w-full max-h-screen">
             <button
               className="cursor-pointer bg-white absolute -top-10 right-0 border-2 rounded-sm border-black text-red-700 text-2xl z-50 hover:text-red-500"
@@ -243,7 +246,10 @@ const ProductPage = () => {
             >
               <FaTimes />
             </button>
-            <div className="relative overflow-hidden rounded-lg bg-gray-100 border-2 border-black">
+            <div
+              className="relative overflow-hidden rounded-lg bg-gray-100 border-2 border-black"
+              onClick={(e) => e.stopPropagation()}
+            >
               <img
                 ref={popupImageRef}
                 src={mainImage}
@@ -497,21 +503,21 @@ const ProductPage = () => {
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
             Related <span className="text-[#5CAF90]">Products</span>
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-8 mt-3 sm:mt-4 h-[300px]">
-            {relatedProducts.map((relatedProduct) => (
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            {relatedProducts.map((product) => (
               <div
-                key={relatedProduct.id}
-                className="border  rounded-lg cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate(`/product-page/${relatedProduct.id}`)}
+                key={product.id}
+                className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                onClick={() => navigate(`/product-page/${product.id}`)}
               >
                 <ProductCard
-                  image={relatedProduct.image}
-                  category={relatedProduct.category}
-                  title={relatedProduct.name}
-                  price={relatedProduct.price}
-                  oldPrice={relatedProduct.oldPrice}
-                  weight={relatedProduct.weight}
-                  id={relatedProduct.id}
+                  image={product.image}
+                  category={product.category}
+                  title={product.name}
+                  price={formatPrice(product.price)}
+                  oldPrice={formatPrice(product.oldPrice)}
+                  weight={product.weight}
+                  id={product.id}
                   className="h-full"
                 />
               </div>
