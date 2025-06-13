@@ -17,6 +17,7 @@ import CancelIcon from "@mui/icons-material/Cancel"
 import { createOrder } from "../api/order"
 import { addAddress, getAddressByCustomerId } from "../api/address"
 import { getCart } from "../api/cart"
+import { useCart } from "../context/CartContext"
 
 const Checkout = () => {
   const navigate = useNavigate()
@@ -60,6 +61,8 @@ const Checkout = () => {
   )
 
   const { user } = useAuth()
+
+  const { clearCart } = useCart()
 
   //fetch user data when component mounts
   useEffect(() => {
@@ -286,10 +289,9 @@ const Checkout = () => {
       }
       await createOrder(orderData)
       setShowOrderSuccessMessage(true)
+      clearCart()
       setTimeout(() => {
         setShowOrderSuccessMessage(false)
-      }, 1500)
-      setInterval(() => {
         navigate("/")
       }, 1500)
     } catch (error) {

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getCustomerOrders, getOrderDetails, trackOrder } from "../api/order";
 import Map from "../assets/map.png";
 import OrderDetails from "./OrderDetails";
-import InvoiceDownloadButton from "./InvoicePDF";
+import { formatPrice } from "./FormatPrice";
 
 const OrderTracking = () => {
   const { id } = useParams();
@@ -209,54 +209,6 @@ const OrderTracking = () => {
     payment_status: selectedOrder?.Payment_Stats
   };
 
-  const prepareInvoiceData = () => {
-    if (!selectedOrder || !orderDetails) return null;
-
-    // Prepare order status history
-    let statusHistory = [];
-    if (trackingInfo && trackingInfo.status_history) {
-      statusHistory = trackingInfo.status_history.map((item, index) => ({
-        status: item.status_to || "Status Update",
-        date: item.created_at ? new Date(item.created_at).toLocaleString() : "N/A",
-      }));
-    } else {
-      statusHistory = [
-        { status: "Order Confirmed", date: selectedOrder?.created_at ? new Date(selectedOrder.created_at).toLocaleString() : "N/A" },
-        { status: "Processing", date: "N/A" },
-        { status: "Shipped", date: "N/A" },
-        { status: "Delivered", date: "N/A" },
-      ];
-    }
-
-    return {
-      orderId: selectedOrder.idOrder,
-      orderDate: selectedOrder.Date_Time,
-      paymentMethod: selectedOrder.Payment_Type,
-      paymentStatus: selectedOrder.Payment_Stats,
-      deliveryType: selectedOrder.Delivery_Type,
-      deliveryStatus: selectedOrder.Delivery_Status,
-      customerName: selectedOrder.Full_Name,
-      address: selectedOrder.Address,
-      city: selectedOrder.City,
-      country: selectedOrder.Country,
-      items: orderDetails.items || [],
-      subtotal: subtotal,
-      discount: discount,
-      deliveryFee: deliveryFee,
-      total: total,
-      mapImage: Map,
-      statusHistory: statusHistory,
-      estimatedDeliveryDate: selectedOrder?.Delivery_Date
-        ? new Date(selectedOrder.Delivery_Date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })
-        : null,
-    };
-  };
-
   return (
     <div className="p-6 bg-white min-h-screen">
       <div className="max-w-full mx-auto">
@@ -331,24 +283,24 @@ const OrderTracking = () => {
                 <div className="pt-3 border-t">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
-                      <span className="font-medium text-green-500">-${discount.toFixed(2)}</span>
+                      <span className="font-medium text-green-500">-{formatPrice(discount)}</span>
                     </div>
                   )}
                   
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Delivery Fee:</span>
-                    <span className="font-medium">${deliveryFee.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(deliveryFee)}</span>
                   </div>
                   
                   <div className="flex justify-between font-semibold mt-2 pt-2 border-t">
                     <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
               </div>
@@ -360,10 +312,6 @@ const OrderTracking = () => {
                   <p>{selectedOrder?.Address || "N/A"}</p>
                   <p>{selectedOrder?.City || "N/A"}, {selectedOrder?.Country || "N/A"}</p>
                 </div>
-              </div>
-
-              <div className="mt-6 flex justify-center">
-                <InvoiceDownloadButton orderData={prepareInvoiceData()} />
               </div>
             </div>
           </div>

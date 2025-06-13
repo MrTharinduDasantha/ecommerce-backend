@@ -11,8 +11,8 @@ const SubCategory = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [products, setProducts] = useState([]);
-    const [subcategoryName, setSubcategoryName] = useState(location.state?.subcategoryName || '');
-    const [categoryName, setCategoryName] = useState(location.state?.categoryName || '');
+    const [subcategoryName, setSubcategoryName] = useState('');
+    const [categoryName, setCategoryName] = useState('');
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -21,6 +21,14 @@ const SubCategory = () => {
                 const data = await getProductsBySubCategoryId(id);
                 if (data && data.products) {
                     setProducts(data.products);
+
+                    // Fallback: Set category and subcategory names if not already set
+                    if (!subcategoryName && data.products[0]?.Subcategory_Name) {
+                        setSubcategoryName(data.products[0].Subcategory_Name);
+                    }
+                    if (!categoryName && data.products[0]?.Category_Name) {
+                        setCategoryName(data.products[0].Category_Name);
+                    }
                 } else {
                     setProducts([]);
                 }
@@ -33,6 +41,10 @@ const SubCategory = () => {
         };
 
         if (id) {
+            // Try to get from location.state first
+            setSubcategoryName(location.state?.subcategoryName || '');
+            setCategoryName(location.state?.categoryName || '');
+
             fetchProducts();
         }
     }, [id]);
@@ -65,6 +77,7 @@ const SubCategory = () => {
                                     Category: {categoryName}
                                 </div>
                             )}
+                            {/* here it shows as products can you fix that */}
                             <h2 className="text-2xl font-semibold text-gray-800">
                                 {subcategoryName || 'Products'}
                             </h2>
