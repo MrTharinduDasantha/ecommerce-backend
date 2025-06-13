@@ -287,12 +287,13 @@ const Checkout = () => {
         cart_id: cartId,
         payment_type: formData.paymentMethod,
       }
-      await createOrder(orderData)
+      const res = await createOrder(orderData)
+      const orderId = res.order_id
       setShowOrderSuccessMessage(true)
       clearCart()
       setTimeout(() => {
         setShowOrderSuccessMessage(false)
-        navigate("/")
+        navigate(`/order-tracking/${orderId}`)
       }, 1500)
     } catch (error) {
       console.error("Error creating order: ", error)
