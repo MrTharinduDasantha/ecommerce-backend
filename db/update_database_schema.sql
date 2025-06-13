@@ -32,3 +32,7 @@ ADD COLUMN Social_Icons JSON AFTER Footer_Links;
 -- Add Market_Rate column to the cart_has_product table
 ALTER TABLE cart_has_product
 ADD COLUMN Market_Rate FLOAT(10,2) DEFAULT NULL AFTER Rate;
+
+-- Add Birthday column to the Customer table
+ALTER TABLE Customer 
+ADD COLUMN Birthday DATE NULL AFTER Full_Name;
