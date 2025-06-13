@@ -514,8 +514,8 @@ const ProductPage = () => {
                   image={product.image}
                   category={product.category}
                   title={product.name}
-                  price={formatPrice(product.price)}
-                  oldPrice={formatPrice(product.oldPrice)}
+                  price={product.price}
+                  oldPrice={product.oldPrice}
                   weight={product.weight}
                   id={product.id}
                   className="h-full"

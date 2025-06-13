@@ -611,14 +611,14 @@ const Profile = () => {
                   <span className="text-gray-800">{profileData.mobile_no}</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
+                  <div className="min-w-[40px] min-h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
                     <EmailIcon
                       className="text-gray-500"
                       style={{ fontSize: "20px" }}
                     />
                   </div>
                   <span className="mr-5 text-gray-600">Email</span>
-                  <span className="text-gray-800">{profileData.email}</span>
+                  <span className="text-gray-800 overflow-hidden">{profileData.email}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">

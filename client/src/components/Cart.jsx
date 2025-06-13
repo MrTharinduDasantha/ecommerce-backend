@@ -156,7 +156,7 @@ const Cart = () => {
           Cart <span className="text-[#5CAF90]">Page</span>
         </h2>
         <div className="flex-1 mt-[10px]">
-          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="mx-auto px-4 sm:px-6 lg:px-20 py-6">
             {/* Cart Header */}
             <div className="flex items-center gap-2 mb-6">
               <h1 className="text-xl">
@@ -391,7 +391,7 @@ const Cart = () => {
 
             {/* Related Products Section */}
             {relatedProducts.length > 0 && (
-              <div className="mt-8 sm:mt-12">
+              <div className="mt-8 sm:mt-12 mb-5">
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
                   Related <span className="text-[#5CAF90]">Products</span>
                 </h2>
@@ -406,8 +406,8 @@ const Cart = () => {
                         image={product.image}
                         category={product.category}
                         title={product.name}
-                        price={formatPrice(product.price)}
-                        oldPrice={formatPrice(product.oldPrice)}
+                        price={product.price}
+                        oldPrice={product.oldPrice}
                         weight={product.weight}
                         id={product.id}
                         className="h-full"
