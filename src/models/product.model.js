@@ -847,6 +847,11 @@ async function deleteProduct(productId) {
   // Delete faqs
   await pool.query("DELETE FROM FAQ WHERE Product_idProduct = ?", [productId]);
 
+  // Delete discounts
+  await pool.query("DELETE FROM Discounts WHERE Product_idProduct = ?", [
+    productId,
+  ]);
+
   // Delete product
   await pool.query("DELETE FROM Product WHERE idProduct = ?", [productId]);
 }
