@@ -38,8 +38,8 @@ const Cart = () => {
                 .filter(
                   (p) => !cartItems.some((item) => item.id === p.idProduct)
                 )
-                .slice(0, 4)
-            : response.products.slice(0, 4);
+                .slice(0, 5)
+            : response.products.slice(0, 5);
 
         setRelatedProducts(
           filteredRelated.map((product) => ({
@@ -395,12 +395,12 @@ const Cart = () => {
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
                   Related <span className="text-[#5CAF90]">Products</span>
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-8 mt-3 sm:mt-4 h-[300px]">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                   {relatedProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="border rounded-lg cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => navigate(`/product-page/${product.id}`)}
+                      className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                      onClick={() =>  navigate(`/product-page/${product.id}`)}
                     >
                       <ProductCard
                         image={product.image}
