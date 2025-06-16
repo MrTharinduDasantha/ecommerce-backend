@@ -19,7 +19,7 @@ const AllCategories = () => {
             try {
                 const data = await getCategories();
                 if (data && data.categories) {
-                    setCategories(data.categories);
+                    setCategories(data.categories.filter(category => category.Status === "active"));
                 } else {
                     setError("Unexpected data structure: " + JSON.stringify(data));
                 }
@@ -42,7 +42,7 @@ const AllCategories = () => {
             for (const sub of subcategories) {
                 try {
                     const data = await getProductsBySubCategoryId(sub.idSub_Category);
-                    newProductsBySubCategory[sub.idSub_Category] = data.products || [];
+                    newProductsBySubCategory[sub.idSub_Category] = data.products.filter(product => product.Status === "active") || [];
                 } catch (error) {
                     console.error(`Failed to load products for subcategory ${sub.idSub_Category}:`, error.message);
                 }
@@ -62,9 +62,9 @@ const AllCategories = () => {
     const allProducts = Object.values(productsBySubCategory).flat();
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-            <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
-                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex flex-col min-h-screen bg-gray-50">
+            <div className="container flex-grow px-3 py-4 mx-auto xs:px-4 sm:px-5 sm:py-6 lg:py-8">
+                <div className="flex flex-col gap-4 lg:flex-row sm:gap-6 lg:gap-8">
                     <div className="w-full lg:w-64 xl:w-72">
                         <Sidebar1 subcategories={selectedCategory?.subcategories || []} />
                     </div>
@@ -72,9 +72,9 @@ const AllCategories = () => {
                         <ForYouBanner className="mb-4 sm:mb-6" />
                        
                         {selectedCategory ? (
-                            <div className="space-y-4 mt-4">
+                            <div className="mt-4 space-y-4">
                                 {allProducts.length > 0 ? (
-                                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
                                         {allProducts.map(product => (
                                             <ProductCard 
                                                 key={product.idProduct}

@@ -18,8 +18,11 @@ const RushDelivery = () => {
       try {
         const data = await getProducts();
         if (data.message === "Products fetched successfully") {
+          const activeProducts = data.products.filter(
+            product => product.Status === "active"
+          )
           // Filter products where Rush_Delivery is 1
-          const rushProducts = data.products.filter(
+          const rushProducts = activeProducts.filter(
             (product) => product.Rush_Delivery === 1
           );
           // Map filtered products to the required format
@@ -74,9 +77,9 @@ const RushDelivery = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="container mx-auto px-3 xs:px-4 sm:px-5 lg:px-2 py-4 sm:py-6 lg:py-8 flex-grow">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-4">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="container flex-grow px-3 py-4 mx-auto xs:px-4 sm:px-5 lg:px-2 sm:py-6 lg:py-8">
+        <div className="flex flex-col gap-4 lg:flex-row sm:gap-6 lg:gap-4">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <Sidebar />
@@ -88,7 +91,7 @@ const RushDelivery = () => {
             <RushDeliveryBanner className="mb-4 sm:mb-6" />
 
             {/* Header with View Cart button */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
+            <div className="flex flex-col items-start justify-between mb-4 sm:flex-row sm:items-center sm:mb-6">
               <h2 className="text-[#1D372E] text-2xl font-semibold">
                 RUSH DELIVERY OFFERS
               </h2>
@@ -103,7 +106,7 @@ const RushDelivery = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 sm:gap-4 md:gap-5 lg:gap-6">
               {products.map((product) => (
                 <div
                   key={product.id}

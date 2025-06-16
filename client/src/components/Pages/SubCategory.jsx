@@ -20,7 +20,7 @@ const SubCategory = () => {
                 setLoading(true);
                 const data = await getProductsBySubCategoryId(id);
                 if (data && data.products) {
-                    setProducts(data.products);
+                    setProducts(data.products.filter(product => product.Status === "active"));
 
                     // Fallback: Set category and subcategory names if not already set
                     if (!subcategoryName && data.products[0]?.Subcategory_Name) {
@@ -50,21 +50,21 @@ const SubCategory = () => {
     }, [id]);
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-screen">
             <div className="text-lg text-gray-600">Loading products...</div>
         </div>
     );
     
     if (error) return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-screen">
             <div className="text-lg text-red-600">Error: {error}</div>
         </div>
     );
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-            <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
-                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex flex-col min-h-screen bg-gray-50">
+            <div className="container flex-grow px-3 py-4 mx-auto xs:px-4 sm:px-5 sm:py-6 lg:py-8">
+                <div className="flex flex-col gap-4 lg:flex-row sm:gap-6 lg:gap-8">
                     <div className="w-full lg:w-64 xl:w-72">
                         <Sidebar />
                     </div>
@@ -73,7 +73,7 @@ const SubCategory = () => {
                         
                         <div className="mb-6">
                             {categoryName && (
-                                <div className="text-sm text-gray-600 mb-2">
+                                <div className="mb-2 text-sm text-gray-600">
                                     Category: {categoryName}
                                 </div>
                             )}
@@ -84,7 +84,7 @@ const SubCategory = () => {
                         </div>
 
                         {products.length > 0 ? (
-                            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
                                 {products.map(product => (
                                     <ProductCard 
                                         key={product.idProduct}
@@ -101,7 +101,7 @@ const SubCategory = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8">
+                            <div className="py-8 text-center">
                                 <p className="text-gray-500">No products available for this subcategory.</p>
                             </div>
                         )}
