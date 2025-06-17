@@ -174,7 +174,7 @@ const Cart = () => {
                   </div>
                 ) : (
                   <div className="space-y-6 my-auto rounded-lg">
-                    {/* Select All checkbox - moved outside the product container */}
+                    {/* Select All checkbox */}
                     <div className="flex items-center mb-4">
                       <input
                         type="checkbox"
@@ -191,9 +191,9 @@ const Cart = () => {
                     </div>
 
                     {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3">
-                        {/* Checkbox moved outside the product container */}
-                        <div>
+                      <div key={item.id} className="flex items-start gap-3">
+                        {/* Checkbox */}
+                        <div className="pt-2">
                           <input
                             type="checkbox"
                             checked={selectedItems.includes(item.id)}
@@ -205,54 +205,67 @@ const Cart = () => {
                         {/* Product container */}
                         <div
                           id={`product-${item.id}`}
-                          className={`flex-1 grid grid-cols-6 text-center w-auto border border-gray-200 rounded-lg ${
+                          className={`flex-1 border border-gray-200 rounded-lg p-4 ${
                             selectedProduct?.id === item.id
                               ? "highlight-product"
                               : ""
                           }`}
                         >
-                          <div className="col-span-2">
-                            <Link
-                              to={`/product-page/${item.productId}`}
-                              className="flex items-center space-x-8"
-                            >
-                              <img
-                                src={item.image}
-                                alt={item.name}
-                                className="w-25 h-25 min-w-25 object-cover rounded-lg"
-                                loading="lazy"
-                              />
-                              <div className="flex flex-col text-left">
-                                <h3 className="font-medium line-clamp-1">
-                                  {item.name}
-                                </h3>
+                          {/* Mobile & Tablet Layout */}
+                          <div className="md:hidden">
+                            <div className="flex gap-4 mb-4">
+                              <Link
+                                to={`/product-page/${item.productId}`}
+                                className="flex-shrink-0"
+                              >
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg"
+                                  loading="lazy"
+                                />
+                              </Link>
+                              <div className="flex-1 min-w-0">
+                                <Link to={`/product-page/${item.productId}`}>
+                                  <h3 className="font-medium text-sm sm:text-base line-clamp-2 mb-2">
+                                    {item.name}
+                                  </h3>
+                                </Link>
 
-                                {/* Only show this container if either color or size exists */}
+                                {/* Price section for mobile */}
+                                <div className="mb-2">
+                                  <p className="text-[#5E5E5E] line-through text-sm">
+                                    {formatPrice(item.mktPrice)}
+                                  </p>
+                                  <p className="text-[#1D372E] font-semibold text-base">
+                                    {formatPrice(item.price)}
+                                  </p>
+                                </div>
+
+                                {/* Color and Size for mobile */}
                                 {(item.color || item.size) && (
-                                  <div className="items-center">
-                                    {/* Color - Only show if exists */}
+                                  <div className="space-y-1 mb-3">
                                     {item.color &&
                                       item.color !== "No color selected" && (
                                         <div className="flex items-center space-x-2">
-                                          <span className="text-sm text-gray-600 font-semibold">
+                                          <span className="text-xs text-gray-600 font-semibold">
                                             Color:
                                           </span>
                                           <div
-                                            className="w-4 h-4 rounded-full border border-gray-300"
+                                            className="w-3 h-3 rounded-full border border-gray-300"
                                             style={{
                                               backgroundColor: item.color,
                                             }}
                                           />
                                         </div>
                                       )}
-                                    {/* Size - Only show if exists */}
                                     {item.size &&
                                       item.size !== "No size selected" && (
                                         <div className="flex items-center space-x-2">
-                                          <span className="text-sm text-gray-600 font-semibold">
+                                          <span className="text-xs text-gray-600 font-semibold">
                                             Size:
                                           </span>
-                                          <span className="text-sm font-medium">
+                                          <span className="text-xs font-medium">
                                             {item.size}
                                           </span>
                                         </div>
@@ -260,68 +273,194 @@ const Cart = () => {
                                   </div>
                                 )}
                               </div>
-                            </Link>
+                            </div>
+
+                            {/* Quantity, Total, and Delete for mobile */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                {/* Quantity Selector */}
+                                <div className="border rounded-lg px-3 py-1 flex items-center gap-2">
+                                  <button
+                                    className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
+                                    onClick={() => {
+                                      const newQuantity = Math.max(
+                                        1,
+                                        item.quantity - 1
+                                      );
+                                      updateQuantity(
+                                        item.id,
+                                        newQuantity
+                                      ).catch(console.error);
+                                    }}
+                                    disabled={item.availableQty <= 0}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="text-sm font-medium min-w-[20px] text-center">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
+                                    onClick={() => {
+                                      const newQuantity = Math.min(
+                                        item.quantity + 1,
+                                        item.availableQty
+                                      );
+                                      updateQuantity(
+                                        item.id,
+                                        newQuantity
+                                      ).catch(console.error);
+                                    }}
+                                    disabled={
+                                      item.quantity >= item.availableQty ||
+                                      item.availableQty <= 0
+                                    }
+                                  >
+                                    +
+                                  </button>
+                                </div>
+
+                                {/* Total Price */}
+                                <div>
+                                  <p className="text-[#1D372E] font-semibold text-base">
+                                    {formatPrice(item.price * item.quantity)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Delete Button */}
+                              <button
+                                onClick={() => removeFromCart(item.id)}
+                                className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-full hover:bg-red-50 cursor-pointer"
+                                aria-label="Remove item"
+                              >
+                                <Delete sx={{ fontSize: 20 }} />
+                              </button>
+                            </div>
                           </div>
-                          <div className="my-auto">
-                            <p className="text-[#5E5E5E] line-through text-[15px] font-semibold">
-                              {formatPrice(item.mktPrice)}
-                            </p>
-                            <p className="text-[#1D372E] font-semibold">
-                              {formatPrice(item.price)}
-                            </p>
-                          </div>
-                          {/* Quantity Selector */}
-                          <div className="m-auto border rounded-lg px-[8px] pb-1">
-                            <button
-                              className="text-lg sm:text-xl cursor-pointer"
-                              onClick={() => {
-                                const newQuantity = Math.max(
-                                  1,
-                                  item.quantity - 1
-                                );
-                                updateQuantity(item.id, newQuantity).catch(
-                                  console.error
-                                );
-                              }}
-                              disabled={item.availableQty <= 0}
-                            >
-                              -
-                            </button>
-                            <span className="mx-2 sm:mx-2">
-                              {item.quantity}
-                            </span>
-                            <button
-                              className="text-lg sm:text-xl cursor-pointer"
-                              onClick={() => {
-                                const newQuantity = Math.min(
-                                  item.quantity + 1,
-                                  item.availableQty
-                                );
-                                updateQuantity(item.id, newQuantity).catch(
-                                  console.error
-                                );
-                              }}
-                              disabled={
-                                item.quantity >= item.availableQty ||
-                                item.availableQty <= 0
-                              }
-                            >
-                              +
-                            </button>
-                          </div>
-                          <div className="my-auto">
-                            <p className="text-[#1D372E] font-semibold ml-auto">
-                              {formatPrice(item.price * item.quantity)}
-                            </p>
-                          </div>
-                          <div className="my-auto">
-                            <button
-                              onClick={() => removeFromCart(item.id)}
-                              className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50 ml-4 cursor-pointer"
-                              aria-label="Remove item"
-                            >
-                              <Delete sx={{ fontSize: 20 }} />
-                            </button>
+
+                          {/* Desktop Layout */}
+                          <div className="hidden md:grid md:grid-cols-6 md:gap-4 md:items-center md:text-center">
+                            {/* Product Info */}
+                            <div className="md:col-span-2">
+                              <Link
+                                to={`/product-page/${item.productId}`}
+                                className="flex items-center space-x-4"
+                              >
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-20 h-20 lg:w-25 lg:h-25 object-cover rounded-lg flex-shrink-0"
+                                  loading="lazy"
+                                />
+                                <div className="flex flex-col text-left min-w-0">
+                                  <h3 className="font-medium line-clamp-2 text-sm lg:text-base">
+                                    {item.name}
+                                  </h3>
+
+                                  {/* Color and Size for desktop */}
+                                  {(item.color || item.size) && (
+                                    <div className="mt-2 space-y-1">
+                                      {item.color &&
+                                        item.color !== "No color selected" && (
+                                          <div className="flex items-center space-x-2">
+                                            <span className="text-xs text-gray-600 font-semibold">
+                                              Color:
+                                            </span>
+                                            <div
+                                              className="w-4 h-4 rounded-full border border-gray-300"
+                                              style={{
+                                                backgroundColor: item.color,
+                                              }}
+                                            />
+                                          </div>
+                                        )}
+                                      {item.size &&
+                                        item.size !== "No size selected" && (
+                                          <div className="flex items-center space-x-2">
+                                            <span className="text-xs text-gray-600 font-semibold">
+                                              Size:
+                                            </span>
+                                            <span className="text-xs font-medium">
+                                              {item.size}
+                                            </span>
+                                          </div>
+                                        )}
+                                    </div>
+                                  )}
+                                </div>
+                              </Link>
+                            </div>
+
+                            {/* Price */}
+                            <div>
+                              <p className="text-[#5E5E5E] line-through text-sm font-semibold">
+                                {formatPrice(item.mktPrice)}
+                              </p>
+                              <p className="text-[#1D372E] font-semibold">
+                                {formatPrice(item.price)}
+                              </p>
+                            </div>
+
+                            {/* Quantity Selector */}
+                            <div className="flex justify-center">
+                              <div className="border rounded-lg px-3 py-1 inline-flex items-center gap-2">
+                                <button
+                                  className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
+                                  onClick={() => {
+                                    const newQuantity = Math.max(
+                                      1,
+                                      item.quantity - 1
+                                    );
+                                    updateQuantity(item.id, newQuantity).catch(
+                                      console.error
+                                    );
+                                  }}
+                                  disabled={item.availableQty <= 0}
+                                >
+                                  -
+                                </button>
+                                <span className="font-medium min-w-[20px] text-center">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
+                                  onClick={() => {
+                                    const newQuantity = Math.min(
+                                      item.quantity + 1,
+                                      item.availableQty
+                                    );
+                                    updateQuantity(item.id, newQuantity).catch(
+                                      console.error
+                                    );
+                                  }}
+                                  disabled={
+                                    item.quantity >= item.availableQty ||
+                                    item.availableQty <= 0
+                                  }
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Total */}
+                            <div>
+                              <p className="text-[#1D372E] font-semibold">
+                                {formatPrice(item.price * item.quantity)}
+                              </p>
+                            </div>
+
+                            {/* Delete */}
+                            <div>
+                              <button
+                                onClick={() => removeFromCart(item.id)}
+                                className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50 cursor-pointer"
+                                aria-label="Remove item"
+                              >
+                                <Delete sx={{ fontSize: 20 }} />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -331,7 +470,7 @@ const Cart = () => {
               </div>
 
               {/* Order Summary Card */}
-              <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto mt-8.5 ">
+              <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto mt-8.5">
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-lg font-semibold">Total</span>
                   <span className="text-lg font-semibold">
@@ -341,7 +480,7 @@ const Cart = () => {
 
                 <Link
                   to="/"
-                  className="block w-full bg-[#1D372E] text-white text-center py-3 rounded hover:bg-[#1D372E] transition-colors mb-4 "
+                  className="block w-full bg-[#1D372E] text-white text-center py-3 rounded hover:bg-[#1D372E] transition-colors mb-4"
                 >
                   ← Keep Shopping
                 </Link>
@@ -365,10 +504,10 @@ const Cart = () => {
                 )}
 
                 <div className="text-center">
-                  <h3 className="text-black  mb-4 font-semibold">
+                  <h3 className="text-black mb-4 font-semibold">
                     Secure Payments Provided By
                   </h3>
-                  <div className="flex justify-center items-center gap-4">
+                  <div className="flex justify-center items-center gap-4 flex-wrap">
                     {paymentLogos.map((logo, index) =>
                       logo.icon ? (
                         <span key={index} aria-label={logo.alt}>
@@ -379,7 +518,7 @@ const Cart = () => {
                           key={index}
                           src={logo.src}
                           alt={logo.alt}
-                          className="h-4 "
+                          className="h-4"
                           loading="lazy"
                         />
                       )
@@ -400,7 +539,7 @@ const Cart = () => {
                     <div
                       key={product.id}
                       className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                      onClick={() =>  navigate(`/product-page/${product.id}`)}
+                      onClick={() => navigate(`/product-page/${product.id}`)}
                     >
                       <ProductCard
                         image={product.image}
