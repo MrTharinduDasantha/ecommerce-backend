@@ -32,6 +32,13 @@ const ProductList = () => {
   // Define items per page
   const itemsPerPage = 10;
 
+  // Handle page change
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages]);
+
   // Load products from API
   const loadProducts = async () => {
     try {
