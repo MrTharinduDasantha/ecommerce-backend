@@ -26,9 +26,7 @@ const BrandDetails = () => {
           try {
             // Fetch products for the brand
             const productData = await getProductsByBrand(brand.idProduct_Brand);
-            const productsArray = Array.isArray(productData.products)
-              ? productData.products
-              : [];
+            const productsArray = Array.isArray(productData.products) ? productData.products.filter(products => products.Status === "active") : [];
             setProducts(productsArray);
           } catch (productError) {
             console.error("Error fetching products:", productError);
@@ -78,8 +76,8 @@ const BrandDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-pulse flex flex-col items-center">
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center animate-pulse">
           <div className="w-12 h-12 border-4 border-[#5CAF90] border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-[#1D372E]">Loading brand details...</p>
         </div>
@@ -89,11 +87,11 @@ const BrandDetails = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen text-red-500 text-lg">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+      <div className="flex items-center justify-center h-screen text-lg text-red-500">
+        <div className="p-8 text-center bg-white rounded-lg shadow-md">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16 mx-auto text-red-500 mb-4"
+            className="w-16 h-16 mx-auto mb-4 text-red-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -113,7 +111,7 @@ const BrandDetails = () => {
 
   if (!selectedBrand) {
     return (
-      <div className="flex justify-center items-center h-screen text-red-500 text-lg">
+      <div className="flex items-center justify-center h-screen text-lg text-red-500">
         Brand not found!
       </div>
     );
@@ -132,21 +130,21 @@ const BrandDetails = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen px-4 py-8 md:px-16 font-poppins">
+    <div className="min-h-screen px-4 py-8 bg-white md:px-16 font-poppins">
       <h2 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-left">
         {selectedBrand.Brand_Name}
       </h2>
 
-      <div className="bg-white rounded-md p-6 flex flex-col md:flex-row items-center max-w-3xl mx-auto md:max-w-full relative ">
+      <div className="relative flex flex-col items-center max-w-3xl p-6 mx-auto bg-white rounded-md md:flex-row md:max-w-full ">
         <div className="flex-shrink-0 w-40">
           <img
             src={selectedBrand.Brand_Image_Url || "/placeholder.svg"}
             alt={selectedBrand.Brand_Name}
-            className="w-full h-auto object-contain rounded-lg"
+            className="object-contain w-full h-auto rounded-lg"
           />
         </div>
 
-        <div className="md:flex-1 px-6 text-left">
+        <div className="px-6 text-left md:flex-1">
           <p className="text-[16px] md:text-[19.2px] text-[#5E5E5E]">
             {selectedBrand.ShortDescription}
           </p>
@@ -159,7 +157,7 @@ const BrandDetails = () => {
           Products
         </h3>
         {loadingProducts ? (
-          <div className="flex justify-center items-center py-12">
+          <div className="flex items-center justify-center py-12">
             <div className="w-10 h-10 border-4 border-[#5CAF90] border-t-transparent rounded-full animate-spin"></div>
             <p className="ml-4 text-[#1D372E]">Loading products...</p>
           </div>
@@ -224,7 +222,7 @@ const BrandDetails = () => {
               {topSellingProducts.map((product, index) => (
                 <tr
                   key={product.idProduct} // Use product ID as key for better performance
-                  className="text-center cursor-pointer hover:bg-gray-100 transition-colors" // Add cursor and hover effect
+                  className="text-center transition-colors cursor-pointer hover:bg-gray-100" // Add cursor and hover effect
                   onClick={() => handleProductClick(product.idProduct)} // Make rows clickable
                 >
                   <td
