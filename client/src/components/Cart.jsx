@@ -5,6 +5,7 @@ import ProductCard from "./ProductCard";
 import { useCart } from "../context/CartContext";
 import { getProducts } from "../api/product";
 import { formatPrice } from "./FormatPrice";
+import { calculateDiscountPercentage } from "./CalculateDiscount";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, loading, error } =
@@ -548,6 +549,14 @@ const Cart = () => {
                         price={product.price}
                         oldPrice={product.oldPrice}
                         weight={product.weight}
+                        discountLabel={
+                          product.oldPrice && product.price
+                            ? `${calculateDiscountPercentage(
+                                product.oldPrice,
+                                product.price
+                              )} % OFF`
+                            : null
+                        }
                         id={product.id}
                         className="h-full"
                       />

@@ -5,6 +5,7 @@ import { getProducts } from "../../api/product"; // Import the API function
 import Sidebar from "../Sidebar";
 import ProductCard from "../ProductCard";
 import ForYouBanner from "../ForYouBanner";
+import { calculateDiscountPercentage } from "../CalculateDiscount";
 
 const ForYou = () => {
   const { addToCart } = useCart();
@@ -27,13 +28,13 @@ const ForYou = () => {
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
-            price: `LKR ${product.Selling_Price}`,
-            oldPrice: `LKR ${product.Market_Price}`,
+            price: product.Selling_Price,
+            oldPrice: product.Market_Price,
             weight: product.SIH || "N/A",
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "For You Discounts",
-            category:product.subcategories?.[0]?.Description || ""
+            category: product.subcategories?.[0]?.Description || "",
           }));
           setProducts(formattedProducts);
         }
@@ -58,9 +59,9 @@ const ForYou = () => {
           weight: product.weight,
           color: product.color,
           size: product.size,
-          discountName: product.discountName
-        }
-      }
+          discountName: product.discountName,
+        },
+      },
     });
   };
 
@@ -117,6 +118,14 @@ const ForYou = () => {
                     price={product.price}
                     oldPrice={product.oldPrice}
                     weight={product.weight}
+                    discountLabel={
+                      product.oldPrice && product.price
+                        ? `${calculateDiscountPercentage(
+                            product.oldPrice,
+                            product.price
+                          )} % OFF`
+                        : null
+                    }
                     id={product.id}
                     onProductClick={() => handleProductClick(product)}
                     className="h-full"
