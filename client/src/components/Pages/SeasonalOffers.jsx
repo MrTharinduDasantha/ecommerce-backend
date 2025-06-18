@@ -78,9 +78,9 @@ const SeasonalOffers = () => {
       <div className="container flex-grow px-3 py-4 mx-auto xs:px-4 sm:px-5 lg:px-2 sm:py-6 lg:py-8">
         <div className="flex flex-col gap-4 lg:flex-row sm:gap-6 lg:gap-4">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
-          <div className="w-full lg:w-64 xl:w-72">
+          {/* <div className="w-full lg:w-64 xl:w-72">
             <Sidebar />
-          </div>
+          </div> */}
 
           {/* Main Content Area */}
           <div className="flex-1 overflow-hidden">
@@ -103,8 +103,8 @@ const SeasonalOffers = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 sm:gap-4 md:gap-5 lg:gap-6">
-              {products.map(product => (
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              {products.map((product) => (
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
