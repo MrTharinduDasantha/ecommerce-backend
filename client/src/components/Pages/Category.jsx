@@ -23,7 +23,7 @@ const AllCategories = () => {
       try {
         const data = await getCategories();
         if (data && data.categories) {
-          setCategories(data.categories.filter(category => category.Status === "active");
+          setCategories(data.categories.filter(category => category.Status === "active"))
         } else {
           setError("Unexpected data structure: " + JSON.stringify(data));
         }
@@ -81,14 +81,14 @@ const AllCategories = () => {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen">
         Loading categories...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex justify-center items-center min-h-screen text-red-500">
+      <div className="flex items-center justify-center min-h-screen text-red-500">
         Error: {error}
       </div>
     );
@@ -116,9 +116,9 @@ const AllCategories = () => {
   const productsToDisplay = getProductsToDisplay();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="container mx-auto px-3 xs:px-4 sm:px-5 py-4 sm:py-6 lg:py-8 flex-grow">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="container flex-grow px-3 py-4 mx-auto xs:px-4 sm:px-5 sm:py-6 lg:py-8">
+        <div className="flex flex-col gap-4 lg:flex-row sm:gap-6 lg:gap-8">
           <div className="w-full lg:w-64 xl:w-72">
             <Sidebar1
               categories={categories}
@@ -134,7 +134,7 @@ const AllCategories = () => {
             {selectedCategory && (
               <div className="mb-6">
                 <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-[#5CAF90]">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  <h2 className="mb-2 text-xl font-semibold text-gray-800">
                     {selectedCategory.Description}
                   </h2>
                   {selectedSubCategory && (
@@ -155,7 +155,7 @@ const AllCategories = () => {
             {selectedCategory ? (
               <div className="space-y-4">
                 {productsToDisplay.length > 0 ? (
-                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
                     {productsToDisplay.map((product) => (
                       <ProductCard
                         key={product.idProduct}
@@ -177,8 +177,8 @@ const AllCategories = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">
+                  <div className="py-12 text-center">
+                    <p className="text-lg text-gray-500">
                       No products available{" "}
                       {selectedSubCategory
                         ? "for this subcategory"
@@ -189,8 +189,8 @@ const AllCategories = () => {
                 )}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">
+              <div className="py-12 text-center">
+                <p className="text-lg text-gray-500">
                   No category found. Please select a valid category.
                 </p>
               </div>
