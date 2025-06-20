@@ -142,17 +142,6 @@ CREATE TABLE Product_has_Sub_Category (
     FOREIGN KEY (Sub_Category_idSub_Category) REFERENCES Sub_Category(idSub_Category)
 );
 
--- Cart Table
-CREATE TABLE Cart (
-    idCart INT AUTO_INCREMENT PRIMARY KEY,
-    Customer_idCustomer INT,
-    Total_Items INT,
-    Total_Amount DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (Customer_idCustomer) REFERENCES Customer(idCustomer)
-);
-
 -- Product_Variations Table
 CREATE TABLE Product_Variations (
     idProduct_Variations INT AUTO_INCREMENT PRIMARY KEY,
@@ -165,6 +154,39 @@ CREATE TABLE Product_Variations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
+);
+
+-- Event Table
+CREATE TABLE Event (
+    idEvent INT AUTO_INCREMENT PRIMARY KEY,
+    Event_Name VARCHAR(100),
+    Event_Description TEXT,
+    Event_Image_Url TEXT,
+    Status VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Event_has_Product Table
+CREATE TABLE Event_has_Product (
+    Event_idEvent INT,
+    Product_idProduct INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (Event_idEvent, Product_idProduct),
+    FOREIGN KEY (Event_idEvent) REFERENCES Event(idEvent),
+    FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
+);
+
+-- Cart Table
+CREATE TABLE Cart (
+    idCart INT AUTO_INCREMENT PRIMARY KEY,
+    Customer_idCustomer INT,
+    Total_Items INT,
+    Total_Amount DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (Customer_idCustomer) REFERENCES Customer(idCustomer)
 );
 
 -- Cart_has_Product Table

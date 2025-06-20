@@ -36,3 +36,25 @@ ADD COLUMN Market_Rate FLOAT(10,2) DEFAULT NULL AFTER Rate;
 -- Add Birthday column to the Customer table
 ALTER TABLE Customer 
 ADD COLUMN Birthday DATE NULL AFTER Full_Name;
+
+-- Add a new Event Table
+CREATE TABLE Event (
+    idEvent INT AUTO_INCREMENT PRIMARY KEY,
+    Event_Name VARCHAR(100),
+    Event_Description TEXT,
+    Event_Image_Url TEXT,
+    Status VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Add a new Event_has_Product Table
+CREATE TABLE Event_has_Product (
+    Event_idEvent INT,
+    Product_idProduct INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (Event_idEvent, Product_idProduct),
+    FOREIGN KEY (Event_idEvent) REFERENCES Event(idEvent),
+    FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
+);
