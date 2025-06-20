@@ -9,7 +9,7 @@ import {
   TbBell,
 } from "react-icons/tb";
 import { IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
-import { MdOutlineDiscount } from "react-icons/md";
+import { MdOutlineFestival, MdOutlineDiscount } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 
@@ -20,11 +20,13 @@ const Sidebar = ({ isSidebarOpen }) => {
 
   // Submenu states
   const [isProductSubMenuOpen, setIsProductSubMenuOpen] = useState(false);
+  const [isEventSubMenuOpen, setIsEventSubMenuOpen] = useState(false);
   const [isUsersSubMenuOpen, setIsUsersSubMenuOpen] = useState(false);
   const [isDiscountSubMenuOpen, setIsDiscountSubMenuOpen] = useState(false);
 
   // Determine active states
   const isManageProductsActive = location.pathname.includes("products/");
+  const isManageEventsActive = location.pathname.includes("events/");
   const isManageDiscountsActive = location.pathname.includes("discounts/");
   const isManageUsersActive =
     location.pathname.includes("users_managed-form") ||
@@ -36,6 +38,10 @@ const Sidebar = ({ isSidebarOpen }) => {
   // Toggle submenu functions
   const toggleProductSubMenu = () => {
     setIsProductSubMenuOpen(!isProductSubMenuOpen);
+  };
+
+  const toggleEventSubMenu = () => {
+    setIsEventSubMenuOpen(!isEventSubMenuOpen);
   };
 
   const toggleDiscountSubMenu = () => {
@@ -50,6 +56,10 @@ const Sidebar = ({ isSidebarOpen }) => {
   useEffect(() => {
     if (isManageProductsActive) setIsProductSubMenuOpen(true);
   }, [isManageProductsActive]);
+
+  useEffect(() => {
+    if (isManageEventsActive) setIsEventSubMenuOpen(true);
+  }, [isManageEventsActive]);
 
   useEffect(() => {
     if (isManageDiscountsActive) setIsDiscountSubMenuOpen(true);
@@ -159,6 +169,63 @@ const Sidebar = ({ isSidebarOpen }) => {
                     }
                   >
                     All Products
+                  </NavLink>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          {/* Manage Events */}
+          <li>
+            <button
+              onClick={toggleEventSubMenu}
+              className={`flex items-center justify-between w-full rounded-md px-3 py-2 text-xs md:text-sm transition-colors
+              hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
+                isManageEventsActive
+                  ? "bg-[#5CAF90] text-primary-content font-medium"
+                  : "text-base-content/85"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <MdOutlineFestival className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>Manage Events</span>
+              </div>
+              {isEventSubMenuOpen ? (
+                <IoMdArrowDropupCircle className="w-4 h-4" />
+              ) : (
+                <IoMdArrowDropdownCircle className="w-4 h-4" />
+              )}
+            </button>
+            {isEventSubMenuOpen && (
+              <ul className="menu-sub pl-6 mt-1 space-y-1">
+                <li>
+                  <NavLink
+                    to="events/add-event"
+                    className={({ isActive }) =>
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
+                      hover:bg-[#5CAF90] hover:text-white ${
+                        isActive
+                          ? "text-[#5CAF90] font-medium"
+                          : "text-base-content/85"
+                      }`
+                    }
+                  >
+                    Add Event
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="events/all-events"
+                    className={({ isActive }) =>
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
+                      hover:bg-[#5CAF90] hover:text-white ${
+                        isActive
+                          ? "text-[#5CAF90] font-medium"
+                          : "text-base-content/85"
+                      }`
+                    }
+                  >
+                    All Events
                   </NavLink>
                 </li>
               </ul>

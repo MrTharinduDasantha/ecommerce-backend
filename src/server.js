@@ -5,6 +5,7 @@ const cors = require("cors");
 const userRoutes = require("./routes/admin/user.routes");
 const adminCustomerRoutes = require("./routes/admin/customer.routes");
 const productRoutes = require("./routes/admin/product.routes");
+const eventRoutes = require("./routes/admin/event.routes");
 const settingRoutes = require("./routes/admin/setting.routes");
 const cartRoutes = require("./routes/customer/cart.routes");
 const orderRoutes = require("./routes/admin/order.routes");
@@ -52,6 +53,7 @@ app.use("/api/admin/customers", adminCustomerRoutes); // Use the admin customer 
 app.use("/api/admin/users", adminRoutes); // Use the admin user routes
 app.use("/api/users", userRoutes); // Use the user routes
 app.use("/api/products", productRoutes); // Use the product routes
+app.use("/api/events", eventRoutes); // Use the event routes
 app.use("/api/settings", settingRoutes); // Use the setting routes
 app.use("/api/carts", cartRoutes); // Use the cart routes
 app.use("/api/orders", customerOrderRoutes); // Use the customer order routes
