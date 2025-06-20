@@ -13,6 +13,11 @@ const ForYou = () => {
   const [addedProducts, setAddedProducts] = useState([]);
   const [products, setProducts] = useState([]);
 
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
+
   // Fetch products using the API function
   useEffect(() => {
     const fetchProducts = async () => {
@@ -46,24 +51,6 @@ const ForYou = () => {
     fetchProducts();
   }, []);
 
-  const handleProductClick = (product) => {
-    // Navigate to product page instead of adding to cart
-    navigate(`/product-page/${product.id}`, {
-      state: {
-        product: {
-          id: product.id,
-          name: product.name,
-          image: product.image,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          weight: product.weight,
-          color: product.color,
-          size: product.size,
-          discountName: product.discountName,
-        },
-      },
-    });
-  };
 
   const handleViewCart = () => {
     // Navigate to cart page with all added products
@@ -110,6 +97,7 @@ const ForYou = () => {
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  onClick={() => handleProductClick(product.id)}
                 >
                   <ProductCard
                     image={product.image}
@@ -127,7 +115,6 @@ const ForYou = () => {
                         : null
                     }
                     id={product.id}
-                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>

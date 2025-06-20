@@ -46,24 +46,9 @@ const OnSale = () => {
     fetchProducts();
   }, []);
 
-  const handleProductClick = (product) => {
-    // Navigate to product page instead of adding to cart
-    navigate(`/product-page/${product.id}`, {
-      state: {
-        product: {
-          id: product.id,
-          name: product.name,
-          image: product.image,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          weight: product.weight,
-          color: product.color,
-          size: product.size,
-          discountName: product.discountName,
-          discountAmount: product.discountAmount,
-        },
-      },
-    });
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
   };
 
   const handleViewCart = () => {
@@ -110,6 +95,7 @@ const OnSale = () => {
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  onClick={() => handleProductClick(product.id)}
                 >
                   <ProductCard
                     image={product.image}
@@ -127,7 +113,6 @@ const OnSale = () => {
                         : null
                     }
                     id={product.id}
-                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>

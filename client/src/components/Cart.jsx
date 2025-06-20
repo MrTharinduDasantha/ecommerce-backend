@@ -17,6 +17,11 @@ const Cart = () => {
   const navigate = useNavigate();
   const selectedProduct = location.state?.selectedProduct;
 
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
+
   // Initialize selected items when cart items change
   useEffect(() => {
     setSelectedItems(cartItems.map((item) => item.id));
@@ -157,7 +162,7 @@ const Cart = () => {
           Cart <span className="text-[#5CAF90]">Page</span>
         </h2>
         <div className="flex-1 mt-[10px]">
-          <div className="mx-auto px-4 sm:px-6 lg:px-20 py-6">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Cart Header */}
             <div className="flex items-center gap-2 mb-6">
               <h1 className="text-xl">
@@ -347,6 +352,7 @@ const Cart = () => {
                               <Link
                                 to={`/product-page/${item.productId}`}
                                 className="flex items-center space-x-4"
+                                onClick={() => handleProductClick(item.productId)}
                               >
                                 <img
                                   src={item.image}
@@ -531,7 +537,7 @@ const Cart = () => {
 
             {/* Related Products Section */}
             {relatedProducts.length > 0 && (
-              <div className="mt-8 sm:mt-12 mb-5">
+              <div className="mt-8 sm:mt-12 mb-5 px-10">
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
                   Related <span className="text-[#5CAF90]">Products</span>
                 </h2>
@@ -540,7 +546,7 @@ const Cart = () => {
                     <div
                       key={product.id}
                       className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                      onClick={() => navigate(`/product-page/${product.id}`)}
+                      onClick={() => handleProductClick(product.id)}
                     >
                       <ProductCard
                         image={product.image}

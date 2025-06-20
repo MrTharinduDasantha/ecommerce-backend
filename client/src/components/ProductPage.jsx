@@ -26,6 +26,11 @@ const ProductPage = () => {
   const popupImageRef = useRef(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
+
   useEffect(() => {
     const fetchProductAndRelated = async () => {
       try {
@@ -509,7 +514,7 @@ const ProductPage = () => {
               <div
                 key={product.id}
                 className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                onClick={() => navigate(`/product-page/${product.id}`)}
+                onClick={() => handleProductClick(product.id)}
               >
                 <ProductCard
                   image={product.image}
