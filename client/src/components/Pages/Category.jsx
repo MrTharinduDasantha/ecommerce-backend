@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Sidebar1 from "../Sidebar1";
 import ProductCard from "../ProductCard";
-import ForYouBanner from "../ForYouBanner";
+// import ForYouBanner from "../ForYouBanner";
 import { getCategories, getProductsBySubCategoryId } from "../../api/product";
 import { calculateDiscountPercentage } from "../CalculateDiscount";
 
@@ -84,7 +84,7 @@ const AllCategories = () => {
               color: product.variations?.[0]?.Colour || "N/A",
               size: product.variations?.[0]?.Size || null,
               discountName: product.Discount_Name || "",
-              category: product.subcategories?.[0]?.Description || "",
+              category: sub.Description || product.subcategories?.[0]?.Description || "",
               brand: product.Brand_Name || "",
             }));
           newProductsBySubCategory[sub.idSub_Category] =
@@ -214,7 +214,7 @@ const AllCategories = () => {
                         onClick={() => handleProductClick(product.id)}
                       >
                         <ProductCard
-                          image={product.image}
+                          image={product.image} 
                           category={product.category}
                           title={product.name}
                           price={product.price}
