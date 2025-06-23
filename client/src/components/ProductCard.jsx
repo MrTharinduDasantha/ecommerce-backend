@@ -7,8 +7,7 @@ const ProductCard = ({
   title,
   price,
   oldPrice,
-  discountName,
-  discountAmount,
+  discountLabel,
   id,
 }) => (
   <Link to={`/product-page/${id}`} className="block w-full h-full">
@@ -22,9 +21,9 @@ const ProductCard = ({
         <span className="absolute top-1 right-1 bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded">
           New
         </span>
-        {(discountName || discountAmount) && (
-          <div className="absolute top-4 left-4 bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded">
-            {discountName} {discountAmount}
+        {discountLabel && discountLabel !== "0% OFF" && (
+          <div className="absolute top-1 left-1 bg-red-500 text-white text-[8px] px-2 py-0.5 rounded">
+            {discountLabel}
           </div>
         )}
       </div>

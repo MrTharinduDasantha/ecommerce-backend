@@ -5,12 +5,18 @@ import { getProducts } from "../../api/product"; // Import the API function
 import Sidebar from "../Sidebar";
 import RushDeliveryBanner from "../RushDeliveryBanner";
 import ProductCard from "../ProductCard";
+import { calculateDiscountPercentage } from "../CalculateDiscount";
 
 const RushDelivery = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [addedProducts, setAddedProducts] = useState([]);
   const [products, setProducts] = useState([]);
+
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
 
   // Fetch rush delivery products using the API function
   useEffect(() => {
@@ -19,8 +25,8 @@ const RushDelivery = () => {
         const data = await getProducts();
         if (data.message === "Products fetched successfully") {
           const activeProducts = data.products.filter(
-            product => product.Status === "active"
-          )
+            (product) => product.Status === "active"
+          );
           // Filter products where Rush_Delivery is 1
           const rushProducts = activeProducts.filter(
             (product) => product.Rush_Delivery === 1
@@ -30,13 +36,13 @@ const RushDelivery = () => {
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
-            price: `LKR ${product.Selling_Price}`,
-            oldPrice: `LKR ${product.Market_Price}`,
+            price: product.Selling_Price,
+            oldPrice: product.Market_Price,
             weight: product.SIH || "N/A",
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Rush Discounts",
-            category:product.subcategories?.[0]?.Description || ""
+            category: product.subcategories?.[0]?.Description || "",
           }));
           setProducts(formattedProducts);
         }
@@ -47,25 +53,6 @@ const RushDelivery = () => {
 
     fetchProducts();
   }, []);
-
-  const handleProductClick = (product) => {
-    // Navigate to product page instead of adding to cart
-    navigate(`/product-page/${product.id}`, {
-      state: {
-        product: {
-          id: product.id,
-          name: product.name,
-          image: product.image,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          weight: product.weight,
-          color: product.color,
-          size: product.size,
-          discountName: product.discountName,
-        }
-      }
-    });
-  };
 
   const handleViewCart = () => {
     navigate("/cart", {
@@ -111,6 +98,7 @@ const RushDelivery = () => {
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  onClick={() => handleProductClick(product.id)}
                 >
                   <ProductCard
                     image={product.image}
@@ -119,8 +107,15 @@ const RushDelivery = () => {
                     price={product.price}
                     oldPrice={product.oldPrice}
                     weight={product.weight}
+                    discountLabel={
+                      product.oldPrice && product.price
+                        ? `${calculateDiscountPercentage(
+                            product.oldPrice,
+                            product.price
+                          )} % OFF`
+                        : null
+                    }
                     id={product.id}
-                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>

@@ -1,68 +1,56 @@
-import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { getProducts } from "../../api/product" // Import the API function
-import Sidebar from "../Sidebar"
-import Banner from "../Banner"
-import ProductCard from "../ProductCard"
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getProducts } from "../../api/product"; // Import the API function
+import Sidebar from "../Sidebar";
+import Banner from "../Banner";
+import ProductCard from "../ProductCard";
+import { calculateDiscountPercentage } from "../CalculateDiscount";
 
 const SeasonalOffers = () => {
-  const navigate = useNavigate()
-  const [addedProducts, setAddedProducts] = useState([])
-  const [products, setProducts] = useState([])
+  const navigate = useNavigate();
+  const [addedProducts, setAddedProducts] = useState([]);
+  const [products, setProducts] = useState([]);
+
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
 
   // Fetch seasonal offers products using the API function
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProducts()
+        const data = await getProducts();
         if (data.message === "Products fetched successfully") {
           const activeProducts = data.products.filter(
-            product => product.Status === "active"
-          )
+            (product) => product.Status === "active"
+          );
           // Filter products where Seasonal_Offer is 1
           const seasonalOfferProducts = activeProducts.filter(
-            product => product.Seasonal_Offer === 1
-          )
+            (product) => product.Seasonal_Offer === 1
+          );
           // Map backend data to the required format
-          const formattedProducts = seasonalOfferProducts.map(product => ({
+          const formattedProducts = seasonalOfferProducts.map((product) => ({
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
-            price: `LKR ${product.Selling_Price}`,
-            oldPrice: `LKR ${product.Market_Price}`,
+            price: product.Selling_Price,
+            oldPrice: product.Market_Price,
             weight: product.SIH || "N/A",
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Seasonal Discounts",
             category: product.subcategories?.[0]?.Description || "",
-          }))
-          setProducts(formattedProducts)
+          }));
+          setProducts(formattedProducts);
         }
       } catch (error) {
-        console.error("Error fetching seasonal offers products:", error)
+        console.error("Error fetching seasonal offers products:", error);
       }
-    }
+    };
 
-    fetchProducts()
-  }, [])
-
-  const handleProductClick = product => {
-    // Navigate to product page instead of adding to cart
-    navigate(`/product-page/${product.id}`, {
-      state: {
-        product: {
-          id: product.id,
-          name: product.name,
-          image: product.image,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          color: product.color,
-          size: product.size,
-          discountName: product.discountName,
-        },
-      },
-    })
-  }
+    fetchProducts();
+  }, []);
 
   const handleViewCart = () => {
     navigate("/cart", {
@@ -70,8 +58,8 @@ const SeasonalOffers = () => {
         source: "seasonal-offers",
         selectedProducts: addedProducts,
       },
-    })
-  }
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -108,6 +96,7 @@ const SeasonalOffers = () => {
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  onClick={() => handleProductClick(product.id)}
                 >
                   <ProductCard
                     image={product.image}
@@ -115,8 +104,15 @@ const SeasonalOffers = () => {
                     title={product.name}
                     price={product.price}
                     oldPrice={product.oldPrice}
+                    discountLabel={
+                      product.oldPrice && product.price
+                        ? `${calculateDiscountPercentage(
+                            product.oldPrice,
+                            product.price
+                          )} % OFF`
+                        : null
+                    }
                     id={product.id}
-                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>
@@ -126,7 +122,7 @@ const SeasonalOffers = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SeasonalOffers
+export default SeasonalOffers;

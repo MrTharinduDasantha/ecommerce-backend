@@ -12,6 +12,8 @@ import ProductForm from "./components/ProductForm";
 import ProductCategorySubCategoryForm from "./components/ProductCategorySubCategoryForm";
 import ProductList from "./components/ProductList";
 import ProductDetails from "./components/ProductDetails";
+import EventList from "./components/EventList";
+import EventForm from "./components/EventForm";
 import DiscountList from "./components/DiscountList";
 import DiscountForm from "./components/DiscountForm";
 import UsersManagedForm from "./components/UsersManagedForm";
@@ -94,6 +96,9 @@ const App = () => {
               path="products/view-product/:id"
               element={<ProductDetails />}
             />
+            <Route path="events/add-event" element={<EventForm />} />
+            <Route path="events/add-event/:id" element={<EventForm />} />
+            <Route path="events/all-events" element={<EventList />} />
             <Route path="discounts/add-discount" element={<DiscountForm />} />
             <Route
               path="discounts/add-discount/:id"

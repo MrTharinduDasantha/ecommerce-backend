@@ -29,19 +29,15 @@ const OrderTracking = () => {
           console.log("Fetching orders for customer ID:", customerId);
           const ordersData = await getCustomerOrders(customerId);
           console.log("Orders response:", ordersData);
-
+          
           // Handle both array or object response formats
-          const ordersArray = Array.isArray(ordersData)
-            ? ordersData
-            : ordersData.orders || [];
-
+          const ordersArray = Array.isArray(ordersData) ? ordersData : ordersData.orders || [];
+          
           setOrders(ordersArray);
-
+          
           // If an ID is provided in the URL, select that order
           if (id && ordersArray.length > 0) {
-            const order = ordersArray.find(
-              (order) => order.idOrder.toString() === id
-            );
+            const order = ordersArray.find(order => order.idOrder.toString() === id);
             if (order) {
               setSelectedOrder(order);
             } else {
@@ -70,19 +66,20 @@ const OrderTracking = () => {
       if (selectedOrder && customerId) {
         try {
           setLoading(true);
-
+          
           // Use idOrder for API calls
           const orderId = selectedOrder.idOrder;
-
+          
           // Fetch order details
           const detailsResponse = await getOrderDetails(customerId, orderId);
           console.log("Order details:", detailsResponse);
           setOrderDetails(detailsResponse);
-
+          
           // Fetch tracking information
           const trackingResponse = await trackOrder(customerId, orderId);
           console.log("Tracking info:", trackingResponse);
           setTrackingInfo(trackingResponse);
+          
         } catch (err) {
           console.error("Error fetching order details:", err);
           setError("Failed to load order details. Please try again later.");
@@ -91,7 +88,7 @@ const OrderTracking = () => {
         }
       }
     };
-
+    
     fetchOrderDetailsAndTracking();
   }, [selectedOrder, customerId]);
 
@@ -101,17 +98,11 @@ const OrderTracking = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-6 bg-white">
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold">
-            Please sign in to view your orders
-          </h2>
-          <p className="mt-2 text-gray-600">
-            You need to be logged in to track your orders.
-          </p>
-          <p className="mt-2 text-gray-500">
-            User data: {JSON.stringify(user)}
-          </p>
+          <h2 className="text-2xl font-semibold">Please sign in to view your orders</h2>
+          <p className="mt-2 text-gray-600">You need to be logged in to track your orders.</p>
+          <p className="mt-2 text-gray-500">User data: {JSON.stringify(user)}</p>
         </div>
       </div>
     );
@@ -119,7 +110,7 @@ const OrderTracking = () => {
 
   if (loading && orders.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-6 bg-white">
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold">Loading your orders...</h2>
         </div>
@@ -129,11 +120,11 @@ const OrderTracking = () => {
 
   if (error && orders.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-6 bg-white">
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
         <div className="text-center text-red-500">
           <h2 className="text-xl font-semibold">{error}</h2>
           <p className="mt-4">Debug info:</p>
-          <p>User ID: {customerId || "Not available"}</p>
+          <p>User ID: {customerId || 'Not available'}</p>
           <p>User object: {JSON.stringify(user)}</p>
         </div>
       </div>
@@ -142,12 +133,10 @@ const OrderTracking = () => {
 
   if (orders.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-6 bg-white">
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold">No orders found</h2>
-          <p className="mt-2 text-gray-600">
-            You haven't placed any orders yet.
-          </p>
+          <p className="mt-2 text-gray-600">You haven't placed any orders yet.</p>
           <p className="mt-2 text-gray-500">User ID: {customerId}</p>
         </div>
       </div>
@@ -167,9 +156,7 @@ const OrderTracking = () => {
           status: item.status_to || "Status Update",
           completed: isCompleted,
           active: isActive,
-          date: item.created_at
-            ? new Date(item.created_at).toLocaleString()
-            : "N/A",
+          date: item.created_at ? new Date(item.created_at).toLocaleString() : "N/A",
         };
       });
     }
@@ -181,9 +168,7 @@ const OrderTracking = () => {
         status: "Order Confirmed",
         completed: true,
         active: false,
-        date: selectedOrder?.created_at
-          ? new Date(selectedOrder.created_at).toLocaleString()
-          : "N/A",
+        date: selectedOrder?.created_at ? new Date(selectedOrder.created_at).toLocaleString() : "N/A",
       },
       {
         id: 2,
@@ -205,99 +190,36 @@ const OrderTracking = () => {
         completed: selectedOrder?.Delivery_Status === "delivered",
         active: selectedOrder?.Delivery_Status === "delivered",
         date: "N/A",
-      },
+      }
     ];
   };
 
   // Calculate order totals for the selected order
   const orderItems = orderDetails?.items || [];
-
+  
   // Use the fields from the actual API response
-  const subtotal = selectedOrder?.Total_Amount
-    ? parseFloat(selectedOrder.Total_Amount)
-    : 0;
+  const subtotal = selectedOrder?.Total_Amount ? parseFloat(selectedOrder.Total_Amount) : 0;
   const discount = 0; // No discount field in the response
-  const deliveryFee = selectedOrder?.Delivery_Charges
-    ? parseFloat(selectedOrder.Delivery_Charges)
-    : 0;
-  const total = selectedOrder?.Net_Amount
-    ? parseFloat(selectedOrder.Net_Amount)
-    : subtotal + deliveryFee;
+  const deliveryFee = selectedOrder?.Delivery_Charges ? parseFloat(selectedOrder.Delivery_Charges) : 0;
+  const total = selectedOrder?.Net_Amount ? parseFloat(selectedOrder.Net_Amount) : subtotal + deliveryFee;
 
   // Current order status from tracking info or selected order
   const currentStatus = trackingInfo?.current_status || {
     delivery_date: selectedOrder?.Delivery_Date,
     delivery_status: selectedOrder?.Delivery_Status,
-    payment_status: selectedOrder?.Payment_Stats,
-  };
-
-  const prepareInvoiceData = () => {
-    if (!selectedOrder || !orderDetails) return null;
-
-    // Prepare order status history
-    let statusHistory = [];
-    if (trackingInfo && trackingInfo.status_history) {
-      statusHistory = trackingInfo.status_history.map((item, index) => ({
-        status: item.status_to || "Status Update",
-        date: item.created_at
-          ? new Date(item.created_at).toLocaleString()
-          : "N/A",
-      }));
-    } else {
-      statusHistory = [
-        {
-          status: "Order Confirmed",
-          date: selectedOrder?.created_at
-            ? new Date(selectedOrder.created_at).toLocaleString()
-            : "N/A",
-        },
-        { status: "Processing", date: "N/A" },
-        { status: "Shipped", date: "N/A" },
-        { status: "Delivered", date: "N/A" },
-      ];
-    }
-
-    return {
-      orderId: selectedOrder.idOrder,
-      orderDate: selectedOrder.Date_Time,
-      paymentMethod: selectedOrder.Payment_Type,
-      paymentStatus: selectedOrder.Payment_Stats,
-      deliveryType: selectedOrder.Delivery_Type,
-      deliveryStatus: selectedOrder.Delivery_Status,
-      customerName: selectedOrder.Full_Name,
-      address: selectedOrder.Address,
-      city: selectedOrder.City,
-      country: selectedOrder.Country,
-      items: orderDetails.items || [],
-      subtotal: subtotal,
-      discount: discount,
-      deliveryFee: deliveryFee,
-      total: total,
-      mapImage: Map,
-      statusHistory: statusHistory,
-      estimatedDeliveryDate: selectedOrder?.Delivery_Date
-        ? new Date(selectedOrder.Delivery_Date).toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : null,
-    };
+    payment_status: selectedOrder?.Payment_Stats
   };
 
   return (
-    <div className="min-h-screen p-6 bg-white">
+    <div className="p-6 bg-white min-h-screen">
       <div className="max-w-full mx-auto">
         <h2 className="text-2xl font-semibold text-center">
           Your <span className="text-[#5CAF90]">Orders</span>
         </h2>
-
+        
         {orders.length > 1 && (
           <div className="mt-4">
-            <h3 className="mb-2 text-lg font-medium">
-              Select an order to track:
-            </h3>
+            <h3 className="text-lg font-medium mb-2">Select an order to track:</h3>
             <div className="flex flex-wrap gap-2">
               {orders.map((order) => (
                 <button
@@ -316,61 +238,47 @@ const OrderTracking = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
           {/* Left Section - Order Details */}
           <div className="lg:col-span-1">
             <div className="bg-gray-50 p-6 rounded-lg shadow border border-[#E8E8E8]">
-              <h3 className="mb-4 text-lg font-semibold text-center">
+              <h3 className="text-lg font-semibold text-center mb-4">
                 Order <span className="text-[#5CAF90]">Summary</span>
               </h3>
-
+              
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Order #:</span>
-                  <span className="font-medium">
-                    {selectedOrder?.idOrder || "N/A"}
-                  </span>
+                  <span className="font-medium">{selectedOrder?.idOrder || "N/A"}</span>
                 </div>
-
+                
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">
-                    {selectedOrder?.Date_Time || "N/A"}
-                  </span>
+                  <span className="font-medium">{selectedOrder?.Date_Time || "N/A"}</span>
                 </div>
-
+                
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Payment Method:</span>
-                  <span className="font-medium capitalize">
-                    {selectedOrder?.Payment_Type || "N/A"}
-                  </span>
+                  <span className="font-medium capitalize">{selectedOrder?.Payment_Type || "N/A"}</span>
                 </div>
-
+                
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Payment Status:</span>
-                  <span
-                    className={`font-medium capitalize ${
-                      selectedOrder?.Payment_Stats === "paid"
-                        ? "text-green-500"
-                        : "text-orange-500"
-                    }`}
-                  >
+                  <span className={`font-medium capitalize ${
+                    selectedOrder?.Payment_Stats === "paid" ? "text-green-500" : "text-orange-500"
+                  }`}>
                     {selectedOrder?.Payment_Stats || "N/A"}
                   </span>
                 </div>
-
+                
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Type:</span>
-                  <span className="font-medium capitalize">
-                    {selectedOrder?.Delivery_Type || "N/A"}
-                  </span>
+                  <span className="font-medium capitalize">{selectedOrder?.Delivery_Type || "N/A"}</span>
                 </div>
-
+                
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Status:</span>
-                  <span className="font-medium capitalize">
-                    {selectedOrder?.Delivery_Status || "N/A"}
-                  </span>
+                  <span className="font-medium capitalize">{selectedOrder?.Delivery_Status || "N/A"}</span>
                 </div>
 
                 <div className="pt-3 border-t">
@@ -378,45 +286,36 @@ const OrderTracking = () => {
                     <span className="text-gray-600">Subtotal:</span>
                     <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
-
+                  
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
-                      <span className="font-medium text-green-500">
-                        -{formatPrice(discount)}
-                      </span>
+                      <span className="font-medium text-green-500">-{formatPrice(discount)}</span>
                     </div>
                   )}
-
+                  
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Delivery Fee:</span>
-                    <span className="font-medium">
-                      {formatPrice(deliveryFee)}
-                    </span>
+                    <span className="font-medium">{formatPrice(deliveryFee)}</span>
                   </div>
-
-                  <div className="flex justify-between pt-2 mt-2 font-semibold border-t">
+                  
+                  <div className="flex justify-between font-semibold mt-2 pt-2 border-t">
                     <span>Total:</span>
                     <span>{formatPrice(total)}</span>
                   </div>
                 </div>
               </div>
-
+              
               <div className="mt-6">
-                <h4 className="mb-2 font-medium text-md">Delivery Address</h4>
-                <div className="p-3 text-sm bg-white border border-gray-200 rounded">
-                  <p className="font-medium">
-                    {selectedOrder?.Full_Name || "N/A"}
-                  </p>
+                <h4 className="text-md font-medium mb-2">Delivery Address</h4>
+                <div className="bg-white p-3 rounded border border-gray-200 text-sm">
+                  <p className="font-medium">{selectedOrder?.Full_Name || "N/A"}</p>
                   <p>{selectedOrder?.Address || "N/A"}</p>
-                  <p>
-                    {selectedOrder?.City || "N/A"},{" "}
-                    {selectedOrder?.Country || "N/A"}
-                  </p>
+                  <p>{selectedOrder?.City || "N/A"}, {selectedOrder?.Country || "N/A"}</p>
                 </div>
               </div>
 
-              <div className="flex justify-center mt-6">
+              <div className="mt-6 flex justify-center">
                 <InvoiceDownloadButton orderData={prepareInvoiceData()} />
               </div>
             </div>
@@ -424,14 +323,14 @@ const OrderTracking = () => {
 
           {/* Center Section - Map (fixed height) */}
           <div className="bg-gray-50 p-6 rounded-lg shadow border border-[#E8E8E8] flex flex-col h-[500px]">
-            <h3 className="mb-4 text-lg font-semibold text-center">
+            <h3 className="text-lg font-semibold text-center mb-4">
               Delivery <span className="text-[#5CAF90]">Location</span>
             </h3>
-            <div className="flex-grow overflow-hidden border border-gray-200 rounded-lg">
+            <div className="flex-grow border rounded-lg border-gray-200 overflow-hidden">
               <img
                 src={Map}
                 alt="Map"
-                className="object-cover w-full h-full bg-white"
+                className="w-full h-full object-cover bg-white"
               />
             </div>
           </div>
@@ -443,12 +342,12 @@ const OrderTracking = () => {
             </h3>
 
             {/* Status Timeline */}
-            <div className="relative flex-grow mt-4 overflow-y-auto">
+            <div className="relative mt-4 flex-grow overflow-y-auto">
               {/* Vertical line */}
               <div className="absolute left-[14px] top-0 h-full w-0.5 bg-gray-300 "></div>
 
               {/* Status Items */}
-              <ul className="pl-5 space-y-4">
+              <ul className="space-y-4 pl-5">
                 {getOrderStatusItems().map((item) => (
                   <li
                     key={item.id}
@@ -474,7 +373,7 @@ const OrderTracking = () => {
                           : ""
                       }`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex justify-between items-center">
                         <span
                           className={`text-sm font-medium ${
                             item.completed
@@ -522,15 +421,13 @@ const OrderTracking = () => {
                 <div>
                   <p className="text-sm font-medium">Estimated Delivery</p>
                   <p className="text-xs text-gray-600">
-                    {selectedOrder?.Delivery_Date
-                      ? new Date(
-                          selectedOrder.Delivery_Date
-                        ).toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
+                    {selectedOrder?.Delivery_Date 
+                      ? new Date(selectedOrder.Delivery_Date).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        }) 
                       : "Date not available"}
                   </p>
                 </div>

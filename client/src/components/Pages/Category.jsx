@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Sidebar1 from "../Sidebar1";
 import ProductCard from "../ProductCard";
 import ForYouBanner from "../ForYouBanner";
 import { getCategories, getProductsBySubCategoryId } from "../../api/product";
+import { calculateDiscountPercentage } from "../CalculateDiscount";
 
 const AllCategories = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { categoryId } = useParams();
   const selectedCategoryId = categoryId;
 
@@ -18,12 +20,25 @@ const AllCategories = () => {
     location.state?.selectedSubCategoryId || null
   );
 
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await getCategories();
         if (data && data.categories) {
-          setCategories(data.categories.filter(category => category.Status === "active"))
+          setCategories(
+            data.categories.filter((category) => category.Status === "active")
+          );
         } else {
           setError("Unexpected data structure: " + JSON.stringify(data));
         }
@@ -56,7 +71,24 @@ const AllCategories = () => {
       for (const sub of subcategories) {
         try {
           const data = await getProductsBySubCategoryId(sub.idSub_Category);
-          newProductsBySubCategory[sub.idSub_Category] = data.products.filter(product => product.Status === "active") || [];
+          // Format products to match ProductCard expected structure
+          const formattedProducts = data.products
+            .filter((product) => product.Status === "active")
+            .map((product) => ({
+              id: product.idProduct,
+              name: product.Description,
+              image: product.Main_Image_Url,
+              price: product.Selling_Price,
+              oldPrice: product.Market_Price,
+              weight: product.SIH || "N/A",
+              color: product.variations?.[0]?.Colour || "N/A",
+              size: product.variations?.[0]?.Size || null,
+              discountName: product.Discount_Name || "",
+              category: product.subcategories?.[0]?.Description || "",
+              brand: product.Brand_Name || "",
+            }));
+          newProductsBySubCategory[sub.idSub_Category] =
+            formattedProducts || [];
         } catch (error) {
           console.error(
             `Failed to load products for subcategory ${sub.idSub_Category}:`,
@@ -82,14 +114,33 @@ const AllCategories = () => {
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Loading categories...
+        <div className="flex flex-col items-center animate-pulse">
+          <div className="w-12 h-12 border-4 border-[#5CAF90] border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-[#1D372E]">Loading categories...</p>
+        </div>
       </div>
     );
 
   if (error)
     return (
-      <div className="flex items-center justify-center min-h-screen text-red-500">
-        Error: {error}
+      <div className="flex items-center justify-center min-h-screen text-lg text-red-500">
+        <div className="p-8 text-center bg-white rounded-lg shadow-md">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-16 h-16 mx-auto mb-4 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <p>{error}</p>
+        </div>
       </div>
     );
 
@@ -105,8 +156,8 @@ const AllCategories = () => {
     const uniqueProductsMap = new Map();
 
     allProducts.forEach((product) => {
-      if (!uniqueProductsMap.has(product.idProduct)) {
-        uniqueProductsMap.set(product.idProduct, product);
+      if (!uniqueProductsMap.has(product.id)) {
+        uniqueProductsMap.set(product.id, product);
       }
     });
 
@@ -128,7 +179,7 @@ const AllCategories = () => {
             />
           </div>
           <div className="flex-1 overflow-hidden">
-            <ForYouBanner className="mb-4 sm:mb-6" />
+            {/* <ForYouBanner className="mb-4 sm:mb-6" /> */}
 
             {/* Display selected category and subcategory names */}
             {selectedCategory && (
@@ -155,25 +206,31 @@ const AllCategories = () => {
             {selectedCategory ? (
               <div className="space-y-4">
                 {productsToDisplay.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                  <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                     {productsToDisplay.map((product) => (
-                      <ProductCard
-                        key={product.idProduct}
-                        image={product.Main_Image_Url}
-                        category={
-                          selectedSubCategory
-                            ? selectedSubCategory.Description
-                            : selectedCategory.Description
-                        }
-                        title={product.Description}
-                        price={product.Selling_Price}
-                        oldPrice={product.Market_Price}
-                        weight={product.SIH || "N/A"}
-                        id={product.idProduct}
-                        discountName={product.Discount_Name}
-                        discountAmount={product.Discount_Amount}
-                        className="h-full"
-                      />
+                      <div
+                        key={product.id}
+                        className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                        onClick={() => handleProductClick(product.id)}
+                      >
+                        <ProductCard
+                          image={product.image}
+                          category={product.category}
+                          title={product.name}
+                          price={product.price}
+                          oldPrice={product.oldPrice}
+                          discountLabel={
+                            product.oldPrice && product.price
+                              ? `${calculateDiscountPercentage(
+                                  product.oldPrice,
+                                  product.price
+                                )} % OFF`
+                              : null
+                          }
+                          id={product.id}
+                          className="h-full"
+                        />
+                      </div>
                     ))}
                   </div>
                 ) : (
