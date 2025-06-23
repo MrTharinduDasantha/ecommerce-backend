@@ -210,6 +210,20 @@ const OrderTracking = () => {
     payment_status: selectedOrder?.Payment_Stats
   };
 
+  // Prepare invoice data for download
+  const prepareInvoiceData = () => {
+    return {
+      order: selectedOrder,
+      orderDetails: orderDetails,
+      subtotal: subtotal,
+      discount: discount,
+      deliveryFee: deliveryFee,
+      total: total,
+      orderItems: orderItems,
+      currentStatus: currentStatus
+    };
+  };
+
   return (
     <div className="p-6 bg-white min-h-screen">
       <div className="max-w-full mx-auto">
