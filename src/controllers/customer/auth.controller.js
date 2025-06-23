@@ -51,43 +51,46 @@ const sendOTPEmail = async (email, otp) => {
 // Customer Authentication Controller
 class CustomerAuthController {
   // Register a new customer
-  async register(req, res) {
-    try {
-      const { first_name, full_name, email, password, mobile_no, status } =
-        req.body;
+ // Register a new customer
+async register(req, res) {
+  try {
+    const { first_name, full_name, email, password, mobile_no } = req.body;
 
-      // Check if email is already used
-      const existingCustomer = await Customer.getCustomerByEmail(email);
-      if (existingCustomer) {
-        return res.status(400).json({ message: "Email already in use" });
-      }
-
-      // Hash the password before storing it
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // These parameters need to match the addCustomer function in the model
-      // Adjusting for default nulls for address, city, country
-      const customerId = await Customer.addCustomer(
-        first_name,
-        full_name,
-        null, // address
-        null, // city
-        null, // country
-        mobile_no,
-        status,
-        email,
-        hashedPassword // Use the hashed password
-      );
-
-      res
-        .status(201)
-        .json({ id: customerId, message: "Customer registered successfully" });
-    } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Registration failed", error: error.message });
+    // Check if email is already used
+    const existingCustomer = await Customer.getCustomerByEmail(email);
+    if (existingCustomer) {
+      return res.status(400).json({ message: "Email already in use" });
     }
+
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Set status explicitly to "Active"
+    const status = "Active";
+
+    // These parameters need to match the addCustomer function in the model
+    // Adjusting for default nulls for address, city, country
+    const customerId = await Customer.addCustomer(
+      first_name,
+      full_name,
+      null, // address
+      null, // city
+      null, // country
+      mobile_no,
+      status, // Use the explicitly set status
+      email,
+      hashedPassword // Use the hashed password
+    );
+
+    res
+      .status(201)
+      .json({ id: customerId, message: "Customer registered successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Registration failed", error: error.message });
   }
+}
 
   // Login as a customer
  async login(req, res) {
