@@ -86,6 +86,7 @@ const AllCategories = () => {
               discountName: product.Discount_Name || "",
               category: sub.Description || product.subcategories?.[0]?.Description || "",
               brand: product.Brand_Name || "",
+              historyStatus: product.History_Status || ""
             }));
           newProductsBySubCategory[sub.idSub_Category] =
             formattedProducts || [];
@@ -227,6 +228,7 @@ const AllCategories = () => {
                                 )} % OFF`
                               : null
                           }
+                          historyStatus={product.historyStatus}
                           id={product.id}
                           className="h-full"
                         />
@@ -235,8 +237,8 @@ const AllCategories = () => {
                   </div>
                 ) : (
                   <div className="py-12 text-center">
-                    <p className="text-lg text-gray-500">
-                      No products available{" "}
+                    <p className="text-xl md:text-2xl font-bold text-gray-500">
+                      No products found {" "}
                       {selectedSubCategory
                         ? "for this subcategory"
                         : "for this category"}
