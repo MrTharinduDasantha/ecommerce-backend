@@ -44,8 +44,8 @@ async function getEventById(eventId) {
 
 // Get products for a specific event
 async function getEventProducts(eventId) {
-  const query = `
-        SELECT p.idProduct, p.Description, p.Main_Image_Url, p.Long_Description, p.Selling_Price, p.Market_Price
+  const query = ` 
+        SELECT p.idProduct, p.Description, p.Main_Image_Url, p.Long_Description, p.Selling_Price, p.Market_Price, p.History_Status
         FROM Product p
         INNER JOIN Event_has_Product ehp ON p.idProduct = ehp.Product_idProduct
         WHERE ehp.Event_idEvent = ?
