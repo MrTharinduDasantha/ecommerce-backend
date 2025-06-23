@@ -12,7 +12,7 @@ router.post("/reset-password", userController.resetPassword);
 
 // Protected routes
 router.get("/logs", authenticate, userController.getAdminLogs);
-router.post("/", authenticate, userController.createUser); // create user
+router.post("/", userController.createUser); // create user
 router.get("/profile", authenticate, userController.getProfile);
 router.get("/:id", authenticate, userController.getUser);
 router.get("/", authenticate, userController.getUsers);
