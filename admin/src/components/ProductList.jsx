@@ -32,6 +32,13 @@ const ProductList = () => {
   // Define items per page
   const itemsPerPage = 10;
 
+  // Handle page change
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages]);
+
   // Load products from API
   const loadProducts = async () => {
     try {
@@ -238,12 +245,7 @@ const ProductList = () => {
                         {product.Main_Image_Url ? (
                           <div className="avatar">
                             <div className="w-12 h-12 rounded-md">
-                              <img
-                                src={
-                                  product.Main_Image_Url || "/placeholder.svg"
-                                }
-                                alt="Main"
-                              />
+                              <img src={product.Main_Image_Url} alt="Main" />
                             </div>
                           </div>
                         ) : (
@@ -296,6 +298,10 @@ const ProductList = () => {
                                 toast.error(
                                   "This product cannot be deleted since it has already been ordered"
                                 );
+                              } else if (product.hasCart) {
+                                toast.error(
+                                  "This product cannot be deleted because it's currently in someone's cart"
+                                );
                               } else {
                                 setDeleteProductId(product.idProduct);
                               }
@@ -324,10 +330,7 @@ const ProductList = () => {
                     {product.Main_Image_Url ? (
                       <div className="avatar">
                         <div className="w-16 h-16 rounded-md">
-                          <img
-                            src={product.Main_Image_Url || "/placeholder.svg"}
-                            alt="Main"
-                          />
+                          <img src={product.Main_Image_Url} alt="Main" />
                         </div>
                       </div>
                     ) : (
@@ -407,6 +410,10 @@ const ProductList = () => {
                         if (product.hasOrders) {
                           toast.error(
                             "This product cannot be deleted since it has already been ordered"
+                          );
+                        } else if (product.hasCart) {
+                          toast.error(
+                            "This product cannot be deleted because it's currently in someone's cart"
                           );
                         } else {
                           setDeleteProductId(product.idProduct);

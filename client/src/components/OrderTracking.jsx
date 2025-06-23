@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { getCustomerOrders, getOrderDetails, trackOrder } from "../api/order";
 import DeliveryMap from "./DeliveryMap";
 import OrderDetails from "./OrderDetails";
+import InvoiceDownloadButton from "./InvoicePDF";
+import { formatPrice } from "./FormatPrice";
 
 const OrderTracking = () => {
   const { id } = useParams();
@@ -282,24 +284,24 @@ const OrderTracking = () => {
                 <div className="pt-3 border-t">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
-                      <span className="font-medium text-green-500">-${discount.toFixed(2)}</span>
+                      <span className="font-medium text-green-500">-{formatPrice(discount)}</span>
                     </div>
                   )}
                   
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Delivery Fee:</span>
-                    <span className="font-medium">${deliveryFee.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(deliveryFee)}</span>
                   </div>
                   
                   <div className="flex justify-between font-semibold mt-2 pt-2 border-t">
                     <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
               </div>
@@ -311,6 +313,10 @@ const OrderTracking = () => {
                   <p>{selectedOrder?.Address || "N/A"}</p>
                   <p>{selectedOrder?.City || "N/A"}, {selectedOrder?.Country || "N/A"}</p>
                 </div>
+              </div>
+
+              <div className="mt-6 flex justify-center">
+                <InvoiceDownloadButton orderData={prepareInvoiceData()} />
               </div>
             </div>
           </div>

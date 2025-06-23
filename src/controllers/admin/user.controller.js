@@ -195,11 +195,20 @@ const getAdminLogs = async (req, res) => {
 };
 
 // Login user
+
+
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.getUserByEmail(email);
     if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Check if user is inactive
+    if (user.Status !== "Active") {
+      return res
+        .status(403)
+        .json({ error: "Your account is inactive. Please contact admin." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.Password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
@@ -212,7 +221,6 @@ const loginUser = async (req, res) => {
       }
     );
 
-    // Log the login action
     await logAdminAction(user.idUser, "Logged In", req.headers["user-agent"]);
 
     res.json({

@@ -1,0 +1,31 @@
+.invoice-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #5CAF90;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.invoice-button:hover {
+  background-color: #4a9a7d;
+}
+
+.invoice-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.invoice-icon {
+  font-size: 20px;
+}
+
+.invoice-text {
+  white-space: nowrap;
+} 

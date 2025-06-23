@@ -18,6 +18,11 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   const location = useLocation();
   const selectedItems = location.state?.selectedItems || [];
 
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
+
   // Calculate subtotal and discount for selected items
   const subtotal = selectedItems.reduce((sum, item) => {
     const price = parsePrice(item.price);
@@ -71,7 +76,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   <div
     key={`${item.id}-${item.color || ''}-${item.size || ''}`}
     className="flex items-center space-x-4 bg-gray-100 rounded-lg p-3 cursor-pointer border border-[#E8E8E8]"
-    onClick={() => navigate(`/product-page/${item.id}`)}
+    onClick={() => handleProductClick(item.productId)}
   >
     <img
       src={item.image}

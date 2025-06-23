@@ -90,69 +90,74 @@ class CustomerAuthController {
   }
 
   // Login as a customer
-  async login(req, res) {
-    try {
-      const { email, password } = req.body;
+ async login(req, res) {
+  try {
+    const { email, password } = req.body;
 
-      console.log("Login attempt for:", email);
+    console.log("Login attempt for:", email);
 
-      // Check if the email exists
-      const [rows] = await pool.query(
-        "SELECT * FROM Customer WHERE Email = ?",
-        [email]
-      );
+    // Check if the email exists
+    const [rows] = await pool.query(
+      "SELECT * FROM Customer WHERE Email = ?",
+      [email]
+    );
 
-      if (rows.length === 0) {
-        console.log("No customer found with email:", email);
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
+    if (rows.length === 0) {
+      console.log("No customer found with email:", email);
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-      const customer = rows[0];
-      console.log("Customer found:", {
+    const customer = rows[0];
+
+    // Check if account is active
+    if (customer.Status !== 'Active') {
+      return res.status(403).json({ message: "Your account is inactive. Please contact admin." });
+    }
+
+    console.log("Customer found:", {
+      id: customer.idCustomer,
+      email: customer.Email,
+    });
+    console.log("Stored password hash:", customer.Password);
+
+    // Verify the password using bcrypt
+    console.log("Attempting to compare password with hash");
+    const isPasswordValid = await bcrypt.compare(password, customer.Password);
+    console.log("Password validation result:", isPasswordValid);
+
+    if (!isPasswordValid) {
+      console.log("Password validation failed");
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    console.log("Password validated successfully, generating token");
+
+    // Generate a JWT token
+    const token = jwt.sign(
+      {
+        customerId: customer.idCustomer,
+        email: customer.Email,
+        role: "customer",
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    // Return the token and user data
+    res.json({
+      token,
+      user: {
         id: customer.idCustomer,
         email: customer.Email,
-      });
-      console.log("Stored password hash:", customer.Password);
-
-      // Verify the password using bcrypt
-      console.log("Attempting to compare password with hash");
-      const isPasswordValid = await bcrypt.compare(password, customer.Password);
-      console.log("Password validation result:", isPasswordValid);
-
-      if (!isPasswordValid) {
-        console.log("Password validation failed");
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      console.log("Password validated successfully, generating token");
-
-      // Generate a JWT token
-      const token = jwt.sign(
-        {
-          customerId: customer.idCustomer,
-          email: customer.Email,
-          role: "customer",
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "24h" }
-      );
-
-      // Return the token and user data
-      res.json({
-        token,
-        user: {
-          id: customer.idCustomer,
-          email: customer.Email,
-          name: customer.Full_Name,
-        },
-        message: "Login successful",
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ message: "Login failed", error: error.message });
-    }
+        name: customer.Full_Name,
+      },
+      message: "Login successful",
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Login failed", error: error.message });
   }
-
+}
   // Request password reset
   async requestPasswordReset(req, res) {
     try {
