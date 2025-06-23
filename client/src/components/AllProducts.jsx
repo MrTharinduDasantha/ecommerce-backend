@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { getProducts } from "../../../client/src/api/product"; // Adjust import path
+import { getProducts } from "../api/product";
+import ProductCard from "./ProductCard"; 
+import { calculateDiscountPercentage } from "./CalculateDiscount";
 
 const AllProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,7 +16,23 @@ const AllProducts = () => {
     const loadProducts = async () => {
       try {
         const data = await getProducts();
-        setProducts(data.products); // Adjust based on your API response
+        // Format products to match the structure expected by ProductCard
+        const formattedProducts = data.products
+          .filter(product => product.Status === "active")
+          .map(product => ({
+            id: product.idProduct,
+            name: product.Description,
+            image: product.Main_Image_Url,
+            price: product.Selling_Price,
+            oldPrice: product.Market_Price,
+            weight: product.SIH || "N/A",
+            color: product.variations?.[0]?.Colour || "N/A",
+            size: product.variations?.[0]?.Size || null,
+            discountName: product.Discount_Name || "",
+            category: product.subcategories?.[0]?.Description || "",
+            brand: product.Brand_Name || ""
+          }));
+        setProducts(formattedProducts);
       } catch (err) {
         setError(err.message || "Failed to load products");
       } finally {
@@ -39,19 +57,24 @@ const AllProducts = () => {
   }, [location.search]);
 
   // Filtering logic
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = products.filter(product => {
     if (searchTerm.length === 1 && /^[A-Z]$/i.test(searchTerm)) {
-      return product.Description?.toUpperCase().startsWith(searchTerm.toUpperCase());
+      return product.name?.toUpperCase().startsWith(
+        searchTerm.toUpperCase()
+      );
     }
     if (searchTerm.trim().length > 0) {
       const query = searchTerm.trim().toLowerCase();
       const words = query.split(/\s+/);
       // Match if all words are present in any of the searchable fields
-      return words.every(word =>
-        (product.Description && product.Description.toLowerCase().includes(word)) ||
-        (product.Brand_Name && product.Brand_Name.toLowerCase().includes(word)) ||
-        (product.Category && product.Category.toLowerCase().includes(word)) ||
-        (product.Long_Description && product.Long_Description.toLowerCase().includes(word))
+      return words.every(
+        word =>
+          (product.name &&
+            product.name.toLowerCase().includes(word)) ||
+          (product.brand &&
+            product.brand.toLowerCase().includes(word)) ||
+          (product.category && 
+            product.category.toLowerCase().includes(word))
       );
     }
     return true;
@@ -59,8 +82,8 @@ const AllProducts = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-pulse flex flex-col items-center">
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center animate-pulse">
           <div className="w-12 h-12 border-4 border-[#5CAF90] border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-[#1D372E]">Loading products...</p>
         </div>
@@ -70,11 +93,11 @@ const AllProducts = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen text-red-500 text-lg">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+      <div className="flex items-center justify-center h-screen text-lg text-red-500">
+        <div className="p-8 text-center bg-white rounded-lg shadow-md">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16 mx-auto text-red-500 mb-4"
+            className="w-16 h-16 mx-auto mb-4 text-red-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -93,7 +116,7 @@ const AllProducts = () => {
   }
 
   return (
-    <div className="bg-white min-h-screen px-4 py-8 md:px-16 font-poppins">
+    <div className="min-h-screen px-4 py-8 bg-white md:px-16 font-poppins">
       {/* Search Header */}
 
       {/* Filtered Products */}
@@ -101,45 +124,33 @@ const AllProducts = () => {
         <h3 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-left">
           Available Products
         </h3>
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {filteredProducts.map((product, index) => (
-              <Link to={`/product-page/${product.idProduct}`} key={index}>
-                <div
-                  className="bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow"
-                  style={{ width: '220px', height: '290px' }}
-                >
-                  <div className="relative">
-                    <img
-                      src={product.Main_Image_Url || '/placeholder.svg'}
-                      alt={product.Description}
-                      className="w-[220px] h-[170px] object-cover"
-                    />
-                    {/* Discount badge if applicable */}
-                    {calculateDiscount(product.Market_Price, product.Selling_Price) && (
-                      <span className="absolute top-2 right-2 bg-[#5CAF90] text-white text-[11px] px-2 py-0.5 rounded">
-                        {calculateDiscount(product.Market_Price, product.Selling_Price)}% OFF
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-2 px-2">
-                    <h3 className="text-[11px] text-gray-400 mb-1">{product.Brand_Name}</h3>
-                    <h3 className="text-[13px] font-medium text-gray-700 leading-snug line-clamp-2">
-                      {product.Description}
-                    </h3>
-                    <div className="mt-2 flex items-center space-x-2">
-                      <span className="text-[16px] font-semibold text-[#5E5E5E]">
-                        ${Number(product.Selling_Price).toFixed(2)}
-                      </span>
-                      {product.Market_Price > product.Selling_Price && (
-                        <span className="text-[13px] line-through text-gray-400">
-                          ${Number(product.Market_Price).toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Link>
+        {filteredProducts.length > 0 ? ( 
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+              >
+                <Link to={`/product-page/${product.id}`}>
+                  <ProductCard
+                    image={product.image}
+                    category={product.category}
+                    title={product.name}
+                    price={product.price}
+                    oldPrice={product.oldPrice}
+                    discountLabel={
+                      product.oldPrice && product.price
+                        ? `${calculateDiscountPercentage(
+                            product.oldPrice,
+                            product.price
+                          )} % OFF`
+                        : null
+                    }
+                    id={product.id}
+                    className="h-full"
+                  />
+                </Link>
+              </div>
             ))}
           </div>
         ) : (
@@ -148,13 +159,6 @@ const AllProducts = () => {
       </div>
     </div>
   );
-};
-
-// Utility function for discount
-const calculateDiscount = (marketPrice, sellingPrice) => {
-  if (!marketPrice || !sellingPrice) return null;
-  const discount = ((marketPrice - sellingPrice) / marketPrice) * 100;
-  return discount > 0 ? Math.round(discount) : null;
 };
 
 export default AllProducts;
