@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Eye, EyeOff, Lock } from "lucide-react";
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -13,7 +14,7 @@ const ResetPassword = () => {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [invalidParams, setInvalidParams] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,7 +26,9 @@ const ResetPassword = () => {
 
     if (!emailParam || !otpParam) {
       setInvalidParams(true);
-      setMessage("Invalid or missing parameters. Please try to reset your password again.");
+      setMessage(
+        "Invalid or missing parameters. Please try to reset your password again."
+      );
     } else {
       setEmail(emailParam);
       setOtp(otpParam);
@@ -62,33 +65,38 @@ const ResetPassword = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:9000/api/auth/customers/reset-password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            otp,
-            new_password: newPassword
-          }),
-        });
+        const response = await fetch(
+          "http://localhost:9000/api/auth/customers/reset-password",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email,
+              otp,
+              new_password: newPassword,
+            }),
+          }
+        );
 
         const data = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(data.message || "Failed to reset password");
         }
 
         setMessage("Your password has been reset successfully.");
-        
+
         // Navigate to sign-in page after a delay
         setTimeout(() => {
           navigate("/sign-in");
         }, 3000);
       } catch (error) {
         console.error("Error resetting password:", error);
-        setConfirmPasswordError(error.message || "Failed to reset password. Please try again.");
+        setConfirmPasswordError(
+          error.message || "Failed to reset password. Please try again."
+        );
         setLoading(false);
       }
     }
@@ -97,14 +105,16 @@ const ResetPassword = () => {
   // If parameters are invalid, show error and link to forgot password page
   if (invalidParams) {
     return (
-      <div className="min-h-full p-26 flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
+          <h2 className="text-2xl font-bold mb-6 text-center text-[#1D372E]">
+            Reset Password
+          </h2>
           <div className="text-center">
             <p className="text-red-500 mb-4">{message}</p>
             <button
               onClick={() => navigate("/forgot-password")}
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-[#5CAF90] text-white py-2 rounded-lg hover:bg-[#4a9a7d] focus:outline-none focus:ring-2 focus:ring-[#5CAF90] transition-colors"
             >
               Back to Forgot Password
             </button>
@@ -115,64 +125,79 @@ const ResetPassword = () => {
   }
 
   return (
-    <div className="min-h-full p-26 flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4 relative">
-            <label
-              className="block text-sm font-medium mb-2"
-              htmlFor="newPassword"
-            >
-              New Password
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
+        <h2 className="text-2xl font-bold mb-6 text-center text-[#1D372E]">
+          Reset Password
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                New Password
+              </span>
             </label>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Lock className="text-[#5CAF90] w-4 h-4" />
+              </div>
               <input
                 type={showNewPassword ? "text" : "password"}
                 id="newPassword"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                  newPasswordError ? "border-red-500" : "border-gray-300"
-                } pr-10`}
+                className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  newPasswordError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
                 placeholder="Enter your new password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
                 onClick={() => setShowNewPassword(!showNewPassword)}
               >
-                {showNewPassword ? "Hide" : "Show"}
+                {showNewPassword ? (
+                  <EyeOff className="text-[#5CAF90] w-4 h-4" />
+                ) : (
+                  <Eye className="text-[#5CAF90] w-4 h-4" />
+                )}
               </button>
             </div>
             {newPasswordError && (
               <p className="text-red-500 text-sm mt-1">{newPasswordError}</p>
             )}
           </div>
-          <div className="mb-6 relative">
-            <label
-              className="block text-sm font-medium mb-2"
-              htmlFor="confirmPassword"
-            >
-              Confirm Password
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Confirm Password
+              </span>
             </label>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Lock className="text-[#5CAF90] w-4 h-4" />
+              </div>
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                  confirmPasswordError ? "border-red-500" : "border-gray-300"
-                } pr-10`}
+                className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  confirmPasswordError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
                 placeholder="Confirm your new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                {showConfirmPassword ? "Hide" : "Show"}
+                {showConfirmPassword ? (
+                  <EyeOff className="text-[#5CAF90] w-4 h-4" />
+                ) : (
+                  <Eye className="text-[#5CAF90] w-4 h-4" />
+                )}
               </button>
             </div>
             {confirmPasswordError && (
@@ -181,28 +206,28 @@ const ResetPassword = () => {
               </p>
             )}
           </div>
+
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-70"
+            className="w-full bg-[#5CAF90] text-white py-2 rounded-lg hover:bg-[#4a9a7d] focus:outline-none focus:ring-2 focus:ring-[#5CAF90] disabled:opacity-70 transition-colors cursor-pointer"
             disabled={loading}
           >
             {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
+
         {message && (
           <p className="text-sm text-green-600 mt-4 text-center">{message}</p>
         )}
+
         <div className="mt-4 text-center">
-          <a
-            href="sign-in"
-            className="text-sm text-blue-500 hover:underline"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/sign-in");
-            }}
+          <button
+            type="button"
+            className="text-sm text-[#5CAF90] hover:underline cursor-pointer"
+            onClick={() => navigate("/sign-in")}
           >
             Back to Sign In
-          </a>
+          </button>
         </div>
       </div>
     </div>
