@@ -21,7 +21,7 @@ import {
 import { getCustomerById, updateCustomerDetails } from "../../api/customer";
 
 const Profile = () => {
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const [isEditProfileOpen, setIsEditProfileOpen] = React.useState(false);
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] =
     React.useState(false);
@@ -521,6 +521,16 @@ const Profile = () => {
       }
       try {
         await updateCustomerDetails(user.id, profileToUpdate);
+        if (setUser) {
+          setUser({
+            ...user,
+            full_name: updatedProfile.full_name,
+            mobile_no: updatedProfile.mobile_no,
+            email: updatedProfile.email,
+            address: updatedProfile.address,
+            birthday: profileToUpdate.birthday,
+          })
+        }
         setProfileData({
           ...profileData,
           full_name: updatedProfile.full_name,
@@ -618,7 +628,7 @@ const Profile = () => {
                     />
                   </div>
                   <span className="mr-5 text-gray-600">Email</span>
-                  <span className="text-gray-800 overflow-hidden">{profileData.email}</span>
+                  <span className="overflow-hidden text-gray-800">{profileData.email}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">

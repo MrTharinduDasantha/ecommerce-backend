@@ -1,6 +1,16 @@
 const Order = require('../../models/order.model');
 const Cart = require('../../models/cart.model');
 const pool = require('../../config/database');
+const nodemailer = require('nodemailer');
+
+// Create transporter for emails
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 // Customer Order Controller
 class OrderController {
@@ -322,6 +332,118 @@ class OrderController {
       res.json({ message: 'Order cancelled successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to cancel order', error: error.message });
+    }
+  }
+
+  // Send invoice via email
+  async sendInvoiceEmail(req, res) {
+    try {
+      const orderId = parseInt(req.params.id, 10);
+      const customerId = parseInt(req.params.customer_id, 10);
+      const { emailAddress, pdfBase64 } = req.body;
+      
+      // Check if email credentials are configured
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error("Email credentials not configured:", {
+          EMAIL_USER: process.env.EMAIL_USER ? "Set" : "Not set",
+          EMAIL_PASS: process.env.EMAIL_PASS ? "Set" : "Not set"
+        });
+        return res.status(500).json({ message: 'Email service not configured. Please contact administrator.' });
+      }
+      
+      if (isNaN(orderId) || isNaN(customerId)) {
+        return res.status(400).json({ message: 'Invalid order ID or customer ID' });
+      }
+      
+      if (!emailAddress) {
+        return res.status(400).json({ message: 'Email address is required' });
+      }
+      
+      if (!pdfBase64) {
+        return res.status(400).json({ message: 'PDF data is required' });
+      }
+      
+      console.log("Sending invoice email for order ID:", orderId, "to:", emailAddress);
+      
+      // Check if the order belongs to this customer
+      const [orderCheck] = await pool.query(
+        `SELECT o.* FROM \`Order\` o 
+         JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address
+         JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
+         WHERE o.idOrder = ? AND c.idCustomer = ?`,
+        [orderId, customerId]
+      );
+      
+      if (orderCheck.length === 0) {
+        return res.status(404).json({ message: 'Order not found or not authorized to send invoice for this order' });
+      }
+      
+      // Convert base64 PDF to buffer
+      const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+      
+      // Email content
+      const subject = `Invoice for Order #${orderId} - Asipiya`;
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #1D372E; margin-bottom: 5px;">Asipiya Order Invoice</h2>
+            <p style="color: #666;">Thank you for your order!</p>
+          </div>
+          
+          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <h3 style="color: #5CAF90; margin-top: 0;">Order Details:</h3>
+            <p><strong>Order #:</strong> ${orderId}</p>
+            <p><strong>Order Date:</strong> ${new Date(orderCheck[0].Date_Time).toLocaleDateString()}</p>
+            <p><strong>Total Amount:</strong> $${orderCheck[0].Net_Amount}</p>
+            <p><strong>Payment Status:</strong> ${orderCheck[0].Payment_Stats}</p>
+            <p><strong>Delivery Status:</strong> ${orderCheck[0].Delivery_Status}</p>
+          </div>
+          
+          <p style="color: #666; margin-bottom: 20px;">
+            Please find your detailed invoice attached to this email. If you have any questions about your order, 
+            please don't hesitate to contact our customer support team.
+          </p>
+          
+          <p style="color: #666; margin-bottom: 20px;">
+            Thank you for choosing Asipiya!
+          </p>
+          
+          <div style="text-align: center; color: #999; font-size: 12px; margin-top: 30px;">
+            <p>© ${new Date().getFullYear()} Asipiya. All rights reserved.</p>
+          </div>
+        </div>
+      `;
+      
+      // Email options
+      const mailOptions = {
+        from: `"Asipiya" <${process.env.EMAIL_USER}>`,
+        to: emailAddress,
+        subject: subject,
+        html: htmlContent,
+        attachments: [
+          {
+            filename: `Order-${orderId}-Invoice.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf'
+          }
+        ]
+      };
+      
+      // Send email
+      await transporter.sendMail(mailOptions);
+      
+      console.log("Invoice email sent successfully to:", emailAddress);
+      res.json({ message: 'Invoice sent successfully to the provided email address' });
+      
+    } catch (error) {
+      console.error("Error sending invoice email:", error);
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        command: error.command
+      });
+      res.status(500).json({ message: 'Failed to send invoice email', error: error.message });
     }
   }
 }

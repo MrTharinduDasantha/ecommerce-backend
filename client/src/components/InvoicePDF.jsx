@@ -1,7 +1,9 @@
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, pdf, Image } from '@react-pdf/renderer'
 import { useState } from 'react'
 import DownloadIcon from '@mui/icons-material/Download'
+import EmailIcon from '@mui/icons-material/Email'
 import './InvoicePDF.css'
+import axios from "axios";
 
 // Create styles
 const styles = StyleSheet.create({
@@ -241,6 +243,10 @@ const InvoicePDF = ({ data }) => (
 // Invoice Download Button Component
 const InvoiceDownloadButton = ({ orderData }) => {
   const [isGenerating, setIsGenerating] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [emailAddress, setEmailAddress] = useState('')
+  const [emailStatus, setEmailStatus] = useState('') // 'success', 'error', or ''
+  const [emailMessage, setEmailMessage] = useState('')
 
   const handleDownload = async () => {
     try {
@@ -261,17 +267,143 @@ const InvoiceDownloadButton = ({ orderData }) => {
     }
   }
 
+  const handleEmailShare = async () => {
+    try {
+      setIsGenerating(true)
+      setEmailStatus('')
+      setEmailMessage('')
+      
+      // Generate PDF blob
+      const blob = await pdf(<InvoicePDF data={orderData} />).toBlob()
+      
+      // Convert blob to base64
+      const reader = new FileReader()
+      reader.readAsDataURL(blob)
+      reader.onloadend = async () => {
+        const base64data = reader.result.split(',')[1] // Remove data:application/pdf;base64, prefix
+        
+        // Send to backend API
+        const response = await fetch(`http://localhost:9000/api/orders/${orderData.customerId}/${orderData.orderId}/send-invoice`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}` // Add authentication token
+          },
+          body: JSON.stringify({
+            emailAddress: emailAddress,
+            pdfBase64: base64data
+          })
+        })
+        
+        const result = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(result.message || 'Failed to send invoice email')
+        }
+        
+        // Show success message
+        setEmailStatus('success')
+        setEmailMessage(`Invoice sent successfully to ${emailAddress}`)
+        
+        // Clear form after 3 seconds
+        setTimeout(() => {
+          setShowEmailModal(false)
+          setEmailAddress('')
+          setEmailStatus('')
+          setEmailMessage('')
+        }, 3000)
+      }
+      
+    } catch (error) {
+      console.error('Error sharing via email:', error)
+      setEmailStatus('error')
+      setEmailMessage('Failed to send invoice email: ' + error.message)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   return (
-    <button 
-      onClick={handleDownload}
-      disabled={isGenerating}
-      className="invoice-button"
-    >
-      <DownloadIcon className="invoice-icon" />
-      <span className="invoice-text">
-        {isGenerating ? 'Generating PDF...' : 'Download PDF'}
-      </span>
-    </button>
+    <div className="flex flex-col gap-2">
+      <button 
+        onClick={handleDownload}
+        disabled={isGenerating}
+        className="invoice-button"
+      >
+        <DownloadIcon className="invoice-icon" />
+        <span className="invoice-text">
+          {isGenerating ? 'Generating PDF...' : 'Download PDF'}
+        </span>
+      </button>
+      
+      <button 
+        onClick={() => setShowEmailModal(true)}
+        disabled={isGenerating}
+        className="invoice-button email-button"
+      >
+        <EmailIcon className="invoice-icon" />
+        <span className="invoice-text">
+          Share via Email
+        </span>
+      </button>
+
+      {/* Email Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Share Invoice via Email</h3>
+            
+            {/* Status Messages */}
+            {emailStatus === 'success' && (
+              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                {emailMessage}
+              </div>
+            )}
+            
+            {emailStatus === 'error' && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {emailMessage}
+              </div>
+            )}
+            
+            <p className="text-gray-600 mb-4">
+              Enter the email address where you'd like to send the invoice:
+            </p>
+            <input
+              type="email"
+              value={emailAddress}
+              onChange={(e) => setEmailAddress(e.target.value)}
+              placeholder="Enter email address"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              disabled={emailStatus === 'success'}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleEmailShare}
+                disabled={!emailAddress || isGenerating || emailStatus === 'success'}
+                className="flex-1 bg-[#5CAF90] text-white py-2 px-4 rounded hover:bg-[#4a9a7d] disabled:bg-gray-300"
+              >
+                {isGenerating ? 'Sending...' : emailStatus === 'success' ? 'Sent!' : 'Send Email'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowEmailModal(false)
+                  setEmailAddress('')
+                  setEmailStatus('')
+                  setEmailMessage('')
+                }}
+                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+              >
+                {emailStatus === 'success' ? 'Close' : 'Cancel'}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Note: The PDF will be sent as an attachment to the specified email address.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getCustomerOrders, getOrderDetails, trackOrder } from "../api/order";
-import Map from "../assets/map.png";
+import DeliveryMap from "./DeliveryMap";
 import OrderDetails from "./OrderDetails";
 import InvoiceDownloadButton from "./InvoicePDF";
 import { formatPrice } from "./FormatPrice";
@@ -210,6 +210,35 @@ const OrderTracking = () => {
     payment_status: selectedOrder?.Payment_Stats
   };
 
+  // Prepare invoice data for download
+  const prepareInvoiceData = () => {
+    return {
+
+      orderId: selectedOrder.idOrder,
+      customerId: customerId,
+      orderDate: selectedOrder.Date_Time,
+      paymentMethod: selectedOrder.Payment_Type,
+      paymentStatus: selectedOrder.Payment_Stats,
+      deliveryType: selectedOrder.Delivery_Type,
+      deliveryStatus: selectedOrder.Delivery_Status,
+      customerName: selectedOrder.Full_Name,
+      address: selectedOrder.Address,
+      city: selectedOrder.City,
+      country: selectedOrder.Country,
+      items: orderDetails.items || [],
+
+      order: selectedOrder,
+      orderDetails: orderDetails,
+
+      subtotal: subtotal,
+      discount: discount,
+      deliveryFee: deliveryFee,
+      total: total,
+      orderItems: orderItems,
+      currentStatus: currentStatus
+    };
+  };
+
   return (
     <div className="p-6 bg-white min-h-screen">
       <div className="max-w-full mx-auto">
@@ -321,16 +350,17 @@ const OrderTracking = () => {
             </div>
           </div>
 
-          {/* Center Section - Map (fixed height) */}
+          {/* Center Section - Interactive Map */}
           <div className="bg-gray-50 p-6 rounded-lg shadow border border-[#E8E8E8] flex flex-col h-[500px]">
             <h3 className="text-lg font-semibold text-center mb-4">
               Delivery <span className="text-[#5CAF90]">Location</span>
             </h3>
             <div className="flex-grow border rounded-lg border-gray-200 overflow-hidden">
-              <img
-                src={Map}
-                alt="Map"
-                className="w-full h-full object-cover bg-white"
+              <DeliveryMap
+                address={selectedOrder?.Address}
+                city={selectedOrder?.City}
+                country={selectedOrder?.Country}
+                fullName={selectedOrder?.Full_Name}
               />
             </div>
           </div>

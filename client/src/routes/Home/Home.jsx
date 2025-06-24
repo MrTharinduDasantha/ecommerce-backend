@@ -1,158 +1,106 @@
-import React, { useEffect, useState } from "react"
-import denim from "./denims.png"
-import fruits from "./fruits.avif"
-import { Truck, RotateCcw, ShieldCheck, Headphones } from "lucide-react"
+import React, { useEffect, useState } from "react";
+import denim from "./denims.png";
+import fruits from "./fruits.avif";
+import { Truck, RotateCcw, ShieldCheck, Headphones } from "lucide-react";
 import {
   getCategories,
   getTopSellingCategories,
   getTopSoldProducts,
   getProducts,
-} from "../../api/product"
-import { Link } from "react-router-dom"
-
-const ProductCard = ({
-  image,
-  category,
-  title,
-  price,
-  oldPrice,
-  discountLabel,
-  id,
-}) => (
-  <Link
-    to={`/product-page/${id}`}
-    className="bg-white border border-[#E8E8E8] hover:shadow-lg transition-shadow w-full max-w-[210px] mx-auto"
-    style={{ aspectRatio: "220/290" }}
-  >
-    <div className="relative">
-      <img
-        src={image}
-        alt={title}
-        className="w-full h-[170px] object-cover "
-        style={{ aspectRatio: "220/170" }}
-      />
-      <div className="absolute flex flex-col items-end top-2 right-2">
-        <span className="bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded mb-1">
-          New
-        </span>
-        {discountLabel && discountLabel !== "0% OFF" && (
-          <span className="bg-red-500 text-white text-[8px] px-2 py-0.5 rounded">
-            {discountLabel}
-          </span>
-        )}
-      </div>
-    </div>
-    <div className="px-4 pb-4 mt-2">
-      <p className="text-[11px] text-[#7A7A7A] mb-1">{category}</p>
-      <h3 className="text-[13px] font-medium text-[#1D372E] line-clamp-1">
-        {title}
-      </h3>
-      <div className="flex items-center mt-2 space-x-2">
-        <span className="text-[14px] font-semibold text-[#5E5E5E]">
-          {price}
-        </span>
-        {oldPrice && (
-          <span className="text-[12px] text-[#CCCCCC] line-through">
-            {oldPrice}
-          </span>
-        )}
-      </div>
-    </div>
-  </Link>
-)
+} from "../../api/product";
+import ProductCard from "../../components/ProductCard";
+import { Link } from "react-router-dom";
+import {calculateDiscountPercentage} from "../../components/CalculateDiscount"
 
 const Home = () => {
-  const [categories, setCategories] = useState([])
-  const [topSellingCategories, setTopSellingCategories] = useState([])
-  const [topSoldProducts, setTopSoldProducts] = useState([])
-  const [newArrivals, setNewArrivals] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [categories, setCategories] = useState([]);
+  const [topSellingCategories, setTopSellingCategories] = useState([]);
+  const [topSoldProducts, setTopSoldProducts] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const calculateDiscountPercentage = (oldPrice, currentPrice) => {
-    if (!oldPrice || !currentPrice) return 0
-    const discount =
-      ((parseFloat(oldPrice) - parseFloat(currentPrice)) /
-        parseFloat(oldPrice)) *
-      100
-    return Math.round(discount)
-  }
+
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoryData = await getCategories()
-        let activeCategories = []
+        const categoryData = await getCategories();
+        let activeCategories = [];
         if (categoryData && categoryData.categories) {
           activeCategories = categoryData.categories.filter(
-            category => category.Status === "active"
-          )
-          setCategories(activeCategories)
+            (category) => category.Status === "active"
+          );
+          setCategories(activeCategories);
         } else {
           setError(
             "Unexpected category data structure: " +
               JSON.stringify(categoryData)
-          )
+          );
         }
 
-        const topSellingData = await getTopSellingCategories()
+        const topSellingData = await getTopSellingCategories();
         if (topSellingData && topSellingData.categories) {
           const activeTopSellingCategories = topSellingData.categories.filter(
-            topCategory => {
+            (topCategory) => {
               return activeCategories.some(
-                activeCategory =>
+                (activeCategory) =>
                   activeCategory.idProduct_Category ===
                   topCategory.idProduct_Category
-              )
+              );
             }
-          )
-          setTopSellingCategories(activeTopSellingCategories)
+          );
+          setTopSellingCategories(activeTopSellingCategories);
         } else {
           setError(
             "Unexpected top-selling data structure: " +
               JSON.stringify(topSellingData)
-          )
+          );
         }
 
-        const topSoldData = await getTopSoldProducts()
+        const topSoldData = await getTopSoldProducts();
         if (topSoldData && topSoldData.products) {
-          setTopSoldProducts(topSoldData.products)
+          setTopSoldProducts(topSoldData.products);
         } else {
           setError(
             "Unexpected top sold products data structure: " +
               JSON.stringify(topSoldData)
-          )
+          );
         }
 
-        const productsData = await getProducts()
+        const productsData = await getProducts();
         if (productsData && productsData.products) {
           const activeProducts = productsData.products.filter(
-            product => product.Status === "active"
-          )
+            (product) => product.Status === "active"
+          );
           const newArrivalProducts = activeProducts.filter(
-            product => product.History_Status === "new arrivals"
-          )
-          setNewArrivals(newArrivalProducts)
+            (product) => product.History_Status === "new arrivals"
+          );
+          setNewArrivals(newArrivalProducts);
         } else {
           setError(
             "Unexpected products data structure: " +
               JSON.stringify(productsData)
-          )
+          );
         }
       } catch (error) {
-        console.error("Failed to load data:", error.message)
-        setError(error.message || "Failed to load data")
+        console.error("Failed to load data:", error.message);
+        setError(error.message || "Failed to load data");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
-  if (loading) return <div className="py-8 text-center">Loading...</div>
+  if (loading) return <div className="py-8 text-center">Loading...</div>;
   if (error)
-    return <div className="py-8 text-center text-red-500">Error: {error}</div>
+    return <div className="py-8 text-center text-red-500">Error: {error}</div>;
 
   return (
     <div
@@ -181,7 +129,7 @@ const Home = () => {
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10">
           {categories.length !== 0 ? (
-            categories.map(category => (
+            categories.map((category) => (
               <Link
                 key={category.idProduct_Category}
                 to={`/AllCategories/${category.idProduct_Category}`}
@@ -215,22 +163,22 @@ const Home = () => {
         <p className="text-center text-sm sm:text-base text-[#636363] mb-6">
           Shop Online for New arrivals and offers
         </p>
-        <div className="grid grid-cols-2 gap-4 mb-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-8">
           {newArrivals.length !== 0 ? (
-            newArrivals
-              .slice(0, 5)
-              .map(product => (
+            newArrivals.slice(0, 5).map((product) => (
+              <div
+                key={product.idProduct}
+                className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                onClick={() => handleProductClick(product.idProduct)}
+              >
                 <ProductCard
-                  key={product.idProduct}
                   image={product.Main_Image_Url || fruits}
                   category={
                     product.subcategories?.[0]?.Description || "General"
                   }
                   title={product.Description}
-                  price={`${product.Selling_Price} LKR`}
-                  oldPrice={
-                    product.Market_Price ? `${product.Market_Price} LKR` : null
-                  }
+                  price={product.Selling_Price}
+                  oldPrice={product.Market_Price ? product.Market_Price : null}
                   discountLabel={
                     product.Market_Price && product.Selling_Price
                       ? `${calculateDiscountPercentage(
@@ -239,37 +187,50 @@ const Home = () => {
                         )}% OFF`
                       : null
                   }
+                  historyStatus={product.History_Status}
                   id={product.idProduct}
+                  className="h-full"
                 />
-              ))
+              </div>
+            ))
           ) : (
-            <div className="flex justify-center w-screen text-red-500 -mx-17">
-              No products found.
-            </div>
+            <div className="col-span-full py-10 flex items-center justify-center">
+            <p className="text-xl md:text-2xl font-bold text-gray-500">
+              No Products Found.
+            </p>
+          </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {newArrivals.length !== 0 && newArrivals.slice(5, 10).map(product => (
-            <ProductCard
-              key={product.idProduct}
-              image={product.Main_Image_Url || fruits}
-              category={product.subcategories?.[0]?.Description || "General"}
-              title={product.Description}
-              price={`${product.Selling_Price} LKR`}
-              oldPrice={
-                product.Market_Price ? `${product.Market_Price} LKR` : null
-              }
-              discountLabel={
-                product.Market_Price && product.Selling_Price
-                  ? `${calculateDiscountPercentage(
-                      product.Market_Price,
-                      product.Selling_Price
-                    )}% OFF`
-                  : null
-              }
-              id={product.idProduct}
-            />
-          ))}
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+          {newArrivals.length !== 0 &&
+            newArrivals.slice(5, 10).map((product) => (
+              <div
+                key={product.idProduct}
+                className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                onClick={() => handleProductClick(product.idProduct)}
+              >
+                <ProductCard
+                  image={product.Main_Image_Url || fruits}
+                  category={
+                    product.subcategories?.[0]?.Description || "General"
+                  }
+                  title={product.Description}
+                  price={product.Selling_Price}
+                  oldPrice={product.Market_Price ? product.Market_Price : null}
+                  discountLabel={
+                    product.Market_Price && product.Selling_Price
+                      ? `${calculateDiscountPercentage(
+                          product.Market_Price,
+                          product.Selling_Price
+                        )}% OFF`
+                      : null
+                  }
+                  historyStatus={product.History_Status}
+                  id={product.idProduct}
+                  className="h-full"
+                />
+              </div>
+            ))}
         </div>
       </div>
 
@@ -282,50 +243,60 @@ const Home = () => {
         <p className="text-center text-sm sm:text-base text-[#636363] mb-6">
           Shop Online for New arrivals and offers
         </p>
-        <div className="grid grid-cols-2 gap-4 mb-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {topSoldProducts.slice(0, 5).map(product => (
-            <ProductCard
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-8">
+          {topSoldProducts.slice(0, 5).map((product) => (
+            <div
               key={product.idProduct}
-              image={product.Main_Image_Url || fruits}
-              category={product.Description}
-              title={product.Long_Description || product.Description}
-              price={`${product.Selling_Price} LKR`}
-              oldPrice={
-                product.Market_Price ? `${product.Market_Price} LKR` : null
-              }
-              discountLabel={
-                product.Market_Price && product.Selling_Price
-                  ? `${calculateDiscountPercentage(
-                      product.Market_Price,
-                      product.Selling_Price
-                    )}% OFF`
-                  : null
-              }
-              id={product.idProduct}
-            />
+              className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+              onClick={() => handleProductClick(product.idProduct)}
+            >
+              <ProductCard
+                image={product.Main_Image_Url || fruits}
+                category={product.Description}
+                title={product.Long_Description || product.Description}
+                price={product.Selling_Price}
+                oldPrice={product.Market_Price ? product.Market_Price : null}
+                discountLabel={
+                  product.Market_Price && product.Selling_Price
+                    ? `${calculateDiscountPercentage(
+                        product.Market_Price,
+                        product.Selling_Price
+                      )}% OFF`
+                    : null
+                }
+                historyStatus={product.History_Status}
+                id={product.idProduct}
+                className="h-full"
+              />
+            </div>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {topSoldProducts.slice(5).map(product => (
-            <ProductCard
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+          {topSoldProducts.slice(5).map((product) => (
+            <div
               key={product.idProduct}
-              image={product.Main_Image_Url || fruits}
-              category={product.Description}
-              title={product.Long_Description || product.Description}
-              price={`${product.Selling_Price} LKR`}
-              oldPrice={
-                product.Market_Price ? `${product.Market_Price} LKR` : null
-              }
-              discountLabel={
-                product.Market_Price && product.Selling_Price
-                  ? `${calculateDiscountPercentage(
-                      product.Market_Price,
-                      product.Selling_Price
-                    )}% OFF`
-                  : null
-              }
-              id={product.idProduct}
-            />
+              className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+              onClick={() => handleProductClick(product.idProduct)}
+            >
+              <ProductCard
+                image={product.Main_Image_Url || fruits}
+                category={product.Description}
+                title={product.Long_Description || product.Description}
+                price={product.Selling_Price}
+                oldPrice={product.Market_Price ? product.Market_Price : null}
+                discountLabel={
+                  product.Market_Price && product.Selling_Price
+                    ? `${calculateDiscountPercentage(
+                        product.Market_Price,
+                        product.Selling_Price
+                      )}% OFF`
+                    : null
+                }
+                historyStatus={product.History_Status}
+                id={product.idProduct}
+                className="h-full"
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -367,7 +338,7 @@ const Home = () => {
         {/* First Row: 1st card width + 2nd card width = 3rd card width */}
         <div className="grid grid-cols-[1fr_1fr_2fr] gap-6 mb-8">
           {topSellingCategories.length !== 0 ? (
-            topSellingCategories.slice(0, 3).map(category => (
+            topSellingCategories.slice(0, 3).map((category) => (
               <Link
                 key={category.idProduct_Category}
                 to={`/AllCategories/${category.idProduct_Category}`}
@@ -407,7 +378,7 @@ const Home = () => {
 
         <div className="grid grid-cols-[2fr_1fr_1fr] gap-6">
           {topSellingCategories.length !== 0 &&
-            topSellingCategories.slice(3, 6).map(category => (
+            topSellingCategories.slice(3, 6).map((category) => (
               <Link
                 key={category.idProduct_Category}
                 to={`/AllCategories/${category.idProduct_Category}`}
@@ -518,7 +489,7 @@ const Home = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

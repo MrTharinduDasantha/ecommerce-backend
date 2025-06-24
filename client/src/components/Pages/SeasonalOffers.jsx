@@ -11,6 +11,11 @@ const SeasonalOffers = () => {
   const [addedProducts, setAddedProducts] = useState([]);
   const [products, setProducts] = useState([]);
 
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
+
   // Fetch seasonal offers products using the API function
   useEffect(() => {
     const fetchProducts = async () => {
@@ -36,6 +41,7 @@ const SeasonalOffers = () => {
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "Seasonal Discounts",
             category: product.subcategories?.[0]?.Description || "",
+            historyStatus: product.History_Status || "",
           }));
           setProducts(formattedProducts);
         }
@@ -46,24 +52,6 @@ const SeasonalOffers = () => {
 
     fetchProducts();
   }, []);
-
-  const handleProductClick = (product) => {
-    // Navigate to product page instead of adding to cart
-    navigate(`/product-page/${product.id}`, {
-      state: {
-        product: {
-          id: product.id,
-          name: product.name,
-          image: product.image,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          color: product.color,
-          size: product.size,
-          discountName: product.discountName,
-        },
-      },
-    });
-  };
 
   const handleViewCart = () => {
     navigate("/cart", {
@@ -89,10 +77,11 @@ const SeasonalOffers = () => {
             <Banner className="mb-4 sm:mb-6" />
 
             {/* Header with View Cart button */}
-            <div className="flex flex-col items-start justify-between mb-4 sm:flex-row sm:items-center sm:mb-6">
-              <h2 className="text-[#1D372E] text-2xl font-semibold">
-                TOP SEASONAL OFFERS
+              <h2 className="mb-2 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
+                <span className="text-[#1D372E]">Seasonal </span>
+                <span className="text-[#5CAF90]">Offers</span>
               </h2>
+            <div className="flex flex-col items-start justify-between mb-4 sm:flex-row sm:items-center sm:mb-6">
               {addedProducts.length > 0 && (
                 <button
                   onClick={handleViewCart}
@@ -109,6 +98,7 @@ const SeasonalOffers = () => {
                 <div
                   key={product.id}
                   className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  onClick={() => handleProductClick(product.id)}
                 >
                   <ProductCard
                     image={product.image}
@@ -124,8 +114,8 @@ const SeasonalOffers = () => {
                           )} % OFF`
                         : null
                     }
+                    historyStatus={product.historyStatus}
                     id={product.id}
-                    onProductClick={() => handleProductClick(product)}
                     className="h-full"
                   />
                 </div>

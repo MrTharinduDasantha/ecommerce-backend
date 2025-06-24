@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBrands, getProductsByBrand } from "../../api/product";
-import ProductCard from "../../components/ProductCard"; // <-- Import ProductCard
+import ProductCard from "../../components/ProductCard";
+import { calculateDiscountPercentage } from "../../components/CalculateDiscount"; 
 
 const BrandDetails = () => {
   const { name } = useParams();
@@ -26,7 +27,11 @@ const BrandDetails = () => {
           try {
             // Fetch products for the brand
             const productData = await getProductsByBrand(brand.idProduct_Brand);
-            const productsArray = Array.isArray(productData.products) ? productData.products.filter(products => products.Status === "active") : [];
+            const productsArray = Array.isArray(productData.products)
+              ? productData.products.filter(
+                  (products) => products.Status === "active"
+                )
+              : [];
             setProducts(productsArray);
           } catch (productError) {
             console.error("Error fetching products:", productError);
@@ -71,6 +76,7 @@ const BrandDetails = () => {
 
   // Function to navigate to ProductPage
   const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
     navigate(`/product-page/${productId}`); // Navigate to the ProductPage with the product ID
   };
 
@@ -130,12 +136,12 @@ const BrandDetails = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 bg-white md:px-16 font-poppins">
+    <div className="min-h-screen px-4 py-8 bg-gray-50 md:px-16 font-poppins">
       <h2 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-left">
-        {selectedBrand.Brand_Name}
+        {selectedBrand.Brand_Name.toUpperCase()}
       </h2>
 
-      <div className="relative flex flex-col items-center max-w-3xl p-6 mx-auto bg-white rounded-md md:flex-row md:max-w-full ">
+      <div className="relative flex flex-col items-center max-w-3xl p-6 mx-auto bg-gray-200 rounded-md md:flex-row md:max-w-full ">
         <div className="flex-shrink-0 w-40">
           <img
             src={selectedBrand.Brand_Image_Url || "/placeholder.svg"}
@@ -152,47 +158,51 @@ const BrandDetails = () => {
       </div>
 
       {/* Products Section */}
-      <div className="mt-12">
-        <h3 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-left">
-          Products
-        </h3>
+      <div className="mt-6">
+        <h2 className="mb-6 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
+          <span className="text-[#1D372E]">{selectedBrand.Brand_Name} </span>
+          <span className="text-[#5CAF90]">Products</span>
+        </h2>
         {loadingProducts ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-10 h-10 border-4 border-[#5CAF90] border-t-transparent rounded-full animate-spin"></div>
             <p className="ml-4 text-[#1D372E]">Loading products...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {products.length > 0 ? (
               products.map((product) => (
-                <ProductCard
-                  key={product.idProduct}
-                  image={product.Main_Image_Url || "/placeholder.svg"}
-                  category={selectedBrand.Brand_Name}
-                  title={product.Description}
-                  price={product.Selling_Price}
-                  oldPrice={product.Market_Price}
-                  discountName={
-                    product.Market_Price && product.Selling_Price
-                      ? "Discount"
-                      : null
-                  }
-                  discountAmount={
-                    product.Market_Price && product.Selling_Price
-                      ? `${Math.round(
-                          ((product.Market_Price - product.Selling_Price) /
-                            product.Market_Price) *
-                            100
-                        )}% OFF`
-                      : null
-                  }
-                  id={product.idProduct}
-                />
+                <div
+                  key={product.id}
+                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  onClick={() => handleProductClick(product.idProduct)}
+                >
+                  <ProductCard
+                    key={product.idProduct}
+                    image={product.Main_Image_Url || "/placeholder.svg"}
+                    category={selectedBrand.Brand_Name}
+                    title={product.Description}
+                    price={product.Selling_Price}
+                    oldPrice={product.Market_Price}
+                    discountLabel={
+                      product.Market_Price && product.Selling_Price
+                        ? `${calculateDiscountPercentage(
+                            product.Market_Price,
+                            product.Selling_Price
+                          )}% OFF`
+                        : null
+                    }
+                    historyStatus={ product.History_Status}
+                    id={product.idProduct}
+                  />
+                </div>
               ))
             ) : (
-              <div className="text-center text-gray-500">
-                No products available.
-              </div>
+              <div className="col-span-full py-10 flex items-center justify-center">
+                  <p className="text-xl md:text-2xl font-bold text-gray-500">
+                    No products available for this brand.
+                  </p>
+                </div>
             )}
           </div>
         )}
