@@ -16,5 +16,6 @@ router.get('/:customer_id/:id', orderController.getOrderDetails);
 router.get('/:customer_id/:id/track', orderController.trackOrderStatus);
 router.post('/', orderController.createOrder);
 router.post('/:customer_id/orders/:id/cancel', orderController.cancelOrder);
+router.post('/:customer_id/:id/send-invoice', orderController.sendInvoiceEmail);
 
 module.exports = router; 

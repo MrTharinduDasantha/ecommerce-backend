@@ -13,10 +13,16 @@ const adminRoutes = require("./routes/admin/user.routes");
 const notificationRoutes = require("./routes/admin/notification.routes");
 const customerAuthRoutes = require("./routes/customer/auth.routes");
 const customerAddressRoutes = require("./routes/customer/address.routes");
+const bodyParser = require("body-parser");
+const nodemailer = require("nodemailer");
+
 
 require("dotenv").config(); // Load environment variables from .env file
 
 const app = express();
+// Middleware
+app.use(bodyParser.json({ limit: '25mb' })); // handle large base64 files
+app.use(cors());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -41,7 +47,8 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ limit: '20mb', extended: true }));
 app.use("/src/uploads", express.static("src/uploads"));
 
 // Public routes - no authentication needed
@@ -70,6 +77,38 @@ io.on("connection", (socket) => {
 });
 
 app.set("io", io);
+// Email configuration
+const transporter = nodemailer.createTransport({
+  service: "gmail", // Replace with your email provider
+  auth: {
+    user: "rashelgunarathne63@gmail.com", // Replace with your email
+    pass: "gkhq qmhz wgyf fdgc", // Replace with your app-specific password
+  },
+});
+// Email route
+app.post("/api/orders/:customerId/:orderId/send-invoice", async (req, res) => {
+  const { emailAddress, pdfBase64 } = req.body;
+  const { customerId, orderId } = req.params;
+
+  if (!emailAddress || !pdfBase64) {
+    return res.status(400).json({ message: "Missing email or PDF data." });
+  }
+
+  try {
+    const mailOptions = {
+      from: "rashelgunarathne63@gmail.com",
+      to: emailAddress,
+      subject: `Invoice for Order #${orderId}`,
+      text: `Hi,\n\nPlease find attached the invoice for Order #${orderId}.\n\nRegards,\nAsipiya Team`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Invoice sent successfully!" });
+  } catch (error) {
+    console.error("Error sending invoice:", error);
+    res.status(500).json({ message: "Failed to send invoice." });
+  }
+});
 
 const PORT = process.env.PORT || 9000;
 

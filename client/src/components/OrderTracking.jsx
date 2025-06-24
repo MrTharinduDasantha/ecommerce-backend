@@ -259,6 +259,7 @@ const OrderTracking = () => {
 
     return {
       orderId: selectedOrder.idOrder,
+      customerId: customerId,
       orderDate: selectedOrder.Date_Time,
       paymentMethod: selectedOrder.Payment_Type,
       paymentStatus: selectedOrder.Payment_Stats,
