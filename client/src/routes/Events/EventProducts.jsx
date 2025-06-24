@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getEvent, getEventProducts } from "../../api/event";
 import ProductCard from "../../components/ProductCard";
+import { calculateDiscountPercentage } from "../../components/CalculateDiscount";
 
 const EventProducts = () => {
   const { eventId } = useParams();
@@ -31,11 +32,12 @@ const EventProducts = () => {
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
-            price: `LKR ${product.Selling_Price}`,
+            price: product.Selling_Price,
             oldPrice: product.Market_Price
-              ? `LKR ${product.Market_Price}`
+              ? product.Market_Price
               : null,
             category: "Event Offer",
+            historyStatus: product.History_Status 
           }));
           setProducts(formattedProducts);
         }
@@ -53,6 +55,7 @@ const EventProducts = () => {
   }, [eventId]);
 
   const handleProductClick = (product) => {
+    window.scrollTo(0, 0);
     navigate(`/product-page/${product.id}`, {
       state: {
         product: {
@@ -62,6 +65,7 @@ const EventProducts = () => {
           price: product.price,
           oldPrice: product.oldPrice,
           discountName: product.discountName,
+          historyStatus: product.historyStatus,
         },
       },
     });
@@ -116,7 +120,7 @@ const EventProducts = () => {
           {/* Main Content Area */}
           <div className="flex-1 overflow-hidden">
             {/* Event Header */}
-            <div className="bg-white rounded-lg p-6 mb-6 shadow-sm border border-[#E8E8E8]">
+            <div className="bg-gray-200 rounded-lg p-6 mb-6 shadow-sm border border-[#E8E8E8]">
               <div className="flex flex-col md:flex-row gap-6">
                 {/* Event Image */}
                 {event.Event_Image_Url && (
@@ -143,10 +147,10 @@ const EventProducts = () => {
 
             {/* Products Section */}
             <div className="mb-4 sm:mb-6">
-              <h2 className="text-[#1D372E] text-2xl font-semibold mb-6">
-                EVENT PRODUCTS
+              <h2 className="mb-6 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
+                <span className="text-[#1D372E]">Event </span>
+                <span className="text-[#5CAF90]">Products</span>
               </h2>
-
               {products.length === 0 ? (
                 <div className="bg-white rounded-lg p-12 text-center shadow-sm border border-[#E8E8E8]">
                   <div className="text-6xl mb-4">📦</div>
@@ -170,6 +174,15 @@ const EventProducts = () => {
                         title={product.name}
                         price={product.price}
                         oldPrice={product.oldPrice}
+                        discountLabel={
+                          product.oldPrice && product.price
+                            ? `${calculateDiscountPercentage(
+                                product.oldPrice,
+                                product.price
+                              )} % OFF`
+                            : null
+                        }
+                        historyStatus={product.historyStatus}
                         id={product.id}
                         onProductClick={() => handleProductClick(product)}
                         className="h-full"

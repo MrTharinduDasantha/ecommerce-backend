@@ -187,15 +187,18 @@ const Home = () => {
                         )}% OFF`
                       : null
                   }
+                  historyStatus={product.History_Status}
                   id={product.idProduct}
                   className="h-full"
                 />
               </div>
             ))
           ) : (
-            <div className="flex justify-center w-screen text-red-500 -mx-17">
-              No products found.
-            </div>
+            <div className="col-span-full py-10 flex items-center justify-center">
+            <p className="text-xl md:text-2xl font-bold text-gray-500">
+              No Products Found.
+            </p>
+          </div>
           )}
         </div>
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -222,6 +225,7 @@ const Home = () => {
                         )}% OFF`
                       : null
                   }
+                  historyStatus={product.History_Status}
                   id={product.idProduct}
                   className="h-full"
                 />
@@ -260,6 +264,7 @@ const Home = () => {
                       )}% OFF`
                     : null
                 }
+                historyStatus={product.History_Status}
                 id={product.idProduct}
                 className="h-full"
               />
@@ -287,6 +292,7 @@ const Home = () => {
                       )}% OFF`
                     : null
                 }
+                historyStatus={product.History_Status}
                 id={product.idProduct}
                 className="h-full"
               />

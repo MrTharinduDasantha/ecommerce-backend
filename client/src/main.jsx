@@ -1,3 +1,8 @@
+import { Buffer } from "buffer"; // Polyfill for Buffer in browser
+if (!window.Buffer) {
+  window.Buffer = Buffer;
+}
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";

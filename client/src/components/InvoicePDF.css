@@ -28,4 +28,16 @@
 
 .invoice-text {
   white-space: nowrap;
+}
+
+.email-button {
+  background-color: #2196F3;
+}
+
+.email-button:hover {
+  background-color: #1976D2;
+}
+
+.email-button:disabled {
+  background-color: #cccccc;
 } 

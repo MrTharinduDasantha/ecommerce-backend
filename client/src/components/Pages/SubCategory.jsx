@@ -77,9 +77,10 @@ const SubCategory = () => {
               size: product.variations?.[0]?.Size || null,
               discountName: product.Discount_Name || "",
               category: product.subcategories?.[0]?.Description || "",
-              brand: product.Brand_Name || ""
+              brand: product.Brand_Name || "",
+              historyStatus: product.History_Status || ""
             }));
-          setProducts(formattedProducts);
+          setProducts(formattedProducts); 
 
           // Set category and subcategory names if not already set
           if (!subcategoryName && data.products[0]?.Subcategory_Name) {
@@ -217,6 +218,7 @@ const SubCategory = () => {
                             )} % OFF`
                           : null
                       }
+                      historyStatus={product.historyStatus}
                       id={product.id}
                       className="h-full"
                     />
@@ -225,7 +227,7 @@ const SubCategory = () => {
               </div>
             ) : (
               <div className="py-12 text-center">
-                <p className="text-lg text-gray-500">
+                <p className="text-xl md:text-2xl font-bold text-gray-500">
                   No products available for this subcategory.
                 </p>
               </div>
