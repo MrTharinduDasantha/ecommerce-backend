@@ -20,6 +20,7 @@
     "i": "^0.3.7",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.483.0",
+    "nodemailer": "^7.0.3",
     "npm": "^11.4.2",
     "react": "^19.0.0",
     "react-awesome-reveal": "^4.3.1",
