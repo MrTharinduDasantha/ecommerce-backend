@@ -5,12 +5,18 @@ import { getProducts } from "../../api/product"; // Import the API function
 import Sidebar from "../Sidebar";
 import ProductCard from "../ProductCard";
 import ForYouBanner from "../ForYouBanner";
+import { calculateDiscountPercentage } from "../CalculateDiscount";
 
 const ForYou = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [addedProducts, setAddedProducts] = useState([]);
   const [products, setProducts] = useState([]);
+
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
 
   // Fetch products using the API function
   useEffect(() => {
@@ -27,13 +33,14 @@ const ForYou = () => {
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
-            price: `LKR ${product.Selling_Price}`,
-            oldPrice: `LKR ${product.Market_Price}`,
+            price: product.Selling_Price,
+            oldPrice: product.Market_Price,
             weight: product.SIH || "N/A",
             color: product.variations?.[0]?.Colour || "N/A",
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "For You Discounts",
-            category:product.subcategories?.[0]?.Description || ""
+            category: product.subcategories?.[0]?.Description || "",
+            historyStatus: product.History_Status || ""
           }));
           setProducts(formattedProducts);
         }
@@ -44,25 +51,6 @@ const ForYou = () => {
 
     fetchProducts();
   }, []);
-
-  const handleProductClick = (product) => {
-    // Navigate to product page instead of adding to cart
-    navigate(`/product-page/${product.id}`, {
-      state: {
-        product: {
-          id: product.id,
-          name: product.name,
-          image: product.image,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          weight: product.weight,
-          color: product.color,
-          size: product.size,
-          discountName: product.discountName
-        }
-      }
-    });
-  };
 
   const handleViewCart = () => {
     // Navigate to cart page with all added products
@@ -89,10 +77,11 @@ const ForYou = () => {
             <ForYouBanner className="mb-4 sm:mb-6" />
 
             {/* Header with View Cart button */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
-              <h2 className="text-[#1D372E] text-2xl font-semibold">
-                YOU AND ME TOP SELLERS
+              <h2 className="mb-2 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
+                <span className="text-[#1D372E]">Products </span>
+                <span className="text-[#5CAF90]">For You</span>
               </h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
               {addedProducts.length > 0 && (
                 <button
                   onClick={handleViewCart}
@@ -105,24 +94,41 @@ const ForYou = () => {
 
             {/* Products Grid */}
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                >
-                  <ProductCard
-                    image={product.image}
-                    category={product.category}
-                    title={product.name}
-                    price={product.price}
-                    oldPrice={product.oldPrice}
-                    weight={product.weight}
-                    id={product.id}
-                    onProductClick={() => handleProductClick(product)}
-                    className="h-full"
-                  />
+              {products.length > 0 ? (
+                products.map((product) => (
+                  <div
+                    key={product.id}
+                    className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                    onClick={() => handleProductClick(product.id)}
+                  >
+                    <ProductCard
+                      image={product.image}
+                      category={product.category}
+                      title={product.name}
+                      price={product.price}
+                      oldPrice={product.oldPrice}
+                      weight={product.weight}
+                      discountLabel={
+                        product.oldPrice && product.price
+                          ? `${calculateDiscountPercentage(
+                              product.oldPrice,
+                              product.price
+                            )} % OFF`
+                          : null
+                      }
+                      historyStatus={product.historyStatus}
+                      id={product.id}
+                      className="h-full"
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-10 flex items-center justify-center">
+                  <p className="text-xl md:text-2xl font-bold text-gray-500">
+                    No products available.
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

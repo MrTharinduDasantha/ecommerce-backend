@@ -4,6 +4,7 @@ import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { getProduct, getProducts } from "../api/product";
 import { formatPrice } from "./FormatPrice";
+import { calculateDiscountPercentage } from "./CalculateDiscount";
 import ProductCard from "./ProductCard";
 
 const ProductPage = () => {
@@ -24,6 +25,11 @@ const ProductPage = () => {
   const [zoomStyle, setZoomStyle] = useState({});
   const popupImageRef = useRef(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
@@ -102,8 +108,8 @@ const ProductPage = () => {
                 id: product.idProduct,
                 name: product.Description,
                 image: product.Main_Image_Url,
-                price: `LKR ${product.Selling_Price}`,
-                oldPrice: `LKR ${product.Market_Price}`,
+                price: product.Selling_Price,
+                oldPrice: product.Market_Price,
                 weight: product.SIH || "N/A",
                 color: product.variations?.[0]?.Colour || "N/A",
                 size: product.variations?.[0]?.Size || null,
@@ -508,7 +514,7 @@ const ProductPage = () => {
               <div
                 key={product.id}
                 className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                onClick={() => navigate(`/product-page/${product.id}`)}
+                onClick={() => handleProductClick(product.id)}
               >
                 <ProductCard
                   image={product.image}
@@ -517,6 +523,14 @@ const ProductPage = () => {
                   price={product.price}
                   oldPrice={product.oldPrice}
                   weight={product.weight}
+                  discountLabel={
+                    product.oldPrice && product.price
+                      ? `${calculateDiscountPercentage(
+                          product.oldPrice,
+                          product.price
+                        )} % OFF`
+                      : null
+                  }
                   id={product.id}
                   className="h-full"
                 />

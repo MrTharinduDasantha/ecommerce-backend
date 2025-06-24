@@ -245,12 +245,7 @@ const ProductList = () => {
                         {product.Main_Image_Url ? (
                           <div className="avatar">
                             <div className="w-12 h-12 rounded-md">
-                              <img
-                                src={
-                                  product.Main_Image_Url || "/placeholder.svg"
-                                }
-                                alt="Main"
-                              />
+                              <img src={product.Main_Image_Url} alt="Main" />
                             </div>
                           </div>
                         ) : (

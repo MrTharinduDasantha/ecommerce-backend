@@ -7,9 +7,9 @@ const ProductCard = ({
   title,
   price,
   oldPrice,
-  discountName,
-  discountAmount,
+  discountLabel,
   id,
+  historyStatus // Add this new prop to check for new arrivals
 }) => (
   <Link to={`/product-page/${id}`} className="block w-full h-full">
     <div className="rounded-lg bg-white relative border border-[#E8E8E8] hover:shadow-lg transition-shadow cursor-pointer w-full h-full flex flex-col">
@@ -19,12 +19,14 @@ const ProductCard = ({
           alt={title}
           className="w-full h-[180px] object-cover rounded-lg"
         />
-        <span className="absolute top-1 right-1 bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded">
-          New
-        </span>
-        {(discountName || discountAmount) && (
-          <div className="absolute top-4 left-4 bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded">
-            {discountName} {discountAmount}
+        {historyStatus === "new arrivals" && (
+          <span className="absolute top-1 right-1 bg-[#5CAF90] text-white text-[8px] px-2 py-0.5 rounded">
+            New
+          </span>
+        )}
+        {discountLabel && discountLabel !== "0% OFF" && (
+          <div className="absolute top-1 left-1 bg-red-500 text-white text-[8px] px-2 py-0.5 rounded">
+            {discountLabel}
           </div>
         )}
       </div>
@@ -51,6 +53,4 @@ const ProductCard = ({
   </Link>
 );
 
-
 export default ProductCard;
-
