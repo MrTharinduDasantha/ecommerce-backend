@@ -213,8 +213,23 @@ const OrderTracking = () => {
   // Prepare invoice data for download
   const prepareInvoiceData = () => {
     return {
+
+      orderId: selectedOrder.idOrder,
+      customerId: customerId,
+      orderDate: selectedOrder.Date_Time,
+      paymentMethod: selectedOrder.Payment_Type,
+      paymentStatus: selectedOrder.Payment_Stats,
+      deliveryType: selectedOrder.Delivery_Type,
+      deliveryStatus: selectedOrder.Delivery_Status,
+      customerName: selectedOrder.Full_Name,
+      address: selectedOrder.Address,
+      city: selectedOrder.City,
+      country: selectedOrder.Country,
+      items: orderDetails.items || [],
+
       order: selectedOrder,
       orderDetails: orderDetails,
+
       subtotal: subtotal,
       discount: discount,
       deliveryFee: deliveryFee,

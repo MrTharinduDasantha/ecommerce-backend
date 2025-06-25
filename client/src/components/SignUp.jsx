@@ -1,6 +1,7 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -78,18 +79,21 @@ const SignUp = () => {
     // If all fields are valid, proceed with sign-up logic
     if (isValid) {
       try {
-        const response = await fetch("http://localhost:9000/api/auth/customers/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            password,
-            first_name: name,
-            full_name: name,
-            mobile_no: mobileNo,
-            status: "active"
-          }),
-        });
+        const response = await fetch(
+          "http://localhost:9000/api/auth/customers/register",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              password,
+              first_name: name,
+              full_name: name,
+              mobile_no: mobileNo,
+              status: "active",
+            }),
+          }
+        );
 
         const data = await response.json();
 
@@ -98,145 +102,195 @@ const SignUp = () => {
         }
 
         // If registration is successful, automatically log the user in
-        const loginResponse = await fetch("http://localhost:9000/api/auth/customers/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
+        const loginResponse = await fetch(
+          "http://localhost:9000/api/auth/customers/login",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          }
+        );
 
         const loginData = await loginResponse.json();
 
         if (!loginResponse.ok) {
-          throw new Error(loginData.message || "Login failed after registration");
+          throw new Error(
+            loginData.message || "Login failed after registration"
+          );
         }
 
         // Login with the token and user data
         login(loginData.token, loginData.user);
-        
+
         // Navigate to home or dashboard
         navigate("/");
       } catch (error) {
         console.error("Registration error:", error);
-        setSubmitError(error.message || "Registration failed. Please try again.");
+        setSubmitError(
+          error.message || "Registration failed. Please try again."
+        );
       }
     }
   };
 
   return (
-    <div className="min-h-full p-8 flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
+        <h2 className="text-2xl font-bold mb-6 text-center text-[#1D372E]">
+          Sign Up
+        </h2>
         {submitError && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             {submitError}
           </div>
         )}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" htmlFor="name">
-              Name
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Name
+              </span>
             </label>
-            <input
-              type="text"
-              id="name"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                nameError ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <User className="text-[#5CAF90] w-4 h-4" />
+              </div>
+              <input
+                type="text"
+                id="name"
+                className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  nameError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
             {nameError && (
               <p className="text-red-500 text-sm mt-1">{nameError}</p>
             )}
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" htmlFor="email">
-              Email Address
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Email Address
+              </span>
             </label>
-            <input
-              type="email"
-              id="email"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                emailError ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Mail className="text-[#5CAF90] w-4 h-4" />
+              </div>
+              <input
+                type="email"
+                id="email"
+                className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  emailError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
             {emailError && (
               <p className="text-red-500 text-sm mt-1">{emailError}</p>
             )}
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" htmlFor="mobileNo">
-              Mobile Number
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Mobile Number
+              </span>
             </label>
-            <input
-              type="text"
-              id="mobileNo"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                mobileNoError ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your mobile number"
-              value={mobileNo}
-              onChange={(e) => setMobileNo(e.target.value)}
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Phone className="text-[#5CAF90] w-4 h-4" />
+              </div>
+              <input
+                type="text"
+                id="mobileNo"
+                className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  mobileNoError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
+                placeholder="Enter your mobile number"
+                value={mobileNo}
+                onChange={(e) => setMobileNo(e.target.value)}
+              />
+            </div>
             {mobileNoError && (
               <p className="text-red-500 text-sm mt-1">{mobileNoError}</p>
             )}
           </div>
-          <div className="mb-4 relative">
-            <label
-              className="block text-sm font-medium mb-2"
-              htmlFor="password"
-            >
-              Password
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Password
+              </span>
             </label>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Lock className="text-[#5CAF90] w-4 h-4" />
+              </div>
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                  passwordError ? "border-red-500" : "border-gray-300"
-                } pr-10`}
+                className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  passwordError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
                 onClick={() => setShowPassword(!showPassword)}
-              ></button>
+              >
+                {showPassword ? (
+                  <EyeOff className="text-[#5CAF90] w-4 h-4" />
+                ) : (
+                  <Eye className="text-[#5CAF90] w-4 h-4" />
+                )}
+              </button>
             </div>
             {passwordError && (
               <p className="text-red-500 text-sm mt-1">{passwordError}</p>
             )}
           </div>
-          <div className="mb-6 relative">
-            <label
-              className="block text-sm font-medium mb-2"
-              htmlFor="confirmPassword"
-            >
-              Confirm Password
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Confirm Password
+              </span>
             </label>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Lock className="text-[#5CAF90] w-4 h-4" />
+              </div>
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                  confirmPasswordError ? "border-red-500" : "border-gray-300"
-                } pr-10`}
+                className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  confirmPasswordError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              ></button>
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="text-[#5CAF90] w-4 h-4" />
+                ) : (
+                  <Eye className="text-[#5CAF90] w-4 h-4" />
+                )}
+              </button>
             </div>
             {confirmPasswordError && (
               <p className="text-red-500 text-sm mt-1">
@@ -244,22 +298,26 @@ const SignUp = () => {
               </p>
             )}
           </div>
+
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-[#5CAF90] text-white py-2 rounded-lg hover:bg-[#4a9a7d] focus:outline-none focus:ring-2 focus:ring-[#5CAF90] transition-colors cursor-pointer"
           >
             Sign Up
           </button>
         </form>
+
         <div className="mt-4 text-center">
-          <span className="text-sm">Already have an account? </span>
-          <a
-            href="sign-in"
-            className="text-sm text-blue-500 hover:underline"
+          <span className="text-sm text-[#1D372E]">
+            Already have an account?{" "}
+          </span>
+          <button
+            type="button"
+            className="text-sm text-[#5CAF90] hover:underline cursor-pointer"
             onClick={() => navigate("/sign-in")}
           >
             Sign In
-          </a>
+          </button>
         </div>
       </div>
     </div>
