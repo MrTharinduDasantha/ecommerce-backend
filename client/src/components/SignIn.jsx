@@ -1,6 +1,7 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -49,7 +50,7 @@ const SignIn = () => {
       try {
         // Use the login function from AuthContext
         await login(email, password);
-        
+
         // Navigate to home or dashboard
         navigate(from);
       } catch (error) {
@@ -62,83 +63,104 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-full p-20 flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" htmlFor="email">
-              Email Address
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
+        <h2 className="text-2xl font-bold mb-6 text-center text-[#1D372E]">
+          Sign In
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Email Address
+              </span>
             </label>
-            <input
-              type="email"
-              id="email"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                emailError ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Mail className="text-[#5CAF90] w-4 h-4" />
+              </div>
+              <input
+                type="email"
+                id="email"
+                className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  emailError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
             {emailError && (
               <p className="text-red-500 text-sm mt-1">{emailError}</p>
             )}
           </div>
-          <div className="mb-6 relative">
-            <label
-              className="block text-sm font-medium mb-2"
-              htmlFor="password"
-            >
-              Password
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text text-[#1D372E] text-sm font-medium">
+                Password
+              </span>
             </label>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Lock className="text-[#5CAF90] w-4 h-4" />
+              </div>
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
-                  passwordError ? "border-red-500" : "border-gray-300"
-                } pr-10`}
+                className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none bg-white text-[#1D372E] ${
+                  passwordError ? "border-red-500" : "border-[#5CAF90]"
+                }`}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? (
+                  <EyeOff className="text-[#5CAF90] w-4 h-4" />
+                ) : (
+                  <Eye className="text-[#5CAF90] w-4 h-4" />
+                )}
               </button>
             </div>
             {passwordError && (
               <p className="text-red-500 text-sm mt-1">{passwordError}</p>
             )}
           </div>
+
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-[#5CAF90] text-white py-2 rounded-lg hover:bg-[#4a9a7d] focus:outline-none focus:ring-2 focus:ring-[#5CAF90] transition-colors cursor-pointer"
           >
             Sign In
           </button>
         </form>
+
         <div className="mt-4 text-center">
-          <a
-            href="forgot-password"
-            className="text-sm text-blue-500 hover:underline"
+          <button
+            type="button"
+            className="text-sm text-[#5CAF90] hover:underline cursor-pointer"
             onClick={() => navigate("/forgot-password")}
           >
             Forgot Password?
-          </a>
+          </button>
         </div>
+
         <div className="mt-2 text-center">
-          <span className="text-sm">Don't have an account? </span>
-          <a
-            href="sign-up"
-            className="text-sm text-blue-500 hover:underline"
+          <span className="text-sm text-[#1D372E]">
+            Don't have an account?{" "}
+          </span>
+          <button
+            type="button"
+            className="text-sm text-[#5CAF90] hover:underline cursor-pointer"
             onClick={() => navigate("/sign-up")}
           >
             Sign Up
-          </a>
+          </button>
         </div>
       </div>
     </div>
