@@ -32,4 +32,15 @@ router.put(
   settingController.updateHeaderFooterSetting
 );
 
+// -----------------------------
+// About Us Setting Routes
+// -----------------------------
+router.get("/about-us", settingController.getAboutUsSetting);
+router.put(
+  "/about-us",
+  authenticate,
+  uploadFiles,
+  settingController.updateAboutUsSetting
+);
+
 module.exports = router;

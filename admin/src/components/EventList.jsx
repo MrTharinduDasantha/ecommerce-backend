@@ -359,6 +359,10 @@ const EventList = () => {
               <div className="flex justify-center items-center h-40">
                 <span className="loading loading-spinner loading-lg text-primary"></span>
               </div>
+            ) : modalProducts.length === 0 ? (
+              <p className="text-center text-gray-500 py-16">
+                No products found for this event.
+              </p>
             ) : (
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-h-96 overflow-y-auto">
                 {modalProducts.map((product) => (

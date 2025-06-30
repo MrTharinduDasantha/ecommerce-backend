@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Slide } from 'react-awesome-reveal';
-import CountUp from 'react-countup';
-import WhyChooseUs from '../WhyChooseUs';
-import saleBanner from '../../assets/sale-banner.jpg';
-import visionImage from '../../assets/image-1.jpg';
-import missionImage from '../../assets/image-2.jpg';
-import valueImage from '../../assets/image-3.jpg';
+import { useState, useEffect } from "react";
+import { Slide } from "react-awesome-reveal";
+import CountUp from "react-countup";
+import WhyChooseUs from "../WhyChooseUs";
+import visionImage from "../../assets/image-1.jpg";
+import missionImage from "../../assets/image-2.jpg";
+import valueImage from "../../assets/image-3.jpg";
 
 const AboutUs = () => {
   const [loading, setLoading] = useState(true);
@@ -31,15 +30,7 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 mt-[108px]">
-        <div className="w-full flex justify-center">
-          <img 
-            src={saleBanner} 
-            alt="Sale Banner" 
-            className="w-full h-[410px] object-cover"
-          />
-        </div>
-
+      <div className="flex-1">
         <section className="container px-6 py-10 mx-auto text-black mt-28 bg-gradient-to-r from-[#5CAF90] via-[#7DCFB0] to-[#5CAF90] xl:px-20 xl:w-full">
           <Slide direction="up" triggerOnce>
             <div className="grid grid-cols-1 gap-6 text-center xl:grid-cols-4 xl:gap-8 xl:px-40">
@@ -62,9 +53,7 @@ const AboutUs = () => {
                 <p className="text-sm">Expert Team Member</p>
               </div>
               <div className="p-2">
-                <p className="text-[60px] text-[#1D372E] font-bold">
-                  7k+
-                </p>
+                <p className="text-[60px] text-[#1D372E] font-bold">7k+</p>
                 <p className="text-sm">Projects Completed</p>
               </div>
             </div>
@@ -76,7 +65,7 @@ const AboutUs = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
               <div className="text-center">
                 <div className="mb-6 w-48 h-48 mx-auto">
-                  <img 
+                  <img
                     src={visionImage}
                     alt="Vision"
                     className="w-full h-full object-contain border-2 border-[#5CAF90] p-4 rounded-lg"
@@ -84,8 +73,9 @@ const AboutUs = () => {
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Our vision</h3>
                 <p className="text-gray-600 text-sm">
-                  To be the most customer-centric online marketplace, offering seamless shopping 
-                  experiences with quality products, innovation, and convenience.
+                  To be the most customer-centric online marketplace, offering
+                  seamless shopping experiences with quality products,
+                  innovation, and convenience.
                 </p>
               </div>
 
@@ -93,7 +83,7 @@ const AboutUs = () => {
 
               <div className="text-center">
                 <div className="mb-6 w-48 h-48 mx-auto">
-                  <img 
+                  <img
                     src={missionImage}
                     alt="Mission"
                     className="w-full h-full object-contain border-2 border-[#5CAF90] p-4 rounded-lg"
@@ -101,9 +91,10 @@ const AboutUs = () => {
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
                 <p className="text-gray-600 text-sm">
-                  Our mission is to empower customers with a diverse range of high-quality products at 
-                  competitive prices, ensuring a hassle-free and secure shopping experience through 
-                  innovation, reliability, and exceptional service.
+                  Our mission is to empower customers with a diverse range of
+                  high-quality products at competitive prices, ensuring a
+                  hassle-free and secure shopping experience through innovation,
+                  reliability, and exceptional service.
                 </p>
               </div>
 
@@ -111,7 +102,7 @@ const AboutUs = () => {
 
               <div className="text-center">
                 <div className="mb-6 w-48 h-48 mx-auto">
-                  <img 
+                  <img
                     src={valueImage}
                     alt="Values"
                     className="w-full h-full object-contain border-2 border-[#5CAF90] p-4 rounded-lg"
@@ -119,8 +110,9 @@ const AboutUs = () => {
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Our value</h3>
                 <p className="text-gray-600 text-sm">
-                  We prioritize customer satisfaction, quality, and trust. Innovation, integrity, and 
-                  transparency guide us, ensuring fast service and sustainable practices.
+                  We prioritize customer satisfaction, quality, and trust.
+                  Innovation, integrity, and transparency guide us, ensuring
+                  fast service and sustainable practices.
                 </p>
               </div>
             </div>

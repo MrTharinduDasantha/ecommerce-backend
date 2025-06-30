@@ -54,7 +54,83 @@ async function updateHeaderFooterSetting(HeaderFooterSettingData) {
   }
 }
 
+// -----------------------------------
+// About Us Setting Related Functions
+// -----------------------------------
+
+// Fetch about us setting
+async function getAboutUsSetting() {
+  const [rows] = await pool.query("SELECT * FROM About_Us_Setting LIMIT 1");
+  return rows[0] || null;
+}
+
+// Update about us setting
+async function updateAboutUsSetting(AboutUsSettingData) {
+  const currentAboutUsSetting = await getAboutUsSetting();
+
+  if (currentAboutUsSetting) {
+    // Update existing about us setting
+    await pool.query(
+      "UPDATE About_Us_Setting SET Statistics = ?, Vision_Image_Url = ?, Vision_Title = ?, Vision_Description = ?, Mission_Image_Url = ?, Mission_Title = ?, Mission_Description = ?, Values_Image_Url = ?, Values_Title = ?, Values_Description = ?, Features = ?, Why_Choose_Us_Image_Url = ?, Shopping_Experience_Title = ?, Shopping_Experience_Description = ?, Shopping_Experience_Button_Text = ?, updated_at = CURRENT_TIMESTAMP WHERE idAbout_Us_Setting = ?",
+      [
+        AboutUsSettingData.Statistics,
+        AboutUsSettingData.Vision_Image_Url,
+        AboutUsSettingData.Vision_Title,
+        AboutUsSettingData.Vision_Description,
+        AboutUsSettingData.Mission_Image_Url,
+        AboutUsSettingData.Mission_Title,
+        AboutUsSettingData.Mission_Description,
+        AboutUsSettingData.Values_Image_Url,
+        AboutUsSettingData.Values_Title,
+        AboutUsSettingData.Values_Description,
+        AboutUsSettingData.Features,
+        AboutUsSettingData.Why_Choose_Us_Image_Url,
+        AboutUsSettingData.Shopping_Experience_Title,
+        AboutUsSettingData.Shopping_Experience_Description,
+        AboutUsSettingData.Shopping_Experience_Button_Text,
+        currentAboutUsSetting.idAbout_Us_Setting,
+      ]
+    );
+
+    // Return updated about us setting
+    const updatedAboutUsSetting = await getAboutUsSetting();
+    return updatedAboutUsSetting;
+  } else {
+    // Create new about us setting
+    const result = await pool.query(
+      "INSERT INTO About_Us_Setting (Statistics, Vision_Image_Url, Vision_Title, Vision_Description, Mission_Image_Url, Mission_Title, Mission_Description, Values_Image_Url, Values_Title, Values_Description, Features, Why_Choose_Us_Image_Url, Shopping_Experience_Title, Shopping_Experience_Description, Shopping_Experience_Button_Text) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      [
+        AboutUsSettingData.Statistics,
+        AboutUsSettingData.Vision_Image_Url,
+        AboutUsSettingData.Vision_Title,
+        AboutUsSettingData.Vision_Description,
+        AboutUsSettingData.Mission_Image_Url,
+        AboutUsSettingData.Mission_Title,
+        AboutUsSettingData.Mission_Description,
+        AboutUsSettingData.Values_Image_Url,
+        AboutUsSettingData.Values_Title,
+        AboutUsSettingData.Values_Description,
+        AboutUsSettingData.Features,
+        AboutUsSettingData.Why_Choose_Us_Image_Url,
+        AboutUsSettingData.Shopping_Experience_Title,
+        AboutUsSettingData.Shopping_Experience_Description,
+        AboutUsSettingData.Shopping_Experience_Button_Text,
+      ]
+    );
+
+    // Return newly created about us setting
+    const [rows] = await pool.query(
+      "SELECT * FROM About_Us_Setting WHERE idAbout_Us_Setting = ?",
+      result[0].insertId
+    );
+
+    return rows[0];
+  }
+}
+
 module.exports = {
   getHeaderFooterSetting,
   updateHeaderFooterSetting,
+  getAboutUsSetting,
+  updateAboutUsSetting,
 };

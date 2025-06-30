@@ -20,7 +20,8 @@ import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
-import Settings from "./components/Settings";
+import AboutUsSettings from "./components/AboutUsSettings";
+import HeaderFooterSettings from "./components/HeaderFooterSettings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
 import AdminLogs from "./components/AdminLogs";
@@ -111,7 +112,11 @@ const App = () => {
               path="customer-managed-form"
               element={<CustomerManagedForm />}
             />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings/about-us" element={<AboutUsSettings />} />
+            <Route
+              path="settings/header-footer"
+              element={<HeaderFooterSettings />}
+            />
             <Route path="orders" element={<OrderList />} />
             <Route path="orders/:orderId" element={<OrderDetails />} />
             <Route
