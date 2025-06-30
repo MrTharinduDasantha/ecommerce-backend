@@ -106,7 +106,166 @@ async function updateHeaderFooterSetting(req, res) {
   }
 }
 
+// -----------------------------------
+// About Us Setting Related Functions
+// -----------------------------------
+
+// Fetch about us setting
+async function getAboutUsSetting(req, res) {
+  try {
+    const aboutUsSetting = await Setting.getAboutUsSetting();
+    res.status(200).json({
+      message: "About Us settings fetched successfully",
+      aboutUsSetting,
+    });
+  } catch (error) {
+    console.error("Error fetching about us settings:", error);
+    res.status(500).json({ message: "Failed to fetch about us settings" });
+  }
+}
+
+// Update about us setting
+async function updateAboutUsSetting(req, res) {
+  try {
+    const currentAboutUsSetting = await Setting.getAboutUsSetting();
+
+    // Handle image uploads
+    let visionImageUrl = currentAboutUsSetting
+      ? currentAboutUsSetting.Vision_Image_Url
+      : null;
+    let missionImageUrl = currentAboutUsSetting
+      ? currentAboutUsSetting.Mission_Image_Url
+      : null;
+    let valuesImageUrl = currentAboutUsSetting
+      ? currentAboutUsSetting.Values_Image_Url
+      : null;
+    let whyChooseUsImageUrl = currentAboutUsSetting
+      ? currentAboutUsSetting.Why_Choose_Us_Image_Url
+      : null;
+
+    // Find image files
+    const visionImageFile = req.files.find(
+      (file) => file.fieldname === "visionImage"
+    );
+    const missionImageFile = req.files.find(
+      (file) => file.fieldname === "missionImage"
+    );
+    const valuesImageFile = req.files.find(
+      (file) => file.fieldname === "valuesImage"
+    );
+    const whyChooseUsImageFile = req.files.find(
+      (file) => file.fieldname === "whyChooseUsImage"
+    );
+
+    // Update vision image
+    if (visionImageFile) {
+      if (currentAboutUsSetting && currentAboutUsSetting.Vision_Image_Url) {
+        const oldPath = currentAboutUsSetting.Vision_Image_Url.replace(
+          `${req.protocol}://${req.get("host")}/`,
+          ""
+        );
+        fs.unlink(oldPath, (err) => {
+          if (err) console.error("Error removing old vision image:", err);
+        });
+      }
+      visionImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        visionImageFile.filename
+      }`;
+    }
+
+    // Update mission image
+    if (missionImageFile) {
+      if (currentAboutUsSetting && currentAboutUsSetting.Mission_Image_Url) {
+        const oldPath = currentAboutUsSetting.Mission_Image_Url.replace(
+          `${req.protocol}://${req.get("host")}/`,
+          ""
+        );
+        fs.unlink(oldPath, (err) => {
+          if (err) console.error("Error removing old mission image:", err);
+        });
+      }
+      missionImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        missionImageFile.filename
+      }`;
+    }
+
+    // Update values image
+    if (valuesImageFile) {
+      if (currentAboutUsSetting && currentAboutUsSetting.Values_Image_Url) {
+        const oldPath = currentAboutUsSetting.Values_Image_Url.replace(
+          `${req.protocol}://${req.get("host")}/`,
+          ""
+        );
+        fs.unlink(oldPath, (err) => {
+          if (err) console.error("Error removing old values image:", err);
+        });
+      }
+      valuesImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        valuesImageFile.filename
+      }`;
+    }
+
+    // Update why choose us image
+    if (whyChooseUsImageFile) {
+      if (
+        currentAboutUsSetting &&
+        currentAboutUsSetting.Why_Choose_Us_Image_Url
+      ) {
+        const oldPath = currentAboutUsSetting.Why_Choose_Us_Image_Url.replace(
+          `${req.protocol}://${req.get("host")}/`,
+          ""
+        );
+        fs.unlink(oldPath, (err) => {
+          if (err)
+            console.error("Error removing old why choose us image:", err);
+        });
+      }
+      whyChooseUsImageUrl = `${req.protocol}://${req.get("host")}/src/uploads/${
+        whyChooseUsImageFile.filename
+      }`;
+    }
+
+    // Parse JSON fields
+    const statistics = req.body.statistics
+      ? JSON.parse(req.body.statistics)
+      : [];
+    const features = req.body.features ? JSON.parse(req.body.features) : [];
+
+    const newAboutUsSetting = {
+      Statistics: JSON.stringify(statistics),
+      Vision_Image_Url: visionImageUrl,
+      Vision_Title: req.body.visionTitle,
+      Vision_Description: req.body.visionDescription,
+      Mission_Image_Url: missionImageUrl,
+      Mission_Title: req.body.missionTitle,
+      Mission_Description: req.body.missionDescription,
+      Values_Image_Url: valuesImageUrl,
+      Values_Title: req.body.valuesTitle,
+      Values_Description: req.body.valuesDescription,
+      Features: JSON.stringify(features),
+      Why_Choose_Us_Image_Url: whyChooseUsImageUrl,
+      Shopping_Experience_Title: req.body.shoppingExperienceTitle,
+      Shopping_Experience_Description: req.body.shoppingExperienceDescription,
+      Shopping_Experience_Button_Text: req.body.shoppingExperienceButtonText,
+    };
+
+    const updatedAboutUsSetting = await Setting.updateAboutUsSetting(
+      newAboutUsSetting
+    );
+
+    res.status(200).json({
+      message: "About Us settings updated successfully",
+      updatedAboutUsSetting,
+    });
+  } catch (error) {
+    console.error("Error updating about us settings:", error);
+    res.status(500).json({ message: "Failed to update about us settings" });
+  }
+}
+
 module.exports = {
   getHeaderFooterSetting,
   updateHeaderFooterSetting,
+  getAboutUsSetting,
+  updateAboutUsSetting,
 };

@@ -45,3 +45,29 @@ export const updateHeaderFooterSetting = async (formData) => {
     throw error.response.data;
   }
 };
+
+// -----------------------------------
+// About Us Setting Related Api Calls
+// -----------------------------------
+
+// Fetch about us setting
+export const fetchAboutUsSetting = async () => {
+  try {
+    const response = await api.get("/api/settings/about-us");
+    return response.data.aboutUsSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Update about us setting
+export const updateAboutUsSetting = async (formData) => {
+  try {
+    const response = await api.put("/api/settings/about-us", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.updatedAboutUsSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

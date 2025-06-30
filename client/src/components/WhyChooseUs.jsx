@@ -1,6 +1,5 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck } from "react-icons/fa";
 
 function WhyChooseUs() {
   const features = [
@@ -9,7 +8,7 @@ function WhyChooseUs() {
     "Seamless Shopping Experience",
     "Fast & Reliable Delivery",
     "Excellent Customer Support",
-    "Secure Transactions"
+    "Secure Transactions",
   ];
 
   return (
@@ -63,7 +62,13 @@ function WhyChooseUs() {
             Click, buy, and enjoy—it's that simple!
           </h2>
           <p className="text-sm text-[#1D372E] mb-8 max-w-2xl mx-auto">
-            Shopping has never been easier! With just a few clicks, you can explore a wide range of high-quality products, add your favorites to the cart, and check out seamlessly. Our secure payment system and fast delivery ensure a hassle-free shopping experience. No complications, no delays-just effortless shopping from the comfort of your home. Start browsing now and enjoy a smooth, enjoyable purchase journey!
+            Shopping has never been easier! With just a few clicks, you can
+            explore a wide range of high-quality products, add your favorites to
+            the cart, and check out seamlessly. Our secure payment system and
+            fast delivery ensure a hassle-free shopping experience. No
+            complications, no delays-just effortless shopping from the comfort
+            of your home. Start browsing now and enjoy a smooth, enjoyable
+            purchase journey!
           </p>
           <div className="flex justify-center">
             <button className="bg-[#5CAF90] text-white w-[250px] h-[50px] rounded-full text-sm font-medium hover:bg-[#1D372E] transition-duration-300 shadow-md flex items-center justify-center">
@@ -78,4 +83,4 @@ function WhyChooseUs() {
   );
 }
 
-export default WhyChooseUs; 
+export default WhyChooseUs;
