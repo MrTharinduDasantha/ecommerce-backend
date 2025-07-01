@@ -6,6 +6,7 @@ import PhoneIcon from "@mui/icons-material/Phone"
 import EmailIcon from "@mui/icons-material/Email"
 import CakeIcon from "@mui/icons-material/Cake"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
+import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import DeleteIcon from "@mui/icons-material/Delete"
@@ -226,7 +227,7 @@ const Profile = () => {
         if (isFirstAddress) {
           setProfileData(prev => ({
             ...prev,
-            address: newAddress,
+            address: newAddress.address,
           }))
           setUpdatedProfile(prev => ({
             ...prev,
@@ -612,24 +613,26 @@ const Profile = () => {
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-50">
       <div className="flex-1 px-4 py-6 mt-[60px]">
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1400px] mx-auto">
+        <div className="flex flex-col gap-8 max-w-[1400px] mx-auto">
           {/* Left Column - Profile */}
-          <div className="space-y-6 lg:w-1/4">
+          <div className="space-y-6">
             {/* Profile Card */}
-            <div className="max-w-sm p-6 mb-6 bg-white rounded-lg shadow-md">
+            <div className="w-full p-6 bg-white rounded-lg shadow-md overflow-hidden">
               <div className="flex items-start mb-6">
-                <div className="flex items-center">
+                <div className="flex sm:items-center">
                   <div className="relative">
                     <AccountCircleIcon
                       className="text-gray-400"
                       style={{ fontSize: "52px" }}
                     />
                   </div>
-                  <div className="ml-4">
-                    <h1 className="text-xl font-medium text-gray-800">
-                      {profileData.full_name}
-                    </h1>
-                    <p className="mb-2 text-sm text-gray-500">#CG1234</p>
+                  <div className="mx-4 flex flex-col sm:flex-row sm:items-center sm:gap-5">
+                    <div>
+                      <h1 className="text-xl font-medium text-gray-800">
+                        {profileData.full_name}
+                      </h1>
+                      <p className="mb-2 text-sm text-gray-500">#CG1234</p>
+                    </div>
                     <button
                       className="flex items-center justify-center bg-[#5CAF90] hover:bg-[#1D372E] hover:opacity-80 hover:scale-105 hover:shadow-lg transform transition-all duration-300 text-white rounded-full w-[94px] h-[35.46px] text-sm"
                       onClick={handleEditProfile}
@@ -643,90 +646,37 @@ const Profile = () => {
 
               {/* Contact Information and Address */}
               <div className="space-y-4">
-                <div className="flex items-center">
-                  <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <PhoneIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="w-24 text-gray-600">Contact No</span>
-                  <span className="text-gray-800">{profileData.mobile_no}</span>
+                <div className="overflow-x-scroll sm:overflow-x-auto">
+                  <table className="min-w-full text-sm sm:text-base text-center">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">
+                          Contact No
+                        </th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">Email</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">Birthday</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">Address</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-base">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.mobile_no}
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.email}
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.birthday.split("T")[0]}
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.address}
+                      </td>
+                    </tbody>
+                  </table>
                 </div>
-                <div className="flex items-center">
-                  <div className="min-w-[40px] min-h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <EmailIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="mr-5 text-gray-600">Email</span>
-                  <span className="overflow-hidden text-gray-800">
-                    {profileData.email}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <CakeIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="w-24 text-gray-600">Birthday</span>
-                  <span className="text-gray-800">
-                    {profileData.birthday
-                      ? profileData.birthday.split("T")[0]
-                      : ""}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <LocationOnIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="w-24 text-gray-600">Address</span>
-                  <div className="flex-1">
-                    <span className="text-gray-800 whitespace-pre-line">
-                      {(() => {
-                        if (!profileData.address) return ""
-                        if (typeof profileData.address === "string") {
-                          if (/[.,/]/.test(profileData.address)) {
-                            const parts = profileData.address
-                              .split(/[.,/]/)
-                              .map(part => part.trim())
-                              .filter(part => part)
-                            if (parts.length > 2) {
-                              return (
-                                <>
-                                  {parts[0]}
-                                  {"\n"}
-                                  {parts.slice(1).join(", ")}
-                                </>
-                              )
-                            } else if (parts.length === 2) {
-                              return (
-                                <>
-                                  {parts[0]}
-                                  {"\n"}
-                                  {parts[1]}
-                                </>
-                              )
-                            }
-                          }
-                          return profileData.address
-                        } else if (typeof profileData.address === "object") {
-                          return profileData.address.address || ""
-                        }
-                        return ""
-                      })()}
-                    </span>
-                  </div>
-                </div>
-                <div className="pt-4">
-                  <button
-                    className="flex items-center group"
+                <div className="pt-4 flex justify-center">
+                  {/* <button
+                    className="flex items-center group transform transition-all duration-300"
                     onClick={() => setIsAddAddressModalOpen(true)}
                   >
                     <AddCircleIcon
@@ -736,13 +686,24 @@ const Profile = () => {
                     <span className="ml-1 text-black group-hover:text-[#1D372E] group-hover:font-medium transition-all duration-300">
                       Add Address
                     </span>
+                  </button> */}
+                  <button
+                    className="flex items-center justify-center bg-[#5CAF90] hover:bg-[#1D372E] hover:opacity-80 hover:scale-105 hover:shadow-lg transform transition-all duration-300 text-white rounded-full px-4 py-2 text-sm"
+                    onClick={() => setIsAddAddressModalOpen(true)}
+                  >
+                    <AddIcon className="w-3 h-3" />
+                    <span className="ml-1">Add Address</span>
                   </button>
                 </div>
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 flex flex-col items-center gap-2">
                   {addresses.map(addr => (
                     <div
                       key={addr.id}
-                      className="flex items-start p-3 space-x-2 transition-all duration-300 rounded bg-gray-50 hover:bg-gray-100"
+                      className={`flex items-start p-3 space-x-3 transition-all duration-300 rounded bg-gray-50 hover:bg-gray-100 md:min-w-2xl ${
+                        addr.isMain || addr.address === profileData.address
+                          ? "border border-[#5CAF90]"
+                          : ""
+                      }`}
                     >
                       <input
                         type="radio"
@@ -754,12 +715,8 @@ const Profile = () => {
                         className="mt-1 text-[#5CAF90] focus:ring-[#5CAF90]"
                       />
                       <div className="flex-grow">
-                        <p className="text-gray-800">{addr.address}</p>
-                        <p className="text-sm text-gray-600">
-                          {addr.city}, {addr.country}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Mobile: {addr.mobile_no}
+                        <p className="text-gray-800 text-sm sm:text-base">
+                          {addr.address}, {addr.city}, {addr.country}
                         </p>
                       </div>
                       <div className="flex space-x-2">
@@ -784,7 +741,7 @@ const Profile = () => {
           </div>
 
           {/* Right Column - Current Orders and Order History */}
-          <div className="space-y-8 lg:w-3/4">
+          <div className="space-y-8">
             <CurrentOrders />
             <OrderHistory />
           </div>
