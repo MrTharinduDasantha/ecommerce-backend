@@ -247,10 +247,47 @@ const HeaderFooterSettings = () => {
   const handleCancel = () => {
     setIsEditing(false);
     setShowPreview(false);
+    if (headerFooterSetting) {
+      setLogoPreview(headerFooterSetting.Navbar_Logo_Url);
+      setCopyrightText(headerFooterSetting.Footer_Copyright);
+      setNavIcons(headerFooterSetting.Nav_Icons || []);
+      setCountryBlocks(headerFooterSetting.Country_Blocks || []);
+      setFooterLinks(headerFooterSetting.Footer_Links || []);
+      setSocialIcons(headerFooterSetting.Social_Icons || []);
+    } else {
+      // Fallback if headerFooterSetting is not available
+      setLogoPreview(null);
+      setCopyrightText("");
+      setNavIcons([]);
+      setCountryBlocks([]);
+      setFooterLinks([]);
+      setSocialIcons([]);
+    }
     setLogo(null);
-    setLogoPreview(null);
-    setCopyrightText("");
     if (logoInputRef.current) logoInputRef.current.value = "";
+    setNewNavIcon({
+      icon: "",
+      label: "",
+      link: "",
+      iconImage: null,
+      iconImagePreview: null,
+    });
+    setNewCountryBlock({
+      title: "",
+      address: "",
+      hotline: "",
+      email: "",
+      whatsapp: "",
+    });
+    setNewFooterLink({
+      text: "",
+      url: "",
+    });
+    setNewSocialIcon({
+      platform: "",
+      url: "",
+    });
+    if (navIconImageRef.current) navIconImageRef.current.value = "";
   };
 
   // Navigation Icons Handlers
