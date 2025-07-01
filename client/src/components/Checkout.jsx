@@ -297,8 +297,9 @@ const Checkout = () => {
       }, 1500)
     } catch (error) {
       console.error("Error creating order: ", error)
+      setShowOrderErrorMessage(true)
       setTimeout(() => {
-        setShowOrderErrorMessage(true)
+        setShowOrderErrorMessage(false)
       }, 1500)
     }
   }
