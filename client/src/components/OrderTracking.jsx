@@ -233,7 +233,7 @@ const OrderTracking = () => {
 
   // Prepare invoice data for download
   const prepareInvoiceData = () => {
-    return {
+    const invoiceData = {
       orderId: selectedOrder.idOrder,
       customerId: customerId,
       orderDate: selectedOrder.Date_Time,
@@ -256,7 +256,17 @@ const OrderTracking = () => {
       total: total,
       orderItems: orderItems,
       currentStatus: currentStatus,
+      trackingInfo: trackingInfo,
     };
+    
+    console.log('Invoice data prepared:', invoiceData);
+    console.log('Address info for map:', {
+      address: selectedOrder.Address,
+      city: selectedOrder.City,
+      country: selectedOrder.Country
+    });
+    
+    return invoiceData;
   };
 
   return (

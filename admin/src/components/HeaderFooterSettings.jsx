@@ -30,7 +30,7 @@ import toast from "react-hot-toast";
 import googleplay from "../assets/googleplay.png";
 import appstore from "../assets/appstore.png";
 
-const Settings = () => {
+const HeaderFooterSettings = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerFooterSetting, setHeaderFooterSetting] = useState(null);
   const [logo, setLogo] = useState(null);
@@ -759,7 +759,7 @@ const Settings = () => {
           <div className="flex items-center gap-2 mb-4">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
             <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
-              Manage Settings
+              Manage Header and Footer
             </h2>
           </div>
 
@@ -1622,4 +1622,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default HeaderFooterSettings;

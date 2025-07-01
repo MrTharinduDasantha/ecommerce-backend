@@ -26,6 +26,7 @@ import { CartProvider } from "./context/CartContext";
 import AllCategories from "./components/Pages/Category";
 import AllProducts from "./components/AllProducts";
 import SubCategory from "./components/Pages/SubCategory";
+import ScrollToTop from "./components/ScrollToTop";
 
 const App = () => {
   return (
@@ -68,6 +69,7 @@ const App = () => {
           <Route path="/AllProducts" element={<AllProducts />} />
           <Route path="/subcategory/:id" element={<SubCategory />} />
         </Routes>
+        <ScrollToTop />
         <Footer />
       </CartProvider>
     </AuthProvider>

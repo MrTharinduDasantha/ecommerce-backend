@@ -13,6 +13,155 @@ import DownloadIcon from "@mui/icons-material/Download";
 import EmailIcon from "@mui/icons-material/Email";
 import "./InvoicePDF.css";
 
+// Function to generate map URL for PDF
+const generateMapUrl = (address, city, country) => {
+  if (!address || !city || !country) return null;
+  
+  try {
+    // Clean and encode the address components
+    const cleanAddress = address.trim().replace(/\s+/g, ' ');
+    const cleanCity = city.trim();
+    const cleanCountry = country.trim();
+    
+    const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
+    
+    // Try multiple map services for better reliability
+    const mapServices = [
+      // Primary: OpenStreetMap static image service
+      `https://staticmap.openstreetmap.de/staticmap.php?center=${fullAddress}&zoom=13&size=400x200&markers=${fullAddress},red&format=png`,
+      // Fallback: Alternative OpenStreetMap service
+      `https://maps.googleapis.com/maps/api/staticmap?center=${fullAddress}&zoom=13&size=400x200&maptype=roadmap&markers=color:red%7C${fullAddress}`,
+      // Secondary fallback: City-level map
+      `https://staticmap.openstreetmap.de/staticmap.php?center=${cleanCity},${cleanCountry}&zoom=10&size=400x200&markers=${cleanCity},${cleanCountry},red&format=png`
+    ];
+    
+    const mapUrl = mapServices[0]; // Use the first (most reliable) option
+    console.log('Generated map URL:', mapUrl);
+    return mapUrl;
+  } catch (error) {
+    console.error('Error generating map URL:', error);
+    return null;
+  }
+};
+const sanitizeAddress = (value = "") =>
+  value.replace(/[/.]/g, " ").replace(/\s+/g, " ").trim();
+
+const getStaticMapBase64 = async (address, city, country) => {
+  const cleanAddress = sanitizeAddress(address);
+  const cleanCity = sanitizeAddress(city);
+  const cleanCountry = sanitizeAddress(country);
+
+  const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
+  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${fullAddress}&zoom=13&size=400x200&markers=${fullAddress},red&format=png`;
+
+  console.log("Final map URL:", mapUrl);
+
+  try {
+    const response = await fetch(mapUrl);
+    const blob = await response.blob();
+
+    // Ensure it's actually an image
+    if (!blob.type.startsWith("image")) {
+      console.warn("Fetched content is not an image:", blob.type);
+      return null;
+    }
+
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result); // data:image/png;base64,...
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error("Error fetching map image:", error);
+    return null;
+  }
+};
+
+// Function to create a simple map placeholder
+const createMapPlaceholder = (address, city, country) => {
+  return {
+    width: 400,
+    height: 200,
+    backgroundColor: "#f0f0f0",
+    border: "1px solid #ccc",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center"
+  };
+};
+
+// Function to validate map URL
+const validateMapUrl = async (url) => {
+  if (!url) return false;
+  
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.error('Map URL validation failed:', error);
+    return false;
+  }
+};
+
+// Test function to verify map URL generation
+const testMapUrlGeneration = (address, city, country) => {
+  console.log('Testing map URL generation with:', { address, city, country });
+  const mapUrl = generateMapUrl(address, city, country);
+  console.log('Generated map URL:', mapUrl);
+  
+  if (mapUrl) {
+    // Create a test image element to check if the URL loads
+    const testImg = new Image();
+    testImg.onload = () => {
+      console.log('✅ Map URL loads successfully');
+    };
+    testImg.onerror = () => {
+      console.log('❌ Map URL failed to load');
+    };
+    testImg.src = mapUrl;
+  }
+  
+  return mapUrl;
+};
+
+// Test function to verify PDF generation
+const testPDFGeneration = async () => {
+  try {
+    console.log('Testing PDF generation with minimal data...');
+    const testData = {
+      orderId: 'TEST-001',
+      orderDate: new Date().toLocaleString(),
+      paymentMethod: 'Credit Card',
+      paymentStatus: 'Paid',
+      deliveryType: 'Standard',
+      deliveryStatus: 'Processing',
+      customerName: 'Test Customer',
+      address: '123 Test Street',
+      city: 'Test City',
+      country: 'Test Country',
+      subtotal: 100.00,
+      discount: 0,
+      deliveryFee: 10.00,
+      total: 110.00,
+      mapUrl: null,
+      statusHistory: [
+        { status: 'Order Confirmed', date: new Date().toLocaleString() }
+      ],
+      estimatedDeliveryDate: 'Date not available',
+      currentStatus: {}
+    };
+    
+    const blob = await pdf(<InvoicePDF data={testData} />).toBlob();
+    return true;
+  } catch (error) {
+    console.error('❌ PDF generation test failed:', error);
+    return false;
+  }
+};
+
 // Create styles
 const styles = StyleSheet.create({
   page: {
@@ -110,12 +259,13 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     alignItems: "center",
     display: "flex",
+    marginTop:"50px !important"
   },
   thankYouText: {
-    fontSize: 16,
+    fontSize: 14,
     textAlign: "center",
     color: "#4B5563",
-    fontStyle: "italic",
+    fontStyle: "italic"
   },
   mapImage: {
     width: 400,
@@ -127,129 +277,242 @@ const styles = StyleSheet.create({
   orderDetailsSection: {
     marginTop: 32,
   },
+  statusItem: {
+    flexDirection: "row",
+    marginBottom: 4,
+    padding: 4,
+    backgroundColor: "#f9f9f9",
+  },
+  statusText: {
+    fontSize: 11,
+    color: "#333333",
+    flex: 1,
+  },
+  statusDate: {
+    fontSize: 10,
+    color: "#666666",
+    width: "30%",
+  },
+  statusCompleted: {
+    fontSize: 10,
+    color: "#5CAF90",
+    fontWeight: "bold",
+    width: "15%",
+  },
 });
 
 // PDF Document component
-const InvoicePDF = ({ data }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      {/* Main Invoice Title */}
-      <Text style={styles.title}>Asipiya Order Invoice</Text>
-      {/* Order Details Section */}
-      <View style={styles.orderDetailsSection}>
-        <Text style={styles.sectionTitle}>Order Summary</Text>
-      </View>
-      <View style={styles.section}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Order #:</Text>
-          <Text style={styles.value}>{data.orderId}</Text>
+const InvoicePDF = ({ data }) => {
+  // Ensure data has required fields with fallbacks
+  const safeData = {
+    orderId: data?.orderId || 'N/A',
+    orderDate: data?.orderDate || 'N/A',
+    paymentMethod: data?.paymentMethod || 'N/A',
+    paymentStatus: data?.paymentStatus || 'N/A',
+    deliveryType: data?.deliveryType || 'N/A',
+    deliveryStatus: data?.deliveryStatus || 'N/A',
+    customerName: data?.customerName || 'N/A',
+    address: data?.address || 'N/A',
+    city: data?.city || 'N/A',
+    country: data?.country || 'N/A',
+    subtotal: data?.subtotal || 0,
+    discount: data?.discount || 0,
+    deliveryFee: data?.deliveryFee || 0,
+    total: data?.total || 0,
+    mapUrl: data?.mapUrl || null,
+    statusHistory: data?.statusHistory || [],
+    estimatedDeliveryDate: data?.estimatedDeliveryDate || 'Date not available',
+    currentStatus: data?.currentStatus || {}
+  };
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Main Invoice Title */}
+        <Text style={styles.title}>Asipiya Order Invoice</Text>
+        {/* Order Details Section */}
+        <View style={styles.orderDetailsSection}>
+          <Text style={styles.sectionTitle}>Order Summary</Text>
         </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Date:</Text>
-          <Text style={styles.value}>{data.orderDate}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Payment Method:</Text>
-          <Text style={styles.value}>{data.paymentMethod}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Payment Status:</Text>
-          <Text style={styles.value}>{data.paymentStatus}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Delivery Type:</Text>
-          <Text style={styles.value}>
-            {data.deliveryType ? data.deliveryType : "N/A"}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Delivery Status:</Text>
-          <Text style={styles.value}>{data.deliveryStatus}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Subtotal:</Text>
-          <Text style={styles.value}>${data.subtotal.toFixed(2)}</Text>
-        </View>
-        {data.discount > 0 && (
+        <View style={styles.section}>
           <View style={styles.row}>
-            <Text style={styles.label}>Discount:</Text>
-            <Text style={styles.value}>-${data.discount.toFixed(2)}</Text>
+            <Text style={styles.label}>Order #:</Text>
+            <Text style={styles.value}>{safeData.orderId}</Text>
           </View>
-        )}
-        <View style={styles.row}>
-          <Text style={styles.label}>Delivery Fee:</Text>
-          <Text style={styles.value}>${data.deliveryFee.toFixed(2)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Total:</Text>
-          <Text style={styles.value}>${data.total.toFixed(2)}</Text>
-        </View>
-      </View>
-
-      {/* Delivery Address Section */}
-      <Text style={styles.sectionTitle}>Delivery Address</Text>
-      <View style={styles.section}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Name:</Text>
-          <Text style={styles.value}>{data.customerName}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Address:</Text>
-          <Text style={styles.value}>{data.address}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>City:</Text>
-          <Text style={styles.value}>{data.city}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Country:</Text>
-          <Text style={styles.value}>{data.country}</Text>
-        </View>
-      </View>
-
-      {/* Map Image Section */}
-      <Text style={styles.sectionTitle}>Delivery Location</Text>
-      <View style={{ alignItems: "center", marginBottom: 10 }}>
-        {data.mapImage && <Image src={data.mapImage} style={styles.mapImage} />}
-      </View>
-
-      {/* Order Status Section */}
-      <Text style={styles.sectionTitle}>Order Status</Text>
-      <View style={styles.section}>
-        {data.statusHistory && data.statusHistory.length > 0 ? (
-          data.statusHistory.map((item, idx) => (
-            <View key={idx} style={styles.row}>
-              <Text style={{ ...styles.label, width: "50%" }}>
-                {item.status}
-              </Text>
-              <Text style={{ ...styles.value, width: "50%" }}>{item.date}</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Date:</Text>
+            <Text style={styles.value}>{safeData.orderDate}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Payment Method:</Text>
+            <Text style={styles.value}>{safeData.paymentMethod}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Payment Status:</Text>
+            <Text style={styles.value}>{safeData.paymentStatus}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Delivery Type:</Text>
+            <Text style={styles.value}>
+              {safeData.deliveryType ? safeData.deliveryType : "N/A"}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Delivery Status:</Text>
+            <Text style={styles.value}>{safeData.deliveryStatus}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Subtotal:</Text>
+            <Text style={styles.value}>${safeData.subtotal.toFixed(2)}</Text>
+          </View>
+          {safeData.discount > 0 && (
+            <View style={styles.row}>
+              <Text style={styles.label}>Discount:</Text>
+              <Text style={styles.value}>-${safeData.discount.toFixed(2)}</Text>
             </View>
-          ))
-        ) : (
-          <Text>No status history available.</Text>
-        )}
-        {/* Estimated Delivery Details */}
-        <View style={[styles.row, { marginTop: 10 }]}>
-          <Text style={{ ...styles.label, width: "50%", fontWeight: "bold" }}>
-            Estimated Delivery:
-          </Text>
-          <Text style={{ ...styles.value, width: "50%" }}>
-            {data.estimatedDeliveryDate
-              ? data.estimatedDeliveryDate
-              : "Date not available"}
-          </Text>
+          )}
+          <View style={styles.row}>
+            <Text style={styles.label}>Delivery Fee:</Text>
+            <Text style={styles.value}>${safeData.deliveryFee.toFixed(2)}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Total:</Text>
+            <Text style={styles.value}>${safeData.total.toFixed(2)}</Text>
+          </View>
         </View>
-      </View>
 
-      {/* Thank You Message */}
-      <View style={styles.thankYouSection} fixed={false} wrap={false}>
-        <Text style={styles.thankYouText}>
-          Thanks For Using Asipiya Services
-        </Text>
-      </View>
-    </Page>
-  </Document>
-);
+        {/* Delivery Address Section */}
+        <Text style={styles.sectionTitle}>Delivery Address</Text>
+        <View style={styles.section}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.value}>{safeData.customerName}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Address:</Text>
+            <Text style={styles.value}>{safeData.address}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>City:</Text>
+            <Text style={styles.value}>{safeData.city}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Country:</Text>
+            <Text style={styles.value}>{safeData.country}</Text>
+          </View>
+        </View>
+
+        {/* Map Image Section */}
+        <Text style={styles.sectionTitle}>Delivery Location</Text>
+        <View style={{ alignItems: "center", marginBottom: 10 }}>
+          {safeData.mapUrl ? (
+            <View style={{ position: "relative" }}>
+              <Image 
+                src={safeData.mapUrl} 
+                style={styles.mapImage}
+                cache={false}
+              />
+              <View style={{ 
+                position: "absolute", 
+                bottom: 5, 
+                right: 5, 
+                backgroundColor: "rgba(0,0,0,0.7)", 
+                padding: "2px 6px",
+                borderRadius: 3
+              }}>
+                <Text style={{ fontSize: 8, color: "#ffffff" }}>📍 {safeData.address}</Text>
+              </View>
+            </View>
+          ) : (
+            <View style={{ 
+              width: 400,
+              height: 200,
+              backgroundColor: "#f8f9fa",
+              border: "2px solid #5CAF90",
+              borderRadius: 8,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 20
+            }}>
+              <Text style={{ fontSize: 16, color: "#5CAF90", marginBottom: 12, fontWeight: "bold" }}>
+                📍 Delivery Location
+              </Text>
+              <View style={{ 
+                backgroundColor: "#ffffff", 
+                padding: 12, 
+                borderRadius: 6, 
+                border: "1px solid #e0e0e0",
+                width: "100%",
+                maxWidth: 350
+              }}>
+                <Text style={{ fontSize: 12, color: "#333333", fontWeight: "bold", marginBottom: 4 }}>
+                  Customer Address:
+                </Text>
+                <Text style={{ fontSize: 11, color: "#666666", lineHeight: 1.4, textAlign: "center" }}>
+                  {safeData.address}{'\n'}
+                  {safeData.city}, {safeData.country}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 9, color: "#999999", marginTop: 8, fontStyle: "italic" }}>
+                Interactive map view not available
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Order Status Section */}
+        <Text style={styles.sectionTitle}>Order Status</Text>
+        <View style={styles.section}>
+          {safeData.statusHistory && safeData.statusHistory.length > 0 ? (
+            safeData.statusHistory.map((item, idx) => (
+              <View key={idx} style={styles.statusItem}>
+                <Text style={styles.statusText}>{item.status}</Text>
+                <Text style={styles.statusDate}>{item.date}</Text>
+                <Text style={styles.statusCompleted}>✓</Text>
+              </View>
+            ))
+          ) : (
+            <View style={styles.statusItem}>
+              <Text style={styles.statusText}>Order Confirmed</Text>
+              <Text style={styles.statusDate}>{safeData.orderDate}</Text>
+              <Text style={styles.statusCompleted}>✓</Text>
+            </View>
+          )}
+          
+          {/* Current Status */}
+          <View style={[styles.statusItem, { backgroundColor: "#e8f5e8", marginTop: 8 }]}>
+            <Text style={[styles.statusText, { fontWeight: "bold" }]}>
+              Current Status: {safeData.currentStatus?.delivery_status || safeData.deliveryStatus}
+            </Text>
+            <Text style={styles.statusDate}>
+              {safeData.currentStatus?.delivery_date 
+                ? new Date(safeData.currentStatus.delivery_date).toLocaleDateString()
+                : "Pending"
+              }
+            </Text>
+            <Text style={styles.statusCompleted}>Active</Text>
+          </View>
+          
+          {/* Estimated Delivery Details */}
+          <View style={[styles.row, { marginTop: 10 }]}>
+            <Text style={{ ...styles.label, width: "50%", fontWeight: "bold" }}>
+              Estimated Delivery:
+            </Text>
+            <Text style={{ ...styles.value, width: "50%" }}>
+              {safeData.estimatedDeliveryDate
+                ? safeData.estimatedDeliveryDate
+                : "Date not available"}
+            </Text>
+          </View>
+        </View>
+        {/* Thank You Message */}
+          <Text style={styles.thankYouText}>Thanks For Using Asipiya Services</Text>
+      </Page>
+    </Document>
+  );
+};
 
 // Invoice Download Button Component
 const InvoiceDownloadButton = ({ orderData }) => {
@@ -262,17 +525,62 @@ const InvoiceDownloadButton = ({ orderData }) => {
   const handleDownload = async () => {
     try {
       setIsGenerating(true);
-      const blob = await pdf(<InvoicePDF data={orderData} />).toBlob();
+      
+      // Test PDF generation first
+      const testResult = await testPDFGeneration();
+      if (!testResult) {
+        throw new Error('PDF generation test failed');
+      }
+      
+      // Prepare data synchronously to avoid async issues
+      const pdfData = {
+        ...orderData,
+        mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+        statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
+          ? orderData.trackingInfo.status_history.map((item, index) => ({
+              status: item.status_to || "Status Update",
+              date: item.created_at 
+                ? new Date(item.created_at).toLocaleString()
+                : "N/A"
+            }))
+          : [
+              { status: "Order Confirmed", date: orderData.orderDate },
+              { status: "Processing", date: "In Progress" },
+              { status: "Shipped", date: "In Progress" },
+              { status: "Delivered", date: "Pending" }
+            ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
+              .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
+        estimatedDeliveryDate: orderData.currentStatus?.delivery_date
+          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "Date not available"
+      };
+      
+      const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
+      
+      // Create download link
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `Order-${orderData.orderId}-Invoice.pdf`;
+      link.style.display = 'none';
+      
+      // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      
+      // Clean up
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
     } catch (error) {
       console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again. Error: " + error.message);
     } finally {
       setIsGenerating(false);
     }
@@ -284,8 +592,36 @@ const InvoiceDownloadButton = ({ orderData }) => {
       setEmailStatus("");
       setEmailMessage("");
 
+      // Prepare data synchronously (same as download function)
+      const pdfData = {
+        ...orderData,
+        mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+        statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
+          ? orderData.trackingInfo.status_history.map((item, index) => ({
+              status: item.status_to || "Status Update",
+              date: item.created_at 
+                ? new Date(item.created_at).toLocaleString()
+                : "N/A"
+            }))
+          : [
+              { status: "Order Confirmed", date: orderData.orderDate },
+              { status: "Processing", date: "In Progress" },
+              { status: "Shipped", date: "In Progress" },
+              { status: "Delivered", date: "Pending" }
+            ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
+              .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
+        estimatedDeliveryDate: orderData.currentStatus?.delivery_date
+          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "Date not available"
+      };
+
       // Generate PDF blob
-      const blob = await pdf(<InvoicePDF data={orderData} />).toBlob();
+      const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
 
       // Convert blob to base64
       const reader = new FileReader();

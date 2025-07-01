@@ -58,3 +58,25 @@ CREATE TABLE Event_has_Product (
     FOREIGN KEY (Event_idEvent) REFERENCES Event(idEvent),
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
+
+-- Add a new About Us Setting Table
+CREATE TABLE About_Us_Setting (
+  idAbout_Us_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Statistics JSON,
+  Vision_Image_Url TEXT,
+  Vision_Title VARCHAR(255),
+  Vision_Description TEXT,
+  Mission_Image_Url TEXT,
+  Mission_Title VARCHAR(255),
+  Mission_Description TEXT,
+  Values_Image_Url TEXT,
+  Values_Title VARCHAR(255),
+  Values_Description TEXT,
+  Features JSON,
+  Why_Choose_Us_Image_Url TEXT,
+  Shopping_Experience_Title VARCHAR(255),
+  Shopping_Experience_Description TEXT,
+  Shopping_Experience_Button_Text VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

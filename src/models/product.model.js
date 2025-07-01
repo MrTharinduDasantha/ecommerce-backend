@@ -852,6 +852,12 @@ async function deleteProduct(productId) {
     productId,
   ]);
 
+  // Delete event's product
+  await pool.query(
+    "DELETE FROM Event_has_Product WHERE Product_idProduct = ?",
+    [productId]
+  );
+
   // Delete product
   await pool.query("DELETE FROM Product WHERE idProduct = ?", [productId]);
 }
