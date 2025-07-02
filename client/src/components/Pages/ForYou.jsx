@@ -40,7 +40,8 @@ const ForYou = () => {
             size: product.variations?.[0]?.Size || null,
             discountName: product.Discount_Name || "For You Discounts",
             category: product.subcategories?.[0]?.Description || "",
-            historyStatus: product.History_Status || ""
+            historyStatus: product.History_Status || "",
+            activeDiscount: product.discounts?.find(d => d.Status === "active") || null
           }));
           setProducts(formattedProducts);
         }
@@ -108,15 +109,8 @@ const ForYou = () => {
                       price={product.price}
                       oldPrice={product.oldPrice}
                       weight={product.weight}
-                      discountLabel={
-                        product.oldPrice && product.price
-                          ? `${calculateDiscountPercentage(
-                              product.oldPrice,
-                              product.price
-                            )} % OFF`
-                          : null
-                      }
                       historyStatus={product.historyStatus}
+                      activeDiscount={product.activeDiscount}
                       id={product.id}
                       className="h-full"
                     />

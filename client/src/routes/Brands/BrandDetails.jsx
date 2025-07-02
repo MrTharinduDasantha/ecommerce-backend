@@ -184,15 +184,8 @@ const BrandDetails = () => {
                     title={product.Description}
                     price={product.Selling_Price}
                     oldPrice={product.Market_Price}
-                    discountLabel={
-                      product.Market_Price && product.Selling_Price
-                        ? `${calculateDiscountPercentage(
-                            product.Market_Price,
-                            product.Selling_Price
-                          )}% OFF`
-                        : null
-                    }
                     historyStatus={ product.History_Status}
+                    activeDiscount={product.discounts?.find(d => d.Status === "active") || null}
                     id={product.idProduct}
                   />
                 </div>

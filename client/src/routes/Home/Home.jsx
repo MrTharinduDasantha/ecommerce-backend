@@ -10,7 +10,7 @@ import {
 } from "../../api/product";
 import ProductCard from "../../components/ProductCard";
 import { Link } from "react-router-dom";
-import {calculateDiscountPercentage} from "../../components/CalculateDiscount"
+import { calculateDiscountPercentage } from "../../components/CalculateDiscount";
 
 const Home = () => {
   const [categories, setCategories] = useState([]);
@@ -19,7 +19,6 @@ const Home = () => {
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
 
   const handleProductClick = (productId) => {
     window.scrollTo(0, 0);
@@ -179,15 +178,11 @@ const Home = () => {
                   title={product.Description}
                   price={product.Selling_Price}
                   oldPrice={product.Market_Price ? product.Market_Price : null}
-                  discountLabel={
-                    product.Market_Price && product.Selling_Price
-                      ? `${calculateDiscountPercentage(
-                          product.Market_Price,
-                          product.Selling_Price
-                        )}% OFF`
-                      : null
-                  }
                   historyStatus={product.History_Status}
+                  activeDiscount={
+                    product.discounts?.find((d) => d.Status === "active") ||
+                    null
+                  }
                   id={product.idProduct}
                   className="h-full"
                 />
@@ -195,10 +190,10 @@ const Home = () => {
             ))
           ) : (
             <div className="col-span-full py-10 flex items-center justify-center">
-            <p className="text-xl md:text-2xl font-bold text-gray-500">
-              No Products Found.
-            </p>
-          </div>
+              <p className="text-xl md:text-2xl font-bold text-gray-500">
+                No Products Found.
+              </p>
+            </div>
           )}
         </div>
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -217,15 +212,11 @@ const Home = () => {
                   title={product.Description}
                   price={product.Selling_Price}
                   oldPrice={product.Market_Price ? product.Market_Price : null}
-                  discountLabel={
-                    product.Market_Price && product.Selling_Price
-                      ? `${calculateDiscountPercentage(
-                          product.Market_Price,
-                          product.Selling_Price
-                        )}% OFF`
-                      : null
-                  }
                   historyStatus={product.History_Status}
+                  activeDiscount={
+                    product.discounts?.find((d) => d.Status === "active") ||
+                    null
+                  }
                   id={product.idProduct}
                   className="h-full"
                 />
@@ -256,15 +247,10 @@ const Home = () => {
                 title={product.Long_Description || product.Description}
                 price={product.Selling_Price}
                 oldPrice={product.Market_Price ? product.Market_Price : null}
-                discountLabel={
-                  product.Market_Price && product.Selling_Price
-                    ? `${calculateDiscountPercentage(
-                        product.Market_Price,
-                        product.Selling_Price
-                      )}% OFF`
-                    : null
-                }
                 historyStatus={product.History_Status}
+                activeDiscount={
+                  product.discounts?.find((d) => d.Status === "active") || null
+                }
                 id={product.idProduct}
                 className="h-full"
               />
@@ -284,15 +270,10 @@ const Home = () => {
                 title={product.Long_Description || product.Description}
                 price={product.Selling_Price}
                 oldPrice={product.Market_Price ? product.Market_Price : null}
-                discountLabel={
-                  product.Market_Price && product.Selling_Price
-                    ? `${calculateDiscountPercentage(
-                        product.Market_Price,
-                        product.Selling_Price
-                      )}% OFF`
-                    : null
-                }
                 historyStatus={product.History_Status}
+                activeDiscount={
+                  product.discounts?.find((d) => d.Status === "active") || null
+                }
                 id={product.idProduct}
                 className="h-full"
               />
