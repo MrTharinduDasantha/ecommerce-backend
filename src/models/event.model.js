@@ -1,5 +1,17 @@
 const pool = require("../config/database");
 
+// Get active discounts for a specific product
+async function getActiveDiscountsByProductId(productId) {
+  const query = `
+    SELECT * FROM Discounts
+    WHERE Product_idProduct = ?
+    AND Status = 'active'
+    AND CURDATE() BETWEEN STR_TO_DATE(Start_Date, '%Y-%m-%d') AND STR_TO_DATE(End_Date, '%Y-%m-%d')
+  `;
+  const [discounts] = await pool.query(query, [productId]);
+  return discounts;
+}
+
 // ------------------------
 // Event Related Functions
 // ------------------------
@@ -51,6 +63,16 @@ async function getEventProducts(eventId) {
         WHERE ehp.Event_idEvent = ?
     `;
   const [products] = await pool.query(query, [eventId]);
+  
+   for (const product of products) {
+    const [images] = await pool.query(
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
+      [product.idProduct]
+    );
+    product.images = images;
+    product.discounts = await getActiveDiscountsByProductId(product.idProduct);
+    
+  }
   return products;
 }
 
