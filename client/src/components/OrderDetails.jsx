@@ -4,19 +4,22 @@ import { formatPrice } from './FormatPrice';
 
 // Helper function to safely parse prices (handles both strings and numbers)
 const parsePrice = (price) => {
-  if (typeof price === 'number') return price;
+  if (price === null || price === undefined) return 0;
+  if (typeof price === 'number') return isNaN(price) ? 0 : price;
   if (typeof price === 'string') {
     // Remove currency symbols and commas
     const cleaned = price.replace(/[^\d.-]/g, '');
-    return parseFloat(cleaned) || 0;
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
   }
   return 0;
 };
 
-const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
+const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts, selectedItems: propSelectedItems, showHeader = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const selectedItems = location.state?.selectedItems || [];
+  // Use provided items from props if available, otherwise use from location state
+  const selectedItems = propSelectedItems || location.state?.selectedItems || [];
 
   const handleProductClick = (productId) => {
     window.scrollTo(0, 0);
@@ -38,7 +41,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   // Calculate total discount
   const totalDiscount = totalMarketPrice - subtotal;
   // Calculate final total (subtotal already includes discounts)
-  const total = subtotal + deliveryFee;
+  const total = subtotal + (deliveryFee || 0);
 
   // Calculate individual product totals and discounts
   const getProductTotals = () => {
@@ -62,27 +65,52 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
   const productTotals = getProductTotals();
   const totalSavings = productTotals.reduce((sum, item) => sum + item.discount, 0);
 
+  // If no items, show a message
+  if (!selectedItems || selectedItems.length === 0) {
+    return (
+      <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-[#E8E8E8]">
+        <div className="p-6 text-center">
+          {showHeader && (
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+              <FaShoppingCart className="inline mr-2 text-[#5CAF90]" />
+              Order <span className="text-[#5CAF90]">Details</span>
+            </h2>
+          )}
+          <p className="text-gray-500">No order items found for this order.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-[#E8E8E8]">
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-700 mb-6">
-          <FaShoppingCart className="inline mr-2 text-[#5CAF90]" />
-          Order <span className="text-[#5CAF90]">Details</span>
-        </h2>
+        {showHeader && (
+          <h2 className="text-lg font-semibold text-gray-700 mb-6">
+            <FaShoppingCart className="inline mr-2 text-[#5CAF90]" />
+            Order <span className="text-[#5CAF90]">Details</span>
+          </h2>
+        )}
         
         {/* Order Items */}
         <div className="mt-4 space-y-4">
           {selectedItems.map((item, index) => (
   <div
-    key={`${item.id}-${item.color || ''}-${item.size || ''}`}
+    key={`${item.id || index}-${item.color || ''}-${item.size || ''}`}
     className="flex items-center space-x-4 bg-gray-100 rounded-lg p-3 cursor-pointer border border-[#E8E8E8]"
     onClick={() => handleProductClick(item.productId)}
   >
-    <img
-      src={item.image}
-      alt="Product"
-      className="w-24 h-24 rounded object-cover" 
-    />
+    {item.image ? (
+      <img
+        src={item.image}
+        alt="Product"
+        className="w-24 h-24 rounded object-cover" 
+      />
+    ) : (
+      <div className="w-24 h-24 rounded bg-gray-200 flex items-center justify-center">
+        <span className="text-gray-400 text-xs">No Image</span>
+      </div>
+    )}
     <div className="min-w-0 flex-1">
       <p className="font-medium truncate">{item.name}</p>
 
@@ -116,7 +144,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
         <p className="text-black font-semibold">
           {formatPrice(item.price)}
         </p>
-        {item.marketPrice && (
+        {item.marketPrice && parsePrice(item.marketPrice) > parsePrice(item.price) && (
           <p className="text-gray-500 line-through text-sm">
             {formatPrice(item.marketPrice)}
           </p>
@@ -133,13 +161,13 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
             )}
           </span>
           <span className="text-[12px] text-[#5CAF90] ml-2">
-            Save Rs. {productTotals[index].discount.toLocaleString()}
+            Save Rs. {productTotals[index]?.discount?.toLocaleString() || 0}
           </span>
         </div>
       )}
       <div className="mt-1 text-sm text-gray-600">
         <span className="font-medium">Item Total:</span>{" "}
-        {formatPrice(productTotals[index].total)}
+        {formatPrice(productTotals[index]?.total || 0)}
       </div>
     </div>
   </div>
@@ -161,7 +189,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
           )}
           <div className="flex justify-between">
             <span className="text-gray-600">Delivery Fee</span>
-            <span className="font-medium">{formatPrice(deliveryFee)}</span>
+            <span className="font-medium">{formatPrice(deliveryFee || 0)}</span>
           </div>
           <div className="flex justify-between pt-3 border-t border-[#E8E8E8] mt-2">
             <span className="font-semibold">Total</span>
@@ -184,15 +212,7 @@ const OrderDetails = ({ deliveryFee, orderInfo, productDiscounts }) => {
           </div>
         )}
         
-        {/* Additional Info */}
-        <div className="mt-6 bg-gray-100 p-4 rounded-md border border-[#E8E8E8]">
-          <p className="text-sm text-gray-600 mb-2">
-            <span className="font-medium">Estimated Delivery:</span> 3-5 business days
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Return Policy:</span> 14 days return policy
-          </p>
-        </div>
+        {/* Additional Info - Remove hardcoded values */}
       </div>
     </div>
   );

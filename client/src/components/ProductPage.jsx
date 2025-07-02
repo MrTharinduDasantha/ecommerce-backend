@@ -30,6 +30,49 @@ const ProductPage = () => {
     window.scrollTo(0, 0);
     navigate(`/product-page/${productId}`);
   };
+  const calculateDisplayDiscount = (originalPrice, marketPrice, activeDiscount) => {
+  // Apply active discount if it exists
+  const currentPrice = activeDiscount 
+    ? calculateDiscountedPrice(originalPrice, activeDiscount)
+    : originalPrice;
+
+  // Calculate percentage discount from market price
+  if (marketPrice > currentPrice) {
+    const discountPercentage = ((marketPrice - currentPrice) / marketPrice) * 100;
+    return `${Math.round(discountPercentage)}% OFF`;
+  }
+  return null;
+};
+  const calculateDiscountedPrice = (price, discount) => {
+    if (!discount) return price;
+    
+    if (discount.Discount_Type === "fixed") {
+      return price - parseFloat(discount.Discount_Value);
+    } else if (discount.Discount_Type === "percentage") {
+      return price * (1 - parseFloat(discount.Discount_Value) / 100);
+    }
+    return price;
+  };
+
+  const getDisplayDiscount = (price, marketPrice, discount) => {
+    if (discount) {
+      // For active discount, calculate percentage off the original price
+      const discountValue = parseFloat(discount.Discount_Value);
+      if (discount.Discount_Type === "fixed") {
+        const percentage = (discountValue / price) * 100;
+        return `${Math.round(percentage)}% OFF`;
+      } else {
+        return `${Math.round(discountValue)}% OFF`;
+      }
+    } else {
+      // No active discount, calculate difference between selling price and market price
+      if (marketPrice > price) {
+        const percentage = ((marketPrice - price) / marketPrice) * 100;
+        return `${Math.round(percentage)}% OFF`;
+      }
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
@@ -114,6 +157,9 @@ const ProductPage = () => {
                 color: product.variations?.[0]?.Colour || "N/A",
                 size: product.variations?.[0]?.Size || null,
                 category: product.subcategories?.[0]?.Description || "",
+                historyStatus: product.History_Status || "",
+                activeDiscount:
+                  product.discounts?.find((d) => d.Status === "active") || null,
               }));
 
             setRelatedProducts(filteredRelated);
@@ -322,26 +368,34 @@ const ProductPage = () => {
 
           {/* Price and Discount */}
           <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
-            {formatPrice(`LKR ${currentVariant.price.toFixed(2)}`)}
+  {formatPrice(
+    `LKR ${
+      activeDiscount
+        ? calculateDiscountedPrice(currentVariant.price, activeDiscount).toFixed(2)
+        : currentVariant.price.toFixed(2)
+    }`
+  )}
 
-            {product.marketPrice > currentVariant.price && (
-              <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
-                {formatPrice(`LKR ${product.marketPrice.toFixed(2)}`)}
-              </span>
-            )}
+  {product.marketPrice > currentVariant.price && (
+    <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
+      {formatPrice(`LKR ${product.marketPrice.toFixed(2)}`)}
+    </span>
+  )}
 
-            {activeDiscount && (
-              <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
-                {activeDiscount.Discount_Type === "fixed"
-                  ? `Extra ${formatPrice(
-                      `LKR ${parseFloat(activeDiscount.Discount_Value).toFixed(
-                        2
-                      )}`
-                    )} OFF`
-                  : `Extra ${parseInt(activeDiscount.Discount_Value)}% OFF`}
-              </span>
-            )}
-          </div>
+  {calculateDisplayDiscount(
+    currentVariant.price,
+    product.marketPrice,
+    activeDiscount
+  ) && (
+    <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
+      {calculateDisplayDiscount(
+        currentVariant.price,
+        product.marketPrice,
+        activeDiscount
+      )}
+    </span>
+  )}
+</div>
 
           {/* Description */}
           <p className="text-gray-600 text-sm sm:text-base line-clamp-3">
@@ -523,14 +577,8 @@ const ProductPage = () => {
                   price={product.price}
                   oldPrice={product.oldPrice}
                   weight={product.weight}
-                  discountLabel={
-                    product.oldPrice && product.price
-                      ? `${calculateDiscountPercentage(
-                          product.oldPrice,
-                          product.price
-                        )} % OFF`
-                      : null
-                  }
+                  historyStatus={product.historyStatus}
+                  activeDiscount={product.activeDiscount}
                   id={product.id}
                   className="h-full"
                 />

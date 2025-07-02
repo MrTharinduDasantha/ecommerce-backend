@@ -674,7 +674,10 @@ async function getProductsBySubCategory(subCategoryId) {
       [product.idProduct]
     );
     product.images = images;
+    product.discounts = await getActiveDiscountsByProductId(product.idProduct);
+    
   }
+  
 
   return products;
 }
@@ -696,6 +699,7 @@ async function getProductsByBrand(brandId) {
       [product.idProduct]
     );
     product.images = images;
+    product.discounts = await getActiveDiscountsByProductId(product.idProduct);
   }
 
   return products;
@@ -869,7 +873,7 @@ async function deleteProduct(productId) {
 // Get active discounts for a specific product
 async function getActiveDiscountsByProductId(productId) {
   const query = `
-    SELECT * FROM Discounts
+    SELECT * FROM Discounts 
     WHERE Product_idProduct = ?
     AND Status = 'active'
     AND CURDATE() BETWEEN STR_TO_DATE(Start_Date, '%Y-%m-%d') AND STR_TO_DATE(End_Date, '%Y-%m-%d')
