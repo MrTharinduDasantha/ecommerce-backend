@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import DownloadIcon from "@mui/icons-material/Download";
 import EmailIcon from "@mui/icons-material/Email";
+import OrderDetails from "./OrderDetails";
 import "./InvoicePDF.css";
 
 // Function to generate map URL for PDF
@@ -265,7 +266,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     color: "#4B5563",
-    fontStyle: "italic"
+    fontStyle: "italic",
+    marginTop: 20
   },
   mapImage: {
     width: 400,
@@ -305,6 +307,7 @@ const styles = StyleSheet.create({
 const InvoicePDF = ({ data }) => {
   // Ensure data has required fields with fallbacks
   const safeData = {
+    items : data?.preparedItems || [],
     orderId: data?.orderId || 'N/A',
     orderDate: data?.orderDate || 'N/A',
     paymentMethod: data?.paymentMethod || 'N/A',
@@ -324,7 +327,6 @@ const InvoicePDF = ({ data }) => {
     estimatedDeliveryDate: data?.estimatedDeliveryDate || 'Date not available',
     currentStatus: data?.currentStatus || {}
   };
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -363,21 +365,21 @@ const InvoicePDF = ({ data }) => {
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Subtotal:</Text>
-            <Text style={styles.value}>${safeData.subtotal.toFixed(2)}</Text>
+            <Text style={styles.value}>LKR {safeData.subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
           </View>
           {safeData.discount > 0 && (
             <View style={styles.row}>
               <Text style={styles.label}>Discount:</Text>
-              <Text style={styles.value}>-${safeData.discount.toFixed(2)}</Text>
+              <Text style={styles.value}>-LKR {safeData.discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
             </View>
           )}
           <View style={styles.row}>
             <Text style={styles.label}>Delivery Fee:</Text>
-            <Text style={styles.value}>${safeData.deliveryFee.toFixed(2)}</Text>
+            <Text style={styles.value}>LKR {safeData.deliveryFee.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Total:</Text>
-            <Text style={styles.value}>${safeData.total.toFixed(2)}</Text>
+            <Text style={styles.value}>LKR {safeData.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
           </View>
         </View>
 
@@ -403,64 +405,99 @@ const InvoicePDF = ({ data }) => {
         </View>
 
         {/* Map Image Section */}
-        <Text style={styles.sectionTitle}>Delivery Location</Text>
-        <View style={{ alignItems: "center", marginBottom: 10 }}>
-          {safeData.mapUrl ? (
-            <View style={{ position: "relative" }}>
-              <Image 
-                src={safeData.mapUrl} 
-                style={styles.mapImage}
-                cache={false}
-              />
-              <View style={{ 
-                position: "absolute", 
-                bottom: 5, 
-                right: 5, 
-                backgroundColor: "rgba(0,0,0,0.7)", 
-                padding: "2px 6px",
-                borderRadius: 3
-              }}>
-                <Text style={{ fontSize: 8, color: "#ffffff" }}>📍 {safeData.address}</Text>
-              </View>
-            </View>
-          ) : (
-            <View style={{ 
-              width: 400,
-              height: 200,
-              backgroundColor: "#f8f9fa",
-              border: "2px solid #5CAF90",
-              borderRadius: 8,
-              display: "flex",
-              flexDirection: "column",
+        <Text style={styles.sectionTitle}>Order Items</Text>
+<View style={styles.section}>
+  {safeData && safeData.items && safeData.items.length > 0 ? (
+    safeData.items.map((item, index) => (
+      <View
+        key={`${item.id || index}-${item.color || ''}-${item.size || ''}`}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 6,
+          padding: 6,
+          backgroundColor: "#f3f4f6",
+          border: "1px solid #E8E8E8",
+          borderRadius: 6
+        }}
+      >
+        {item.image ? (
+          <Image
+            src={item.image}
+            style={{ width: 60, height: 60, borderRadius: 4, marginRight: 6 }}
+          />
+        ) : (
+          <View
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: 4,
+              backgroundColor: "#e5e7eb",
               alignItems: "center",
               justifyContent: "center",
-              padding: 20
-            }}>
-              <Text style={{ fontSize: 16, color: "#5CAF90", marginBottom: 12, fontWeight: "bold" }}>
-                📍 Delivery Location
-              </Text>
-              <View style={{ 
-                backgroundColor: "#ffffff", 
-                padding: 12, 
-                borderRadius: 6, 
-                border: "1px solid #e0e0e0",
-                width: "100%",
-                maxWidth: 350
-              }}>
-                <Text style={{ fontSize: 12, color: "#333333", fontWeight: "bold", marginBottom: 4 }}>
-                  Customer Address:
-                </Text>
-                <Text style={{ fontSize: 11, color: "#666666", lineHeight: 1.4, textAlign: "center" }}>
-                  {safeData.address}{'\n'}
-                  {safeData.city}, {safeData.country}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 9, color: "#999999", marginTop: 8, fontStyle: "italic" }}>
-                Interactive map view not available
-              </Text>
+              marginRight: 6
+            }}
+          >
+            <Text style={{ fontSize: 8, color: "#9ca3af" }}>No Image</Text>
+          </View>
+        )}
+        
+        <View style={{ flexGrow: 1 }}>
+          <Text style={{ fontSize: 10, fontWeight: "bold" }}>{item.name}</Text>
+          
+          {(item.color || item.size) && (
+            <View style={{ marginTop: 2 }}>
+              {item.color && item.color !== "No color selected" && (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={{ fontSize: 8, color: "#6b7280" }}>Color:</Text>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: item.color,
+                      border: "1px solid #d1d5db",
+                      marginLeft: 4
+                    }}
+                  />
+                </View>
+              )}
+              {item.size  && (
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+                  <Text style={{ fontSize: 8, color: "#6b7280" }}>Size:</Text>
+                  <Text style={{ fontSize: 8, fontWeight: "bold", marginLeft: 4 }}>
+                    {item.size}
+                  </Text>
+                </View>
+              )}
+              {item.quantity  && (
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+                  <Text style={{ fontSize: 8, color: "#6b7280" }}>Qty:</Text>
+                  <Text style={{ fontSize: 8, fontWeight: "bold", marginLeft: 4 }}>
+                    {item.quantity}
+                  </Text>
+                </View>
+              )}
+              {item.price && (
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold" }}>
+                    
+                    LKR {item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
         </View>
+      </View>
+    ))
+  ) : (
+    <Text style={{ fontSize: 10, color: "#6b7280" }}>
+      No item details available for this order.
+    </Text>
+  )}
+</View>
+
 
         {/* Order Status Section */}
         <Text style={styles.sectionTitle}>Order Status</Text>
@@ -543,6 +580,7 @@ useEffect(() => {
       const pdfData = {
         ...orderData,
         mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+        preparedItems: prepareOrderItems(orderData.orderItems),  // ⬅ add this
         statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
           ? orderData.trackingInfo.status_history.map((item, index) => ({
               status: item.status_to || "Status Update",
@@ -592,7 +630,40 @@ useEffect(() => {
       setIsGenerating(false);
     }
   };
-
+// Prepare order items for OrderDetails component
+  const prepareOrderItems = (data) => {
+    console.log(125698,data)
+    if (!data) {
+      return [];
+    }
+    
+    return data.map((item, index) => {
+      
+      // Handle null Rate and Qty by calculating from totals
+      let effectiveRate = item.Rate;
+      let effectiveQty = item.Qty;
+      
+      if (!effectiveRate || !effectiveQty) {
+        // If Rate or Qty is null, calculate from Total_Amount
+        // Assume quantity 1 if not available and use Total_Amount as price
+        effectiveQty = item.Qty || 1;
+        effectiveRate = item.Total_Amount ? parseFloat(item.Total_Amount) / effectiveQty : 0;
+      }
+      
+      return {
+        id: item.Product_Variations_idProduct_Variations,
+        productId: item.Product_Variations_idProduct_Variations,
+        name: item.product_name || 'Unknown Product',
+        image: item.product_image || null,
+        price: effectiveRate,
+        quantity: effectiveQty,
+        color: item.Colour,
+        size: item.Size,
+        marketPrice: item.Total && effectiveQty ? parseFloat(item.Total) / effectiveQty : effectiveRate, // Calculate market price from Total (before discount)
+        total: item.Total_Amount || item.Total || 0,
+      };
+    });
+  };
   const handleEmailShare = async () => {
     try {
       setIsGenerating(true);
@@ -602,7 +673,9 @@ useEffect(() => {
       // Prepare data synchronously (same as download function)
       const pdfData = {
         ...orderData,
+    
         mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+        preparedItems: prepareOrderItems(orderData.orderItems),  // ⬅ add this
         statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
           ? orderData.trackingInfo.status_history.map((item, index) => ({
               status: item.status_to || "Status Update",
@@ -626,7 +699,6 @@ useEffect(() => {
             })
           : "Date not available"
       };
-
       // Generate PDF blob
       const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
 
@@ -678,7 +750,7 @@ useEffect(() => {
       setIsGenerating(false);
     }
   };
-
+ 
   // Hide scrollbar when modal is open
   useEffect(() => {
     if (showEmailModal) {
