@@ -286,7 +286,7 @@ class OrderController {
       }
 
       const total_amount = cartData.Total_Amount
-      const delivery_charges = delivery_type === "express" ? 10 : 5 // Example charges
+      const delivery_charges = 500 // Example charges
       const net_amount = parseFloat(total_amount) + delivery_charges
 
       const order_id = await Order.create({
