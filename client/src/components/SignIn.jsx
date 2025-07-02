@@ -50,7 +50,7 @@ const SignIn = () => {
       try {
         // Use the login function from AuthContext
         await login(email, password);
-
+        localStorage.setItem('userEmail', email);
         // Navigate to home or dashboard
         navigate(from);
       } catch (error) {

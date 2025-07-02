@@ -522,6 +522,13 @@ const InvoiceDownloadButton = ({ orderData }) => {
   const [emailStatus, setEmailStatus] = useState(""); // 'success', 'error', or ''
   const [emailMessage, setEmailMessage] = useState("");
 
+useEffect(() => {
+  const savedEmail = localStorage.getItem("userEmail");
+  console.log(savedEmail)
+  if (savedEmail) {
+    setEmailAddress(savedEmail);
+  }
+}, []);
   const handleDownload = async () => {
     try {
       setIsGenerating(true);
@@ -658,7 +665,7 @@ const InvoiceDownloadButton = ({ orderData }) => {
         // Clear form after 3 seconds
         setTimeout(() => {
           setShowEmailModal(false);
-          setEmailAddress("");
+          
           setEmailStatus("");
           setEmailMessage("");
         }, 3000);
@@ -695,7 +702,7 @@ const InvoiceDownloadButton = ({ orderData }) => {
       </button>
 
       <button
-        onClick={() => setShowEmailModal(true)}
+        onClick={() => handleEmailShare()}
         disabled={isGenerating}
         className="invoice-button email-button"
       >
@@ -704,70 +711,7 @@ const InvoiceDownloadButton = ({ orderData }) => {
       </button>
 
       {/* Email Modal */}
-      {showEmailModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">
-              Share Invoice via Email
-            </h3>
-
-            {/* Status Messages */}
-            {emailStatus === "success" && (
-              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                {emailMessage}
-              </div>
-            )}
-
-            {emailStatus === "error" && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {emailMessage}
-              </div>
-            )}
-
-            <p className="text-gray-600 mb-4">
-              Enter the email address where you'd like to send the invoice:
-            </p>
-            <input
-              type="email"
-              value={emailAddress}
-              onChange={(e) => setEmailAddress(e.target.value)}
-              placeholder="Enter email address"
-              className="w-full p-2 border border-gray-300 rounded mb-4"
-              disabled={emailStatus === "success"}
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={handleEmailShare}
-                disabled={
-                  !emailAddress || isGenerating || emailStatus === "success"
-                }
-                className="flex-1 bg-[#5CAF90] text-white py-2 px-4 rounded hover:bg-[#4a9a7d] disabled:bg-gray-300"
-              >
-                {isGenerating
-                  ? "Sending..."
-                  : emailStatus === "success"
-                  ? "Sent!"
-                  : "Send Email"}
-              </button>
-              <button
-                onClick={() => {
-                  setShowEmailModal(false);
-                  setEmailAddress("");
-                  setEmailStatus("");
-                  setEmailMessage("");
-                }}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
-              >
-                {emailStatus === "success" ? "Close" : "Cancel"}
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Note: The PDF will be sent as an attachment to the specified email
-              address.
-            </p>
-          </div>
-        </div>
-      )}
+     
     </div>
   );
 };
