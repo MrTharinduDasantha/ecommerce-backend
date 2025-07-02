@@ -80,3 +80,19 @@ CREATE TABLE About_Us_Setting (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Add a new Event_Discounts Table
+CREATE TABLE Event_Discounts (
+    idEvent_Discounts INT AUTO_INCREMENT PRIMARY KEY,
+    Event_idEvent INT NOT NULL,
+    Product_Ids TEXT NOT NULL, 
+    Description VARCHAR(255) NOT NULL,
+    Discount_Type VARCHAR(45) NOT NULL,
+    Discount_Value DECIMAL(10,2) NOT NULL,
+    Start_Date DATE NOT NULL,
+    End_Date DATE NOT NULL,
+    Status VARCHAR(45) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (Event_idEvent) REFERENCES Event(idEvent) ON DELETE CASCADE
+);
