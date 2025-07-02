@@ -11,6 +11,7 @@ import CloseIcon from "@mui/icons-material/Close"
 import StarBorderIcon from "@mui/icons-material/StarBorder"
 import StarIcon from "@mui/icons-material/Star"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import CancelIcon from "@mui/icons-material/Cancel"
 import { addReview } from "../api/review"
 
 const OrderTracking = () => {
@@ -27,7 +28,11 @@ const OrderTracking = () => {
   const [error, setError] = useState(null)
   const [showOrderReviewSuccessMessage, setShowOrderReviewSuccessMessage] =
     useState(false)
+  const [showOrderReviewErrorMessage, setShowOrderReviewErrorMessage] =
+    useState(false)
   const [showProductReviewSuccessMessage, setShowProductReviewSuccessMessage] =
+    useState(false)
+  const [showProductReviewErrorMessage, setShowProductReviewErrorMessage] =
     useState(false)
   const [orderRating, setOrderRating] = useState(0)
   const [productRating, setProductRating] = useState(0)
@@ -146,13 +151,13 @@ const OrderTracking = () => {
   const handleOrderReviewSubmit = async () => {
     if (validateReview()) {
       try {
-        const reviewData = {
-          customer_id: user.id,
-          product_id: selectedProductId,
-          rating: review.rating,
-          comment: review.comment,
-        }
-        await addReview(reviewData)
+        // const reviewData = {
+        //   customer_id: user.id,
+        //   product_id: selectedProductId,
+        //   rating: review.rating,
+        //   comment: review.comment,
+        // }
+        // await addReview(reviewData)
         setReview({
           rating: 0,
           comment: "",
@@ -168,27 +173,46 @@ const OrderTracking = () => {
           setShowOrderReviewSuccessMessage(false)
         }, 1500)
       } catch (error) {
+        setShowOrderReviewErrorMessage(true)
         console.error("Failed to submit review:", error)
+        setTimeout(() => {
+          setShowOrderReviewErrorMessage(false)
+        }, 1500)
       }
     }
   }
 
-  const handleProductReviewSubmit = () => {
+  const handleProductReviewSubmit = async () => {
     if (validateReview()) {
-      setReview({
-        rating: 0,
-        comment: "",
-      })
-      setProductRating(0)
-      setFormErrors({
-        rating: "",
-        comment: "",
-      })
-      setShowProductReviewSuccessMessage(true)
-      setTimeout(() => {
-        setIsProductReviewModalOpen(false)
-        setShowProductReviewSuccessMessage(false)
-      }, 1500)
+      try {
+        const reviewData = {
+          customer_id: user.id,
+          product_id: selectedProductId,
+          rating: review.rating,
+          comment: review.comment,
+        }
+        await addReview(reviewData)
+        setReview({
+          rating: 0,
+          comment: "",
+        })
+        setProductRating(0)
+        setFormErrors({
+          rating: "",
+          comment: "",
+        })
+        setShowProductReviewSuccessMessage(true)
+        setTimeout(() => {
+          setIsProductReviewModalOpen(false)
+          setShowProductReviewSuccessMessage(false)
+        }, 1500)
+      } catch (error) {
+        setShowProductReviewErrorMessage(true)
+        console.error("Failed to submit review:", error)
+        setTimeout(() => {
+          setShowProductReviewErrorMessage(false)
+        }, 1500)
+      }
     }
   }
 
@@ -732,11 +756,21 @@ const OrderTracking = () => {
             </div>
             <>
               {showOrderReviewSuccessMessage ||
-              showProductReviewSuccessMessage ? (
+              showOrderReviewErrorMessage ||
+              showProductReviewSuccessMessage ||
+              showProductReviewErrorMessage ? (
                 <div className="flex flex-col items-center justify-center py-8">
-                  <CheckCircleIcon className="text-[#5CAF90] text-5xl mb-3" />
+                  {showOrderReviewSuccessMessage ||
+                  showProductReviewSuccessMessage ? (
+                    <CheckCircleIcon className="text-[#5CAF90] text-5xl mb-3" />
+                  ) : (
+                    <CancelIcon className="text-red-500 text-5xl mb-3" />
+                  )}
                   <p className="text-lg font-medium text-gray-800">
-                    Review Submitted
+                    {showOrderReviewSuccessMessage ||
+                    showProductReviewSuccessMessage
+                      ? "Review Submitted"
+                      : "Review Submission Failed"}
                   </p>
                 </div>
               ) : (
@@ -761,12 +795,12 @@ const OrderTracking = () => {
                             >
                               <input
                                 type="radio"
-                                value={review.rating}
-                                onChange={e => {
+                                value={rating}
+                                onChange={() => {
                                   isOrderReviewModalOpen
                                     ? setOrderRating(rating)
                                     : setProductRating(rating)
-                                  handleInputChange("rating", e.target.value)
+                                  handleInputChange("rating", rating)
                                 }}
                                 checked={
                                   isOrderReviewModalOpen
