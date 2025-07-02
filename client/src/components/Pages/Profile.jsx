@@ -235,8 +235,9 @@ const Profile = () => {
             city: newAddress.city,
             country: newAddress.country,
           }))
+          const { password, ...profileDataWithoutPassword } = profileData
           updateCustomerDetails(user.id, {
-            ...profileData,
+            ...profileDataWithoutPassword,
             address: newAddress.address,
             city: newAddress.city,
             country: newAddress.country,
@@ -299,6 +300,7 @@ const Profile = () => {
       const filteredAddresses = addresses.filter(
         address => address.id !== addressToDelete
       )
+      const { password, ...profileDataWithoutPassword } = profileData
       if (wasMainAddress && filteredAddresses.length > 0) {
         const newAddresses = filteredAddresses.map((addr, index) => ({
           ...addr,
@@ -317,7 +319,7 @@ const Profile = () => {
           country: newMainAddress.country,
         }))
         updateCustomerDetails(user.id, {
-          ...profileData,
+          ...profileDataWithoutPassword,
           address: newMainAddress.address,
           city: newMainAddress.city,
           country: newMainAddress.country,
@@ -330,7 +332,7 @@ const Profile = () => {
             address: "",
           }))
           updateCustomerDetails(user.id, {
-            ...profileData,
+            ...profileDataWithoutPassword,
             address: "",
             city: "",
             country: "",
@@ -448,8 +450,9 @@ const Profile = () => {
         country: mainAddress.country,
       }))
     }
+    const { password, ...profileDataWithoutPassword } = profileData
     await updateCustomerDetails(user.id, {
-      ...profileData,
+      ...profileDataWithoutPassword,
       address: mainAddress.address,
       city: mainAddress.city,
       country: mainAddress.country,
