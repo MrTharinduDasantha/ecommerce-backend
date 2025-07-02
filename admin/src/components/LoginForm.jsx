@@ -96,7 +96,7 @@ const LoginForm = () => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3"
+            className="absolute inset-y-0 right-0 z-10 flex items-center pr-3"
           >
             {showPassword ? (
               <IoMdEyeOff className="text-[#5CAF90] w-3.5 h-3.5 md:w-4 md:h-4" />
