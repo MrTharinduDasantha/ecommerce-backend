@@ -235,6 +235,7 @@ const Profile = () => {
             city: newAddress.city,
             country: newAddress.country,
           }))
+          // eslint-disable-next-line no-unused-vars
           const { password, ...profileDataWithoutPassword } = profileData
           updateCustomerDetails(user.id, {
             ...profileDataWithoutPassword,
@@ -300,6 +301,7 @@ const Profile = () => {
       const filteredAddresses = addresses.filter(
         address => address.id !== addressToDelete
       )
+      // eslint-disable-next-line no-unused-vars
       const { password, ...profileDataWithoutPassword } = profileData
       if (wasMainAddress && filteredAddresses.length > 0) {
         const newAddresses = filteredAddresses.map((addr, index) => ({
@@ -450,6 +452,7 @@ const Profile = () => {
         country: mainAddress.country,
       }))
     }
+    // eslint-disable-next-line no-unused-vars
     const { password, ...profileDataWithoutPassword } = profileData
     await updateCustomerDetails(user.id, {
       ...profileDataWithoutPassword,
