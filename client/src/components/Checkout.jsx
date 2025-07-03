@@ -287,8 +287,11 @@ const Checkout = () => {
         cart_id: cartId,
         payment_type: formData.paymentMethod,
       }
+     
       const res = await createOrder(orderData)
       const orderId = res.order_id
+       console.log(orderData)
+      console.log(res)
       setShowOrderSuccessMessage(true)
       clearCart()
       setTimeout(() => {
