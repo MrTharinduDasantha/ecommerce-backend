@@ -4,27 +4,20 @@ import { getProducts } from "../api/product";
 import ProductCard from "./ProductCard";
 import { calculateDiscountPercentage } from "./CalculateDiscount";
 
-const AllProducts = () => {
+const FilteredProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
 
-  const handleProductClick = (productId) => {
-    window.scrollTo(0, 0);
-    navigate(`/product-page/${productId}`);
-  };
-
-  // Load products on mount
   useEffect(() => {
     const loadProducts = async () => {
       try {
         const data = await getProducts();
-        // Format products to match the structure expected by ProductCard
         const formattedProducts = data.products
-          .filter((product) => product.Status === "active")
-          .map((product) => ({
+          .filter(product => product.Status === "active")
+          .map(product => ({
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
@@ -36,8 +29,7 @@ const AllProducts = () => {
             discountName: product.Discount_Name || "",
             category: product.subcategories?.[0]?.Description || "",
             brand: product.Brand_Name || "",
-            historyStatus: product.History_Status || "",
-            activeDiscount: product.discounts?.find(d => d.Status === "active") || null
+            description: product.Description || ""
           }));
         setProducts(formattedProducts);
       } catch (err) {
@@ -49,37 +41,32 @@ const AllProducts = () => {
     loadProducts();
   }, []);
 
-  // Get the search filter from the URL query string
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const letter = params.get("letter");
     const search = params.get("search");
-    if (search && search.trim().length > 0) {
-      setSearchTerm(search);
-    } else if (letter && /^[A-Z]$/i.test(letter)) {
-      setSearchTerm(letter.toUpperCase());
-    } else {
-      setSearchTerm("");
-    }
+    setSearchTerm(search ? search : "");
   }, [location.search]);
 
-  // Filtering logic
-  const filteredProducts = products.filter((product) => {
-    if (searchTerm.length === 1 && /^[A-Z]$/i.test(searchTerm)) {
-      return product.name?.toUpperCase().startsWith(searchTerm.toUpperCase());
-    }
-    if (searchTerm.trim().length > 0) {
-      const query = searchTerm.trim().toLowerCase();
-      const words = query.split(/\s+/);
-      // Match if all words are present in any of the searchable fields
-      return words.every(
-        (word) =>
-          (product.name && product.name.toLowerCase().includes(word)) ||
-          (product.brand && product.brand.toLowerCase().includes(word)) ||
-          (product.category && product.category.toLowerCase().includes(word))
+  const filteredProducts = products.filter(product => {
+    if (!searchTerm) return true;
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return true;
+    if (query.length === 1) {
+      return (
+        (product.name && product.name.toLowerCase().startsWith(query)) ||
+        (product.brand && product.brand.toLowerCase().startsWith(query)) ||
+        (product.category && product.category.toLowerCase().startsWith(query)) ||
+        (product.description && product.description.toLowerCase().startsWith(query))
       );
     }
-    return true;
+    const words = query.split(/\s+/);
+    return words.every(
+      word =>
+        (product.name && product.name.toLowerCase().includes(word)) ||
+        (product.brand && product.brand.toLowerCase().includes(word)) ||
+        (product.category && product.category.toLowerCase().includes(word)) ||
+        (product.description && product.description.toLowerCase().includes(word))
+    );
   });
 
   if (loading) {
@@ -118,47 +105,51 @@ const AllProducts = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 py-3 bg-white md:px-16 font-poppins">
-      {/* Search Header */}
-
-      {/* Filtered Products */}
-      <div className="mt-2 mb-5">
-        <h2 className="mb-6 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
-          <span className="text-[#1D372E]">Available </span>
-          <span className="text-[#5CAF90]">Products</span>
-        </h2>
+    <div className="min-h-screen px-4 py-8 bg-white md:px-16 font-poppins">
+      <div className="mt-12">
+        <h3 className="text-[33.18px] text-[#1D372E] font-semibold mb-6 text-left">
+          Filtered Products
+        </h3>
+        {products.length === 0 && !loading && !error && (
+          <div className="text-center text-gray-500">No products loaded from backend.</div>
+        )}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                onClick={() => handleProductClick(product.id)}
               >
-                <ProductCard
-                  image={product.image}
-                  category={product.category}
-                  title={product.name}
-                  price={product.price}
-                  oldPrice={product.oldPrice}
-                  historyStatus={product.historyStatus}
-                  activeDiscount={product.activeDiscount}
-                  id={product.id}
-                  className="h-full"
-                />
+                <Link to={`/product-page/${product.id}`}>
+                  <ProductCard
+                    image={product.image}
+                    category={product.category}
+                    title={product.name}
+                    price={product.price}
+                    oldPrice={product.oldPrice}
+                    discountLabel={
+                      product.oldPrice && product.price
+                        ? `${calculateDiscountPercentage(
+                            product.oldPrice,
+                            product.price
+                          )} % OFF`
+                        : null
+                    }
+                    id={product.id}
+                    className="h-full"
+                  />
+                </Link>
               </div>
             ))}
           </div>
         ) : (
-          <div className="col-span-full py-10 flex items-center justify-center">
-            <p className="text-xl md:text-2xl font-bold text-gray-500">
-              No Products Found.
-            </p>
-          </div>
+          products.length > 0 && (
+            <div className="text-center text-gray-500">No products found.</div>
+          )
         )}
       </div>
     </div>
   );
 };
 
-export default AllProducts;
+export default FilteredProducts;

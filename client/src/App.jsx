@@ -26,6 +26,7 @@ import { CartProvider } from "./context/CartContext";
 import AllCategories from "./components/Pages/Category";
 import AllProducts from "./components/AllProducts";
 import SubCategory from "./components/Pages/SubCategory";
+import FilteredProducts from "./components/FilteredProducts";
 
 const App = () => {
   return (
@@ -67,6 +68,7 @@ const App = () => {
           />
           <Route path="/AllProducts" element={<AllProducts />} />
           <Route path="/subcategory/:id" element={<SubCategory />} />
+          <Route path="/filtered-products" element={<FilteredProducts />} />
         </Routes>
         <Footer />
       </CartProvider>
