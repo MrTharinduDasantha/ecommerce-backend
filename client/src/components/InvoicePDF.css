@@ -31,11 +31,11 @@
 }
 
 .email-button {
-  background-color: #2196F3;
+  background-color: black;
 }
 
 .email-button:hover {
-  background-color: #1976D2;
+  background-color: #2c2727;
 }
 
 .email-button:disabled {
