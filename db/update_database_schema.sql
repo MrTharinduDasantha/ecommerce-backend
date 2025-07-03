@@ -80,3 +80,18 @@ CREATE TABLE About_Us_Setting (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Add a new Order Review table
+CREATE TABLE order_review (
+    review_id INT(11) NOT NULL AUTO_INCREMENT,
+    customer_id INT(11),
+    order_id INT(11),
+    rating DECIMAL(2,1),
+    comment VARCHAR(100),
+    status VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (review_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(idCustomer),
+    FOREIGN KEY (order_id) REFERENCES Order(idOrder)
+);
