@@ -184,6 +184,7 @@ const Home = () => {
                     null
                   }
                   id={product.idProduct}
+                  product={product}
                   className="h-full"
                 />
               </div>
@@ -218,6 +219,7 @@ const Home = () => {
                     null
                   }
                   id={product.idProduct}
+                  product={product}
                   className="h-full"
                 />
               </div>
@@ -252,6 +254,7 @@ const Home = () => {
                   product.discounts?.find((d) => d.Status === "active") || null
                 }
                 id={product.idProduct}
+                product={product}
                 className="h-full"
               />
             </div>
@@ -275,6 +278,7 @@ const Home = () => {
                   product.discounts?.find((d) => d.Status === "active") || null
                 }
                 id={product.idProduct}
+                product={product}
                 className="h-full"
               />
             </div>

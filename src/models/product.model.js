@@ -1065,6 +1065,8 @@ module.exports = {
   // Discount related functions
   getAllDiscounts,
   getDiscountsByProductId,
+  getActiveDiscountsByProductId,
+  getActiveEventDiscountsByProductId,
   createDiscount,
   updateDiscount,
   deleteDiscount,

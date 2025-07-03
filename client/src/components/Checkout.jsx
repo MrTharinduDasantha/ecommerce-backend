@@ -60,6 +60,9 @@ const Checkout = () => {
     `#${Math.floor(100000 + Math.random() * 900000)}`
   )
 
+  const [realCartItems, setRealCartItems] = useState([])
+  const [cartLoading, setCartLoading] = useState(true)
+
   const { user } = useAuth()
 
   const { clearCart } = useCart()
@@ -103,10 +106,17 @@ const Checkout = () => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const cart = await getCart(user.id)
-        setCartId(cart.cart.id)
+        setCartLoading(true)
+        const cartData = await getCart(user.id)
+        console.log("Fetched cart data:", cartData)
+        
+        setCartId(cartData.cart.idCart)
+        setRealCartItems(cartData.cart.items || [])
       } catch (error) {
         console.error("Error fetching customer cart: ", error)
+        setRealCartItems([])
+      } finally {
+        setCartLoading(false)
       }
     }
     fetchCart()
@@ -190,38 +200,34 @@ const Checkout = () => {
     }
   }
 
-  // Sample cart items
-  const cartItems = [
-    {
-      ...products[0],
-      variant: products[0].variants[0],
-      quantity: 2,
+  // Use real cart items with proper discount calculations
+  const cartItems = realCartItems.map(item => ({
+    id: item.Product_idProduct,
+    name: item.ProductName,
+    image: item.ProductImage,
+    variant: {
+      price: parseFloat(item.CartRate),
+      color: item.Colour,
+      size: item.Size,
     },
-    {
-      ...products[1],
-      variant: { ...products[1].variants[0], size: ["M"] },
-      quantity: 2,
-    },
-    {
-      ...products[4],
-      variant: products[4].variants[0],
-      quantity: 1,
-    },
-  ]
+    quantity: parseInt(item.CartQty),
+    marketPrice: parseFloat(item.MarketPrice || 0),
+    sellingPrice: parseFloat(item.CartRate),
+    totalAmount: parseFloat(item.Total_Amount || 0),
+    discountAmount: parseFloat(item.Discount_Amount || 0),
+    netAmount: parseFloat(item.NetAmount || 0),
+    discountPercentage: parseFloat(item.Discount_Percentage || 0),
+    category: item.Category || "General",
+    discountName: item.DiscountType ? `${item.DiscountType} Discount` : null
+  }))
 
-  // Calculate order totals
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.variant.price * item.quantity,
-    0
-  )
-  const discount = cartItems.reduce(
-    (sum, item) =>
-      sum + (item.marketPrice - item.variant.price) * item.quantity,
-    0
-  )
+  // Calculate order totals using backend-calculated values
+  const subtotal = cartItems.reduce((sum, item) => sum + item.totalAmount, 0)
+  const discount = cartItems.reduce((sum, item) => sum + item.discountAmount, 0)
   const deliveryFee = 500.0
   const total = subtotal - discount + deliveryFee
-  console.log(subtotal, discount, deliveryFee)
+  
+  console.log("Checkout totals:", { subtotal, discount, deliveryFee, total })
   // Order information
   const orderInfo = {
     orderNo: orderNo,
@@ -236,26 +242,20 @@ const Checkout = () => {
     return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
   }
   console.log(cartItems)
-  // Calculate individual product discounts
+  // Calculate individual product discounts using backend data
   const getProductDiscounts = () => {
     return cartItems
       .map(item => {
-        if (item.marketPrice > item.variant.price) {
-          const itemDiscount =
-            (item.marketPrice - item.variant.price) * item.quantity
+        if (item.discountAmount > 0) {
           return {
             name: item.name,
-            discount: itemDiscount,
-            discountName:
-              item.discountName ||
-              (item.category === "Seasonal Offers"
-                ? "Seasonal Discounts"
-                : item.category === "Rush Delivery"
-                ? "Rush Discounts"
-                : item.category === "For You"
-                ? "For You Discounts"
-                : "Sale Discounts"),
-            discountPrice: item.marketPrice - item.sellingPrice,
+            discount: item.discountAmount,
+            discountName: item.discountName || "Product Discount",
+            discountPrice: item.discountAmount / item.quantity,
+            marketPrice: item.marketPrice,
+            sellingPrice: item.sellingPrice,
+            totalDiscountAmount: item.discountAmount,
+            quantity: item.quantity
           }
         }
         return null
@@ -264,7 +264,7 @@ const Checkout = () => {
   }
 
   const productDiscounts = getProductDiscounts()
-  console.log(productDiscounts, "waqas")
+  console.log("Product discounts with event discounts:", productDiscounts)
   const handleInputChange = e => {
     const { name, value } = e.target
     setFormData({
@@ -309,6 +309,43 @@ const Checkout = () => {
 
   const handleCancel = () => {
     navigate("/cart")
+  }
+
+  // Show loading state while fetching cart data
+  if (cartLoading) {
+    return (
+      <div className="min-h-screen px-4 py-8 bg-white sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center animate-pulse">
+            <div className="w-12 h-12 border-4 border-[#5CAF90] border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-[#1D372E]">Loading checkout...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show message if cart is empty
+  if (!cartLoading && realCartItems.length === 0) {
+    return (
+      <div className="min-h-screen px-4 py-8 bg-white sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="mb-8 text-3xl font-bold text-center text-gray-800">
+            Order<span className="text-[#5CAF90]"> Checkout</span>
+          </h1>
+          <div className="flex flex-col items-center justify-center py-16">
+            <FaShoppingCart className="text-6xl text-gray-400 mb-4" />
+            <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-3 bg-[#5CAF90] text-white rounded-lg hover:bg-[#4a9b7e] transition-colors"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
