@@ -748,34 +748,47 @@ const OrderDetails = () => {
                 </tr>
               </thead>
               <tbody className="text-[#1D372E]">
-                {items.map((item) => (
-                  <tr
-                    key={item.idOrderItem}
-                    className="border-b border-[#B7B7B7]"
-                  >
-                    <td>{item.product_name}</td>
-                    <td>
-                      {(item.Colour !== "No color selected" && item.Colour) && (
-                        <div className="text-xs">
-                          <span className="mr-1">
-                            Color: <span style={{ color: item.Colour.startsWith('#') ? item.Colour : 'inherit' }}>●</span> {item.Colour}
-                          </span>
-                        </div>
-                      )}
-                      {(item.Size !== "No size selected" && item.Size) && (
-                        <div className="text-xs mt-1">
-                          <span>Size: {item.Size}</span>
-                        </div>
-                      )}
-                      {(!item.Colour || item.Colour === "No color selected") && (!item.Size || item.Size === "No size selected") && (
-                        <span className="text-xs text-gray-500">-</span>
-                      )}
-                    </td>
-                    <td>Rs. {item.Rate || 0}</td>
-                    <td>{item.Qty || 0}</td>
-                    <td>Rs. {item.Total || 0}</td>
-                  </tr>
-                ))}
+                {items.map((item) => {
+                  // Handle null Rate and Qty by calculating from totals
+                  let effectiveRate = item.Rate;
+                  let effectiveQty = item.Qty;
+                  
+                  if (!effectiveRate || !effectiveQty) {
+                    // If Rate or Qty is null, calculate from Total_Amount or Total
+                    effectiveQty = item.Qty || 1;
+                    const totalForCalculation = item.Total_Amount || item.Total || 0;
+                    effectiveRate = totalForCalculation ? parseFloat(totalForCalculation) / effectiveQty : 0;
+                  }
+                  
+                  return (
+                    <tr
+                      key={item.idOrderItem}
+                      className="border-b border-[#B7B7B7]"
+                    >
+                      <td>{item.product_name}</td>
+                      <td>
+                        {(item.Colour !== "No color selected" && item.Colour) && (
+                          <div className="text-xs">
+                            <span className="mr-1">
+                              Color: <span style={{ color: item.Colour.startsWith('#') ? item.Colour : 'inherit' }}>●</span> {item.Colour}
+                            </span>
+                          </div>
+                        )}
+                        {(item.Size !== "No size selected" && item.Size) && (
+                          <div className="text-xs mt-1">
+                            <span>Size: {item.Size}</span>
+                          </div>
+                        )}
+                        {(!item.Colour || item.Colour === "No color selected") && (!item.Size || item.Size === "No size selected") && (
+                          <span className="text-xs text-gray-500">-</span>
+                        )}
+                      </td>
+                      <td>Rs. {parseFloat(effectiveRate).toFixed(2)}</td>
+                      <td>{effectiveQty}</td>
+                      <td>Rs. {parseFloat(item.Total_Amount || item.Total || 0).toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

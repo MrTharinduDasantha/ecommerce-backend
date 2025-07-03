@@ -1415,6 +1415,7 @@ async function updateDiscount(req, res) {
     res.status(500).json({ message: "Failed to update discount" });
   }
 }
+
 // Delete a discount
 async function deleteDiscount(req, res) {
   try {

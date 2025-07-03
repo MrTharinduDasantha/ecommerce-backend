@@ -23,6 +23,7 @@ const Sidebar = ({ isSidebarOpen }) => {
   const [isEventSubMenuOpen, setIsEventSubMenuOpen] = useState(false);
   const [isUsersSubMenuOpen, setIsUsersSubMenuOpen] = useState(false);
   const [isDiscountSubMenuOpen, setIsDiscountSubMenuOpen] = useState(false);
+  const [isSettingsSubMenuOpen, setIsSettingsSubMenuOpen] = useState(false);
 
   // Determine active states
   const isManageProductsActive = location.pathname.includes("products/");
@@ -32,6 +33,7 @@ const Sidebar = ({ isSidebarOpen }) => {
     location.pathname.includes("users_managed-form") ||
     location.pathname.includes("customer-managed-form") ||
     location.pathname.includes("admin-logs");
+  const isManageSettingsActive = location.pathname.includes("settings/");
   const isManageOrdersActive = location.pathname.includes("orders");
   const isNotificationsActive = location.pathname.includes("notifications");
 
@@ -52,6 +54,10 @@ const Sidebar = ({ isSidebarOpen }) => {
     setIsUsersSubMenuOpen(!isUsersSubMenuOpen);
   };
 
+  const toggleSettingsSubMenu = () => {
+    setIsSettingsSubMenuOpen(!isSettingsSubMenuOpen);
+  };
+
   // Open submenus based on active state
   useEffect(() => {
     if (isManageProductsActive) setIsProductSubMenuOpen(true);
@@ -68,6 +74,10 @@ const Sidebar = ({ isSidebarOpen }) => {
   useEffect(() => {
     if (isManageUsersActive) setIsUsersSubMenuOpen(true);
   }, [isManageUsersActive]);
+
+  useEffect(() => {
+    if (isManageSettingsActive) setIsSettingsSubMenuOpen(true);
+  }, [isManageSettingsActive]);
 
   // Logout handler
   const handleLogout = () => {
@@ -289,6 +299,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             )}
           </li>
 
+          {/* Manage Users */}
           <li>
             <button
               onClick={toggleUsersSubMenu}
@@ -360,6 +371,63 @@ const Sidebar = ({ isSidebarOpen }) => {
             )}
           </li>
 
+          {/* Manage Settings */}
+          <li>
+            <button
+              onClick={toggleSettingsSubMenu}
+              className={`flex items-center justify-between w-full rounded-md px-3 py-2 text-xs md:text-sm transition-colors
+              hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
+                isManageDiscountsActive
+                  ? "bg-[#5CAF90] text-primary-content font-medium"
+                  : "text-base-content/85"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <IoSettingsOutline className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>Manage Settings</span>
+              </div>
+              {isSettingsSubMenuOpen ? (
+                <IoMdArrowDropupCircle className="w-4 h-4" />
+              ) : (
+                <IoMdArrowDropdownCircle className="w-4 h-4" />
+              )}
+            </button>
+            {isSettingsSubMenuOpen && (
+              <ul className="menu-sub pl-6 mt-1 space-y-1">
+                <li>
+                  <NavLink
+                    to="settings/about-us"
+                    className={({ isActive }) =>
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
+                      hover:bg-[#5CAF90] hover:text-white ${
+                        isActive
+                          ? "text-[#5CAF90] font-medium"
+                          : "text-base-content/85"
+                      }`
+                    }
+                  >
+                    About Us
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="settings/header-footer"
+                    className={({ isActive }) =>
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
+                      hover:bg-[#5CAF90] hover:text-white ${
+                        isActive
+                          ? "text-[#5CAF90] font-medium"
+                          : "text-base-content/85"
+                      }`
+                    }
+                  >
+                    Header & Footer
+                  </NavLink>
+                </li>
+              </ul>
+            )}
+          </li>
+
           {/* Manage Orders */}
           <li>
             <NavLink
@@ -393,24 +461,6 @@ const Sidebar = ({ isSidebarOpen }) => {
             >
               <TbBell className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Notifications
-            </NavLink>
-          </li>
-
-          {/* Settings */}
-          <li>
-            <NavLink
-              to="settings"
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-md px-3 py-2 text-xs md:text-sm transition-colors
-                hover:bg-[#5CAF90] hover:text-white ${
-                  isActive
-                    ? "bg-[#5CAF90] text-primary-content font-medium"
-                    : "text-base-content/85"
-                }`
-              }
-            >
-              <IoSettingsOutline className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              Manage Settings
             </NavLink>
           </li>
 

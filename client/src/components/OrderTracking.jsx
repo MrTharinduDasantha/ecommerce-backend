@@ -169,7 +169,7 @@ const OrderTracking = () => {
           active: isActive,
           date: item.created_at
             ? new Date(item.created_at).toLocaleString()
-            : "N/A",
+            : null,
         };
       });
     }
@@ -183,28 +183,28 @@ const OrderTracking = () => {
         active: false,
         date: selectedOrder?.created_at
           ? new Date(selectedOrder.created_at).toLocaleString()
-          : "N/A",
+          : null,
       },
       {
         id: 2,
         status: "Processing",
         completed: selectedOrder?.Delivery_Status === "processing",
         active: selectedOrder?.Delivery_Status === "processing",
-        date: "N/A",
+        date: null,
       },
       {
         id: 3,
         status: "Shipped",
         completed: selectedOrder?.Delivery_Status === "shipped",
         active: selectedOrder?.Delivery_Status === "shipped",
-        date: "N/A",
+        date: null,
       },
       {
         id: 4,
         status: "Delivered",
         completed: selectedOrder?.Delivery_Status === "delivered",
         active: selectedOrder?.Delivery_Status === "delivered",
-        date: "N/A",
+        date: null,
       },
     ];
   };
@@ -233,7 +233,7 @@ const OrderTracking = () => {
 
   // Prepare invoice data for download
   const prepareInvoiceData = () => {
-    return {
+    const invoiceData = {
       orderId: selectedOrder.idOrder,
       customerId: customerId,
       orderDate: selectedOrder.Date_Time,
@@ -256,7 +256,51 @@ const OrderTracking = () => {
       total: total,
       orderItems: orderItems,
       currentStatus: currentStatus,
+      trackingInfo: trackingInfo,
     };
+    
+    console.log('Invoice data prepared:', invoiceData);
+    console.log('Address info for map:', {
+      address: selectedOrder.Address,
+      city: selectedOrder.City,
+      country: selectedOrder.Country
+    });
+    
+    return invoiceData;
+  };
+
+  // Prepare order items for OrderDetails component
+  const prepareOrderItems = () => {
+    if (!orderDetails || !orderDetails.items) {
+      return [];
+    }
+    
+    return orderDetails.items.map((item, index) => {
+      
+      // Handle null Rate and Qty by calculating from totals
+      let effectiveRate = item.Rate;
+      let effectiveQty = item.Qty;
+      
+      if (!effectiveRate || !effectiveQty) {
+        // If Rate or Qty is null, calculate from Total_Amount
+        // Assume quantity 1 if not available and use Total_Amount as price
+        effectiveQty = item.Qty || 1;
+        effectiveRate = item.Total_Amount ? parseFloat(item.Total_Amount) / effectiveQty : 0;
+      }
+      
+      return {
+        id: item.Product_Variations_idProduct_Variations,
+        productId: item.Product_Variations_idProduct_Variations,
+        name: item.product_name || 'Unknown Product',
+        image: item.product_image || null,
+        price: effectiveRate,
+        quantity: effectiveQty,
+        color: item.Colour,
+        size: item.Size,
+        marketPrice: item.Total && effectiveQty ? parseFloat(item.Total) / effectiveQty : effectiveRate, // Calculate market price from Total (before discount)
+        total: item.Total_Amount || item.Total || 0,
+      };
+    });
   };
 
   return (
@@ -301,21 +345,21 @@ const OrderTracking = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Order #:</span>
                   <span className="font-medium">
-                    {selectedOrder?.idOrder || "N/A"}
+                    {selectedOrder?.idOrder || "-"}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Date:</span>
                   <span className="font-medium">
-                    {selectedOrder?.Date_Time || "N/A"}
+                    {selectedOrder?.Date_Time || "-"}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Payment Method:</span>
                   <span className="font-medium capitalize">
-                    {selectedOrder?.Payment_Type || "N/A"}
+                    {selectedOrder?.Payment_Type || "-"}
                   </span>
                 </div>
 
@@ -328,21 +372,21 @@ const OrderTracking = () => {
                         : "text-orange-500"
                     }`}
                   >
-                    {selectedOrder?.Payment_Stats || "N/A"}
+                    {selectedOrder?.Payment_Stats || "pending"}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Type:</span>
                   <span className="font-medium capitalize">
-                    {selectedOrder?.Delivery_Type || "N/A"}
+                    {selectedOrder?.Delivery_Type || "standard"}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Status:</span>
                   <span className="font-medium capitalize">
-                    {selectedOrder?.Delivery_Status || "N/A"}
+                    {selectedOrder?.Delivery_Status || "processing"}
                   </span>
                 </div>
 
@@ -378,14 +422,20 @@ const OrderTracking = () => {
               <div className="mt-6">
                 <h4 className="text-md font-medium mb-2">Delivery Address</h4>
                 <div className="bg-white p-3 rounded border border-gray-200 text-sm">
-                  <p className="font-medium">
-                    {selectedOrder?.Full_Name || "N/A"}
-                  </p>
-                  <p>{selectedOrder?.Address || "N/A"}</p>
-                  <p>
-                    {selectedOrder?.City || "N/A"},{" "}
-                    {selectedOrder?.Country || "N/A"}
-                  </p>
+                  {selectedOrder?.Full_Name && (
+                    <p className="font-medium">{selectedOrder.Full_Name}</p>
+                  )}
+                  {selectedOrder?.Address && (
+                    <p>{selectedOrder.Address}</p>
+                  )}
+                  {(selectedOrder?.City || selectedOrder?.Country) && (
+                    <p>
+                      {selectedOrder?.City}{selectedOrder?.City && selectedOrder?.Country ? ", " : ""}{selectedOrder?.Country}
+                    </p>
+                  )}
+                  {!selectedOrder?.Full_Name && !selectedOrder?.Address && !selectedOrder?.City && !selectedOrder?.Country && (
+                    <p className="text-gray-500 italic">Address information not available</p>
+                  )}
                 </div>
               </div>
 
@@ -511,6 +561,24 @@ const OrderTracking = () => {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Order Items Section */}
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">
+            Order <span className="text-[#5CAF90]">Items</span>
+          </h3>
+          {orderDetails && orderDetails.items && orderDetails.items.length > 0 ? (
+            <OrderDetails 
+              deliveryFee={deliveryFee}
+              selectedItems={prepareOrderItems()}
+              showHeader={false}
+            />
+          ) : (
+            <div className="bg-gray-50 p-6 rounded-lg shadow border border-[#E8E8E8] text-center text-gray-500">
+              No item details available for this order.
+            </div>
+          )}
         </div>
       </div>
     </div>

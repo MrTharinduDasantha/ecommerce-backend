@@ -32,10 +32,10 @@ const Footer = () => {
     footerSetting?.Footer_Links && Array.isArray(footerSetting.Footer_Links)
       ? footerSetting.Footer_Links
       : [
-          { text: "Read About TechWave", url: "#" },
-          { text: "Reviews", url: "#" },
-          { text: "Refund & Returns", url: "#" },
-          { text: "Careers & Jobs", url: "#" },
+          { text: "Terms and Conditions", url: "/terms-of-service" }, 
+          { text: "Legal Policy", url: "/legal-policy" },
+          { text: "Privacy Policy", url: "/privacy-policy" },
+          { text: "Security Policy", url: "/security-policy" },
         ];
   const socialIcons =
     footerSetting?.Social_Icons && Array.isArray(footerSetting.Social_Icons)

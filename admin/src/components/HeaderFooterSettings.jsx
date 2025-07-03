@@ -30,7 +30,7 @@ import toast from "react-hot-toast";
 import googleplay from "../assets/googleplay.png";
 import appstore from "../assets/appstore.png";
 
-const Settings = () => {
+const HeaderFooterSettings = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerFooterSetting, setHeaderFooterSetting] = useState(null);
   const [logo, setLogo] = useState(null);
@@ -247,10 +247,47 @@ const Settings = () => {
   const handleCancel = () => {
     setIsEditing(false);
     setShowPreview(false);
+    if (headerFooterSetting) {
+      setLogoPreview(headerFooterSetting.Navbar_Logo_Url);
+      setCopyrightText(headerFooterSetting.Footer_Copyright);
+      setNavIcons(headerFooterSetting.Nav_Icons || []);
+      setCountryBlocks(headerFooterSetting.Country_Blocks || []);
+      setFooterLinks(headerFooterSetting.Footer_Links || []);
+      setSocialIcons(headerFooterSetting.Social_Icons || []);
+    } else {
+      // Fallback if headerFooterSetting is not available
+      setLogoPreview(null);
+      setCopyrightText("");
+      setNavIcons([]);
+      setCountryBlocks([]);
+      setFooterLinks([]);
+      setSocialIcons([]);
+    }
     setLogo(null);
-    setLogoPreview(null);
-    setCopyrightText("");
     if (logoInputRef.current) logoInputRef.current.value = "";
+    setNewNavIcon({
+      icon: "",
+      label: "",
+      link: "",
+      iconImage: null,
+      iconImagePreview: null,
+    });
+    setNewCountryBlock({
+      title: "",
+      address: "",
+      hotline: "",
+      email: "",
+      whatsapp: "",
+    });
+    setNewFooterLink({
+      text: "",
+      url: "",
+    });
+    setNewSocialIcon({
+      platform: "",
+      url: "",
+    });
+    if (navIconImageRef.current) navIconImageRef.current.value = "";
   };
 
   // Navigation Icons Handlers
@@ -759,7 +796,7 @@ const Settings = () => {
           <div className="flex items-center gap-2 mb-4">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
             <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
-              Manage Settings
+              Manage Header and Footer
             </h2>
           </div>
 
@@ -1622,4 +1659,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default HeaderFooterSettings;
