@@ -1,48 +1,76 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa";
-import { useCart } from "../context/CartContext";
-import { getProduct, getProducts } from "../api/product";
-import { formatPrice } from "./FormatPrice";
-import { calculateDiscountPercentage } from "./CalculateDiscount";
-import ProductCard from "./ProductCard";
+import { useState, useEffect, useRef } from "react"
+import { useNavigate, useParams, useLocation } from "react-router-dom"
+import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa"
+import { useCart } from "../context/CartContext"
+import { getProduct, getProducts } from "../api/product"
+import { formatPrice } from "./FormatPrice"
+import { calculateDiscountPercentage } from "./CalculateDiscount"
+import ProductCard from "./ProductCard"
+import { getReviewsByProductId } from "../api/review"
+import { getCustomerById } from "../api/customer"
 
 const ProductPage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { addToCart, updateCartItem } = useCart();
-  const [product, setProduct] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(0);
-  const [activeTab, setActiveTab] = useState("details");
-  const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [mainImage, setMainImage] = useState("");
-  const [activeDiscount, setActiveDiscount] = useState(null);
-  const [isFromCart, setIsFromCart] = useState(false);
-  const [cartItem, setCartItem] = useState(null);
-  const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
-  const [zoomStyle, setZoomStyle] = useState({});
-  const popupImageRef = useRef(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { addToCart, updateCartItem } = useCart()
+  const [product, setProduct] = useState(null)
+  const [selectedVariant, setSelectedVariant] = useState(0)
+  const [activeTab, setActiveTab] = useState("details")
+  const [selectedSize, setSelectedSize] = useState("")
+  const [quantity, setQuantity] = useState(1)
+  const [mainImage, setMainImage] = useState("")
+  const [activeDiscount, setActiveDiscount] = useState(null)
+  const [isFromCart, setIsFromCart] = useState(false)
+  // eslint-disable-next-line no-unused-vars
+  const [cartItem, setCartItem] = useState(null)
+  const [isImagePopupOpen, setIsImagePopupOpen] = useState(false)
+  const [zoomStyle, setZoomStyle] = useState({})
+  const popupImageRef = useRef(null)
+  const [relatedProducts, setRelatedProducts] = useState([])
+  const [customers, setCustomers] = useState({})
 
-  const handleProductClick = (productId) => {
-    window.scrollTo(0, 0);
-    navigate(`/product-page/${productId}`);
-  };
+  const handleProductClick = productId => {
+    window.scrollTo(0, 0)
+    navigate(`/product-page/${productId}`)
+  }
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
       try {
         // Fetch main product
-        const response = await getProduct(id);
+        const response = await getProduct(id)
+        const reviews = await getReviewsByProductId(id)
         if (response.message === "Product fetched successfully") {
-          const productData = response.product;
+          const customerIds = [
+            ...new Set(reviews.map(review => review.Customer_idCustomer)),
+          ]
+          const customerData = {}
+
+          for (const customerId of customerIds) {
+            try {
+              const customer = await getCustomerById(customerId)
+              customerData[customerId] = customer.Full_Name
+            } catch (error) {
+              console.error(`Error fetching customer ${customerId}: ${error}`)
+            }
+          }
+
+          setCustomers(customerData)
+
+          const productData = response.product
 
           const activeDiscounts = productData.discounts.filter(
-            (d) => d.Status === "active"
-          );
-          setActiveDiscount(activeDiscounts[0] || null);
+            d => d.Status === "active"
+          )
+          setActiveDiscount(activeDiscounts[0] || null)
+
+          const totalRating = reviews.reduce(
+            (sum, review) => sum + review.Rating_5,
+            0
+          )
+          const averageRating =
+            reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0
 
           const transformedProduct = {
             id: productData.idProduct,
@@ -50,14 +78,14 @@ const ProductPage = () => {
             description: productData.Long_Description,
             detail: productData.Long_Description,
             specification: "No specifications available",
-            reviews: "No reviews yet",
-            rating: 4.5,
-            noOfRatings: 10,
+            reviews: reviews,
+            rating: averageRating,
+            noOfRatings: reviews.length,
             marketPrice: parseFloat(productData.Market_Price),
             discounts: productData.discounts,
             image: productData.Main_Image_Url,
-            otherImages: productData.images.map((img) => img.Image_Url),
-            variants: productData.variations.map((variation) => ({
+            otherImages: productData.images.map(img => img.Image_Url),
+            variants: productData.variations.map(variation => ({
               id: variation.idProduct_Variations,
               color: variation.Colour || null,
               colorName: variation.Colour || null,
@@ -70,41 +98,41 @@ const ProductPage = () => {
               SIH: variation.SIH,
             })),
             faqs: productData.faqs || [],
-          };
+          }
 
-          setProduct(transformedProduct);
-          setMainImage(transformedProduct.image);
+          setProduct(transformedProduct)
+          setMainImage(transformedProduct.image)
 
           // Initialize selected size if the first variant has size
           if (transformedProduct.variants[0]?.size) {
-            setSelectedSize(transformedProduct.variants[0].size);
+            setSelectedSize(transformedProduct.variants[0].size)
           }
 
           setQuantity(
             transformedProduct.variants[selectedVariant].quantity > 0 ? 1 : 0
-          );
+          )
 
           // Check if coming from cart
           if (location.state?.fromCart) {
-            setIsFromCart(true);
-            setCartItem(location.state.selectedVariant);
+            setIsFromCart(true)
+            setCartItem(location.state.selectedVariant)
             if (location.state.selectedVariant) {
               const variantIndex = transformedProduct.variants.findIndex(
-                (v) => v.colorName === location.state.selectedVariant.color
-              );
+                v => v.colorName === location.state.selectedVariant.color
+              )
               if (variantIndex !== -1) {
-                setSelectedVariant(variantIndex);
+                setSelectedVariant(variantIndex)
               }
             }
           }
 
           // Fetch related products from backend
-          const relatedResponse = await getProducts();
+          const relatedResponse = await getProducts()
           if (relatedResponse.message === "Products fetched successfully") {
             const filteredRelated = relatedResponse.products
-              .filter((p) => p.idProduct !== productData.idProduct)
+              .filter(p => p.idProduct !== productData.idProduct)
               .slice(0, 5)
-              .map((product) => ({
+              .map(product => ({
                 id: product.idProduct,
                 name: product.Description,
                 image: product.Main_Image_Url,
@@ -114,40 +142,40 @@ const ProductPage = () => {
                 color: product.variations?.[0]?.Colour || "N/A",
                 size: product.variations?.[0]?.Size || null,
                 category: product.subcategories?.[0]?.Description || "",
-              }));
+              }))
 
-            setRelatedProducts(filteredRelated);
+            setRelatedProducts(filteredRelated)
           }
         }
       } catch (error) {
-        console.error("Error fetching product or related products:", error);
+        console.error("Error fetching product or related products:", error)
       }
-    };
+    }
 
-    fetchProductAndRelated();
-  }, [id, location.state, selectedVariant]);
+    fetchProductAndRelated()
+  }, [id, location.state, selectedVariant])
 
   useEffect(() => {
     if (product) {
-      setQuantity(currentVariant.quantity > 0 ? 1 : 0);
+      setQuantity(currentVariant.quantity > 0 ? 1 : 0)
       // Reset selected size when variant changes if the new variant has size
       if (currentVariant.size) {
-        setSelectedSize(currentVariant.size);
+        setSelectedSize(currentVariant.size)
       } else {
-        setSelectedSize("");
+        setSelectedSize("")
       }
     }
-  }, [selectedVariant, product]);
+  }, [selectedVariant, product])
 
-  const currentVariant = product?.variants[selectedVariant] || {};
+  const currentVariant = product?.variants[selectedVariant] || {}
 
   // Check if current variant has size
   const hasSize =
-    currentVariant.size && currentVariant.size !== "No size selected";
+    currentVariant.size && currentVariant.size !== "No size selected"
 
   // Check if current variant has color
   const hasColor =
-    currentVariant.color && currentVariant.color !== "No color selected";
+    currentVariant.color && currentVariant.color !== "No color selected"
 
   const handleAddToCart = async () => {
     if (product && currentVariant.quantity > 0) {
@@ -160,48 +188,46 @@ const ProductPage = () => {
         ...(hasSize && { size: selectedSize }),
         ...(currentVariant.colorName && { color: currentVariant.colorName }),
         ...(currentVariant.color && { colorCode: currentVariant.color }),
-      };
+      }
 
       try {
         if (isFromCart) {
-          await updateCartItem(cartItem);
+          await updateCartItem(cartItem)
         } else {
-          await addToCart(cartItem);
+          await addToCart(cartItem)
         }
         navigate("/cart", {
           state: {
             selectedProduct: cartItem,
             source: "product-page",
           },
-        });
+        })
       } catch (error) {
-        console.error("Error adding to cart:", error);
+        console.error("Error adding to cart:", error)
         if (error.message === "User must be logged in to add items to cart") {
-          alert("Please log in to add items to cart");
-          navigate("/sign-in");
+          alert("Please log in to add items to cart")
+          navigate("/sign-in")
         } else {
-          alert("Failed to add item to cart: " + error.message);
+          alert("Failed to add item to cart: " + error.message)
         }
       }
     }
-  };
+  }
 
   const renderRatingStars = () => {
-    if (!product) return null;
+    if (!product) return null
 
-    const stars = [];
-    const fullStars = Math.floor(product.rating);
-    const hasHalfStar = product.rating % 1 >= 0.5;
+    const stars = []
+    const fullStars = Math.floor(product.rating)
+    const hasHalfStar = product.rating % 1 >= 0.5
 
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
-        stars.push(<FaStar key={i} className="text-yellow-400 inline" />);
+        stars.push(<FaStar key={i} className="text-yellow-400 inline" />)
       } else if (i === fullStars + 1 && hasHalfStar) {
-        stars.push(
-          <FaStarHalfAlt key={i} className="text-yellow-400 inline" />
-        );
+        stars.push(<FaStarHalfAlt key={i} className="text-yellow-400 inline" />)
       } else {
-        stars.push(<FaRegStar key={i} className="text-yellow-400 inline" />);
+        stars.push(<FaRegStar key={i} className="text-yellow-400 inline" />)
       }
     }
 
@@ -210,32 +236,32 @@ const ProductPage = () => {
         {stars}
         <span className="ml-2 text-gray-700"> | {product.noOfRatings}</span>
       </div>
-    );
-  };
+    )
+  }
 
-  const handleMouseMove = (e) => {
-    if (!popupImageRef.current) return;
+  const handleMouseMove = e => {
+    if (!popupImageRef.current) return
 
     const { left, top, width, height } =
-      popupImageRef.current.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
+      popupImageRef.current.getBoundingClientRect()
+    const x = ((e.clientX - left) / width) * 100
+    const y = ((e.clientY - top) / height) * 100
 
     setZoomStyle({
       transformOrigin: `${x}% ${y}%`,
       transform: "scale(2)",
       cursor: "zoom-in",
-    });
-  };
+    })
+  }
 
   const handleMouseLeave = () => {
     setZoomStyle({
       transform: "scale(1)",
       cursor: "default",
-    });
-  };
+    })
+  }
 
-  if (!product) return <div className="text-center py-8">Loading...</div>;
+  if (!product) return <div className="text-center py-8">Loading...</div>
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -254,7 +280,7 @@ const ProductPage = () => {
             </button>
             <div
               className="relative overflow-hidden rounded-lg bg-gray-100 border-2 border-black"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <img
                 ref={popupImageRef}
@@ -356,8 +382,8 @@ const ProductPage = () => {
                 {[
                   ...new Set(
                     product.variants
-                      .filter((v) => v.size && v.size !== "No size selected")
-                      .map((v) => v.size)
+                      .filter(v => v.size && v.size !== "No size selected")
+                      .map(v => v.size)
                   ),
                 ].map((size, index) => (
                   <button
@@ -366,11 +392,11 @@ const ProductPage = () => {
                       selectedSize === size ? "bg-[#5CAF90] text-white" : ""
                     }`}
                     onClick={() => {
-                      setSelectedSize(size);
+                      setSelectedSize(size)
                       const firstVariantIndex = product.variants.findIndex(
-                        (v) => v.size === size
-                      );
-                      setSelectedVariant(firstVariantIndex);
+                        v => v.size === size
+                      )
+                      setSelectedVariant(firstVariantIndex)
                     }}
                   >
                     {size}
@@ -387,7 +413,7 @@ const ProductPage = () => {
               <div className="flex gap-2 mt-2">
                 {product.variants
                   .filter(
-                    (v) =>
+                    v =>
                       v.color &&
                       v.color !== "No color selected" &&
                       (v.size === selectedSize || v.size == null)
@@ -397,16 +423,16 @@ const ProductPage = () => {
                       key={index}
                       className={`cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
                         selectedVariant ===
-                        product.variants.findIndex((x) => x.id === variant.id)
+                        product.variants.findIndex(x => x.id === variant.id)
                           ? "border-gray-800"
                           : "border-gray-300"
                       }`}
                       style={{ backgroundColor: variant.color }}
                       onClick={() => {
                         const newIndex = product.variants.findIndex(
-                          (x) => x.id === variant.id
-                        );
-                        setSelectedVariant(newIndex);
+                          x => x.id === variant.id
+                        )
+                        setSelectedVariant(newIndex)
                       }}
                     />
                   ))}
@@ -467,7 +493,7 @@ const ProductPage = () => {
       {/* Tabs Section */}
       <div className="mt-8 sm:mt-12">
         <div className="flex space-x-2 font-medium sm:space-x-4 border-b pb-2 overflow-x-auto">
-          {["details", "faqs", "reviews"].map((tab) => (
+          {["details", "faqs", "reviews"].map(tab => (
             <button
               key={tab}
               className={`cursor-pointer hover:bg-[#5CAF90] hover:text-white border-1 rounded-lg px-3 sm:px-4 py-2 whitespace-nowrap text-sm sm:text-base ${
@@ -499,7 +525,45 @@ const ProductPage = () => {
               )}
             </div>
           )}
-          {activeTab === "reviews" && <p>{product.reviews}</p>}
+          {activeTab === "reviews" ? (
+            product.reviews.length > 0 ? (
+              product.reviews.map(review => {
+                const customer = customers[review.Customer_idCustomer] || {}
+                const initials = customer
+                  .split(" ")
+                  .map(name => name[0])
+                  .join("")
+                  .toUpperCase()
+                return (
+                  <div key={review.idReview} className="flex gap-5 mb-4">
+                    <div className="bg-green-500 size-10 shrink-0 p-3 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">{initials}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-bold">
+                        {customer || "Unknown User"}
+                      </h3>
+                      <div className="flex gap-1">
+                        {[...Array(parseInt(review.Rating_5))].map(
+                          (_, index) => (
+                            <FaStar key={index} className="text-yellow-400" />
+                          )
+                        )}
+                      </div>
+                      <p>{review.Comment}</p>
+                      <span className="text-xs text-gray-500">
+                        {review.created_at.split("T")[0]}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })
+            ) : (
+              <p>No Reviews yet.</p>
+            )
+          ) : (
+            <></>
+          )}
         </div>
       </div>
 
@@ -510,7 +574,7 @@ const ProductPage = () => {
             Related <span className="text-[#5CAF90]">Products</span>
           </h2>
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            {relatedProducts.map((product) => (
+            {relatedProducts.map(product => (
               <div
                 key={product.id}
                 className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
@@ -540,7 +604,7 @@ const ProductPage = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ProductPage;
+export default ProductPage
