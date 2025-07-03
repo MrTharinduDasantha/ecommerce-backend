@@ -4,8 +4,9 @@ import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { getProduct, getProducts } from "../api/product";
 import { formatPrice } from "./FormatPrice";
-import { calculateDiscountPercentage } from "./CalculateDiscount";
+import { calculateDiscountPercentage, calculateTotalDiscount, getBestDiscountLabel, getFinalPrice } from "./CalculateDiscount";
 import ProductCard from "./ProductCard";
+import DiscountSummary from "./DiscountSummary";
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -30,49 +31,6 @@ const ProductPage = () => {
     window.scrollTo(0, 0);
     navigate(`/product-page/${productId}`);
   };
-  const calculateDisplayDiscount = (originalPrice, marketPrice, activeDiscount) => {
-  // Apply active discount if it exists
-  const currentPrice = activeDiscount 
-    ? calculateDiscountedPrice(originalPrice, activeDiscount)
-    : originalPrice;
-
-  // Calculate percentage discount from market price
-  if (marketPrice > currentPrice) {
-    const discountPercentage = ((marketPrice - currentPrice) / marketPrice) * 100;
-    return `${Math.round(discountPercentage)}% OFF`;
-  }
-  return null;
-};
-  const calculateDiscountedPrice = (price, discount) => {
-    if (!discount) return price;
-    
-    if (discount.Discount_Type === "fixed") {
-      return price - parseFloat(discount.Discount_Value);
-    } else if (discount.Discount_Type === "percentage") {
-      return price * (1 - parseFloat(discount.Discount_Value) / 100);
-    }
-    return price;
-  };
-
-  const getDisplayDiscount = (price, marketPrice, discount) => {
-    if (discount) {
-      // For active discount, calculate percentage off the original price
-      const discountValue = parseFloat(discount.Discount_Value);
-      if (discount.Discount_Type === "fixed") {
-        const percentage = (discountValue / price) * 100;
-        return `${Math.round(percentage)}% OFF`;
-      } else {
-        return `${Math.round(discountValue)}% OFF`;
-      }
-    } else {
-      // No active discount, calculate difference between selling price and market price
-      if (marketPrice > price) {
-        const percentage = ((marketPrice - price) / marketPrice) * 100;
-        return `${Math.round(percentage)}% OFF`;
-      }
-      return null;
-    }
-  };
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
@@ -81,6 +39,24 @@ const ProductPage = () => {
         const response = await getProduct(id);
         if (response.message === "Product fetched successfully") {
           const productData = response.product;
+          
+          // Log product data to verify discount structure
+          console.log("=== PRODUCT DISCOUNT DEBUG ===");
+          console.log("Product ID:", productData.idProduct);
+          console.log("Product Name:", productData.Description);
+          console.log("Normal Discounts:", productData.discounts);
+          console.log("Event Discounts:", productData.eventDiscounts);
+          console.log("Event Discounts Count:", productData.eventDiscounts?.length || 0);
+          
+          if (productData.eventDiscounts?.length > 0) {
+            console.log("Event Discount Details:");
+            productData.eventDiscounts.forEach((discount, index) => {
+              console.log(`  ${index + 1}. ${discount.description} (${discount.discountType}: ${discount.discountValue})`);
+              console.log(`     Event ID: ${discount.eventId}, Status: ${discount.status}`);
+              console.log(`     Product IDs included:`, discount.productIds);
+            });
+          }
+          console.log("=== END DEBUG ===");
 
           const activeDiscounts = productData.discounts.filter(
             (d) => d.Status === "active"
@@ -97,7 +73,8 @@ const ProductPage = () => {
             rating: 4.5,
             noOfRatings: 10,
             marketPrice: parseFloat(productData.Market_Price),
-            discounts: productData.discounts,
+            discounts: productData.discounts || [],
+            eventDiscounts: productData.eventDiscounts || [],
             image: productData.Main_Image_Url,
             otherImages: productData.images.map((img) => img.Image_Url),
             variants: productData.variations.map((variation) => ({
@@ -160,6 +137,14 @@ const ProductPage = () => {
                 historyStatus: product.History_Status || "",
                 activeDiscount:
                   product.discounts?.find((d) => d.Status === "active") || null,
+                // Full product data for discount calculation
+                product: {
+                  idProduct: product.idProduct,
+                  Selling_Price: product.Selling_Price,
+                  Market_Price: product.Market_Price,
+                  discounts: product.discounts || [],
+                  eventDiscounts: product.eventDiscounts || []
+                }
               }));
 
             setRelatedProducts(filteredRelated);
@@ -186,6 +171,15 @@ const ProductPage = () => {
   }, [selectedVariant, product]);
 
   const currentVariant = product?.variants[selectedVariant] || {};
+
+  // Calculate total discount information
+  const discountInfo = product ? calculateTotalDiscount({
+    idProduct: product.id,
+    Selling_Price: currentVariant.price,
+    Market_Price: product.marketPrice,
+    discounts: product.discounts || [],
+    eventDiscounts: product.eventDiscounts || []
+  }) : null;
 
   // Check if current variant has size
   const hasSize =
@@ -367,35 +361,35 @@ const ProductPage = () => {
           <div>{renderRatingStars()}</div>
 
           {/* Price and Discount */}
-          <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
-  {formatPrice(
-    `LKR ${
-      activeDiscount
-        ? calculateDiscountedPrice(currentVariant.price, activeDiscount).toFixed(2)
-        : currentVariant.price.toFixed(2)
-    }`
-  )}
+          <div className="space-y-3">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
+              {formatPrice(`LKR ${discountInfo?.finalPrice?.toFixed(2) || currentVariant.price?.toFixed(2)}`)}
+              
+              {discountInfo?.hasDiscounts && discountInfo.marketPrice > discountInfo.originalPrice && (
+                <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
+                  {formatPrice(`LKR ${discountInfo.marketPrice.toFixed(2)}`)}
+                </span>
+              )}
 
-  {product.marketPrice > currentVariant.price && (
-    <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
-      {formatPrice(`LKR ${product.marketPrice.toFixed(2)}`)}
-    </span>
-  )}
+              {discountInfo?.totalPercentage > 0 && (
+                <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                  {discountInfo.totalPercentage}% OFF
+                </span>
+              )}
+            </div>
 
-  {calculateDisplayDiscount(
-    currentVariant.price,
-    product.marketPrice,
-    activeDiscount
-  ) && (
-    <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
-      {calculateDisplayDiscount(
-        currentVariant.price,
-        product.marketPrice,
-        activeDiscount
-      )}
-    </span>
-  )}
-</div>
+            {/* Detailed Discount Information using DiscountSummary component */}
+            <DiscountSummary 
+              product={{
+                idProduct: product.id,
+                Selling_Price: currentVariant.price,
+                Market_Price: product.marketPrice,
+                discounts: product.discounts || [],
+                eventDiscounts: product.eventDiscounts || []
+              }}
+              showDetails={true}
+            />
+          </div>
 
           {/* Description */}
           <p className="text-gray-600 text-sm sm:text-base line-clamp-3">
@@ -580,6 +574,7 @@ const ProductPage = () => {
                   historyStatus={product.historyStatus}
                   activeDiscount={product.activeDiscount}
                   id={product.id}
+                  product={product.product}
                   className="h-full"
                 />
               </div>
