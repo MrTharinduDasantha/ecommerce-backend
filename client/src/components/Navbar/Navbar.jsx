@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import CategoryDropdown from "./CategoryDropdown";
-import products from "../Products.jsx";
 import logo from "./logo.png";
 import {
   FaSearch,
@@ -22,14 +21,18 @@ import { IoMenu, IoClose } from "react-icons/io5";
 import { AuthContext } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext.jsx";
 import { fetchHeaderFooterSetting } from "../../api/setting";
+import { getProducts } from "../../api/product";
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Product search popup state
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   // Backend data states
   const [logoUrl, setLogoUrl] = useState("");
@@ -74,35 +77,68 @@ function Navbar() {
     fetchHeaderFooterSettings();
   }, []);
 
+  // Fetch all products for search popup
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getProducts();
+        const formattedProducts = data.products
+          .filter((product) => product.Status === "active")
+          .map((product) => ({
+            id: product.idProduct,
+            name: product.Description,
+            image: product.Main_Image_Url,
+            price: product.Selling_Price,
+            category: product.subcategories?.[0]?.Description || "",
+            brand: product.Brand_Name || "",
+            description: product.Description || "",
+          }));
+        setAllProducts(formattedProducts);
+      } catch (err) {
+        setAllProducts([]);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // Live filter products as user types
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      const query = searchQuery.trim().toLowerCase();
+      setFilteredProducts(
+        allProducts.filter(
+          (p) =>
+            (p.name && p.name.toLowerCase().includes(query)) ||
+            (p.brand && p.brand.toLowerCase().includes(query)) ||
+            (p.category && p.category.toLowerCase().includes(query)) ||
+            (p.description && p.description.toLowerCase().includes(query))
+        )
+      );
+      setIsPopupOpen(true);
+    } else {
+      setFilteredProducts([]);
+      setIsPopupOpen(false);
+    }
+  }, [searchQuery, allProducts]);
+
   // Handle search input change
   const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
+    setSearchQuery(e.target.value);
+  };
 
-    if (query.length > 0) {
-      // Filter products based on name, category, description
-      const filtered = products.filter(
-        (item) =>
-          item.name.toLowerCase().includes(query.toLowerCase()) ||
-          item.category.toLowerCase().includes(query.toLowerCase()) ||
-          item.description.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredItems(filtered);
-      setIsModalOpen(true);
-    } else {
-      setFilteredItems([]);
-      setIsModalOpen(false);
+  // Handle search submit and update URL
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim().length > 0) {
+      navigate(`/filtered-products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsPopupOpen(false);
     }
   };
 
-  const handleItemClick = (itemName) => {
-    setSearchQuery(itemName);
-    setFilteredItems([]);
-    setIsModalOpen(false);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const handleProductClick = (name) => {
+    setSearchQuery(name);
+    setIsPopupOpen(false);
+    navigate(`/filtered-products?search=${encodeURIComponent(name)}`);
   };
 
   // Close mobile menu when route changes
@@ -168,18 +204,68 @@ function Navbar() {
             </div>
 
             {/* Search bar */}
-            <div className="flex max-w-2xl mx-30 font-poppins relative">
+            <form
+              className="flex max-w-2xl mx-30 font-poppins relative"
+              onSubmit={handleSearchSubmit}
+              autoComplete="off"
+            >
               <input
                 type="text"
                 placeholder="SEARCH THE ENTIRE STORE..."
                 className="w-full sm:w-[400px] px-4 py-2 text-[#000000] text-[13px] rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
                 value={searchQuery}
                 onChange={handleSearchChange}
+                onFocus={() => searchQuery && setIsPopupOpen(true)}
               />
-              <button className="bg-[#5CAF90] p-2 w-9 rounded-r-md">
+              <button
+                className="bg-[#5CAF90] p-2 w-9 rounded-r-md"
+                type="submit"
+                // Prevent navigation if searchQuery is empty
+                disabled={searchQuery.trim().length === 0}
+                style={{
+                  opacity: searchQuery.trim().length === 0 ? 0.5 : 1,
+                  cursor:
+                    searchQuery.trim().length === 0 ? "not-allowed" : "pointer",
+                }}
+              >
                 <FaSearch className="text-[#FFFFFF]" />
               </button>
-            </div>
+              {/* Search Popup */}
+              {isPopupOpen && (
+                <div className="absolute top-12 left-0 w-full bg-white border border-gray-200 rounded shadow-lg z-50 max-h-96 overflow-y-auto">
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <div
+                        key={product.id}
+                        className="flex items-center px-4 py-2 hover:bg-[#F4F4F4] cursor-pointer"
+                        onClick={() => handleProductClick(product.name)}
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-10 h-10 object-cover rounded mr-3"
+                        />
+                        <div>
+                          <div className="font-semibold text-[#1D372E]">
+                            {product.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {product.category}
+                          </div>
+                          <div className="text-xs text-[#5CAF90] font-bold">
+                            {product.price}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-4 py-2 text-gray-500">
+                      No products found
+                    </div>
+                  )}
+                </div>
+              )}
+            </form>
 
             {/* Icons */}
             <div className="flex space-x-2">
@@ -368,18 +454,68 @@ function Navbar() {
         <div className="fixed top-[70px] sm:top-[74px] left-0 w-full bg-[#1D372E] text-white px-4 pb-3 z-50">
           <div className="flex items-center justify-between space-x-3">
             {/* Search bar */}
-            <div className="flex flex-1 max-w-sm relative">
+            <form
+              className="flex flex-1 max-w-sm relative"
+              onSubmit={handleSearchSubmit}
+              autoComplete="off"
+            >
               <input
                 type="text"
                 placeholder="SEARCH THE ENTIRE STORE..."
                 className="w-full px-3 py-2 text-[#000000] text-xs rounded-l-md outline-none bg-[#FFFFFF] font-poppins"
                 value={searchQuery}
                 onChange={handleSearchChange}
+                onFocus={() => searchQuery && setIsPopupOpen(true)}
               />
-              <button className="bg-[#5CAF90] p-2 rounded-r-md">
+              <button
+                className="bg-[#5CAF90] p-2 rounded-r-md"
+                type="submit"
+                // Prevent navigation if searchQuery is empty
+                disabled={searchQuery.trim().length === 0}
+                style={{
+                  opacity: searchQuery.trim().length === 0 ? 0.5 : 1,
+                  cursor:
+                    searchQuery.trim().length === 0 ? "not-allowed" : "pointer",
+                }}
+              >
                 <FaSearch className="text-[#FFFFFF] text-xs" />
               </button>
-            </div>
+              {/* Search Popup */}
+              {isPopupOpen && (
+                <div className="absolute top-10 left-0 w-full bg-white border border-gray-200 rounded shadow-lg z-50 max-h-80 overflow-y-auto">
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <div
+                        key={product.id}
+                        className="flex items-center px-3 py-2 hover:bg-[#F4F4F4] cursor-pointer"
+                        onClick={() => handleProductClick(product.name)}
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-8 h-8 object-cover rounded mr-2"
+                        />
+                        <div>
+                          <div className="font-semibold text-[#1D372E] text-xs">
+                            {product.name}
+                          </div>
+                          <div className="text-[10px] text-gray-500">
+                            {product.category}
+                          </div>
+                          <div className="text-[10px] text-[#5CAF90] font-bold">
+                            {product.price}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-gray-500 text-xs">
+                      No products found
+                    </div>
+                  )}
+                </div>
+              )}
+            </form>
 
             {/* Icons */}
             <div className="flex space-x-2">
@@ -531,50 +667,6 @@ function Navbar() {
         {/* Spacer for fixed header */}
         <div className="h-[115px] sm:h-[125px]"></div>
       </div>
-
-      {/* Search Results Modal */}
-      {isModalOpen && (
-        <div className="fixed top-28 md:top-24 left-1/2 transform -translate-x-1/2 w-full max-w-[680px] bg-white p-6 rounded-lg shadow-lg z-50 mx-4">
-          <h2 className="text-xl font-semibold mb-4">Search Results</h2>
-          <p className="text-[16px] text-gray-500 mb-4">
-            {filteredItems.length}{" "}
-            {filteredItems.length === 1 ? "result" : "results"} found
-          </p>
-          <div className="flex flex-wrap gap-6">
-            {filteredItems.length > 0 ? (
-              filteredItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="w-full sm:w-48 p-4 border border-[#E8E8E8] rounded-md bg-white"
-                >
-                  <Link
-                    to={`/product-page/${item.id}`}
-                    className="block"
-                    onClick={() => handleItemClick(item.name)}
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-32 object-cover rounded-md"
-                    />
-                    <h3 className="font-semibold mt-2">{item.name}</h3>
-                    <p className="text-sm text-gray-500">{item.category}</p>
-                    <p className="font-bold mt-2">{item.price}</p>
-                  </Link>
-                </div>
-              ))
-            ) : (
-              <p>No items found</p>
-            )}
-          </div>
-          <button
-            onClick={closeModal}
-            className="mt-4 text-[#5CAF90] font-semibold border border-[#5CAF90] rounded-full py-2 px-4"
-          >
-            Close
-          </button>
-        </div>
-      )}
     </>
   );
 }
