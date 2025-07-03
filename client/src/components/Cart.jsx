@@ -264,12 +264,19 @@ const Cart = () => {
 
                                 {/* Price section for mobile */}
                                 <div className="mb-2">
-                                  <p className="text-[#5E5E5E] line-through text-sm">
-                                    {formatPrice(item.mktPrice)}
-                                  </p>
+                                  {item.mktPrice && item.mktPrice > item.price && (
+                                    <p className="text-[#5E5E5E] line-through text-sm">
+                                      {formatPrice(item.mktPrice)}
+                                    </p>
+                                  )}
                                   <p className="text-[#1D372E] font-semibold text-base">
                                     {formatPrice(item.price)}
                                   </p>
+                                  {item.discountAmount > 0 && (
+                                    <p className="text-green-600 text-xs">
+                                      Save {formatPrice(item.discountAmount)}
+                                    </p>
+                                  )}
                                 </div>
 
                                 {/* Color and Size for mobile */}
@@ -421,12 +428,19 @@ const Cart = () => {
 
                             {/* Price */}
                             <div>
-                              <p className="text-[#5E5E5E] line-through text-sm font-semibold">
-                                {formatPrice(item.mktPrice)}
-                              </p>
+                              {item.mktPrice && item.mktPrice > item.price && (
+                                <p className="text-[#5E5E5E] line-through text-sm font-semibold">
+                                  {formatPrice(item.mktPrice)}
+                                </p>
+                              )}
                               <p className="text-[#1D372E] font-semibold">
                                 {formatPrice(item.price)}
                               </p>
+                              {item.discountAmount > 0 && (
+                                <p className="text-green-600 text-xs">
+                                  Save {formatPrice(item.discountAmount)}
+                                </p>
+                              )}
                             </div>
 
                             {/* Quantity Selector */}
