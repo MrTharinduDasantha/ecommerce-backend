@@ -12,8 +12,8 @@ const addProductReview = async (customer_id, product_id, rating, comment) => {
 //Add order review
 const addOrderReview = async (customer_id, order_id, rating, comment) => {
   const [result] = await pool.query(
-    "INSERT INTO Order_Review (customer_id, order_id, rating, comment) VALUES (?, ?, ?, ?)",
-    [customer_id, order_id, rating, comment]
+    "INSERT INTO Order_Review (customer_id, order_id, rating, comment, status) VALUES (?, ?, ?, ?, ?)",
+    [customer_id, order_id, rating, comment, "active"]
   )
   return result.insertId
 }
