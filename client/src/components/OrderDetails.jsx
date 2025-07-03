@@ -23,6 +23,8 @@ const OrderDetails = ({
   showHeader = true,
   setIsProductReviewModalOpen,
   setSelectedProductId,
+  setReview,
+  setProductRating,
 }) => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -131,6 +133,11 @@ const OrderDetails = ({
                       className="bg-[#5CAF90] p-1 mx-auto rounded-md hover:bg-[#4a9a7d] transition-colors w-fit flex gap-1 items-center mt-2"
                       onClick={e => {
                         e.stopPropagation()
+                        setReview({
+                          rating: 0,
+                          comment: "",
+                        })
+                        setProductRating(0)
                         setIsProductReviewModalOpen(true)
                         setSelectedProductId(item.productId)
                       }}
