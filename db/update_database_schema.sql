@@ -87,7 +87,7 @@ CREATE TABLE order_review (
     customer_id INT(11),
     order_id INT(11),
     rating DECIMAL(2,1),
-    comment VARCHAR(100),
+    comment VARCHAR(1000),
     status VARCHAR(45),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
