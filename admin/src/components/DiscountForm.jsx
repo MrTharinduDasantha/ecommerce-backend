@@ -202,7 +202,7 @@ const DiscountForm = () => {
     const discountedPrice = calculateDiscountedPrice();
     const originalPrice = parseFloat(product.Selling_Price);
     const hasDiscount =
-      discountedPrice !== originalPrice && formData.discountValue;
+      discountedPrice !== originalPrice && formData.discountValue && formData.discountType;
 
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -243,7 +243,7 @@ const DiscountForm = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Market Price:</span>
                 <span className="font-medium text-gray-800">
-                  Rs. {parseFloat(product.Market_Price).toFixed(2)}
+                  LKR {parseFloat(product.Market_Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
 
@@ -256,21 +256,28 @@ const DiscountForm = () => {
                       : "text-[#5CAF90] text-lg font-bold"
                   }`}
                 >
-                  Rs. {originalPrice.toFixed(2)}
+                  LKR {originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
+
+              {formData.discountValue && !formData.discountType && (
+                <div className="flex justify-between items-center border-t pt-2">
+                  <span className="text-gray-600">Discount Value:</span>
+                  <span className="text-orange-600 font-medium">
+                    {formData.discountValue} (Select discount type)
+                  </span>
+                </div>
+              )}
 
               {hasDiscount && (
                 <>
                   <div className="flex justify-between items-center border-t pt-2">
                     <span className="text-gray-600">Discount Applied:</span>
-                                    <span className="text-red-600 font-medium">
-                  {formData.discountType === "percentage"
-                    ? `${formData.discountValue}%`
-                    : `LKR ${parseFloat(formData.discountValue).toFixed(
-                        2
-                      )}`}
-                </span>
+                    <span className="text-red-600 font-medium">
+                      {formData.discountType === "percentage"
+                        ? `${formData.discountValue}%`
+                        : `LKR ${parseFloat(formData.discountValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    </span>
                   </div>
 
                   <div className="flex justify-between items-center bg-green-50 -mx-4 -mb-4 px-4 py-3 mt-3">
@@ -278,12 +285,12 @@ const DiscountForm = () => {
                       Final Selling Price:
                     </span>
                     <span className="text-[#5CAF90] text-lg md:text-xl font-bold">
-                      Rs. {discountedPrice.toFixed(2)}
+                      LKR {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
 
                   <div className="text-center text-sm text-gray-500 mt-6">
-                    You save: LKR {(originalPrice - discountedPrice).toFixed(2)}
+                    You save: LKR {(originalPrice - discountedPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </>
               )}
