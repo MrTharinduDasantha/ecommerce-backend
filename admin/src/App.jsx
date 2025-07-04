@@ -29,6 +29,8 @@ import CustomerDetails from "./components/CustomerDetails";
 import LogDetails from "./components/LogDetails";
 import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
 import NotificationPage from "./components/NotificationPage";
+import ReviewList from "./components/ReviewList"
+import ReviewDetails from "./components/ReviewDetails"
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -130,6 +132,8 @@ const App = () => {
             <Route path="log/view-adminlogs/:id" element={<LogDetails />} />
             <Route path="order/view-adminlogs/:id" element={<LogDetails />} />
             <Route path="notifications" element={<NotificationPage />} />
+            <Route path="reviews" element={<ReviewList />} />
+            <Route path="reviews/:reviewId" element={<ReviewDetails />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
