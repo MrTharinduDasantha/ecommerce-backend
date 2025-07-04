@@ -66,7 +66,7 @@ const ProductPage = () => {
           setActiveDiscount(activeDiscounts[0] || null)
 
           const totalRating = reviews.reduce(
-            (sum, review) => sum + review.Rating_5,
+            (sum, review) => sum + parseInt(review.Rating_5),
             0
           )
           const averageRating =
