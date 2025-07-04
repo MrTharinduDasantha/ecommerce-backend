@@ -1,9 +1,11 @@
 import { getToken } from "../utils/auth"
 
+const API_URL = "http://localhost:9000/api"
+
 export const addProductReview = async reviewData => {
   try {
     const token = getToken()
-    const res = await fetch(`http://localhost:9000/api/reviews/product`, {
+    const res = await fetch(`${API_URL}/reviews/product`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -23,7 +25,7 @@ export const addProductReview = async reviewData => {
 export const addOrderReview = async reviewData => {
   try {
     const token = getToken()
-    const res = await fetch(`http://localhost:9000/api/reviews/order`, {
+    const res = await fetch(`${API_URL}/reviews/order`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,7 +45,7 @@ export const addOrderReview = async reviewData => {
 export const getReviewsByProductId = async productId => {
   try {
     const res = await fetch(
-      `http://localhost:9000/api/reviews/product/${productId}`
+      `${API_URL}/reviews/product/${productId}`
     )
     if (!res.ok) throw new Error(`Error: ${res.status}`)
     const data = await res.json()
@@ -58,7 +60,7 @@ export const getReviewsByOrderId = async orderId => {
   try {
     const token = getToken()
     const res = await fetch(
-      `http://localhost:9000/api/reviews/order/${orderId}`,
+      `${API_URL}/reviews/order/${orderId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -78,7 +80,7 @@ export const updateOrderReview = async (orderId, review) => {
   try {
     const token = getToken()
     const res = await fetch(
-      `http://localhost:9000/api/reviews/order/${orderId}`,
+      `${API_URL}/reviews/order/${orderId}`,
       {
         method: "PUT",
         headers: {
@@ -101,7 +103,7 @@ export const deleteOrderReview = async orderId => {
   try {
     const token = getToken()
     const res = await fetch(
-      `http://localhost:9000/api/reviews/order/${orderId}`,
+      `${API_URL}/reviews/order/${orderId}`,
       {
         method: "DELETE",
         headers: {
