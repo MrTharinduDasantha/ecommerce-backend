@@ -202,9 +202,9 @@ const OrderList = () => {
                         {new Date(order.Date_Time).toLocaleDateString()}
                       </td>
                       <td className="p-3">{order.Full_Name}</td>
-                      <td className="p-3">Rs. {order.Total_Amount}</td>
-                      <td className="p-3">Rs. {order.Delivery_Charges}</td>
-                      <td className="p-3">Rs. {order.Net_Amount}</td>
+                      <td className="p-3">LKR {parseFloat(order.Total_Amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="p-3">LKR 500.00</td>
+                      <td className="p-3">LKR {(parseFloat(order.Total_Amount) + 500).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="p-3">
                         {order.Delivery_Date
                           ? new Date(order.Delivery_Date).toLocaleDateString()
@@ -360,13 +360,13 @@ const OrderList = () => {
                     </span>
                   </div>
                   <div className="text-sm text-gray-500 mb-1">
-                    Product Amount: Rs. {order.Total_Amount}
+                    Product Amount: LKR {parseFloat(order.Total_Amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div className="text-sm text-gray-500 mb-1">
-                    Delivery: Rs. {order.Delivery_Charges}
+                    Delivery: LKR 500.00
                   </div>
                   <div className="text-sm text-gray-500 mb-2">
-                    Total Amount: Rs. {order.Net_Amount}
+                    Total Amount: LKR {(parseFloat(order.Total_Amount) + 500).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div className="text-sm text-gray-500 mb-2">
                     Date: {new Date(order.Date_Time).toLocaleString()}

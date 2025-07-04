@@ -1168,67 +1168,86 @@ async function deleteProduct(req, res) {
     const { id } = req.params;
     const product = await Product.getProductById(id);
 
-    if (product) {
-      const [variations] = await pool.query(
-        "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
-        [id]
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Log the deletion attempt first
+    const [variations] = await pool.query(
+      "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
+      [id]
+    );
+
+    const [faqs] = await pool.query(
+      "SELECT * FROM FAQ WHERE Product_idProduct = ?",
+      [id]
+    );
+
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Deleted product",
+        req.headers["user-agent"],
+        JSON.stringify({
+          productId: id,
+          description: product.Description,
+          variations: variations || [],
+          faqs: faqs || [],
+        }),
+      ]
+    );
+
+    // Delete the product (this will throw an error if it can't be deleted)
+    await Product.deleteProduct(id);
+
+    // If we reach here, deletion was successful, so delete the images
+    if (product.Main_Image_Url) {
+      const mainImagePath = path.join(
+        __dirname,
+        "../../",
+        product.Main_Image_Url.replace(
+          `${req.protocol}://${req.get("host")}/`,
+          ""
+        )
       );
+      fs.unlink(mainImagePath, (err) => {
+        if (err) console.error("Error deleting main image:", err);
+      });
+    }
 
-      const [faqs] = await pool.query(
-        "SELECT * FROM FAQ WHERE Product_idProduct = ?",
-        [id]
-      );
-
-      await pool.query(
-        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
-        [
-          req.user.userId,
-          "Deleted product",
-          req.headers["user-agent"],
-          JSON.stringify({
-            productId: id,
-            description: product.Description,
-            variations: variations || [],
-            faqs: faqs || [],
-          }),
-        ]
-      );
-
-      if (product.Main_Image_Url) {
-        const mainImagePath = path.join(
-          __dirname,
-          "../../",
-          product.Main_Image_Url.replace(
-            `${req.protocol}://${req.get("host")}/`,
-            ""
-          )
-        );
-        fs.unlink(mainImagePath, (err) => {
-          if (err) console.error("Error deleting main image:", err);
-        });
-      }
-
-      if (product.images && product.images.length > 0) {
-        product.images.forEach((img) => {
-          if (img.Image_Url) {
-            const subImagePath = path.join(
-              __dirname,
-              "../../",
-              img.Image_Url.replace(`${req.protocol}://${req.get("host")}/`, "")
-            );
-            fs.unlink(subImagePath, (err) => {
-              if (err) console.error("Error deleting sub image:", err);
-            });
-          }
-        });
-      }
-
-      await Product.deleteProduct(id);
+    if (product.images && product.images.length > 0) {
+      product.images.forEach((img) => {
+        if (img.Image_Url) {
+          const subImagePath = path.join(
+            __dirname,
+            "../../",
+            img.Image_Url.replace(`${req.protocol}://${req.get("host")}/`, "")
+          );
+          fs.unlink(subImagePath, (err) => {
+            if (err) console.error("Error deleting sub image:", err);
+          });
+        }
+      });
     }
 
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
+    
+    // Handle specific error messages from the model
+    if (error.message.includes("currently in someone's cart")) {
+      return res.status(400).json({ 
+        message: "This product cannot be deleted because it's currently in someone's cart" 
+      });
+    }
+    
+    if (error.message.includes("has already been ordered")) {
+      return res.status(400).json({ 
+        message: "This product cannot be deleted since it has already been ordered" 
+      });
+    }
+    
     res.status(500).json({ message: "Failed to delete product" });
   }
 }

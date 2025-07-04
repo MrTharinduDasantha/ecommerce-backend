@@ -217,7 +217,7 @@ const ProductList = () => {
                         {product.Brand_Name || "Other"}
                       </td>
                       <td className="text-xs lg:text-sm">
-                        Rs. {product.Selling_Price}
+                        LKR {parseFloat(product.Selling_Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td>
                         <div className="flex items-center justify-center gap-2">
@@ -344,7 +344,7 @@ const ProductList = () => {
                         Brand: {product.Brand_Name || "Other"}
                       </p>
                       <p className="text-xs text-[#1D372E]">
-                        Price: Rs. {product.Selling_Price}
+                        Price: LKR {parseFloat(product.Selling_Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-xs text-[#1D372E]">
