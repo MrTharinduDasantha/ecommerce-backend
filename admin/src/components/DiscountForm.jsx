@@ -262,7 +262,7 @@ const DiscountForm = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Market Price:</span>
                 <span className="font-medium text-gray-800">
-                  Rs. {parseFloat(product.Market_Price).toFixed(2)}
+                  LKR {parseFloat(product.Market_Price).toFixed(2)}
                 </span>
               </div>
 
@@ -275,7 +275,7 @@ const DiscountForm = () => {
                       : "text-[#5CAF90] text-lg font-bold"
                   }`}
                 >
-                  Rs. {originalPrice.toFixed(2)}
+                  LKR {originalPrice.toFixed(2)}
                 </span>
               </div>
 
@@ -283,13 +283,13 @@ const DiscountForm = () => {
                 <>
                   <div className="flex justify-between items-center border-t pt-2">
                     <span className="text-gray-600">Discount Applied:</span>
-                                    <span className="text-red-600 font-medium">
-                  {formData.discountType === "percentage"
-                    ? `${formData.discountValue}%`
-                    : `LKR ${parseFloat(formData.discountValue).toFixed(
-                        2
-                      )}`}
-                </span>
+                    <span className="text-red-600 font-medium">
+                      {formData.discountType === "percentage"
+                        ? `${formData.discountValue}%`
+                        : `LKR ${parseFloat(formData.discountValue).toFixed(
+                            2
+                          )}`}
+                    </span>
                   </div>
 
                   <div className="flex justify-between items-center bg-green-50 -mx-4 -mb-4 px-4 py-3 mt-3">
@@ -297,7 +297,7 @@ const DiscountForm = () => {
                       Final Selling Price:
                     </span>
                     <span className="text-[#5CAF90] text-lg md:text-xl font-bold">
-                      Rs. {discountedPrice.toFixed(2)}
+                      LKR {discountedPrice.toFixed(2)}
                     </span>
                   </div>
 
