@@ -1,65 +1,65 @@
-import { useState, useEffect, useCallback } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { Apple, Delete } from "@mui/icons-material"
-import ProductCard from "./ProductCard"
-import { useCart } from "../context/CartContext"
-import { getProducts } from "../api/product"
-import { formatPrice } from "./FormatPrice"
-import { calculateDiscountPercentage } from "./CalculateDiscount"
+import { useState, useEffect, useCallback } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Apple, Delete } from "@mui/icons-material";
+import ProductCard from "./ProductCard";
+import { useCart } from "../context/CartContext";
+import { getProducts } from "../api/product";
+import { formatPrice } from "./FormatPrice";
+import { calculateDiscountPercentage } from "./CalculateDiscount";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, loading, error } =
-    useCart()
+    useCart();
 
-  const [selectedItems, setSelectedItems] = useState([])
-  const [relatedProducts, setRelatedProducts] = useState([])
-  const [items, setItems] = useState([])
-  const location = useLocation()
-  const navigate = useNavigate()
-  const selectedProduct = location.state?.selectedProduct
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [items, setItems] = useState([]);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const selectedProduct = location.state?.selectedProduct;
 
-  const handleProductClick = productId => {
-    window.scrollTo(0, 0)
-    navigate(`/product-page/${productId}`)
-  }
+  const handleProductClick = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/product-page/${productId}`);
+  };
 
   // Initialize selected items when cart items change
   useEffect(() => {
-    setSelectedItems(items.map(item => item.id))
-  }, [items])
+    setSelectedItems(items.map((item) => item.id));
+  }, [items]);
 
   useEffect(() => {
-    setItems(cartItems)
-  }, [cartItems])
+    setItems(cartItems);
+  }, [cartItems]);
 
   // Calculate total price based on selected items only
   const calculateSelectedTotal = useCallback(() => {
     return items
-      .filter(item => selectedItems.includes(item.id))
-      .reduce((total, item) => total + item.price * item.quantity, 0)
-  }, [items, selectedItems])
+      .filter((item) => selectedItems.includes(item.id))
+      .reduce((total, item) => total + item.price * item.quantity, 0);
+  }, [items, selectedItems]);
 
   const handleQuantityChange = (itemId, newQuantity) => {
-    setItems(prev =>
-      prev.map(item =>
+    setItems((prev) =>
+      prev.map((item) =>
         item.id === itemId ? { ...item, quantity: newQuantity } : item
       )
-    )
-  }
+    );
+  };
 
   const fetchRelatedProducts = useCallback(async () => {
     try {
-      const response = await getProducts()
+      const response = await getProducts();
       if (response.message === "Products fetched successfully") {
         const filteredRelated =
           items.length > 0
             ? response.products
-                .filter(p => !items.some(item => item.id === p.idProduct))
+                .filter((p) => !items.some((item) => item.id === p.idProduct))
                 .slice(0, 5)
-            : response.products.slice(0, 5)
+            : response.products.slice(0, 5);
 
         setRelatedProducts(
-          filteredRelated.map(product => ({
+          filteredRelated.map((product) => ({
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
@@ -68,76 +68,79 @@ const Cart = () => {
             weight: product.SIH || "N/A",
             color: product.variations?.[0]?.Colour || "N/A",
             category: product.subcategories?.[0]?.Description || "",
+            historyStatus: product.History_Status || "",
+            activeDiscount:
+              product.discounts?.find((d) => d.Status === "active") || null,
           }))
-        )
+        );
       }
     } catch (error) {
-      console.error("Error fetching related products:", error)
+      console.error("Error fetching related products:", error);
     }
-  }, [items])
+  }, [items]);
 
   useEffect(() => {
-    fetchRelatedProducts()
-  }, [fetchRelatedProducts])
+    fetchRelatedProducts();
+  }, [fetchRelatedProducts]);
 
   const handleCheckout = useCallback(async () => {
     const updatePromises = items
-      .filter(item => selectedItems.includes(item.id))
-      .map(item => {
-        const originalItem = cartItems.find(ci => ci.id === item.id)
+      .filter((item) => selectedItems.includes(item.id))
+      .map((item) => {
+        const originalItem = cartItems.find((ci) => ci.id === item.id);
         if (originalItem && originalItem.quantity !== item.quantity)
-          return updateQuantity(item.id, item.quantity)
-        return Promise.resolve()
-      })
+          return updateQuantity(item.id, item.quantity);
+        return Promise.resolve();
+      });
     try {
-      await Promise.all(updatePromises)
+      await Promise.all(updatePromises);
       const selectedCartItems = items
-        .filter(item => selectedItems.includes(item.id))
-        .map(item => ({
+        .filter((item) => selectedItems.includes(item.id))
+        .map((item) => ({
           ...item,
-        }))
+        }));
 
       navigate("/checkout", {
         state: { selectedItems: selectedCartItems, source: "cart" },
-      })
+      });
     } catch (error) {
-      console.error("Error updating quantities before checkout:", error)
+      console.error("Error updating quantities before checkout:", error);
     }
-  }, [items, selectedItems, navigate, cartItems, updateQuantity])
+  }, [items, selectedItems, navigate, cartItems, updateQuantity]);
 
   // Toggle item selection
-  const toggleItemSelection = itemId => {
-    setSelectedItems(prev =>
+  const toggleItemSelection = (itemId) => {
+    setSelectedItems((prev) =>
       prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
+        ? prev.filter((id) => id !== itemId)
         : [...prev, itemId]
-    )
-  }
+    );
+  };
 
   // Toggle all items selection
   const toggleSelectAll = () => {
     if (selectedItems.length === items.length) {
-      setSelectedItems([])
+      setSelectedItems([]);
     } else {
-      setSelectedItems(items.map(item => item.id))
+      setSelectedItems(items.map((item) => item.id));
     }
-  }
+  };
 
   // Highlight selected product if exists
   useEffect(() => {
     if (selectedProduct && items.length > 0) {
       const productElement = document.getElementById(
         `product-${selectedProduct.id}`
-      )
+      );
       if (productElement) {
-        productElement.scrollIntoView({ behavior: "smooth", block: "center" })
-        productElement.classList.add("highlight-product")
+        productElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        productElement.classList.add("highlight-product");
         setTimeout(() => {
-          productElement.classList.remove("highlight-product")
-        }, 2000)
+          productElement.classList.remove("highlight-product");
+        }, 2000);
       }
     }
-  }, [selectedProduct, items])
+  }, [selectedProduct, items]);
 
   const paymentLogos = [
     {
@@ -160,7 +163,7 @@ const Cart = () => {
       icon: <Apple sx={{ fontSize: 16, color: "#9CA3AF" }} />,
       alt: "Apple Pay",
     },
-  ]
+  ];
 
   if (loading) {
     return (
@@ -168,7 +171,7 @@ const Cart = () => {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5CAF90] mx-auto"></div>
         <p className="mt-4 text-gray-600">Loading cart...</p>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -176,7 +179,7 @@ const Cart = () => {
       <div className="text-center py-8 text-red-500">
         <p>{error}</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -220,7 +223,7 @@ const Cart = () => {
                       </label>
                     </div>
 
-                    {items.map(item => (
+                    {items.map((item) => (
                       <div key={item.id} className="flex items-start gap-3">
                         {/* Checkbox */}
                         <div className="pt-2">
@@ -316,8 +319,11 @@ const Cart = () => {
                                       const newQuantity = Math.max(
                                         1,
                                         item.quantity - 1
-                                      )
-                                      handleQuantityChange(item.id, newQuantity)
+                                      );
+                                      handleQuantityChange(
+                                        item.id,
+                                        newQuantity
+                                      );
                                     }}
                                     disabled={item.availableQty <= 0}
                                   >
@@ -332,8 +338,11 @@ const Cart = () => {
                                       const newQuantity = Math.min(
                                         item.quantity + 1,
                                         item.availableQty
-                                      )
-                                      handleQuantityChange(item.id, newQuantity)
+                                      );
+                                      handleQuantityChange(
+                                        item.id,
+                                        newQuantity
+                                      );
                                     }}
                                     disabled={
                                       item.quantity >= item.availableQty ||
@@ -438,8 +447,8 @@ const Cart = () => {
                                     const newQuantity = Math.max(
                                       1,
                                       item.quantity - 1
-                                    )
-                                    handleQuantityChange(item.id, newQuantity)
+                                    );
+                                    handleQuantityChange(item.id, newQuantity);
                                   }}
                                   disabled={item.availableQty <= 0}
                                 >
@@ -454,8 +463,8 @@ const Cart = () => {
                                     const newQuantity = Math.min(
                                       item.quantity + 1,
                                       item.availableQty
-                                    )
-                                    handleQuantityChange(item.id, newQuantity)
+                                    );
+                                    handleQuantityChange(item.id, newQuantity);
                                   }}
                                   disabled={
                                     item.quantity >= item.availableQty ||
@@ -558,7 +567,7 @@ const Cart = () => {
                   Related <span className="text-[#5CAF90]">Products</span>
                 </h2>
                 <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-                  {relatedProducts.map(product => (
+                  {relatedProducts.map((product) => (
                     <div
                       key={product.id}
                       className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
@@ -570,15 +579,8 @@ const Cart = () => {
                         title={product.name}
                         price={product.price}
                         oldPrice={product.oldPrice}
-                        weight={product.weight}
-                        discountLabel={
-                          product.oldPrice && product.price
-                            ? `${calculateDiscountPercentage(
-                                product.oldPrice,
-                                product.price
-                              )} % OFF`
-                            : null
-                        }
+                        historyStatus={product.historyStatus}
+                        activeDiscount={product.activeDiscount}
                         id={product.id}
                         className="h-full"
                       />
@@ -591,7 +593,7 @@ const Cart = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Cart
+export default Cart;

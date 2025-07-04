@@ -54,25 +54,25 @@ const ProductPage = () => {
     return price;
   };
 
-  const getDisplayDiscount = (price, marketPrice, discount) => {
-    if (discount) {
-      // For active discount, calculate percentage off the original price
-      const discountValue = parseFloat(discount.Discount_Value);
-      if (discount.Discount_Type === "fixed") {
-        const percentage = (discountValue / price) * 100;
-        return `${Math.round(percentage)}% OFF`;
-      } else {
-        return `${Math.round(discountValue)}% OFF`;
-      }
-    } else {
-      // No active discount, calculate difference between selling price and market price
-      if (marketPrice > price) {
-        const percentage = ((marketPrice - price) / marketPrice) * 100;
-        return `${Math.round(percentage)}% OFF`;
-      }
-      return null;
-    }
-  };
+  // const getDisplayDiscount = (price, marketPrice, discount) => {
+  //   if (discount) {
+  //     // For active discount, calculate percentage off the original price
+  //     const discountValue = parseFloat(discount.Discount_Value);
+  //     if (discount.Discount_Type === "fixed") {
+  //       const percentage = (discountValue / price) * 100;
+  //       return `${Math.round(percentage)}% OFF`;
+  //     } else {
+  //       return `${Math.round(discountValue)}% OFF`;
+  //     }
+  //   } else {
+  //     // No active discount, calculate difference between selling price and market price
+  //     if (marketPrice > price) {
+  //       const percentage = ((marketPrice - price) / marketPrice) * 100;
+  //       return `${Math.round(percentage)}% OFF`;
+  //     }
+  //     return null;
+  //   }
+  // };
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
