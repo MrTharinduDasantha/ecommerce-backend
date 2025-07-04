@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Sidebar1 from "../Sidebar1";
 import ProductCard from "../ProductCard";
-// import ForYouBanner from "../ForYouBanner";
 import { getCategories, getProductsBySubCategoryId } from "../../api/product";
-import { calculateDiscountPercentage } from "../CalculateDiscount";
 
 const AllCategories = () => {
   const location = useLocation();
@@ -86,7 +84,9 @@ const AllCategories = () => {
               discountName: product.Discount_Name || "",
               category: sub.Description || product.subcategories?.[0]?.Description || "",
               brand: product.Brand_Name || "",
-              historyStatus: product.History_Status || ""
+              historyStatus: product.History_Status || "",
+              // Add activeDiscount if available in product data
+              activeDiscount: product.discounts?.find(d => d.Status === "active") || null
             }));
           newProductsBySubCategory[sub.idSub_Category] =
             formattedProducts || [];
@@ -180,8 +180,6 @@ const AllCategories = () => {
             />
           </div>
           <div className="flex-1 overflow-hidden">
-            {/* <ForYouBanner className="mb-4 sm:mb-6" /> */}
-
             {/* Display selected category and subcategory names */}
             {selectedCategory && (
               <div className="mb-6">
@@ -215,20 +213,13 @@ const AllCategories = () => {
                         onClick={() => handleProductClick(product.id)}
                       >
                         <ProductCard
-                          image={product.image} 
+                          image={product.image}
                           category={product.category}
                           title={product.name}
                           price={product.price}
                           oldPrice={product.oldPrice}
-                          discountLabel={
-                            product.oldPrice && product.price
-                              ? `${calculateDiscountPercentage(
-                                  product.oldPrice,
-                                  product.price
-                                )} % OFF`
-                              : null
-                          }
                           historyStatus={product.historyStatus}
+                          activeDiscount={product.activeDiscount}
                           id={product.id}
                           className="h-full"
                         />

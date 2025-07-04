@@ -37,7 +37,8 @@ const EventProducts = () => {
               ? product.Market_Price
               : null,
             category: "Event Offer",
-            historyStatus: product.History_Status 
+            historyStatus: product.History_Status, 
+            activeDiscount: product.discounts?.find(d => d.Status === "active") || null
           }));
           setProducts(formattedProducts);
         }
@@ -66,6 +67,7 @@ const EventProducts = () => {
           oldPrice: product.oldPrice,
           discountName: product.discountName,
           historyStatus: product.historyStatus,
+          activeDiscount: product.activeDiscount,
         },
       },
     });
@@ -174,15 +176,8 @@ const EventProducts = () => {
                         title={product.name}
                         price={product.price}
                         oldPrice={product.oldPrice}
-                        discountLabel={
-                          product.oldPrice && product.price
-                            ? `${calculateDiscountPercentage(
-                                product.oldPrice,
-                                product.price
-                              )} % OFF`
-                            : null
-                        }
                         historyStatus={product.historyStatus}
+                        activeDiscount={product.activeDiscount}
                         id={product.id}
                         onProductClick={() => handleProductClick(product)}
                         className="h-full"

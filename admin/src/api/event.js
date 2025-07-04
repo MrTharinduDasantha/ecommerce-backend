@@ -62,6 +62,7 @@ export const createEvent = async (eventData) => {
     formData.append("eventDescription", eventData.eventDescription);
     formData.append("productIds", JSON.stringify(eventData.productIds));
     formData.append("status", eventData.status);
+    formData.append("discounts", JSON.stringify(eventData.discounts || []));
 
     if (eventData.eventImage) {
       formData.append("eventImage", eventData.eventImage);
@@ -86,6 +87,7 @@ export const updateEvent = async (id, eventData) => {
     formData.append("eventDescription", eventData.eventDescription);
     formData.append("productIds", JSON.stringify(eventData.productIds));
     formData.append("status", eventData.status);
+    formData.append("discounts", JSON.stringify(eventData.discounts || []));
 
     if (eventData.eventImage) {
       formData.append("eventImage", eventData.eventImage);

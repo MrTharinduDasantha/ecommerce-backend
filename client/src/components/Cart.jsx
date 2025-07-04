@@ -5,7 +5,7 @@ import ProductCard from "./ProductCard"
 import { useCart } from "../context/CartContext"
 import { getProducts } from "../api/product"
 import { formatPrice } from "./FormatPrice"
-import { calculateDiscountPercentage } from "./CalculateDiscount"
+import { calculateTotalDiscount, getBestDiscountLabel, getFinalPrice } from "./CalculateDiscount"
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, loading, error } =
@@ -68,6 +68,9 @@ const Cart = () => {
             weight: product.SIH || "N/A",
             color: product.variations?.[0]?.Colour || "N/A",
             category: product.subcategories?.[0]?.Description || "",
+            discounts: product.discounts || [],
+            eventDiscounts: product.eventDiscounts || [],
+            product: product,
           }))
         )
       }
@@ -264,12 +267,19 @@ const Cart = () => {
 
                                 {/* Price section for mobile */}
                                 <div className="mb-2">
-                                  <p className="text-[#5E5E5E] line-through text-sm">
-                                    {formatPrice(item.mktPrice)}
-                                  </p>
+                                  {item.mktPrice && item.mktPrice > item.price && (
+                                    <p className="text-[#5E5E5E] line-through text-sm">
+                                      {formatPrice(item.mktPrice)}
+                                    </p>
+                                  )}
                                   <p className="text-[#1D372E] font-semibold text-base">
                                     {formatPrice(item.price)}
                                   </p>
+                                  {item.discountAmount > 0 && (
+                                    <p className="text-green-600 text-xs">
+                                      Save {formatPrice(item.discountAmount)}
+                                    </p>
+                                  )}
                                 </div>
 
                                 {/* Color and Size for mobile */}
@@ -421,12 +431,19 @@ const Cart = () => {
 
                             {/* Price */}
                             <div>
-                              <p className="text-[#5E5E5E] line-through text-sm font-semibold">
-                                {formatPrice(item.mktPrice)}
-                              </p>
+                              {item.mktPrice && item.mktPrice > item.price && (
+                                <p className="text-[#5E5E5E] line-through text-sm font-semibold">
+                                  {formatPrice(item.mktPrice)}
+                                </p>
+                              )}
                               <p className="text-[#1D372E] font-semibold">
                                 {formatPrice(item.price)}
                               </p>
+                              {item.discountAmount > 0 && (
+                                <p className="text-green-600 text-xs">
+                                  Save {formatPrice(item.discountAmount)}
+                                </p>
+                              )}
                             </div>
 
                             {/* Quantity Selector */}
@@ -558,32 +575,37 @@ const Cart = () => {
                   Related <span className="text-[#5CAF90]">Products</span>
                 </h2>
                 <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-                  {relatedProducts.map(product => (
-                    <div
-                      key={product.id}
-                      className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <ProductCard
-                        image={product.image}
-                        category={product.category}
-                        title={product.name}
-                        price={product.price}
-                        oldPrice={product.oldPrice}
-                        weight={product.weight}
-                        discountLabel={
-                          product.oldPrice && product.price
-                            ? `${calculateDiscountPercentage(
-                                product.oldPrice,
-                                product.price
-                              )} % OFF`
-                            : null
-                        }
-                        id={product.id}
-                        className="h-full"
-                      />
-                    </div>
-                  ))}
+                  {relatedProducts.map(product => {
+                    // Calculate enhanced discounts using our utility functions
+                    const totalDiscountPercentage = calculateTotalDiscount(product.product);
+                    const finalPrice = getFinalPrice(product.product);
+                    const discountLabel = getBestDiscountLabel(product.product);
+                    
+                    return (
+                      <div
+                        key={product.id}
+                        className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                        onClick={() => handleProductClick(product.id)}
+                      >
+                        <ProductCard
+                          image={product.image}
+                          category={product.category}
+                          title={product.name}
+                          price={finalPrice}
+                          oldPrice={product.oldPrice}
+                          weight={product.weight}
+                          discountLabel={
+                            totalDiscountPercentage > 0
+                              ? `${totalDiscountPercentage}% OFF`
+                              : null
+                          }
+                          id={product.id}
+                          className="h-full"
+                          product={product.product} // Pass full product data
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
