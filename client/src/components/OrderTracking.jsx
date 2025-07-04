@@ -842,21 +842,21 @@ const OrderTracking = () => {
               Order <span className="text-[#5CAF90]">Review</span>
             </h3>
             {Object.keys(orderReview).length !== 0 ? (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   {[...Array(parseInt(orderReview.rating) || 0)].map(
                     (_, index) => (
                       <StarIcon key={index} className="text-yellow-400" />
                     )
                   )}
-                  <p>{orderReview.comment}</p>
+                  <p className="text-justify">{orderReview.comment}</p>
                   {orderReview.created_at && (
                     <span className="text-sm text-gray-500">
                       {orderReview.created_at.split("T")[0]}
                     </span>
                   )}
                 </div>
-                <div className="space-x-2">
+                <div className="space-x-2 shrink-0">
                   <button onClick={() => setIsOrderReviewEditModalOpen(true)}>
                     <EditIcon className="text-green-500 cursor-pointer" />
                   </button>
