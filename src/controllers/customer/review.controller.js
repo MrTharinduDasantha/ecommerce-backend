@@ -2,7 +2,7 @@ const {
   getByProductId,
   addProductReview,
   addOrderReview,
-  getByOrdertId,
+  getByOrderId,
   updateByOrderId,
   deleteByOrderId,
 } = require("../../models/review.model")
@@ -77,7 +77,7 @@ class ReviewController {
   }
   async getReviewsByOrderId(req, res) {
     try {
-      const reviews = await getByOrdertId(req.params.id)
+      const reviews = await getByOrderId(req.params.id)
       if (reviews.length === 0) {
         return res.status(404).json({ message: "This order has no reviews." })
       }
