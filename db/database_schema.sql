@@ -178,6 +178,22 @@ CREATE TABLE Event_has_Product (
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
 
+-- Event_Discounts Table
+CREATE TABLE Event_Discounts (
+    idEvent_Discounts INT AUTO_INCREMENT PRIMARY KEY,
+    Event_idEvent INT NOT NULL,
+    Product_Ids TEXT NOT NULL, 
+    Description VARCHAR(255) NOT NULL,
+    Discount_Type VARCHAR(45) NOT NULL, 
+    Discount_Value DECIMAL(10,2) NOT NULL,
+    Start_Date DATE NOT NULL,
+    End_Date DATE NOT NULL,
+    Status VARCHAR(45) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (Event_idEvent) REFERENCES Event(idEvent) ON DELETE CASCADE
+);
+
 -- Cart Table
 CREATE TABLE Cart (
     idCart INT AUTO_INCREMENT PRIMARY KEY,

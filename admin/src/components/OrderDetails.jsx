@@ -346,18 +346,63 @@ const OrderDetails = () => {
                   {order.Status}
                 </span>
               </p>
-              <p className="flex justify-between text-[#1D372E]">
-                <span className="font-medium">Total Amount:</span>
-                <span>Rs. {order.Total_Amount}</span>
-              </p>
-              <p className="flex justify-between text-[#1D372E]">
-                <span className="font-medium">Delivery Charges:</span>
-                <span>Rs. {order.Delivery_Charges}</span>
-              </p>
-              <p className="flex justify-between text-[#1D372E]">
-                <span className="font-medium">Net Amount:</span>
-                <span>Rs. {order.Net_Amount}</span>
-              </p>
+              {(() => {
+                // Calculate original amount from order items
+                let originalAmount = 0;
+                let totalDiscountAmount = 0;
+                
+                items.forEach(item => {
+                  let itemRate = parseFloat(item.Rate || 0);
+                  const itemQty = parseInt(item.Qty || 1);
+                  const itemDiscountAmount = parseFloat(item.Discount_Amount || 0);
+                  const itemTotalAmount = parseFloat(item.Total_Amount || item.Total || 0);
+                  
+                  // If Rate is null or 0, calculate it from Total_Amount and Discount_Amount
+                  if (!itemRate && itemTotalAmount > 0) {
+                    itemRate = (itemTotalAmount + (itemDiscountAmount * itemQty)) / itemQty;
+                  }
+                  
+                  originalAmount += itemRate * itemQty;
+                  totalDiscountAmount += itemDiscountAmount * itemQty;
+                });
+                
+                const hasDiscount = totalDiscountAmount > 0;
+                const finalSubtotal = parseFloat(order.Total_Amount || 0);
+                const discountPercentage = originalAmount > 0 ? ((totalDiscountAmount / originalAmount) * 100) : 0;
+                
+                return (
+                  <>
+                    <p className="flex justify-between text-[#1D372E]">
+                      <span className="font-medium">Original Amount:</span>
+                      <span className={hasDiscount ? "line-through text-gray-500" : ""}>
+                        Rs. {originalAmount.toFixed(2)}
+                      </span>
+                    </p>
+                    {hasDiscount && (
+                      <p className="flex justify-between text-[#1D372E]">
+                        <span className="font-medium">Total Discounts:</span>
+                        <span className="text-red-600 font-medium">
+                          -Rs. {totalDiscountAmount.toFixed(2)} {discountPercentage > 0 ? `(${discountPercentage.toFixed(1)}%)` : ''}
+                        </span>
+                      </p>
+                    )}
+                    <p className="flex justify-between text-[#1D372E]">
+                      <span className="font-medium">Subtotal (After Discounts):</span>
+                      <span className={hasDiscount ? "text-green-600 font-medium" : ""}>
+                        Rs. {finalSubtotal.toFixed(2)}
+                      </span>
+                    </p>
+                    <p className="flex justify-between text-[#1D372E]">
+                      <span className="font-medium">Delivery Charges:</span>
+                      <span>Rs. {parseFloat(order.Delivery_Charges || 0).toFixed(2)}</span>
+                    </p>
+                    <p className="flex justify-between text-[#1D372E] border-t pt-2 mt-2">
+                      <span className="font-medium">Final Total:</span>
+                      <span className="font-bold text-lg">Rs. {parseFloat(order.Net_Amount || 0).toFixed(2)}</span>
+                    </p>
+                  </>
+                );
+              })()}
               <p className="flex justify-between text-[#1D372E]">
                 <span className="font-medium">Delivery Date:</span>
                 <span className="flex items-center">
@@ -737,12 +782,14 @@ const OrderDetails = () => {
             Order Items
           </h2>
           <div className="overflow-x-auto">
-            <table className="table min-w-[700px] text-center border border-[#B7B7B7]">
+            <table className="table min-w-[900px] text-center border border-[#B7B7B7]">
               <thead className="bg-[#EAFFF7] text-[#1D372E]">
                 <tr className="border-b border-[#B7B7B7]">
                   <th className="font-semibold">Product</th>
                   <th className="font-semibold">Variation</th>
-                  <th className="font-semibold">Price</th>
+                  <th className="font-semibold">Original Price</th>
+                  <th className="font-semibold">Discount</th>
+                  <th className="font-semibold">Final Price</th>
                   <th className="font-semibold">Quantity</th>
                   <th className="font-semibold">Total</th>
                 </tr>
@@ -750,15 +797,31 @@ const OrderDetails = () => {
               <tbody className="text-[#1D372E]">
                 {items.map((item) => {
                   // Handle null Rate and Qty by calculating from totals
-                  let effectiveRate = item.Rate;
-                  let effectiveQty = item.Qty;
+                  let effectiveRate = parseFloat(item.Rate || 0);
+                  let effectiveQty = parseInt(item.Qty || 1);
+                  const itemTotalAmount = parseFloat(item.Total_Amount || item.Total || 0);
+                  const itemDiscountAmount = parseFloat(item.Discount_Amount || 0);
                   
+                  // If Rate is null or 0, calculate it from Total_Amount and Discount_Amount
+                  if (!effectiveRate && itemTotalAmount > 0) {
+                    effectiveRate = (itemTotalAmount + (itemDiscountAmount * effectiveQty)) / effectiveQty;
+                  }
+                  
+                  // Final fallback calculation if still no rate
                   if (!effectiveRate || !effectiveQty) {
-                    // If Rate or Qty is null, calculate from Total_Amount or Total
                     effectiveQty = item.Qty || 1;
                     const totalForCalculation = item.Total_Amount || item.Total || 0;
                     effectiveRate = totalForCalculation ? parseFloat(totalForCalculation) / effectiveQty : 0;
                   }
+
+                  const originalPrice = effectiveRate; // This is the original price per item
+                  const discountPercentage = parseFloat(item.Discount_Percentage || 0);
+                  const discountAmount = parseFloat(item.Discount_Amount || 0);
+                  const finalTotal = parseFloat(item.Total_Amount || item.Total || 0);
+                  const originalTotal = originalPrice * effectiveQty;
+                  const totalDiscountAmount = discountAmount * effectiveQty;
+                  const finalPricePerItem = finalTotal / effectiveQty;
+                  const hasDiscount = discountPercentage > 0 || discountAmount > 0;
                   
                   return (
                     <tr
@@ -783,9 +846,51 @@ const OrderDetails = () => {
                           <span className="text-xs text-gray-500">-</span>
                         )}
                       </td>
-                      <td>Rs. {parseFloat(effectiveRate).toFixed(2)}</td>
+                      <td>
+                        {hasDiscount ? (
+                          <span className="line-through text-gray-500 text-sm">
+                            Rs. {originalPrice.toFixed(2)}
+                          </span>
+                        ) : (
+                          <span>Rs. {originalPrice.toFixed(2)}</span>
+                        )}
+                      </td>
+                      <td>
+                        {hasDiscount ? (
+                          <div className="text-sm">
+                            {discountPercentage > 0 && (
+                              <div className="text-red-600 font-medium">
+                                {discountPercentage.toFixed(1)}% OFF
+                              </div>
+                            )}
+                            {discountAmount > 0 && (
+                              <div className="text-red-600 text-xs">
+                                -Rs. {discountAmount.toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">No discount</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className={hasDiscount ? "text-green-600 font-medium" : ""}>
+                          Rs. {finalPricePerItem.toFixed(2)}
+                        </span>
+                      </td>
                       <td>{effectiveQty}</td>
-                      <td>Rs. {parseFloat(item.Total_Amount || item.Total || 0).toFixed(2)}</td>
+                      <td>
+                        <div>
+                          <span className={hasDiscount ? "text-green-600 font-medium" : ""}>
+                            Rs. {finalTotal.toFixed(2)}
+                          </span>
+                          {hasDiscount && (
+                            <div className="text-xs text-gray-500">
+                              Saved: Rs. {(originalTotal - finalTotal).toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}

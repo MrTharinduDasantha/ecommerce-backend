@@ -6,7 +6,7 @@ import Home from "./routes/Home/Home";
 import Events from "./routes/Events/Events";
 import EventProducts from "./routes/Events/EventProducts";
 import Footer from "./components/Footer/Footer";
-import NavBar from "./components/NavBar/NavBar";
+import NavBar from "./components/Navbar/Navbar";
 import Brands from "./routes/Brands/brands";
 import BrandDetails from "./routes/Brands/BrandDetails";
 import SignIn from "./components/SignIn";
@@ -26,7 +26,14 @@ import { CartProvider } from "./context/CartContext";
 import AllCategories from "./components/Pages/Category";
 import AllProducts from "./components/AllProducts";
 import SubCategory from "./components/Pages/SubCategory";
+
+import FilteredProducts from "./components/FilteredProducts";
+
 import ScrollToTop from "./components/ScrollToTop";
+import LegalPolicy from "./components/LegalPolicy";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import SecurityPolicy from "./components/SecurityPolicy";
+import TermsOfService from "./components/TermsOfService";
 
 const App = () => {
   return (
@@ -68,6 +75,14 @@ const App = () => {
           />
           <Route path="/AllProducts" element={<AllProducts />} />
           <Route path="/subcategory/:id" element={<SubCategory />} />
+
+          <Route path="/filtered-products" element={<FilteredProducts />} />
+
+          <Route path="/legal-policy" element={<LegalPolicy />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/security-policy" element={<SecurityPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+
         </Routes>
         <ScrollToTop />
         <Footer />
