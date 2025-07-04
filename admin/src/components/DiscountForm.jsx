@@ -9,6 +9,7 @@ import {
 import { FaRegCheckSquare, FaCheckSquare } from "react-icons/fa";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
+import SearchableSelect from "./SearchableSelect";
 import "react-datepicker/dist/react-datepicker.css";
 
 const DiscountForm = () => {
@@ -120,6 +121,24 @@ const DiscountForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle product selection
+  const handleProductChange = (selectedValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      productId: selectedValue,
+    }));
+
+    // Find and set the selected product details
+    if (selectedValue) {
+      const selectedProduct = products.find(
+        (product) => product.idProduct === parseInt(selectedValue)
+      );
+      setSelectedProductDetails(selectedProduct || null);
+    } else {
+      setSelectedProductDetails(null);
+    }
   };
 
   // Handle date changes
@@ -415,38 +434,13 @@ const DiscountForm = () => {
                       Product
                     </span>
                   </label>
-                  <select
-                    name="productId"
+                  <SearchableSelect
+                    options={productOptions}
                     value={formData.productId}
-                    onChange={(e) => {
-                      const selectedValue = e.target.value;
-
-                      // Update form data
-                      setFormData((prev) => ({
-                        ...prev,
-                        productId: selectedValue,
-                      }));
-
-                      // Find and set the selected product details
-                      if (selectedValue) {
-                        const selectedProduct = products.find(
-                          (product) =>
-                            product.idProduct === parseInt(selectedValue)
-                        );
-                        setSelectedProductDetails(selectedProduct || null);
-                      } else {
-                        setSelectedProductDetails(null);
-                      }
-                    }}
-                    className="select select-bordered select-sm md:select-md w-full bg-white border-[#1D372E] text-[#1D372E]"
-                  >
-                    <option value="">Select Product</option>
-                    {productOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={handleProductChange}
+                    placeholder="Select Product"
+                    searchPlaceholder="Search by product..."
+                  />
                 </div>
 
                 {/* Mobile Product Details - Show below product selection on mobile */}

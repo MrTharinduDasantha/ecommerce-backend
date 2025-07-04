@@ -34,7 +34,8 @@ const OnSale = () => {
               product.discounts?.[0]?.Description || "Sale Discounts",
             discountAmount: product.Market_Price - product.Selling_Price,
             category: product.subcategories?.[0]?.Description || "",
-            historyStatus: product.History_Status || ""
+            historyStatus: product.History_Status || "",
+            activeDiscount: product.discounts?.find(d => d.Status === "active") || null
           }));
           console.log("Formatted products:", formattedProducts);
           setProducts(formattedProducts);
@@ -106,15 +107,8 @@ const OnSale = () => {
                       title={product.name}
                       price={product.price}
                       oldPrice={product.oldPrice}
-                      discountLabel={
-                        product.oldPrice && product.price
-                          ? `${calculateDiscountPercentage(
-                              product.oldPrice,
-                              product.price
-                            )} % OFF`
-                          : null
-                      }
                       historyStatus={product.historyStatus}
+                      activeDiscount={product.activeDiscount}
                       id={product.id}
                       className="h-full"
                     />
