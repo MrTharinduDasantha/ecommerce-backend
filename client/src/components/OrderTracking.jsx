@@ -217,12 +217,8 @@ const OrderTracking = () => {
     ? parseFloat(selectedOrder.Total_Amount)
     : 0;
   const discount = 0; // No discount field in the response
-  const deliveryFee = selectedOrder?.Delivery_Charges
-    ? parseFloat(selectedOrder.Delivery_Charges)
-    : 0;
-  const total = selectedOrder?.Net_Amount
-    ? parseFloat(selectedOrder.Net_Amount)
-    : subtotal + deliveryFee;
+  const deliveryFee = 500.00; // Fixed delivery fee
+  const total = subtotal + deliveryFee; // Calculate total with fixed delivery fee
 
   // Current order status from tracking info or selected order
   const currentStatus = trackingInfo?.current_status || {

@@ -213,6 +213,116 @@ const OrderList = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
+
+                  {filteredOrders.map((order) => (
+                    <tr
+                      key={order.idOrder}
+                      className="border-b border-[#1D372E] cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleViewOrder(order.idOrder)}
+                    >
+                      <td className="p-3">#{order.idOrder}</td>
+                      <td className="p-3">
+                        {new Date(order.Date_Time).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">{order.Full_Name}</td>
+                      <td className="p-3">LKR {parseFloat(order.Total_Amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="p-3">LKR 500.00</td>
+                      <td className="p-3">LKR {(parseFloat(order.Total_Amount) + 500).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="p-3">
+                        {order.Delivery_Date
+                          ? new Date(order.Delivery_Date).toLocaleDateString()
+                          : "Not set"}
+                      </td>
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        {updatingStatus === order.idOrder ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
+                            <span className="text-xs">Updating...</span>
+                          </div>
+                        ) : (
+                          <select
+                            value={order.Status}
+                            onChange={(e) =>
+                              handleStatusChange(order.idOrder, e.target.value)
+                            }
+                            className={`px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(
+                              order.Status
+                            )}`}
+                          >
+                            <option
+                              value="Order Confirmed"
+                              className="bg-white text-yellow-800"
+                            >
+                              Order Confirmed
+                            </option>
+                            <option
+                              value="Order Packed"
+                              className="bg-white text-blue-800"
+                            >
+                              Order Packed
+                            </option>
+                            <option
+                              value="Awaiting Delivery"
+                              className="bg-white text-indigo-800"
+                            >
+                              Awaiting Delivery
+                            </option>
+                            <option
+                              value="Out for Delivery"
+                              className="bg-white text-purple-800"
+                            >
+                              Out for Delivery
+                            </option>
+                            <option
+                              value="Delivered"
+                              className="bg-white text-green-800"
+                            >
+                              Delivered
+                            </option>
+                          </select>
+                        )}
+                      </td>
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        {updatingPaymentStatus === order.idOrder ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
+                            <span className="text-xs">Updating...</span>
+                          </div>
+                        ) : (
+                          <select
+                            value={order.Payment_Stats}
+                            onChange={(e) =>
+                              handlePaymentStatusChange(
+                                order.idOrder,
+                                e.target.value
+                              )
+                            }
+                            className={`px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getPaymentStatusColor(
+                              order.Payment_Stats
+                            )}`}
+                          >
+                            <option
+                              value="pending"
+                              className="bg-white text-yellow-800"
+                            >
+                              Pending
+                            </option>
+                            <option
+                              value="paid"
+                              className="bg-white text-green-800"
+                            >
+                              Paid
+                            </option>
+                            <option
+                              value="failed"
+                              className="bg-white text-red-800"
+                            >
+                              Failed
+                            </option>
+                            <option
+                              value="cancelled"
+                              className="bg-white text-gray-800"
+
                   {filteredOrders.map((order) => {
                     // Calculate discount information using order items
                     const orderItems = orderItemsMap[order.idOrder] || [];
@@ -301,6 +411,7 @@ const OrderList = () => {
                               className={`px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(
                                 order.Status
                               )}`}
+
                             >
                               <option
                                 value="Order Confirmed"
@@ -396,6 +507,66 @@ const OrderList = () => {
 
             {/* Mobile view */}
             <div className="sm:hidden">
+
+              {filteredOrders.map((order) => (
+                <div 
+                  key={order.idOrder} 
+                  className="bg-white p-4 border-b cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleViewOrder(order.idOrder)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center">
+                      {order.product_image ? (
+                        <img
+                          src={order.product_image}
+                          alt="Product"
+                          className="w-10 h-10 mr-3 rounded object-cover"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://via.placeholder.com/40?text=No+Image";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500 mr-3">
+                          No IMG
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          #{order.idOrder}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {order.Full_Name}
+                        </div>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                        order.Status
+                      )}`}
+                    >
+                      {order.Status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Product Amount: LKR {parseFloat(order.Total_Amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Delivery: LKR 500.00
+                  </div>
+                  <div className="text-sm text-gray-500 mb-2">
+                    Total Amount: LKR {(parseFloat(order.Total_Amount) + 500).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-2">
+                    Date: {new Date(order.Date_Time).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-3">
+                    Delivery:{" "}
+                    {order.Delivery_Date
+                      ? new Date(order.Delivery_Date).toLocaleDateString()
+                      : "Not set"}
+                  </div>
+
               {filteredOrders.map((order) => {
                 // Calculate discount information for mobile view
                 const orderItems = orderItemsMap[order.idOrder] || [];
@@ -427,6 +598,7 @@ const OrderList = () => {
                 const finalAmount = parseFloat(order.Total_Amount || 0);
                 const discountPercentage = originalAmount > 0 ? (totalDiscountAmount / originalAmount) * 100 : 0;
                 const hasDiscount = totalDiscountAmount > 0;
+
 
                 return (
                   <div 
