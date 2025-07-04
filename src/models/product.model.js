@@ -618,6 +618,11 @@ async function getAllProducts() {
 
     // Get active discounts for each product
     product.discounts = await getActiveDiscountsByProductId(product.idProduct);
+
+    // Get active event‐level discounts for each product
+    product.eventDiscounts = await getActiveEventDiscountsByProductId(
+      product.idProduct
+    );
   }
 
   return products;
@@ -675,9 +680,7 @@ async function getProductsBySubCategory(subCategoryId) {
     );
     product.images = images;
     product.discounts = await getActiveDiscountsByProductId(product.idProduct);
-    
   }
-  
 
   return products;
 }
@@ -759,6 +762,11 @@ async function getProductById(productId) {
 
   // Get active discounts for this product
   product.discounts = await getActiveDiscountsByProductId(product.idProduct);
+
+  // Get active event‐level discounts for this product
+  product.eventDiscounts = await getActiveEventDiscountsByProductId(
+    product.idProduct
+  );
 
   return product;
 }
@@ -869,6 +877,40 @@ async function deleteProduct(productId) {
 // ---------------------------
 // Discount Related Functions
 // ---------------------------
+
+// Get active event‐discounts for a specific product
+async function getActiveEventDiscountsByProductId(productId) {
+  const query = `
+    SELECT
+      ed.idEvent_Discounts    AS id,
+      ed.Event_idEvent        AS eventId,
+      ed.Product_Ids          AS productIdsJson,
+      ed.Description          AS description,
+      ed.Discount_Type        AS discountType,
+      ed.Discount_Value       AS discountValue,
+      ed.Start_Date           AS startDate,
+      ed.End_Date             AS endDate,
+      ed.Status               AS status
+    FROM Event_Discounts ed
+    JOIN Event_has_Product ehp
+      ON ed.Event_idEvent = ehp.Event_idEvent
+    WHERE ehp.Product_idProduct = ?
+      AND ed.Status = 'active'
+      AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d') 
+  `;
+  const [rows] = await pool.query(query, [productId]);
+  return rows.map((r) => ({
+    id: r.id,
+    eventId: r.eventId,
+    productIds: JSON.parse(r.productIdsJson || "[]"),
+    description: r.description,
+    discountType: r.discountType,
+    discountValue: r.discountValue,
+    startDate: r.startDate,
+    endDate: r.endDate,
+    status: r.status,
+  }));
+}
 
 // Get active discounts for a specific product
 async function getActiveDiscountsByProductId(productId) {
@@ -1023,6 +1065,8 @@ module.exports = {
   // Discount related functions
   getAllDiscounts,
   getDiscountsByProductId,
+  getActiveDiscountsByProductId,
+  getActiveEventDiscountsByProductId,
   createDiscount,
   updateDiscount,
   deleteDiscount,

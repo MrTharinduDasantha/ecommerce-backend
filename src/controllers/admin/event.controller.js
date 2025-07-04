@@ -40,11 +40,13 @@ async function getEventById(req, res) {
 async function getEventProducts(req, res) {
   try {
     const { eventId } = req.params;
-    const products = await Event.getEventProducts(eventId);
+    const data = await Event.getEventProducts(eventId);
 
-    res
-      .status(200)
-      .json({ message: "Event products fetched successfully", products });
+    res.status(200).json({
+      message: "Event products fetched successfully",
+      products: data.products,
+      discounts: data.discounts,
+    });
   } catch (error) {
     console.error("Error fetching event products:", error);
     res.status(500).json({ message: "Failed to fetch event products" });
@@ -54,7 +56,8 @@ async function getEventProducts(req, res) {
 // Create a new event
 async function createEvent(req, res) {
   try {
-    const { eventName, eventDescription, productIds, status } = req.body;
+    const { eventName, eventDescription, productIds, status, discounts } =
+      req.body;
 
     // Handle image upload
     let eventImageUrl = null;
@@ -70,6 +73,7 @@ async function createEvent(req, res) {
       eventImageUrl,
       productIds: productIds ? JSON.parse(productIds) : [],
       status: status || "active",
+      discounts: discounts ? JSON.parse(discounts) : [],
     };
 
     const result = await Event.createEvent(eventData);
@@ -85,6 +89,7 @@ async function createEvent(req, res) {
           eventName,
           eventDescription,
           productCount: eventData.productIds.length,
+          discountCount: eventData.discounts.length,
         }),
       ]
     );
@@ -103,8 +108,14 @@ async function createEvent(req, res) {
 async function updateEvent(req, res) {
   try {
     const { id } = req.params;
-    const { eventName, eventDescription, productIds, status, removeImage } =
-      req.body;
+    const {
+      eventName,
+      eventDescription,
+      productIds,
+      status,
+      removeImage,
+      discounts,
+    } = req.body;
 
     // Check if event exists and get original data
     const existingEvent = await Event.getEventById(id);
@@ -152,6 +163,7 @@ async function updateEvent(req, res) {
       eventImageUrl,
       productIds: productIds ? JSON.parse(productIds) : [],
       status,
+      discounts: discounts ? JSON.parse(discounts) : [],
     };
 
     await Event.updateEvent(id, eventData);
@@ -165,12 +177,16 @@ async function updateEvent(req, res) {
         productCount: existingEvent.products
           ? existingEvent.products.length
           : 0,
+        discountCount: existingEvent.discounts
+          ? existingEvent.discounts.length
+          : 0,
       },
       updatedData: {
         eventName,
         eventDescription,
         status,
         productCount: eventData.productIds.length,
+        discountCount: eventData.discounts.length,
       },
     };
 

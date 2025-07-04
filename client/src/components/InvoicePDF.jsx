@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import DownloadIcon from "@mui/icons-material/Download";
 import EmailIcon from "@mui/icons-material/Email";
+import OrderDetails from "./OrderDetails";
 import "./InvoicePDF.css";
 
 // Function to generate map URL for PDF
@@ -165,139 +166,499 @@ const testPDFGeneration = async () => {
 // Create styles
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
+    padding: 40,
     backgroundColor: "#ffffff",
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: "#000000",
-    margin: 10,
     flexDirection: "column",
     flexGrow: 1,
     justifyContent: "flex-start",
     position: "relative",
+    fontFamily: "Helvetica",
   },
-  title: {
-    fontSize: 24,
-    textAlign: "center",
-    marginBottom: 10,
-    color: "#1a1a1a",
-    fontWeight: "bold",
-  },
-  subtitle: {
-    fontSize: 12,
-    textAlign: "center",
-    marginBottom: 20,
-    color: "#666666",
-  },
-  section: {
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: "#333333",
-    fontWeight: "bold",
-    borderBottomWidth: 1,
-    borderBottomColor: "#cccccc",
-    paddingBottom: 3,
-  },
-  row: {
+  
+  // Header Section
+  header: {
     flexDirection: "row",
-    marginBottom: 3,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 30,
+    paddingBottom: 20,
+    borderBottomWidth: 2,
+    borderBottomColor: "#5CAF90",
   },
-  label: {
-    width: "30%",
-    fontSize: 12,
-    color: "#666666",
-  },
-  value: {
-    width: "70%",
-    fontSize: 12,
-    color: "#333333",
-  },
-  table: {
-    marginTop: 8,
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#f3f4f6",
-    padding: 6,
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#374151",
-  },
-  tableRow: {
-    flexDirection: "row",
-    padding: 6,
-    fontSize: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-  },
-  col1: { width: "15%" },
-  col2: { width: "25%" },
-  col3: { width: "20%" },
-  col4: { width: "20%" },
-  col5: { width: "20%" },
-  total: {
-    marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    fontSize: 14,
-    fontWeight: "bold",
-    paddingRight: 8,
-  },
-  thankYouSection: {
-    position: "absolute",
-    bottom: 40,
-    left: 0,
-    right: 0,
-    width: "100%",
-    borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
-    paddingTop: 16,
-    alignItems: "center",
-    display: "flex",
-    marginTop:"50px !important"
-  },
-  thankYouText: {
-    fontSize: 14,
-    textAlign: "center",
-    color: "#4B5563",
-    fontStyle: "italic"
-  },
-  mapImage: {
-    width: 400,
-    height: 200,
-    objectFit: "cover",
-    margin: "0 auto",
-    marginBottom: 10,
-  },
-  orderDetailsSection: {
-    marginTop: 32,
-  },
-  statusItem: {
-    flexDirection: "row",
-    marginBottom: 4,
-    padding: 4,
-    backgroundColor: "#f9f9f9",
-  },
-  statusText: {
-    fontSize: 11,
-    color: "#333333",
+  
+  headerLeft: {
     flex: 1,
   },
-  statusDate: {
+  
+  headerCenter: {
+    flex: 1,
+    alignItems: "center",
+  },
+  
+  headerRight: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
+  
+  logo: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#1D372E",
+    marginBottom: 8,
+  },
+  
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  
+  logoAsipiya: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#1D372E",
+  },
+  
+  logoInvoice: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#5CAF90",
+  },
+  
+  tagline: {
+    fontSize: 12,
+    color: "#666666",
+    fontStyle: "italic",
+  },
+  
+  invoiceTitle: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#1D372E",
+    marginBottom: 8,
+  },
+  
+  invoiceSubtitle: {
+    fontSize: 14,
+    color: "#5CAF90",
+    fontWeight: "600",
+  },
+  
+  // Order Info Section
+  orderInfoSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 30,
+    padding: 20,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 8,
+  },
+  
+  orderInfoLeft: {
+    flex: 1,
+  },
+  
+  orderInfoRight: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
+  
+  infoGroup: {
+    marginBottom: 12,
+    width:"100px"
+  },
+  
+  infoLabel: {
     fontSize: 10,
     color: "#666666",
-    width: "30%",
+    fontWeight: "600",
+    marginBottom: 2,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    width:"100px"
   },
-  statusCompleted: {
+  
+  infoValue: {
+    fontSize: 12,
+    color: "#1D372E",
+    fontWeight: "600",
+  },
+  
+  // Section Titles
+  sectionTitle: {
+    fontSize: 18,
+    marginBottom: 15,
+    color: "#1D372E",
+    fontWeight: "bold",
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: "#5CAF90",
+  },
+  
+  sectionTitleContainer: {
+    flexDirection: "row",
+    marginBottom: 15,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: "#5CAF90",
+  },
+  
+  sectionTitleOrder: {
+    fontSize: 18,
+    color: "#000000",
+    fontWeight: "bold",
+  },
+  
+  sectionTitleSummary: {
+    fontSize: 18,
+    color: "#5CAF90",
+    fontWeight: "bold",
+  },
+  
+  sectionTitleDelivery: {
+    fontSize: 18,
+    color: "#000000",
+    fontWeight: "bold",
+  },
+  
+  sectionTitleAddress: {
+    fontSize: 18,
+    color: "#5CAF90",
+    fontWeight: "bold",
+  },
+  
+  sectionTitlePricing: {
+    fontSize: 18,
+    color: "#000000",
+    fontWeight: "bold",
+  },
+  
+  sectionTitleSummaryPricing: {
+    fontSize: 18,
+    color: "#5CAF90",
+    fontWeight: "bold",
+  },
+  
+  sectionTitleOrderStatus: {
+    fontSize: 18,
+    color: "#000000",
+    fontWeight: "bold",
+  },
+  
+  sectionTitleStatus: {
+    fontSize: 18,
+    color: "#5CAF90",
+    fontWeight: "bold",
+  },
+  
+  // Order Number Section
+  orderNumberSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    padding: 12,
+    backgroundColor: "#f0f8f0",
+    borderRadius: 6,
+    borderLeftWidth: 4,
+    borderLeftColor: "#5CAF90",
+  },
+  
+  orderNumberLabel: {
+    fontSize: 14,
+    color: "#1D372E",
+    fontWeight: "600",
+  },
+  
+  orderNumberValue: {
+    fontSize: 16,
+    color: "#5CAF90",
+    fontWeight: "bold",
+  },
+  
+  // Delivery Address Section
+  addressSection: {
+    marginBottom: 25,
+    padding: 15,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 8,
+  },
+  
+  addressRow: {
+    flexDirection: "row",
+    marginBottom: 6,
+  },
+  
+  addressLabel: {
+    width: "25%",
+    fontSize: 11,
+    color: "#666666",
+    fontWeight: "600",
+  },
+  
+  addressValue: {
+    width: "75%",
+    fontSize: 11,
+    color: "#000000",
+    fontWeight: "bold",
+  },
+  
+  // Order Items Section
+  itemsSection: {
+    marginBottom: 25,
+  },
+  
+  itemCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    padding: 12,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  
+  itemImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  
+  itemImagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    backgroundColor: "#f3f4f6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  
+  itemDetails: {
+    flex: 1,
+  },
+  
+  itemName: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#1D372E",
+    marginBottom: 4,
+  },
+  
+  itemAttributes: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  
+  attributeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  
+  attributeLabel: {
+    fontSize: 9,
+    color: "#666666",
+    marginRight: 4,
+  },
+  
+  attributeValue: {
+    fontSize: 9,
+    fontWeight: "600",
+    color: "#1D372E",
+  },
+  
+  colorSwatch: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    marginLeft: 4,
+  },
+  
+  itemPrice: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#000000",
+    textAlign: "right",
+  },
+  
+  // Pricing Summary
+  pricingSection: {
+    marginBottom: 25,
+    padding: 15,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 8,
+  },
+  
+  pricingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  
+  pricingLabel: {
+    fontSize: 11,
+    color: "#666666",
+    fontWeight: "500",
+  },
+  
+  pricingValue: {
+    fontSize: 11,
+    color: "#1D372E",
+    fontWeight: "600",
+  },
+  
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#5CAF90",
+  },
+  
+  totalLabel: {
+    fontSize: 14,
+    color: "#1D372E",
+    fontWeight: "bold",
+  },
+  
+  totalValue: {
+    fontSize: 16,
+    color: "#5CAF90",
+    fontWeight: "bold",
+  },
+  
+  // Order Status Section
+  statusSection: {
+    marginBottom: 25,
+  },
+  
+  statusItem: {
+    flexDirection: "row",
+    marginBottom: 6,
+    padding: 8,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  
+  statusText: {
+    fontSize: 10,
+    color: "#1D372E",
+    flex: 1,
+    fontWeight: "500",
+  },
+  
+  statusDate: {
+    fontSize: 9,
+    color: "#666666",
+    width: "25%",
+  },
+  
+  statusIcon: {
     fontSize: 10,
     color: "#5CAF90",
     fontWeight: "bold",
-    width: "15%",
+    width: "10%",
+    textAlign: "center",
+  },
+  
+  currentStatusItem: {
+    flexDirection: "row",
+    marginBottom: 6,
+    padding: 10,
+    backgroundColor: "#e8f5e8",
+    borderRadius: 6,
+    alignItems: "center",
+    borderLeftWidth: 4,
+    borderLeftColor: "#5CAF90",
+  },
+  
+  currentStatusText: {
+    fontSize: 11,
+    color: "#1D372E",
+    flex: 1,
+    fontWeight: "bold",
+  },
+  
+  currentStatusDate: {
+    fontSize: 9,
+    color: "#5CAF90",
+    width: "25%",
+    fontWeight: "600",
+  },
+  
+  currentStatusIcon: {
+    fontSize: 10,
+    color: "#5CAF90",
+    fontWeight: "bold",
+    width: "10%",
+    textAlign: "center",
+  },
+  
+  estimatedDelivery: {
+    flexDirection: "row",
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: "#fff3cd",
+    borderRadius: 6,
+    borderLeftWidth: 4,
+    borderLeftColor: "#ffc107",
+  },
+  
+  estimatedDeliveryLabel: {
+    fontSize: 10,
+    color: "#856404",
+    fontWeight: "bold",
+    width: "50%",
+  },
+  
+  estimatedDeliveryValue: {
+    fontSize: 10,
+    color: "#856404",
+    width: "50%",
+    fontWeight: "500",
+  },
+  
+  // Footer
+  footer: {
+    position: "absolute",
+    bottom: 30,
+    left: 40,
+    right: 40,
+    alignItems: "center",
+    paddingTop: 20,
+    borderTopWidth: 2,
+    borderTopColor: "#5CAF90",
+  },
+  
+  thankYouText: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#5CAF90",
+    fontWeight: "600",
+    fontStyle: "italic",
+    marginBottom: 8,
+  },
+  
+  // Utility styles
+  spacer: {
+    height: 20,
+  },
+  
+  divider: {
+    height: 1,
+    backgroundColor: "#e5e7eb",
+    marginVertical: 15,
   },
 });
 
@@ -305,11 +666,12 @@ const styles = StyleSheet.create({
 const InvoicePDF = ({ data }) => {
   // Ensure data has required fields with fallbacks
   const safeData = {
+    items : data?.preparedItems || [],
     orderId: data?.orderId || 'N/A',
     orderDate: data?.orderDate || 'N/A',
     paymentMethod: data?.paymentMethod || 'N/A',
     paymentStatus: data?.paymentStatus || 'N/A',
-    deliveryType: data?.deliveryType || 'N/A',
+    deliveryType: data?.deliveryType || 'Standard',
     deliveryStatus: data?.deliveryStatus || 'N/A',
     customerName: data?.customerName || 'N/A',
     address: data?.address || 'N/A',
@@ -324,191 +686,230 @@ const InvoicePDF = ({ data }) => {
     estimatedDeliveryDate: data?.estimatedDeliveryDate || 'Date not available',
     currentStatus: data?.currentStatus || {}
   };
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Main Invoice Title */}
-        <Text style={styles.title}>Asipiya Order Invoice</Text>
-        {/* Order Details Section */}
-        <View style={styles.orderDetailsSection}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
-        </View>
-        <View style={styles.section}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Order #:</Text>
-            <Text style={styles.value}>{safeData.orderId}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Date:</Text>
-            <Text style={styles.value}>{safeData.orderDate}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Payment Method:</Text>
-            <Text style={styles.value}>{safeData.paymentMethod}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Payment Status:</Text>
-            <Text style={styles.value}>{safeData.paymentStatus}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Delivery Type:</Text>
-            <Text style={styles.value}>
-              {safeData.deliveryType ? safeData.deliveryType : "N/A"}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Delivery Status:</Text>
-            <Text style={styles.value}>{safeData.deliveryStatus}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Subtotal:</Text>
-            <Text style={styles.value}>${safeData.subtotal.toFixed(2)}</Text>
-          </View>
-          {safeData.discount > 0 && (
-            <View style={styles.row}>
-              <Text style={styles.label}>Discount:</Text>
-              <Text style={styles.value}>-${safeData.discount.toFixed(2)}</Text>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.headerCenter}>
+            <View style={styles.logoContainer}>
+              <Text style={styles.logoAsipiya}>ASIPIYA </Text>
+              <Text style={styles.logoInvoice}>INVOICE</Text>
             </View>
-          )}
-          <View style={styles.row}>
-            <Text style={styles.label}>Delivery Fee:</Text>
-            <Text style={styles.value}>${safeData.deliveryFee.toFixed(2)}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Total:</Text>
-            <Text style={styles.value}>${safeData.total.toFixed(2)}</Text>
+        </View>
+
+        {/* Order Summary Title */}
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitleOrder}>Order</Text>
+          <Text style={styles.sectionTitleSummary}> Summary</Text>
+        </View>
+        
+        {/* Order Number */}
+        <View style={styles.orderNumberSection}>
+          <Text style={styles.orderNumberLabel}>Order : </Text>
+          <Text style={styles.orderNumberValue}>#{safeData.orderId}</Text>
+        </View>
+        
+        {/* Order Information Section */}
+        <View style={styles.orderInfoSection}>
+          <View style={styles.orderInfoLeft}>
+            <View style={styles.infoGroup}>
+              <Text style={styles.infoLabel}>Order Date</Text>
+              <Text style={styles.infoValue}>{safeData.orderDate}</Text>
+            </View>
+            <View style={styles.infoGroup}>
+              <Text style={styles.infoLabel}>Payment Method</Text>
+              <Text style={styles.infoValue}>{safeData.paymentMethod}</Text>
+            </View>
+            <View style={styles.infoGroup}>
+              <Text style={styles.infoLabel}>Payment Status</Text>
+              <Text style={styles.infoValue}>{safeData.paymentStatus}</Text>
+            </View>
+          </View>
+          <View style={styles.orderInfoRight}>
+            <View style={styles.infoGroup}>
+              <Text style={styles.infoLabel}>Delivery Type</Text>
+              <Text style={styles.infoValue}>
+                {safeData.deliveryType ? safeData.deliveryType : "Standard"}
+              </Text>
+            </View>
+            <View style={styles.infoGroup}>
+              <Text style={styles.infoLabel}>Delivery Status</Text>
+              <Text style={styles.infoValue}>{safeData.deliveryStatus}</Text>
+            </View>
+            <View style={styles.infoGroup}>
+              <Text style={styles.infoLabel}>Order Total</Text>
+              <Text style={styles.infoValue}>LKR {safeData.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+            </View>
           </View>
         </View>
 
         {/* Delivery Address Section */}
-        <Text style={styles.sectionTitle}>Delivery Address</Text>
-        <View style={styles.section}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value}>{safeData.customerName}</Text>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitleDelivery}>Delivery </Text>
+          <Text style={styles.sectionTitleAddress}>Address</Text>
+        </View>
+        <View style={styles.addressSection}>
+          <View style={styles.addressRow}>
+            <Text style={styles.addressLabel}>Name:</Text>
+            <Text style={styles.addressValue}>{safeData.customerName}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Address:</Text>
-            <Text style={styles.value}>{safeData.address}</Text>
+          <View style={styles.addressRow}>
+            <Text style={styles.addressLabel}>Address:</Text>
+            <Text style={styles.addressValue}>{safeData.address}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>City:</Text>
-            <Text style={styles.value}>{safeData.city}</Text>
+          <View style={styles.addressRow}>
+            <Text style={styles.addressLabel}>City:</Text>
+            <Text style={styles.addressValue}>{safeData.city}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Country:</Text>
-            <Text style={styles.value}>{safeData.country}</Text>
+          <View style={styles.addressRow}>
+            <Text style={styles.addressLabel}>Country:</Text>
+            <Text style={styles.addressValue}>{safeData.country}</Text>
           </View>
         </View>
 
-        {/* Map Image Section */}
-        <Text style={styles.sectionTitle}>Delivery Location</Text>
-        <View style={{ alignItems: "center", marginBottom: 10 }}>
-          {safeData.mapUrl ? (
-            <View style={{ position: "relative" }}>
-              <Image 
-                src={safeData.mapUrl} 
-                style={styles.mapImage}
-                cache={false}
-              />
-              <View style={{ 
-                position: "absolute", 
-                bottom: 5, 
-                right: 5, 
-                backgroundColor: "rgba(0,0,0,0.7)", 
-                padding: "2px 6px",
-                borderRadius: 3
-              }}>
-                <Text style={{ fontSize: 8, color: "#ffffff" }}>📍 {safeData.address}</Text>
+        {/* Order Items Section */}
+        <View style={styles.itemsSection}>
+          {safeData && safeData.items && safeData.items.length > 0 ? (
+            safeData.items.map((item, index) => (
+              <View
+                key={`${item.id || index}-${item.color || ''}-${item.size || ''}`}
+                style={styles.itemCard}
+              >
+                {item.image ? (
+                  <Image
+                    src={item.image}
+                    style={styles.itemImage}
+                  />
+                ) : (
+                  <View style={styles.itemImagePlaceholder}>
+                    <Text style={{ fontSize: 8, color: "#9ca3af" }}>No Image</Text>
+                  </View>
+                )}
+                
+                <View style={styles.itemDetails}>
+                  <Text style={styles.itemName}>{item.name}</Text>
+                  
+                  <View style={styles.itemAttributes}>
+                    {item.color && item.color !== "No color selected" && (
+                      <View style={styles.attributeItem}>
+                        <Text style={styles.attributeLabel}>Color:</Text>
+                        <View
+                          style={[styles.colorSwatch, { backgroundColor: item.color }]}
+                        />
+                      </View>
+                    )}
+                    {item.size && (
+                      <View style={styles.attributeItem}>
+                        <Text style={styles.attributeLabel}>Size:</Text>
+                        <Text style={styles.attributeValue}>{item.size}</Text>
+                      </View>
+                    )}
+                    {item.quantity && (
+                      <View style={styles.attributeItem}>
+                        <Text style={styles.attributeLabel}>Qty:</Text>
+                        <Text style={styles.attributeValue}>{item.quantity}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                
+                {item.price && (
+                  <Text style={styles.itemPrice}>
+                    LKR {item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Text>
+                )}
               </View>
-            </View>
+            ))
           ) : (
-            <View style={{ 
-              width: 400,
-              height: 200,
-              backgroundColor: "#f8f9fa",
-              border: "2px solid #5CAF90",
-              borderRadius: 8,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 20
-            }}>
-              <Text style={{ fontSize: 16, color: "#5CAF90", marginBottom: 12, fontWeight: "bold" }}>
-                📍 Delivery Location
-              </Text>
-              <View style={{ 
-                backgroundColor: "#ffffff", 
-                padding: 12, 
-                borderRadius: 6, 
-                border: "1px solid #e0e0e0",
-                width: "100%",
-                maxWidth: 350
-              }}>
-                <Text style={{ fontSize: 12, color: "#333333", fontWeight: "bold", marginBottom: 4 }}>
-                  Customer Address:
-                </Text>
-                <Text style={{ fontSize: 11, color: "#666666", lineHeight: 1.4, textAlign: "center" }}>
-                  {safeData.address}{'\n'}
-                  {safeData.city}, {safeData.country}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 9, color: "#999999", marginTop: 8, fontStyle: "italic" }}>
-                Interactive map view not available
-              </Text>
-            </View>
+            <Text style={{ fontSize: 10, color: "#6b7280", textAlign: "center", padding: 20 }}>
+              No item details available for this order.
+            </Text>
           )}
         </View>
 
+        {/* Pricing Summary Section */}
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitlePricing}>Pricing </Text>
+          <Text style={styles.sectionTitleSummaryPricing}>Summary</Text>
+        </View>
+        <View style={styles.pricingSection}>
+          <View style={styles.pricingRow}>
+            <Text style={styles.pricingLabel}>Subtotal:</Text>
+            <Text style={styles.pricingValue}>LKR {safeData.subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+          </View>
+          {safeData.discount > 0 && (
+            <View style={styles.pricingRow}>
+              <Text style={styles.pricingLabel}>Discount:</Text>
+              <Text style={styles.pricingValue}>-LKR {safeData.discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+            </View>
+          )}
+          <View style={styles.pricingRow}>
+            <Text style={styles.pricingLabel}>Delivery Fee:</Text>
+            <Text style={styles.pricingValue}>LKR {safeData.deliveryFee.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+          </View>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Total Amount:</Text>
+            <Text style={styles.totalValue}>LKR {safeData.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+          </View>
+        </View>
+
+
         {/* Order Status Section */}
-        <Text style={styles.sectionTitle}>Order Status</Text>
-        <View style={styles.section}>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitleOrderStatus}>Order </Text>
+          <Text style={styles.sectionTitleStatus}>Status</Text>
+        </View>
+        <View style={styles.statusSection}>
           {safeData.statusHistory && safeData.statusHistory.length > 0 ? (
             safeData.statusHistory.map((item, idx) => (
               <View key={idx} style={styles.statusItem}>
                 <Text style={styles.statusText}>{item.status}</Text>
                 <Text style={styles.statusDate}>{item.date}</Text>
-                <Text style={styles.statusCompleted}>✓</Text>
+                <Text style={styles.statusIcon}>✓</Text>
               </View>
             ))
           ) : (
             <View style={styles.statusItem}>
               <Text style={styles.statusText}>Order Confirmed</Text>
               <Text style={styles.statusDate}>{safeData.orderDate}</Text>
-              <Text style={styles.statusCompleted}>✓</Text>
+              <Text style={styles.statusIcon}>✓</Text>
             </View>
           )}
           
           {/* Current Status */}
-          <View style={[styles.statusItem, { backgroundColor: "#e8f5e8", marginTop: 8 }]}>
-            <Text style={[styles.statusText, { fontWeight: "bold" }]}>
+          <View style={styles.currentStatusItem}>
+            <Text style={styles.currentStatusText}>
               Current Status: {safeData.currentStatus?.delivery_status || safeData.deliveryStatus}
             </Text>
-            <Text style={styles.statusDate}>
+            <Text style={styles.currentStatusDate}>
               {safeData.currentStatus?.delivery_date 
                 ? new Date(safeData.currentStatus.delivery_date).toLocaleDateString()
                 : "Pending"
               }
             </Text>
-            <Text style={styles.statusCompleted}>Active</Text>
+            <Text style={styles.currentStatusIcon}>●</Text>
           </View>
           
           {/* Estimated Delivery Details */}
-          <View style={[styles.row, { marginTop: 10 }]}>
-            <Text style={{ ...styles.label, width: "50%", fontWeight: "bold" }}>
+          <View style={styles.estimatedDelivery}>
+            <Text style={styles.estimatedDeliveryLabel}>
               Estimated Delivery:
             </Text>
-            <Text style={{ ...styles.value, width: "50%" }}>
+            <Text style={styles.estimatedDeliveryValue}>
               {safeData.estimatedDeliveryDate
                 ? safeData.estimatedDeliveryDate
                 : "Date not available"}
             </Text>
           </View>
         </View>
-        {/* Thank You Message */}
-          <Text style={styles.thankYouText}>Thanks For Using Asipiya Services</Text>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.thankYouText}>Thank You For Using Asipiya Services</Text>
+          <Text style={styles.tagline}>Your Trusted Shopping Destination</Text>
+        </View>
       </Page>
     </Document>
   );
@@ -543,6 +944,7 @@ useEffect(() => {
       const pdfData = {
         ...orderData,
         mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+        preparedItems: prepareOrderItems(orderData.orderItems),  // ⬅ add this
         statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
           ? orderData.trackingInfo.status_history.map((item, index) => ({
               status: item.status_to || "Status Update",
@@ -592,7 +994,40 @@ useEffect(() => {
       setIsGenerating(false);
     }
   };
-
+// Prepare order items for OrderDetails component
+  const prepareOrderItems = (data) => {
+    console.log(125698,data)
+    if (!data) {
+      return [];
+    }
+    
+    return data.map((item, index) => {
+      
+      // Handle null Rate and Qty by calculating from totals
+      let effectiveRate = item.Rate;
+      let effectiveQty = item.Qty;
+      
+      if (!effectiveRate || !effectiveQty) {
+        // If Rate or Qty is null, calculate from Total_Amount
+        // Assume quantity 1 if not available and use Total_Amount as price
+        effectiveQty = item.Qty || 1;
+        effectiveRate = item.Total_Amount ? parseFloat(item.Total_Amount) / effectiveQty : 0;
+      }
+      
+      return {
+        id: item.Product_Variations_idProduct_Variations,
+        productId: item.Product_Variations_idProduct_Variations,
+        name: item.product_name || 'Unknown Product',
+        image: item.product_image || null,
+        price: effectiveRate,
+        quantity: effectiveQty,
+        color: item.Colour,
+        size: item.Size,
+        marketPrice: item.Total && effectiveQty ? parseFloat(item.Total) / effectiveQty : effectiveRate, // Calculate market price from Total (before discount)
+        total: item.Total_Amount || item.Total || 0,
+      };
+    });
+  };
   const handleEmailShare = async () => {
     try {
       setIsGenerating(true);
@@ -602,7 +1037,9 @@ useEffect(() => {
       // Prepare data synchronously (same as download function)
       const pdfData = {
         ...orderData,
+    
         mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+        preparedItems: prepareOrderItems(orderData.orderItems),  // ⬅ add this
         statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
           ? orderData.trackingInfo.status_history.map((item, index) => ({
               status: item.status_to || "Status Update",
@@ -626,7 +1063,6 @@ useEffect(() => {
             })
           : "Date not available"
       };
-
       // Generate PDF blob
       const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
 
@@ -678,7 +1114,7 @@ useEffect(() => {
       setIsGenerating(false);
     }
   };
-
+ 
   // Hide scrollbar when modal is open
   useEffect(() => {
     if (showEmailModal) {
