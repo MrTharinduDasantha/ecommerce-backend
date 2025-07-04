@@ -296,7 +296,7 @@ const Checkout = () => {
       clearCart()
       setTimeout(() => {
         setShowOrderSuccessMessage(false)
-        navigate(`/order-tracking/${orderId}`)
+        navigate(`/track-order/${orderId}`)
       }, 1500)
     } catch (error) {
       console.error("Error creating order: ", error)

@@ -9,7 +9,11 @@ import {
   TbBell,
 } from "react-icons/tb";
 import { IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
-import { MdOutlineFestival, MdOutlineDiscount } from "react-icons/md";
+import {
+  MdOutlineFestival,
+  MdOutlineDiscount,
+  MdOutlineReviews,
+} from "react-icons/md"
 import { IoSettingsOutline } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 
@@ -35,6 +39,7 @@ const Sidebar = ({ isSidebarOpen }) => {
     location.pathname.includes("admin-logs");
   const isManageSettingsActive = location.pathname.includes("settings/");
   const isManageOrdersActive = location.pathname.includes("orders");
+  const isManageReviewsActive = location.pathname.includes("reviews")
   const isNotificationsActive = location.pathname.includes("notifications");
 
   // Toggle submenu functions
@@ -446,6 +451,24 @@ const Sidebar = ({ isSidebarOpen }) => {
             </NavLink>
           </li>
 
+          {/* Manage Reviews */}
+          <li>
+            <NavLink
+              to="reviews"
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-md px-3 py-2 text-xs md:text-sm transition-colors
+                hover:bg-[#5CAF90] hover:text-white ${
+                  isActive || isManageReviewsActive
+                    ? "bg-[#5CAF90] text-primary-content font-medium"
+                    : "text-base-content/85"
+                }`
+              }
+            >
+              <MdOutlineReviews className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              Manage Reviews
+            </NavLink>
+          </li>
+
           {/* Notifications */}
           <li>
             <NavLink
@@ -481,7 +504,7 @@ const Sidebar = ({ isSidebarOpen }) => {
         </ul>
       </div>
     </aside>
-  );
+  )
 };
 
 export default Sidebar;

@@ -107,7 +107,7 @@ const CurrentOrders = () => {
 
   // Handle view order button click
   const handleViewOrder = (orderId) => {
-    navigate(`/order-tracking/${orderId}`);
+    navigate(`/track-order/${orderId}`);
   };
 
   return (
