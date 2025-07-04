@@ -13,7 +13,7 @@ const addProductReview = async (customer_id, product_id, rating, comment) => {
 const addOrderReview = async (customer_id, order_id, rating, comment) => {
   const [result] = await pool.query(
     "INSERT INTO Order_Review (customer_id, order_id, rating, comment, status) VALUES (?, ?, ?, ?, ?)",
-    [customer_id, order_id, rating, comment, "active"]
+    [customer_id, order_id, rating, comment, "inactive"]
   )
   return result.insertId
 }
@@ -28,11 +28,26 @@ const getByProductId = async product_id => {
 }
 
 //Get reviews by order id
-const getByOrdertId = async order_id => {
+const getByOrderId = async order_id => {
   const [result] = await pool.query(
     "SELECT * FROM Order_Review WHERE order_id=?",
     [order_id]
   )
+  return result
+}
+
+//Get review by review id
+const getByReviewId = async review_id => {
+  const [result] = await pool.query(
+    "SELECT * FROM Order_Review WHERE review_id=?",
+    [review_id]
+  )
+  return result
+}
+
+//Get all order reviews
+const getAll = async () => {
+  const [result] = await pool.query("SELECT * FROM Order_Review")
   return result
 }
 
@@ -55,6 +70,21 @@ const updateByOrderId = async (order_id, rating, comment) => {
   return { message: "Order Review Updated" }
 }
 
+//Update order review status
+const updateStatus = async review_id => {
+  const [currentStatus] = await pool.query(
+    "SELECT status FROM Order_Review WHERE review_id=?",
+    [review_id]
+  )
+  if (currentStatus.length === 0) throw new Error("Review not found")
+  const newStatus = currentStatus[0].status === "active" ? "inactive" : "active"
+  await pool.query("UPDATE Order_Review SET status = ? WHERE review_id=?", [
+    newStatus,
+    review_id,
+  ])
+  return { message: `Review status updated to ${newStatus}` }
+}
+
 //Delete order review
 const deleteByOrderId = async order_id => {
   await pool.query("DELETE FROM Order_Review WHERE order_id=?", [order_id])
@@ -65,7 +95,10 @@ module.exports = {
   addProductReview,
   addOrderReview,
   getByProductId,
-  getByOrdertId,
+  getByOrderId,
+  getByReviewId,
   updateByOrderId,
   deleteByOrderId,
+  getAll,
+  updateStatus,
 }
