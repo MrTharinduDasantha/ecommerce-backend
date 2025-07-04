@@ -26,9 +26,7 @@ import { CartProvider } from "./context/CartContext";
 import AllCategories from "./components/Pages/Category";
 import AllProducts from "./components/AllProducts";
 import SubCategory from "./components/Pages/SubCategory";
-
 import FilteredProducts from "./components/FilteredProducts";
-
 import ScrollToTop from "./components/ScrollToTop";
 import LegalPolicy from "./components/LegalPolicy";
 import PrivacyPolicy from "./components/PrivacyPolicy";
@@ -75,14 +73,11 @@ const App = () => {
           />
           <Route path="/AllProducts" element={<AllProducts />} />
           <Route path="/subcategory/:id" element={<SubCategory />} />
-
           <Route path="/filtered-products" element={<FilteredProducts />} />
-
           <Route path="/legal-policy" element={<LegalPolicy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/security-policy" element={<SecurityPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-
         </Routes>
         <ScrollToTop />
         <Footer />
