@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { formatPrice } from "./FormatPrice";
+import { calculateTotalDiscount, getBestDiscountLabel, getFinalPrice } from "./CalculateDiscount";
 
 const ProductCard = ({
   image,
@@ -9,31 +10,22 @@ const ProductCard = ({
   oldPrice,
   id,
   historyStatus,
-  activeDiscount 
+  activeDiscount,
+  product // Full product object with discounts and eventDiscounts
 }) => {
-  // Calculate the actual price after applying active discount
-  const calculateDiscountedPrice = () => {
-    if (!activeDiscount) return price;
-    
-    if (activeDiscount.Discount_Type === "fixed") {
-      return price - parseFloat(activeDiscount.Discount_Value);
-    } else if (activeDiscount.Discount_Type === "percentage") {
-      return price * (1 - parseFloat(activeDiscount.Discount_Value) / 100);
-    }
-    return price;
+  // Create product object for discount calculation
+  const productForCalculation = product || {
+    id,
+    Selling_Price: price,
+    Market_Price: oldPrice,
+    discounts: activeDiscount ? [activeDiscount] : [],
+    eventDiscounts: []
   };
 
-  const discountedPrice = calculateDiscountedPrice();
-  
-  // Calculate the discount percentage based on oldPrice and discountedPrice
-  const calculateActualDiscountPercentage = () => {
-    if (!oldPrice || oldPrice <= discountedPrice) return "0 % OFF";
-    
-    const discount = ((oldPrice - discountedPrice) / oldPrice) * 100;
-    return `${Math.round(discount)} % OFF`;
-  };
-
-  const actualDiscountLabel = oldPrice ? calculateActualDiscountPercentage() : "0% OFF";
+  // Calculate total discount information
+  const discountInfo = calculateTotalDiscount(productForCalculation);
+  const finalPrice = discountInfo.finalPrice;
+  const bestDiscountLabel = getBestDiscountLabel(productForCalculation);
 
   return (
     <Link to={`/product-page/${id}`} className="block w-full h-full">
@@ -49,9 +41,9 @@ const ProductCard = ({
               New
             </span>
           )}
-          {actualDiscountLabel !== "0 % OFF" && (
+          {bestDiscountLabel && (
             <div className="absolute top-1 right-1 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded">
-              {actualDiscountLabel}
+              {bestDiscountLabel}
             </div>
           )}
         </div>
@@ -64,14 +56,24 @@ const ProductCard = ({
           </h3>
 
           <div className="mb-2">
-            {oldPrice && (
+            {discountInfo.hasDiscounts && discountInfo.marketPrice > discountInfo.originalPrice && (
               <div className="text-[13.33px] text-[#5E5E5E] line-through font-semibold">
-                {formatPrice(oldPrice)}
+                {formatPrice(`LKR ${discountInfo.marketPrice.toFixed(2)}`)}
               </div>
             )}
             <div className="text-[14px] font-semibold text-black">
-              {formatPrice(discountedPrice)}
+              {formatPrice(`LKR ${finalPrice.toFixed(2)}`)}
             </div>
+            {discountInfo.activeDiscountAmount > 0 && (
+              <div className="text-[11px] text-green-600 font-medium">
+                Save LKR {discountInfo.activeDiscountAmount.toFixed(2)}
+              </div>
+            )}
+            {discountInfo.discounts.length > 0 && (
+              <div className="text-[10px] text-blue-600">
+                {discountInfo.discounts.length} discount{discountInfo.discounts.length > 1 ? 's' : ''} applied
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -14,6 +14,8 @@ const adminRoutes = require("./routes/admin/user.routes");
 const notificationRoutes = require("./routes/admin/notification.routes");
 const customerAuthRoutes = require("./routes/customer/auth.routes");
 const customerAddressRoutes = require("./routes/customer/address.routes");
+const customerReviewRoutes = require("./routes/customer/review.routes")
+const adminReviewRoutes = require('./routes/admin/review.routes')
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
 
@@ -67,7 +69,9 @@ app.use("/api/orders", customerOrderRoutes); // Use the customer order routes
 app.use("/api/customer-addresses", customerAddressRoutes); // Provide a dedicated route for customer addresses
 app.use("/api/customers", adminCustomerRoutes); // Restoring previous functionality for /api/customers
 app.use("/admin/orders", orderRoutes); // Use the admin order routes
-app.use("/admin/notifications", notificationRoutes); // Use the notification routes
+app.use("/admin/notifications", notificationRoutes) // Use the notification routes
+app.use("/api/reviews", customerReviewRoutes) // Use the customer review routes
+app.use("/api/admin/reviews", adminReviewRoutes) // Use the customer review routes
 
 // Socket.io connection
 io.on("connection", (socket) => {

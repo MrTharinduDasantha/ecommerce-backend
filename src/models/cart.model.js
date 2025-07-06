@@ -102,7 +102,7 @@ async function addProductToCart(
     [productVariation[0].Product_idProduct]
   );
 
-  // Check for active discounts
+  // Check for active normal discounts
   const [discounts] = await pool.query(
     `
       SELECT * FROM Discounts 
@@ -113,11 +113,25 @@ async function addProductToCart(
     [product[0].idProduct]
   );
 
+  // Check for active event discounts
+  const [eventDiscounts] = await pool.query(
+    `
+      SELECT ed.*
+      FROM Event_Discounts ed
+      JOIN Event_has_Product ehp ON ed.Event_idEvent = ehp.Event_idEvent
+      WHERE ehp.Product_idProduct = ?
+        AND ed.Status = 'active'
+        AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d')
+    `,
+    [product[0].idProduct]
+  );
+
   let discountId = null;
   let discountPercentage = 0;
   let discountAmount = 0;
+  let totalDiscountAmount = 0;
 
-  // Calculate discount amount if applicable
+  // Calculate normal discount amount if applicable
   if (discounts.length > 0) {
     discountId = discounts[0].idDiscounts;
     if (discounts[0].Discount_Type === "percentage") {
@@ -126,7 +140,29 @@ async function addProductToCart(
     } else {
       discountAmount = discounts[0].Discount_Value * qty;
     }
+    totalDiscountAmount += discountAmount;
   }
+
+  // Calculate event discount amount if applicable
+  if (eventDiscounts.length > 0) {
+    for (const eventDiscount of eventDiscounts) {
+      // Check if this product is included in the event discount
+      const productIds = JSON.parse(eventDiscount.Product_Ids || "[]");
+      if (productIds.includes(product[0].idProduct)) {
+        let eventDiscountAmount = 0;
+        if (eventDiscount.Discount_Type === "percentage") {
+          eventDiscountAmount =
+            (rate * qty * eventDiscount.Discount_Value) / 100;
+        } else {
+          eventDiscountAmount = eventDiscount.Discount_Value * qty;
+        }
+        totalDiscountAmount += eventDiscountAmount;
+      }
+    }
+  }
+
+  // Use total discount amount for calculations
+  discountAmount = totalDiscountAmount;
 
   const totalAmount = rate * qty;
   const netAmount = totalAmount - discountAmount;
@@ -222,24 +258,62 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
   let discountAmount = 0;
   let discountPercentage = 0;
 
-  // Recalculate discount if applicable
+  // Get product ID for this variation
+  const [productVariation] = await pool.query(
+    `SELECT Product_idProduct FROM Product_Variations WHERE idProduct_Variations = ?`,
+    [productVariationId]
+  );
+
+  let totalDiscountAmount = 0;
+
+  // Recalculate normal discount if applicable
   if (cartItem[0].Discounts_idDiscounts) {
     const [discount] = await pool.query(
-      `
-        SELECT * FROM Discounts WHERE idDiscounts = ?
-      `,
+      `SELECT * FROM Discounts WHERE idDiscounts = ?`,
       [cartItem[0].Discounts_idDiscounts]
     );
 
     if (discount.length > 0) {
       if (discount[0].Discount_Type === "percentage") {
         discountPercentage = discount[0].Discount_Value;
-        discountAmount = (totalAmount * discountPercentage) / 100;
+        totalDiscountAmount = (totalAmount * discountPercentage) / 100;
       } else {
-        discountAmount = discount[0].Discount_Value * qty;
+        totalDiscountAmount = discount[0].Discount_Value * qty;
       }
     }
   }
+
+  // Recalculate event discounts
+  if (productVariation.length > 0) {
+    const productId = productVariation[0].Product_idProduct;
+    const [eventDiscounts] = await pool.query(
+      `
+        SELECT ed.*
+        FROM Event_Discounts ed
+        JOIN Event_has_Product ehp ON ed.Event_idEvent = ehp.Event_idEvent
+        WHERE ehp.Product_idProduct = ?
+          AND ed.Status = 'active'
+          AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d')
+      `,
+      [productId]
+    );
+
+    for (const eventDiscount of eventDiscounts) {
+      const productIds = JSON.parse(eventDiscount.Product_Ids || "[]");
+      if (productIds.includes(productId)) {
+        let eventDiscountAmount = 0;
+        if (eventDiscount.Discount_Type === "percentage") {
+          eventDiscountAmount =
+            (totalAmount * eventDiscount.Discount_Value) / 100;
+        } else {
+          eventDiscountAmount = eventDiscount.Discount_Value * qty;
+        }
+        totalDiscountAmount += eventDiscountAmount;
+      }
+    }
+  }
+
+  discountAmount = totalDiscountAmount;
 
   const netAmount = totalAmount - discountAmount;
 

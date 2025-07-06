@@ -5,7 +5,7 @@ import {
   updateOrderStatus,
   updatePaymentStatus,
 } from "../api/orders";
-import { FaEye, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import Pagination from "./common/Pagination";
@@ -181,7 +181,9 @@ const OrderList = () => {
                     <th className="font-semibold p-3 w-[10%]">Order Date</th>
                     <th className="font-semibold p-3 w-[15%]">Customer Name</th>
                     <th className="font-semibold p-3 w-[10%]">Order Amount</th>
-                    <th className="font-semibold p-3 w-[10%]">Delivery Amount</th>
+                    <th className="font-semibold p-3 w-[10%]">
+                      Delivery Amount
+                    </th>
                     <th className="font-semibold p-3 w-[10%]">Total Amount</th>
                     <th className="font-semibold p-3 w-[10%]">Delivery Date</th>
                     <th className="font-semibold p-3 w-[10%]">Order Status</th>
@@ -202,9 +204,21 @@ const OrderList = () => {
                         {new Date(order.Date_Time).toLocaleDateString()}
                       </td>
                       <td className="p-3">{order.Full_Name}</td>
-                      <td className="p-3">Rs. {order.Total_Amount}</td>
-                      <td className="p-3">Rs. {order.Delivery_Charges}</td>
-                      <td className="p-3">Rs. {order.Net_Amount}</td>
+                      <td className="p-3">
+                        LKR{" "}
+                        {parseFloat(order.Total_Amount).toLocaleString(
+                          "en-US",
+                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                        )}
+                      </td>
+                      <td className="p-3">LKR 500.00</td>
+                      <td className="p-3">
+                        LKR{" "}
+                        {(parseFloat(order.Total_Amount) + 500).toLocaleString(
+                          "en-US",
+                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                        )}
+                      </td>
                       <td className="p-3">
                         {order.Delivery_Date
                           ? new Date(order.Delivery_Date).toLocaleDateString()
@@ -320,8 +334,8 @@ const OrderList = () => {
             {/* Mobile view */}
             <div className="sm:hidden">
               {filteredOrders.map((order) => (
-                <div 
-                  key={order.idOrder} 
+                <div
+                  key={order.idOrder}
                   className="bg-white p-4 border-b cursor-pointer hover:bg-gray-50"
                   onClick={() => handleViewOrder(order.idOrder)}
                 >
@@ -360,13 +374,21 @@ const OrderList = () => {
                     </span>
                   </div>
                   <div className="text-sm text-gray-500 mb-1">
-                    Product Amount: Rs. {order.Total_Amount}
+                    Product Amount: LKR{" "}
+                    {parseFloat(order.Total_Amount).toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </div>
                   <div className="text-sm text-gray-500 mb-1">
-                    Delivery: Rs. {order.Delivery_Charges}
+                    Delivery: LKR 500.00
                   </div>
                   <div className="text-sm text-gray-500 mb-2">
-                    Total Amount: Rs. {order.Net_Amount}
+                    Total Amount: LKR{" "}
+                    {(parseFloat(order.Total_Amount) + 500).toLocaleString(
+                      "en-US",
+                      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                    )}
                   </div>
                   <div className="text-sm text-gray-500 mb-2">
                     Date: {new Date(order.Date_Time).toLocaleString()}
@@ -379,7 +401,10 @@ const OrderList = () => {
                   </div>
 
                   {/* Payment status and order status controls */}
-                  <div className="grid grid-cols-2 gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="grid grid-cols-2 gap-2 mb-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div>
                       <div className="text-xs text-gray-700 mb-1">
                         Order Status:
@@ -435,7 +460,7 @@ const OrderList = () => {
         )}
 
         {/* Pagination */}
-        <Pagination 
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
