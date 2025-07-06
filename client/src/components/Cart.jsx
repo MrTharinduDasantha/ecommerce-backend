@@ -1,597 +1,527 @@
-import { useState, useEffect, useCallback } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { Apple, Delete } from "@mui/icons-material"
-import ProductCard from "./ProductCard"
-import { useCart } from "../context/CartContext"
-import { getProducts } from "../api/product"
-import { formatPrice } from "./FormatPrice"
-import { calculateDiscountPercentage } from "./CalculateDiscount"
+const pool = require("../config/database");
 
-const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, loading, error } =
-    useCart()
+// ------------------------
+// Cart Related Functions
+// ------------------------
 
-  const [selectedItems, setSelectedItems] = useState([])
-  const [relatedProducts, setRelatedProducts] = useState([])
-  const [items, setItems] = useState([])
-  const location = useLocation()
-  const navigate = useNavigate()
-  const selectedProduct = location.state?.selectedProduct
+// Create a new cart for a customer
+async function createCart(customerId) {
+  const query = `
+    INSERT INTO Cart (Customer_idCustomer, Total_Items, Total_Amount)
+    VALUES (?, 0, 0.00)
+  `;
 
-  const handleProductClick = productId => {
-    window.scrollTo(0, 0)
-    navigate(`/product-page/${productId}`)
-  }
-
-  // Initialize selected items when cart items change
-  useEffect(() => {
-    setSelectedItems(items.map(item => item.id))
-  }, [items])
-
-  useEffect(() => {
-    setItems(cartItems)
-  }, [cartItems])
-
-  // Calculate total price based on selected items only
-  const calculateSelectedTotal = useCallback(() => {
-    return items
-      .filter(item => selectedItems.includes(item.id))
-      .reduce((total, item) => total + item.price * item.quantity, 0)
-  }, [items, selectedItems])
-
-  const handleQuantityChange = (itemId, newQuantity) => {
-    setItems(prev =>
-      prev.map(item =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    )
-  }
-
-  const fetchRelatedProducts = useCallback(async () => {
-    try {
-      const response = await getProducts()
-      if (response.message === "Products fetched successfully") {
-        const filteredRelated =
-          items.length > 0
-            ? response.products
-                .filter(p => !items.some(item => item.id === p.idProduct))
-                .slice(0, 5)
-            : response.products.slice(0, 5)
-
-        setRelatedProducts(
-          filteredRelated.map(product => ({
-            id: product.idProduct,
-            name: product.Description,
-            image: product.Main_Image_Url,
-            price: product.Selling_Price,
-            oldPrice: product.Market_Price,
-            weight: product.SIH || "N/A",
-            color: product.variations?.[0]?.Colour || "N/A",
-            category: product.subcategories?.[0]?.Description || "",
-          }))
-        )
-      }
-    } catch (error) {
-      console.error("Error fetching related products:", error)
-    }
-  }, [items])
-
-  useEffect(() => {
-    fetchRelatedProducts()
-  }, [fetchRelatedProducts])
-
-  const handleCheckout = useCallback(async () => {
-    const updatePromises = items
-      .filter(item => selectedItems.includes(item.id))
-      .map(item => {
-        const originalItem = cartItems.find(ci => ci.id === item.id)
-        if (originalItem && originalItem.quantity !== item.quantity)
-          return updateQuantity(item.id, item.quantity)
-        return Promise.resolve()
-      })
-    try {
-      await Promise.all(updatePromises)
-      const selectedCartItems = items
-        .filter(item => selectedItems.includes(item.id))
-        .map(item => ({
-          ...item,
-        }))
-
-      navigate("/checkout", {
-        state: { selectedItems: selectedCartItems, source: "cart" },
-      })
-    } catch (error) {
-      console.error("Error updating quantities before checkout:", error)
-    }
-  }, [items, selectedItems, navigate, cartItems, updateQuantity])
-
-  // Toggle item selection
-  const toggleItemSelection = itemId => {
-    setSelectedItems(prev =>
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
-    )
-  }
-
-  // Toggle all items selection
-  const toggleSelectAll = () => {
-    if (selectedItems.length === items.length) {
-      setSelectedItems([])
-    } else {
-      setSelectedItems(items.map(item => item.id))
-    }
-  }
-
-  // Highlight selected product if exists
-  useEffect(() => {
-    if (selectedProduct && items.length > 0) {
-      const productElement = document.getElementById(
-        `product-${selectedProduct.id}`
-      )
-      if (productElement) {
-        productElement.scrollIntoView({ behavior: "smooth", block: "center" })
-        productElement.classList.add("highlight-product")
-        setTimeout(() => {
-          productElement.classList.remove("highlight-product")
-        }, 2000)
-      }
-    }
-  }, [selectedProduct, items])
-
-  const paymentLogos = [
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg",
-      alt: "Visa",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg",
-      alt: "Mastercard",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg",
-      alt: "American Express",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg",
-      alt: "PayPal",
-    },
-    {
-      icon: <Apple sx={{ fontSize: 16, color: "#9CA3AF" }} />,
-      alt: "Apple Pay",
-    },
-  ]
-
-  if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5CAF90] mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading cart...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-red-500">
-        <p>{error}</p>
-      </div>
-    )
-  }
-
-  return (
-    <>
-      <div className="min-h-screen bg-white w-full flex flex-col">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-3 mt-6">
-          Cart <span className="text-[#5CAF90]">Page</span>
-        </h2>
-        <div className="flex-1 mt-[10px]">
-          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {/* Cart Header */}
-            <div className="flex items-center gap-2 mb-6">
-              <h1 className="text-xl">
-                Your Cart: {items.length} item
-                {items.length !== 1 ? "s" : ""}
-              </h1>
-            </div>
-
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Cart Items Section */}
-              <div className="flex-1">
-                {items.length === 0 ? (
-                  <div className="text-gray-500 text-lg text-center py-24.5 bg-white rounded-lg border-2 border-gray-200 mt-8.5">
-                    Your cart is empty
-                  </div>
-                ) : (
-                  <div className="space-y-6 my-auto rounded-lg">
-                    {/* Select All checkbox */}
-                    <div className="flex items-center mb-4">
-                      <input
-                        type="checkbox"
-                        checked={
-                          selectedItems.length === items.length &&
-                          items.length > 0
-                        }
-                        onChange={toggleSelectAll}
-                        className="h-4 w-4 rounded border-gray-300 focus:ring-[#5CAF90] text-[#5CAF90]"
-                      />
-                      <label className="ml-3 text-sm text-gray-700 font-bold">
-                        Select all ({selectedItems.length}/{items.length})
-                      </label>
-                    </div>
-
-                    {items.map(item => (
-                      <div key={item.id} className="flex items-start gap-3">
-                        {/* Checkbox */}
-                        <div className="pt-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedItems.includes(item.id)}
-                            onChange={() => toggleItemSelection(item.id)}
-                            className="h-4 w-4 rounded border-gray-300 focus:ring-[#5CAF90] text-[#5CAF90]"
-                          />
-                        </div>
-
-                        {/* Product container */}
-                        <div
-                          id={`product-${item.id}`}
-                          className={`flex-1 border border-gray-200 rounded-lg p-4 ${
-                            selectedProduct?.id === item.id
-                              ? "highlight-product"
-                              : ""
-                          }`}
-                        >
-                          {/* Mobile & Tablet Layout */}
-                          <div className="md:hidden">
-                            <div className="flex gap-4 mb-4">
-                              <Link
-                                to={`/product-page/${item.productId}`}
-                                className="flex-shrink-0"
-                              >
-                                <img
-                                  src={item.image}
-                                  alt={item.name}
-                                  className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg"
-                                  loading="lazy"
-                                />
-                              </Link>
-                              <div className="flex-1 min-w-0">
-                                <Link to={`/product-page/${item.productId}`}>
-                                  <h3 className="font-medium text-sm sm:text-base line-clamp-2 mb-2">
-                                    {item.name}
-                                  </h3>
-                                </Link>
-
-                                {/* Price section for mobile */}
-                                <div className="mb-2">
-                                  <p className="text-[#5E5E5E] line-through text-sm">
-                                    {formatPrice(item.mktPrice)}
-                                  </p>
-                                  <p className="text-[#1D372E] font-semibold text-base">
-                                    {formatPrice(item.price)}
-                                  </p>
-                                </div>
-
-                                {/* Color and Size for mobile */}
-                                {(item.color || item.size) && (
-                                  <div className="space-y-1 mb-3">
-                                    {item.color &&
-                                      item.color !== "No color selected" && (
-                                        <div className="flex items-center space-x-2">
-                                          <span className="text-xs text-gray-600 font-semibold">
-                                            Color:
-                                          </span>
-                                          <div
-                                            className="w-3 h-3 rounded-full border border-gray-300"
-                                            style={{
-                                              backgroundColor: item.color,
-                                            }}
-                                          />
-                                        </div>
-                                      )}
-                                    {item.size &&
-                                      item.size !== "No size selected" && (
-                                        <div className="flex items-center space-x-2">
-                                          <span className="text-xs text-gray-600 font-semibold">
-                                            Size:
-                                          </span>
-                                          <span className="text-xs font-medium">
-                                            {item.size}
-                                          </span>
-                                        </div>
-                                      )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Quantity, Total, and Delete for mobile */}
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                {/* Quantity Selector */}
-                                <div className="border rounded-lg px-3 py-1 flex items-center gap-2">
-                                  <button
-                                    className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
-                                    onClick={() => {
-                                      const newQuantity = Math.max(
-                                        1,
-                                        item.quantity - 1
-                                      )
-                                      handleQuantityChange(item.id, newQuantity)
-                                    }}
-                                    disabled={item.availableQty <= 0}
-                                  >
-                                    -
-                                  </button>
-                                  <span className="text-sm font-medium min-w-[20px] text-center">
-                                    {item.quantity}
-                                  </span>
-                                  <button
-                                    className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
-                                    onClick={() => {
-                                      const newQuantity = Math.min(
-                                        item.quantity + 1,
-                                        item.availableQty
-                                      )
-                                      handleQuantityChange(item.id, newQuantity)
-                                    }}
-                                    disabled={
-                                      item.quantity >= item.availableQty ||
-                                      item.availableQty <= 0
-                                    }
-                                  >
-                                    +
-                                  </button>
-                                </div>
-
-                                {/* Total Price */}
-                                <div>
-                                  <p className="text-[#1D372E] font-semibold text-base">
-                                    {formatPrice(item.price * item.quantity)}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Delete Button */}
-                              <button
-                                onClick={() => removeFromCart(item.id)}
-                                className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-full hover:bg-red-50 cursor-pointer"
-                                aria-label="Remove item"
-                              >
-                                <Delete sx={{ fontSize: 20 }} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Desktop Layout */}
-                          <div className="hidden md:grid md:grid-cols-6 md:gap-4 md:items-center md:text-center">
-                            {/* Product Info */}
-                            <div className="md:col-span-2">
-                              <Link
-                                to={`/product-page/${item.productId}`}
-                                className="flex items-center space-x-4"
-                                onClick={() =>
-                                  handleProductClick(item.productId)
-                                }
-                              >
-                                <img
-                                  src={item.image}
-                                  alt={item.name}
-                                  className="w-20 h-20 lg:w-25 lg:h-25 object-cover rounded-lg flex-shrink-0"
-                                  loading="lazy"
-                                />
-                                <div className="flex flex-col text-left min-w-0">
-                                  <h3 className="font-medium line-clamp-2 text-sm lg:text-base">
-                                    {item.name}
-                                  </h3>
-
-                                  {/* Color and Size for desktop */}
-                                  {(item.color || item.size) && (
-                                    <div className="mt-2 space-y-1">
-                                      {item.color &&
-                                        item.color !== "No color selected" && (
-                                          <div className="flex items-center space-x-2">
-                                            <span className="text-xs text-gray-600 font-semibold">
-                                              Color:
-                                            </span>
-                                            <div
-                                              className="w-4 h-4 rounded-full border border-gray-300"
-                                              style={{
-                                                backgroundColor: item.color,
-                                              }}
-                                            />
-                                          </div>
-                                        )}
-                                      {item.size &&
-                                        item.size !== "No size selected" && (
-                                          <div className="flex items-center space-x-2">
-                                            <span className="text-xs text-gray-600 font-semibold">
-                                              Size:
-                                            </span>
-                                            <span className="text-xs font-medium">
-                                              {item.size}
-                                            </span>
-                                          </div>
-                                        )}
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                            </div>
-
-                            {/* Price */}
-                            <div>
-                              <p className="text-[#5E5E5E] line-through text-sm font-semibold">
-                                {formatPrice(item.mktPrice)}
-                              </p>
-                              <p className="text-[#1D372E] font-semibold">
-                                {formatPrice(item.price)}
-                              </p>
-                            </div>
-
-                            {/* Quantity Selector */}
-                            <div className="flex justify-center">
-                              <div className="border rounded-lg px-3 py-1 inline-flex items-center gap-2">
-                                <button
-                                  className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
-                                  onClick={() => {
-                                    const newQuantity = Math.max(
-                                      1,
-                                      item.quantity - 1
-                                    )
-                                    handleQuantityChange(item.id, newQuantity)
-                                  }}
-                                  disabled={item.availableQty <= 0}
-                                >
-                                  -
-                                </button>
-                                <span className="font-medium min-w-[20px] text-center">
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  className="text-lg cursor-pointer w-6 h-6 flex items-center justify-center"
-                                  onClick={() => {
-                                    const newQuantity = Math.min(
-                                      item.quantity + 1,
-                                      item.availableQty
-                                    )
-                                    handleQuantityChange(item.id, newQuantity)
-                                  }}
-                                  disabled={
-                                    item.quantity >= item.availableQty ||
-                                    item.availableQty <= 0
-                                  }
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Total */}
-                            <div>
-                              <p className="text-[#1D372E] font-semibold">
-                                {formatPrice(item.price * item.quantity)}
-                              </p>
-                            </div>
-
-                            {/* Delete */}
-                            <div>
-                              <button
-                                onClick={() => removeFromCart(item.id)}
-                                className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50 cursor-pointer"
-                                aria-label="Remove item"
-                              >
-                                <Delete sx={{ fontSize: 20 }} />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Order Summary Card */}
-              <div className="lg:w-80 bg-white rounded-lg border border-gray-200 p-6 h-fit lg:sticky lg:top-0 lg:ml-auto mt-8.5">
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-lg font-semibold">Total</span>
-                  <span className="text-lg font-semibold">
-                    {formatPrice(calculateSelectedTotal())}
-                  </span>
-                </div>
-
-                <Link
-                  to="/"
-                  className="block w-full bg-[#1D372E] text-white text-center py-3 rounded hover:bg-[#1D372E] transition-colors mb-4"
-                >
-                  ← Keep Shopping
-                </Link>
-
-                {items.length > 0 && (
-                  <button
-                    onClick={handleCheckout}
-                    disabled={selectedItems.length === 0}
-                    className={`w-full text-white cursor-pointer text-center py-3 rounded transition-colors mb-8 ${
-                      selectedItems.length > 0
-                        ? "bg-[#5CAF90] hover:bg-[#5CAF90]"
-                        : "bg-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    Checkout{" "}
-                    {selectedItems.length > 0 &&
-                      `(${selectedItems.length} item${
-                        selectedItems.length !== 1 ? "s" : ""
-                      })`}
-                  </button>
-                )}
-
-                <div className="text-center">
-                  <h3 className="text-black mb-4 font-semibold">
-                    Secure Payments Provided By
-                  </h3>
-                  <div className="flex justify-center items-center gap-4 flex-wrap">
-                    {paymentLogos.map((logo, index) =>
-                      logo.icon ? (
-                        <span key={index} aria-label={logo.alt}>
-                          {logo.icon}
-                        </span>
-                      ) : (
-                        <img
-                          key={index}
-                          src={logo.src}
-                          alt={logo.alt}
-                          className="h-4"
-                          loading="lazy"
-                        />
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Related Products Section */}
-            {relatedProducts.length > 0 && (
-              <div className="mt-8 sm:mt-12 mb-5 px-10">
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center mb-6">
-                  Related <span className="text-[#5CAF90]">Products</span>
-                </h2>
-                <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-                  {relatedProducts.map(product => (
-                    <div
-                      key={product.id}
-                      className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <ProductCard
-                        image={product.image}
-                        category={product.category}
-                        title={product.name}
-                        price={product.price}
-                        oldPrice={product.oldPrice}
-                        weight={product.weight}
-                        discountLabel={
-                          product.oldPrice && product.price
-                            ? `${calculateDiscountPercentage(
-                                product.oldPrice,
-                                product.price
-                              )} % OFF`
-                            : null
-                        }
-                        id={product.id}
-                        className="h-full"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  )
+  const [result] = await pool.query(query, [customerId]);
+  return result.insertId;
 }
 
-export default Cart
+// Get cart by customer id
+async function getCartByCustomerId(customerId) {
+  const query = `
+    SELECT * FROM Cart WHERE Customer_idCustomer = ?
+  `;
+
+  const [rows] = await pool.query(query, [customerId]);
+  if (rows.length === 0) return null;
+
+  const cart = rows[0];
+
+  // Get cart items with product details
+  const [cartItems] = await pool.query(
+    `
+      SELECT
+        cp.Cart_idCart,
+        cp.Product_Variations_idProduct_Variations,
+        cp.Rate AS CartRate,
+        cp.Market_Rate AS MarketPrice,
+        cp.Qty AS CartQty,
+        cp.Total_Amount,
+        cp.Discount_Percentage,
+        cp.Discount_Amount,
+        cp.NetAmount,
+        cp.Discounts_idDiscounts,
+        pv.idProduct_Variations,
+        pv.Product_idProduct,
+        pv.Colour,
+        pv.Size,
+        pv.SIH,
+        pv.Qty AS AvailableQty,
+        p.Description AS ProductName,
+        p.Main_Image_Url AS ProductImage,
+        d.Discount_Value,
+        d.Discount_Type AS DiscountType
+      FROM Cart_has_Product cp
+      JOIN Product_Variations pv ON 
+        cp.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+      JOIN Product p ON pv.Product_idProduct = p.idProduct
+      LEFT JOIN Discounts d ON cp.Discounts_idDiscounts = d.idDiscounts
+      WHERE cp.Cart_idCart = ?
+    `,
+    [cart.idCart]
+  );
+
+  cart.items = cartItems;
+
+  return cart;
+}
+
+// Add product to cart
+async function addProductToCart(
+  cartId,
+  productVariationId,
+  qty,
+  rate,
+  mktRate
+) {
+  // Check if product variation exists in cart
+  const [existingItem] = await pool.query(
+    `
+      SELECT * FROM Cart_has_Product
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    `,
+    [cartId, productVariationId]
+  );
+
+  // Get product variation details to calculate amount
+  const [productVariation] = await pool.query(
+    `
+      SELECT * FROM Product_Variations WHERE idProduct_Variations = ?
+    `,
+    [productVariationId]
+  );
+
+  if (productVariation.length === 0) {
+    throw new Error("Product variation not found");
+  }
+
+  // Get product details to check for discounts
+  const [product] = await pool.query(
+    `
+      SELECT * FROM Product WHERE idProduct = ?
+    `,
+    [productVariation[0].Product_idProduct]
+  );
+
+  // Check for active normal discounts
+  const [discounts] = await pool.query(
+    `
+      SELECT * FROM Discounts 
+      WHERE Product_idProduct = ? 
+      AND Status = 'active' 
+      AND (Start_Date <= CURRENT_DATE() AND End_Date >= CURRENT_DATE())
+    `,
+    [product[0].idProduct]
+  );
+
+  // Check for active event discounts
+  const [eventDiscounts] = await pool.query(
+    `
+      SELECT ed.*
+      FROM Event_Discounts ed
+      JOIN Event_has_Product ehp ON ed.Event_idEvent = ehp.Event_idEvent
+      WHERE ehp.Product_idProduct = ?
+        AND ed.Status = 'active'
+        AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d')
+    `,
+    [product[0].idProduct]
+  );
+
+  let discountId = null;
+  let discountPercentage = 0;
+  let discountAmount = 0;
+  let totalDiscountAmount = 0;
+
+  // Calculate normal discount amount if applicable
+  if (discounts.length > 0) {
+    discountId = discounts[0].idDiscounts;
+    if (discounts[0].Discount_Type === "percentage") {
+      discountPercentage = discounts[0].Discount_Value;
+      discountAmount = (rate * qty * discountPercentage) / 100;
+    } else {
+      discountAmount = discounts[0].Discount_Value * qty;
+    }
+    totalDiscountAmount += discountAmount;
+  }
+
+  // Calculate event discount amount if applicable
+  if (eventDiscounts.length > 0) {
+    for (const eventDiscount of eventDiscounts) {
+      // Check if this product is included in the event discount
+      const productIds = JSON.parse(eventDiscount.Product_Ids || "[]");
+      if (productIds.includes(product[0].idProduct)) {
+        let eventDiscountAmount = 0;
+        if (eventDiscount.Discount_Type === "percentage") {
+          eventDiscountAmount = (rate * qty * eventDiscount.Discount_Value) / 100;
+        } else {
+          eventDiscountAmount = eventDiscount.Discount_Value * qty;
+        }
+        totalDiscountAmount += eventDiscountAmount;
+      }
+    }
+  }
+
+  // Use total discount amount for calculations
+  discountAmount = totalDiscountAmount;
+
+  const totalAmount = rate * qty;
+  const netAmount = totalAmount - discountAmount;
+
+  if (existingItem.length > 0) {
+    // Update existing cart item
+    const query = `
+      UPDATE Cart_has_Product
+      SET Qty = ?, Market_Rate = ?, Rate = ?, Total_Amount = ?, Discount_Percentage = ?, Discount_Amount = ?, NetAmount = ?, Discounts_idDiscounts = ?
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    `;
+    await pool.query(query, [
+      qty,
+      mktRate,
+      rate,
+      totalAmount,
+      discountPercentage,
+      discountAmount,
+      netAmount,
+      discountId,
+      cartId,
+      productVariationId,
+    ]);
+  } else {
+    // Add new cart item
+    const query = `
+      INSERT INTO Cart_has_Product(
+        Cart_idCart, 
+        Product_Variations_idProduct_Variations, 
+        Market_Rate,
+        Rate, 
+        Qty, 
+        Total_Amount, 
+        Discount_Percentage, 
+        Discount_Amount, 
+        NetAmount, 
+        Discounts_idDiscounts
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    await pool.query(query, [
+      cartId,
+      productVariationId,
+      mktRate,
+      rate,
+      qty,
+      totalAmount,
+      discountPercentage,
+      discountAmount,
+      netAmount,
+      discountId,
+    ]);
+  }
+
+  // Do NOT update product variation stock here. Stock should only be decremented after order is placed.
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Update product quantity in cart
+async function updateCartItemQuantity(cartId, productVariationId, qty) {
+  // Get current cart item
+  const [cartItem] = await pool.query(
+    `
+      SELECT * FROM Cart_has_Product
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    `,
+    [cartId, productVariationId]
+  );
+
+  if (cartItem.length === 0) {
+    throw new Error("Cart item not found");
+  }
+
+  // Save the old quantity from the cart item
+  const oldQty = cartItem[0].Qty;
+
+  const rate = cartItem[0].Rate;
+  const totalAmount = rate * qty;
+  let discountAmount = 0;
+  let discountPercentage = 0;
+
+  // Get product ID for this variation
+  const [productVariation] = await pool.query(
+    `SELECT Product_idProduct FROM Product_Variations WHERE idProduct_Variations = ?`,
+    [productVariationId]
+  );
+
+  let totalDiscountAmount = 0;
+
+  // Recalculate normal discount if applicable
+  if (cartItem[0].Discounts_idDiscounts) {
+    const [discount] = await pool.query(
+      `SELECT * FROM Discounts WHERE idDiscounts = ?`,
+      [cartItem[0].Discounts_idDiscounts]
+    );
+
+    if (discount.length > 0) {
+      if (discount[0].Discount_Type === "percentage") {
+        discountPercentage = discount[0].Discount_Value;
+        totalDiscountAmount = (totalAmount * discountPercentage) / 100;
+      } else {
+        totalDiscountAmount = discount[0].Discount_Value * qty;
+      }
+    }
+  }
+
+  // Recalculate event discounts
+  if (productVariation.length > 0) {
+    const productId = productVariation[0].Product_idProduct;
+    const [eventDiscounts] = await pool.query(
+      `
+        SELECT ed.*
+        FROM Event_Discounts ed
+        JOIN Event_has_Product ehp ON ed.Event_idEvent = ehp.Event_idEvent
+        WHERE ehp.Product_idProduct = ?
+          AND ed.Status = 'active'
+          AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d')
+      `,
+      [productId]
+    );
+
+    for (const eventDiscount of eventDiscounts) {
+      const productIds = JSON.parse(eventDiscount.Product_Ids || "[]");
+      if (productIds.includes(productId)) {
+        let eventDiscountAmount = 0;
+        if (eventDiscount.Discount_Type === "percentage") {
+          eventDiscountAmount = (totalAmount * eventDiscount.Discount_Value) / 100;
+        } else {
+          eventDiscountAmount = eventDiscount.Discount_Value * qty;
+        }
+        totalDiscountAmount += eventDiscountAmount;
+      }
+    }
+  }
+
+  discountAmount = totalDiscountAmount;
+
+  const netAmount = totalAmount - discountAmount;
+
+  // Update cart item
+  const query = `
+    UPDATE Cart_has_Product
+    SET Qty = ?, Total_Amount = ?, Discount_Amount = ?, NetAmount = ?
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+  `;
+  await pool.query(query, [
+    qty,
+    totalAmount,
+    discountAmount,
+    netAmount,
+    cartId,
+    productVariationId,
+  ]);
+
+  // Do NOT update product variation stock here. Stock should only be decremented after order is placed.
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Remove product from cart
+async function removeProductFromCart(cartId, productVariationId) {
+  const query = `
+    DELETE FROM Cart_has_Product
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+  `;
+  await pool.query(query, [cartId, productVariationId]);
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Cleart cart
+async function clearCart(cartId) {
+  const query = `
+    DELETE FROM Cart_has_Product
+    WHERE Cart_idCart = ?
+  `;
+  await pool.query(query, [cartId]);
+
+  // Update cart totals
+  await updateCartTotals(cartId);
+
+  return { success: true };
+}
+
+// Update cart totals
+async function updateCartTotals(cartId) {
+  // Calculate total items and total amount
+  const [result] = await pool.query(
+    `
+      SELECT SUM(Qty) as TotalItems, SUM(NetAmount) as TotalAmount
+      FROM Cart_has_Product
+      WHERE Cart_idCart = ?
+    `,
+    [cartId]
+  );
+
+  const totalItems = result[0].TotalItems || 0;
+  const totalAmount = result[0].TotalAmount || 0;
+
+  // Update cart
+  const query = `
+    UPDATE Cart
+    SET Total_Items = ?, Total_Amount = ?
+    WHERE idCart = ?
+  `;
+  await pool.query(query, [totalItems, totalAmount, cartId]);
+}
+
+// Add note to cart item
+async function addNoteToCartItem(cartId, productVariationId, note) {
+  const query = `
+    UPDATE Cart_has_Product
+    SET Note = ?
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+  `;
+  await pool.query(query, [note, cartId, productVariationId]);
+
+  return { success: true };
+}
+
+// Convert cart to order
+async function convertCartToOrder(
+  cartId,
+  deliveryAddressId,
+  deliveryType,
+  paymentType
+) {
+  // Get cart details
+  const [cart] = await pool.query(
+    `
+      SELECT * FROM Cart WHERE idCart = ?
+    `,
+    [cartId]
+  );
+
+  if (cart.length === 0) {
+    throw new Error("Cart not found");
+  }
+
+  // Get cart items
+  const [cartItems] = await pool.query(
+    `
+      SELECT * FROM Cart_has_Product WHERE Cart_idCart = ?
+    `,
+    [cartId]
+  );
+
+  if (cartItems.length === 0) {
+    throw new Error("Cart is empty");
+  }
+
+  // Calculate delivery charges based on delivery type
+  let deliveryCharges = 0;
+  if (deliveryType === "home_delivery") {
+    deliveryCharges = 40.0;
+  } else if (deliveryType === "express_delivery") {
+    deliveryCharges = 70.0;
+  } else if (deliveryType === "standard_delivery") {
+    deliveryCharges = 30.0;
+  } else {
+    // Default or error handling for unknown delivery type could be added here
+    // For now, proceeding based on potential earlier structure.
+  }
+
+  const netAmount = parseFloat(cart[0].Total_Amount) + deliveryCharges;
+
+  // Create order
+  const orderInsertQuery = `
+    INSERT INTO \`Order\` (
+      Date_Time,
+      Delivery_Address_idDelivery_Address,
+      Total_Amount,
+      Delivery_Type,
+      Delivery_Charges,
+      Net_Amount,
+      Payment_Type,
+      Payment_Stats,
+      Delivery_Status,
+      Status
+    )
+    VALUES (
+      NOW(),
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      ?,
+      'pending',
+      'processing',
+      'active'
+    )
+  `;
+
+  const [orderResult] = await pool.query(orderInsertQuery, [
+    deliveryAddressId,
+    cart[0].Total_Amount,
+    deliveryType,
+    deliveryCharges,
+    netAmount,
+    paymentType,
+  ]);
+
+  const orderId = orderResult.insertId;
+
+  // Add order items
+  for (const item of cartItems) {
+    const orderItemInsertQuery = `
+      INSERT INTO Order_has_Product_Variations (
+        Order_idOrder,
+        Product_Variations_idProduct_Variations,
+        Rate,
+        Qty,
+        Total, 
+        Discount_Percentage,
+        Discount_Amount,
+        Total_Amount, 
+        Note,
+        Discounts_idDiscounts
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    await pool.query(orderItemInsertQuery, [
+      orderId,
+      item.Product_Variations_idProduct_Variations,
+      item.Rate,
+      item.Qty,
+      item.Total_Amount, // Gross total for the item line
+      item.Discount_Percentage,
+      item.Discount_Amount,
+      item.NetAmount, // Net total for the item line (after discount)
+      item.Note,
+      item.Discounts_idDiscounts,
+    ]);
+  }
+
+  // Clear cart (this will also update cart totals implicitly if clearCart calls updateCartTotals)
+  await clearCart(cartId);
+
+  return { orderId };
+}
+
+module.exports = {
+  createCart,
+  getCartByCustomerId,
+  addProductToCart,
+  updateCartItemQuantity,
+  removeProductFromCart,
+  clearCart,
+  updateCartTotals,
+  addNoteToCartItem,
+  convertCartToOrder,
+};
