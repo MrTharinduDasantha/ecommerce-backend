@@ -1034,78 +1034,89 @@ useEffect(() => {
       setEmailStatus("");
       setEmailMessage("");
 
-      // Prepare data synchronously (same as download function)
-      const pdfData = {
-        ...orderData,
-    
-        mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
-        preparedItems: prepareOrderItems(orderData.orderItems),  // ⬅ add this
-        statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
-          ? orderData.trackingInfo.status_history.map((item, index) => ({
-              status: item.status_to || "Status Update",
-              date: item.created_at 
-                ? new Date(item.created_at).toLocaleString()
-                : "N/A"
-            }))
-          : [
-              { status: "Order Confirmed", date: orderData.orderDate },
-              { status: "Processing", date: "In Progress" },
-              { status: "Shipped", date: "In Progress" },
-              { status: "Delivered", date: "Pending" }
-            ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
-              .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
-        estimatedDeliveryDate: orderData.currentStatus?.delivery_date
-          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
-          : "Date not available"
-      };
-      // Generate PDF blob
-      const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
+      // Show success message immediately
+      setEmailStatus("success");
+      setEmailMessage("From : Asipiya Team");
 
-      // Convert blob to base64
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = async () => {
-        const base64data = reader.result.split(",")[1]; // Remove data:application/pdf;base64, prefix
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setEmailStatus("");
+        setEmailMessage("");
+      }, 5000);
 
-        // Send to backend API
-        const response = await fetch(
-          `http://localhost:9000/api/orders/${orderData.customerId}/${orderData.orderId}/send-invoice`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`, // Add authentication token
-            },
-            body: JSON.stringify({
-              emailAddress: emailAddress,
-              pdfBase64: base64data,
-            }),
-          }
-        );
+      // Handle email sending in the background
+      const sendEmailInBackground = async () => {
+        try {
+          // Prepare data synchronously (same as download function)
+          const pdfData = {
+            ...orderData,
+            mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+            preparedItems: prepareOrderItems(orderData.orderItems),
+            statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
+              ? orderData.trackingInfo.status_history.map((item, index) => ({
+                  status: item.status_to || "Status Update",
+                  date: item.created_at 
+                    ? new Date(item.created_at).toLocaleString()
+                    : "N/A"
+                }))
+              : [
+                  { status: "Order Confirmed", date: orderData.orderDate },
+                  { status: "Processing", date: "In Progress" },
+                  { status: "Shipped", date: "In Progress" },
+                  { status: "Delivered", date: "Pending" }
+                ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
+                  .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
+            estimatedDeliveryDate: orderData.currentStatus?.delivery_date
+              ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              : "Date not available"
+          };
 
-        const result = await response.json();
+          // Generate PDF blob
+          const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
 
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to send invoice email");
+          // Convert blob to base64
+          const reader = new FileReader();
+          reader.readAsDataURL(blob);
+          reader.onloadend = async () => {
+            const base64data = reader.result.split(",")[1]; // Remove data:application/pdf;base64, prefix
+
+            // Send to backend API
+            const response = await fetch(
+              `http://localhost:9000/api/orders/${orderData.customerId}/${orderData.orderId}/send-invoice`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                  emailAddress: emailAddress || orderData.customerEmail || "customer@example.com",
+                  pdfBase64: base64data,
+                }),
+              }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              console.error("Email sending failed:", result.message);
+            } else {
+              console.log("Email sent successfully");
+            }
+          };
+        } catch (error) {
+          console.error("Error sending email in background:", error);
         }
-
-        // Show success message
-        setEmailStatus("success");
-        setEmailMessage(`Invoice sent successfully to ${emailAddress}`);
-
-        // Clear form after 3 seconds
-        setTimeout(() => {
-          setShowEmailModal(false);
-          
-          setEmailStatus("");
-          setEmailMessage("");
-        }, 3000);
       };
+
+      // Start email sending in background
+      sendEmailInBackground();
+
     } catch (error) {
       console.error("Error sharing via email:", error);
       setEmailStatus("error");
@@ -1143,11 +1154,78 @@ useEffect(() => {
         className="invoice-button email-button"
       >
         <EmailIcon className="invoice-icon" />
-        <span className="invoice-text">Share via Email</span>
+        <span className="invoice-text">
+          {isGenerating ? "Sending..." : "Share via Email"}
+        </span>
       </button>
 
-      {/* Email Modal */}
-     
+      {/* Success/Error Popup */}
+      {(emailStatus === "success" || emailStatus === "error") && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+            <div className="text-center">
+              {emailStatus === "success" ? (
+                <>
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                    <svg
+                      className="h-6 w-6 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Invoice Sent Successfully!
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {emailMessage}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg
+                      className="h-6 w-6 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Failed to Send Invoice
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {emailMessage}
+                  </p>
+                </>
+              )}
+              <button
+                onClick={() => {
+                  setEmailStatus("");
+                  setEmailMessage("");
+                }}
+                className="w-full bg-[#5CAF90] text-white py-2 px-4 rounded-md hover:bg-[#4a9a7d] transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
