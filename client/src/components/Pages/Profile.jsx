@@ -1,11 +1,6 @@
 import React, { useContext, useEffect, useState } from "react"
 import EditIcon from "@mui/icons-material/Edit"
-import AddCircleIcon from "@mui/icons-material/AddCircle"
 import AccountCircleIcon from "@mui/icons-material/AccountCircle"
-import PhoneIcon from "@mui/icons-material/Phone"
-import EmailIcon from "@mui/icons-material/Email"
-import CakeIcon from "@mui/icons-material/Cake"
-import LocationOnIcon from "@mui/icons-material/LocationOn"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
@@ -235,8 +230,10 @@ const Profile = () => {
             city: newAddress.city,
             country: newAddress.country,
           }))
+          // eslint-disable-next-line no-unused-vars
+          const { password, ...profileDataWithoutPassword } = profileData
           updateCustomerDetails(user.id, {
-            ...profileData,
+            ...profileDataWithoutPassword,
             address: newAddress.address,
             city: newAddress.city,
             country: newAddress.country,
@@ -299,6 +296,8 @@ const Profile = () => {
       const filteredAddresses = addresses.filter(
         address => address.id !== addressToDelete
       )
+      // eslint-disable-next-line no-unused-vars
+      const { password, ...profileDataWithoutPassword } = profileData
       if (wasMainAddress && filteredAddresses.length > 0) {
         const newAddresses = filteredAddresses.map((addr, index) => ({
           ...addr,
@@ -317,7 +316,7 @@ const Profile = () => {
           country: newMainAddress.country,
         }))
         updateCustomerDetails(user.id, {
-          ...profileData,
+          ...profileDataWithoutPassword,
           address: newMainAddress.address,
           city: newMainAddress.city,
           country: newMainAddress.country,
@@ -330,7 +329,7 @@ const Profile = () => {
             address: "",
           }))
           updateCustomerDetails(user.id, {
-            ...profileData,
+            ...profileDataWithoutPassword,
             address: "",
             city: "",
             country: "",
@@ -448,8 +447,10 @@ const Profile = () => {
         country: mainAddress.country,
       }))
     }
+    // eslint-disable-next-line no-unused-vars
+    const { password, ...profileDataWithoutPassword } = profileData
     await updateCustomerDetails(user.id, {
-      ...profileData,
+      ...profileDataWithoutPassword,
       address: mainAddress.address,
       city: mainAddress.city,
       country: mainAddress.country,

@@ -4,7 +4,14 @@ import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { getProduct, getProducts } from "../api/product";
 import { formatPrice } from "./FormatPrice";
-import { calculateDiscountPercentage, calculateTotalDiscount, getBestDiscountLabel, getFinalPrice } from "./CalculateDiscount";
+import { getReviewsByProductId } from "../api/review";
+import { getCustomerById } from "../api/customer";
+import {
+  calculateDiscountPercentage,
+  calculateTotalDiscount,
+  getBestDiscountLabel,
+  getFinalPrice,
+} from "./CalculateDiscount";
 import ProductCard from "./ProductCard";
 import DiscountSummary from "./DiscountSummary";
 
@@ -21,11 +28,13 @@ const ProductPage = () => {
   const [mainImage, setMainImage] = useState("");
   const [activeDiscount, setActiveDiscount] = useState(null);
   const [isFromCart, setIsFromCart] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [cartItem, setCartItem] = useState(null);
   const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({});
   const popupImageRef = useRef(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [customers, setCustomers] = useState({});
 
   const handleProductClick = (productId) => {
     window.scrollTo(0, 0);
@@ -37,22 +46,48 @@ const ProductPage = () => {
       try {
         // Fetch main product
         const response = await getProduct(id);
+        const reviews = await getReviewsByProductId(id);
         if (response.message === "Product fetched successfully") {
+          const customerIds = [
+            ...new Set(reviews.map((review) => review.Customer_idCustomer)),
+          ];
+          const customerData = {};
+
+          for (const customerId of customerIds) {
+            try {
+              const customer = await getCustomerById(customerId);
+              customerData[customerId] = customer.Full_Name;
+            } catch (error) {
+              console.error(`Error fetching customer ${customerId}: ${error}`);
+            }
+          }
+
+          setCustomers(customerData);
+
           const productData = response.product;
-          
+
           // Log product data to verify discount structure
           console.log("=== PRODUCT DISCOUNT DEBUG ===");
           console.log("Product ID:", productData.idProduct);
           console.log("Product Name:", productData.Description);
           console.log("Normal Discounts:", productData.discounts);
           console.log("Event Discounts:", productData.eventDiscounts);
-          console.log("Event Discounts Count:", productData.eventDiscounts?.length || 0);
-          
+          console.log(
+            "Event Discounts Count:",
+            productData.eventDiscounts?.length || 0
+          );
+
           if (productData.eventDiscounts?.length > 0) {
             console.log("Event Discount Details:");
             productData.eventDiscounts.forEach((discount, index) => {
-              console.log(`  ${index + 1}. ${discount.description} (${discount.discountType}: ${discount.discountValue})`);
-              console.log(`     Event ID: ${discount.eventId}, Status: ${discount.status}`);
+              console.log(
+                `  ${index + 1}. ${discount.description} (${
+                  discount.discountType
+                }: ${discount.discountValue})`
+              );
+              console.log(
+                `     Event ID: ${discount.eventId}, Status: ${discount.status}`
+              );
               console.log(`     Product IDs included:`, discount.productIds);
             });
           }
@@ -63,15 +98,22 @@ const ProductPage = () => {
           );
           setActiveDiscount(activeDiscounts[0] || null);
 
+          const totalRating = reviews.reduce(
+            (sum, review) => sum + parseInt(review.Rating_5),
+            0
+          );
+          const averageRating =
+            reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+
           const transformedProduct = {
             id: productData.idProduct,
             name: productData.Description,
             description: productData.Long_Description,
             detail: productData.Long_Description,
             specification: "No specifications available",
-            reviews: "No reviews yet",
-            rating: 4.5,
-            noOfRatings: 10,
+            reviews: reviews,
+            rating: averageRating,
+            noOfRatings: reviews.length,
             marketPrice: parseFloat(productData.Market_Price),
             discounts: productData.discounts || [],
             eventDiscounts: productData.eventDiscounts || [],
@@ -143,8 +185,8 @@ const ProductPage = () => {
                   Selling_Price: product.Selling_Price,
                   Market_Price: product.Market_Price,
                   discounts: product.discounts || [],
-                  eventDiscounts: product.eventDiscounts || []
-                }
+                  eventDiscounts: product.eventDiscounts || [],
+                },
               }));
 
             setRelatedProducts(filteredRelated);
@@ -173,13 +215,15 @@ const ProductPage = () => {
   const currentVariant = product?.variants[selectedVariant] || {};
 
   // Calculate total discount information
-  const discountInfo = product ? calculateTotalDiscount({
-    idProduct: product.id,
-    Selling_Price: currentVariant.price,
-    Market_Price: product.marketPrice,
-    discounts: product.discounts || [],
-    eventDiscounts: product.eventDiscounts || []
-  }) : null;
+  const discountInfo = product
+    ? calculateTotalDiscount({
+        idProduct: product.id,
+        Selling_Price: currentVariant.price,
+        Market_Price: product.marketPrice,
+        discounts: product.discounts || [],
+        eventDiscounts: product.eventDiscounts || [],
+      })
+    : null;
 
   // Check if current variant has size
   const hasSize =
@@ -363,13 +407,19 @@ const ProductPage = () => {
           {/* Price and Discount */}
           <div className="space-y-3">
             <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
-              {formatPrice(`LKR ${discountInfo?.finalPrice?.toFixed(2) || currentVariant.price?.toFixed(2)}`)}
-              
-              {discountInfo?.hasDiscounts && discountInfo.marketPrice > discountInfo.originalPrice && (
-                <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
-                  {formatPrice(`LKR ${discountInfo.marketPrice.toFixed(2)}`)}
-                </span>
+              {formatPrice(
+                `LKR ${
+                  discountInfo?.finalPrice?.toFixed(2) ||
+                  currentVariant.price?.toFixed(2)
+                }`
               )}
+
+              {discountInfo?.hasDiscounts &&
+                discountInfo.marketPrice > discountInfo.originalPrice && (
+                  <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
+                    {formatPrice(`LKR ${discountInfo.marketPrice.toFixed(2)}`)}
+                  </span>
+                )}
 
               {discountInfo?.totalPercentage > 0 && (
                 <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
@@ -379,13 +429,13 @@ const ProductPage = () => {
             </div>
 
             {/* Detailed Discount Information using DiscountSummary component */}
-            <DiscountSummary 
+            <DiscountSummary
               product={{
                 idProduct: product.id,
                 Selling_Price: currentVariant.price,
                 Market_Price: product.marketPrice,
                 discounts: product.discounts || [],
-                eventDiscounts: product.eventDiscounts || []
+                eventDiscounts: product.eventDiscounts || [],
               }}
               showDetails={true}
             />
@@ -547,7 +597,45 @@ const ProductPage = () => {
               )}
             </div>
           )}
-          {activeTab === "reviews" && <p>{product.reviews}</p>}
+          {activeTab === "reviews" ? (
+            product.reviews.length > 0 ? (
+              product.reviews.map((review) => {
+                const customer = customers[review.Customer_idCustomer] || {};
+                const initials = customer
+                  .split(" ")
+                  .map((name) => name[0])
+                  .join("")
+                  .toUpperCase();
+                return (
+                  <div key={review.idReview} className="flex gap-5 mb-4">
+                    <div className="bg-green-500 size-10 shrink-0 p-3 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">{initials}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-bold">
+                        {customer || "Unknown User"}
+                      </h3>
+                      <div className="flex gap-1">
+                        {[...Array(parseInt(review.Rating_5))].map(
+                          (_, index) => (
+                            <FaStar key={index} className="text-yellow-400" />
+                          )
+                        )}
+                      </div>
+                      <p>{review.Comment}</p>
+                      <span className="text-xs text-gray-500">
+                        {review.created_at.split("T")[0]}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p>No Reviews yet.</p>
+            )
+          ) : (
+            <></>
+          )}
         </div>
       </div>
 
