@@ -1,105 +1,132 @@
-import React, { useEffect, useState } from "react";
-import denim from "./denims.png";
-import fruits from "./fruits.avif";
-import { Truck, RotateCcw, ShieldCheck, Headphones } from "lucide-react";
+import React, { useEffect, useState } from "react"
+import denim from "./denims.png"
+import fruits from "./fruits.avif"
+import { Truck, RotateCcw, ShieldCheck, Headphones } from "lucide-react"
 import {
   getCategories,
   getTopSellingCategories,
   getTopSoldProducts,
   getProducts,
-} from "../../api/product";
-import ProductCard from "../../components/ProductCard";
-import { Link } from "react-router-dom";
-import { calculateDiscountPercentage } from "../../components/CalculateDiscount";
+} from "../../api/product"
+import ProductCard from "../../components/ProductCard"
+import { Link, useNavigate } from "react-router-dom"
+import { calculateDiscountPercentage } from "../../components/CalculateDiscount"
+import ReviewCard from "../../components/ReviewCard"
+import { getActiveOrderReviews } from "../../api/review"
+import { getCustomerById } from "../../api/customer"
 
 const Home = () => {
-  const [categories, setCategories] = useState([]);
-  const [topSellingCategories, setTopSellingCategories] = useState([]);
-  const [topSoldProducts, setTopSoldProducts] = useState([]);
-  const [newArrivals, setNewArrivals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [categories, setCategories] = useState([])
+  const [topSellingCategories, setTopSellingCategories] = useState([])
+  const [topSoldProducts, setTopSoldProducts] = useState([])
+  const [newArrivals, setNewArrivals] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [reviews, setReviews] = useState([])
+  const [customers, setCustomers] = useState({})
+  const navigate = useNavigate()
 
-  const handleProductClick = (productId) => {
-    window.scrollTo(0, 0);
-    navigate(`/product-page/${productId}`);
-  };
+  const handleProductClick = productId => {
+    window.scrollTo(0, 0)
+    navigate(`/product-page/${productId}`)
+  }
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoryData = await getCategories();
-        let activeCategories = [];
+        const categoryData = await getCategories()
+        let activeCategories = []
         if (categoryData && categoryData.categories) {
           activeCategories = categoryData.categories.filter(
-            (category) => category.Status === "active"
-          );
-          setCategories(activeCategories);
+            category => category.Status === "active"
+          )
+          setCategories(activeCategories)
         } else {
           setError(
             "Unexpected category data structure: " +
               JSON.stringify(categoryData)
-          );
+          )
         }
 
-        const topSellingData = await getTopSellingCategories();
+        const topSellingData = await getTopSellingCategories()
         if (topSellingData && topSellingData.categories) {
           const activeTopSellingCategories = topSellingData.categories.filter(
-            (topCategory) => {
+            topCategory => {
               return activeCategories.some(
-                (activeCategory) =>
+                activeCategory =>
                   activeCategory.idProduct_Category ===
                   topCategory.idProduct_Category
-              );
+              )
             }
-          );
-          setTopSellingCategories(activeTopSellingCategories);
+          )
+          setTopSellingCategories(activeTopSellingCategories)
         } else {
           setError(
             "Unexpected top-selling data structure: " +
               JSON.stringify(topSellingData)
-          );
+          )
         }
 
-        const topSoldData = await getTopSoldProducts();
+        const topSoldData = await getTopSoldProducts()
         if (topSoldData && topSoldData.products) {
-          setTopSoldProducts(topSoldData.products);
+          setTopSoldProducts(topSoldData.products)
         } else {
           setError(
             "Unexpected top sold products data structure: " +
               JSON.stringify(topSoldData)
-          );
+          )
         }
 
-        const productsData = await getProducts();
+        const productsData = await getProducts()
         if (productsData && productsData.products) {
           const activeProducts = productsData.products.filter(
-            (product) => product.Status === "active"
-          );
+            product => product.Status === "active"
+          )
           const newArrivalProducts = activeProducts.filter(
-            (product) => product.History_Status === "new arrivals"
-          );
-          setNewArrivals(newArrivalProducts);
+            product => product.History_Status === "new arrivals"
+          )
+          setNewArrivals(newArrivalProducts)
         } else {
           setError(
             "Unexpected products data structure: " +
               JSON.stringify(productsData)
-          );
+          )
         }
       } catch (error) {
-        console.error("Failed to load data:", error.message);
-        setError(error.message || "Failed to load data");
+        console.error("Failed to load data:", error.message)
+        setError(error.message || "Failed to load data")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
-  if (loading) return <div className="py-8 text-center">Loading...</div>;
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const data = await getActiveOrderReviews()
+      setReviews(data.reverse().slice(0, 6))
+      const customerIds = [...new Set(data.map(review => review.customer_id))]
+      const customerData = {}
+      for (const customerId of customerIds) {
+        try {
+          const customer = await getCustomerById(customerId)
+          customerData[customerId] = customer.Full_Name
+        } catch (error) {
+          console.error(`Error fetching customer ${customerId}: ${error}`)
+        }
+      }
+      setCustomers(customerData)
+    }
+    fetchReviews()
+  }, [])
+
+  console.log(customers)
+
+  if (loading) return <div className="py-8 text-center">Loading...</div>
   if (error)
-    return <div className="py-8 text-center text-red-500">Error: {error}</div>;
+    return <div className="py-8 text-center text-red-500">Error: {error}</div>
 
   return (
     <div
@@ -128,7 +155,7 @@ const Home = () => {
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10">
           {categories.length !== 0 ? (
-            categories.map((category) => (
+            categories.map(category => (
               <Link
                 key={category.idProduct_Category}
                 to={`/AllCategories/${category.idProduct_Category}`}
@@ -164,7 +191,7 @@ const Home = () => {
         </p>
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-8">
           {newArrivals.length !== 0 ? (
-            newArrivals.slice(0, 5).map((product) => (
+            newArrivals.slice(0, 5).map(product => (
               <div
                 key={product.idProduct}
                 className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
@@ -180,8 +207,7 @@ const Home = () => {
                   oldPrice={product.Market_Price ? product.Market_Price : null}
                   historyStatus={product.History_Status}
                   activeDiscount={
-                    product.discounts?.find((d) => d.Status === "active") ||
-                    null
+                    product.discounts?.find(d => d.Status === "active") || null
                   }
                   id={product.idProduct}
                   product={product}
@@ -199,7 +225,7 @@ const Home = () => {
         </div>
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           {newArrivals.length !== 0 &&
-            newArrivals.slice(5, 10).map((product) => (
+            newArrivals.slice(5, 10).map(product => (
               <div
                 key={product.idProduct}
                 className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
@@ -215,8 +241,7 @@ const Home = () => {
                   oldPrice={product.Market_Price ? product.Market_Price : null}
                   historyStatus={product.History_Status}
                   activeDiscount={
-                    product.discounts?.find((d) => d.Status === "active") ||
-                    null
+                    product.discounts?.find(d => d.Status === "active") || null
                   }
                   id={product.idProduct}
                   product={product}
@@ -237,7 +262,7 @@ const Home = () => {
           Shop Online for New arrivals and offers
         </p>
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-8">
-          {topSoldProducts.slice(0, 5).map((product) => (
+          {topSoldProducts.slice(0, 5).map(product => (
             <div
               key={product.idProduct}
               className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
@@ -251,7 +276,7 @@ const Home = () => {
                 oldPrice={product.Market_Price ? product.Market_Price : null}
                 historyStatus={product.History_Status}
                 activeDiscount={
-                  product.discounts?.find((d) => d.Status === "active") || null
+                  product.discounts?.find(d => d.Status === "active") || null
                 }
                 id={product.idProduct}
                 product={product}
@@ -261,7 +286,7 @@ const Home = () => {
           ))}
         </div>
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-          {topSoldProducts.slice(5).map((product) => (
+          {topSoldProducts.slice(5).map(product => (
             <div
               key={product.idProduct}
               className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
@@ -275,7 +300,7 @@ const Home = () => {
                 oldPrice={product.Market_Price ? product.Market_Price : null}
                 historyStatus={product.History_Status}
                 activeDiscount={
-                  product.discounts?.find((d) => d.Status === "active") || null
+                  product.discounts?.find(d => d.Status === "active") || null
                 }
                 id={product.idProduct}
                 product={product}
@@ -323,7 +348,7 @@ const Home = () => {
         {/* First Row: 1st card width + 2nd card width = 3rd card width */}
         <div className="grid grid-cols-[1fr_1fr_2fr] gap-6 mb-8">
           {topSellingCategories.length !== 0 ? (
-            topSellingCategories.slice(0, 3).map((category) => (
+            topSellingCategories.slice(0, 3).map(category => (
               <Link
                 key={category.idProduct_Category}
                 to={`/AllCategories/${category.idProduct_Category}`}
@@ -363,7 +388,7 @@ const Home = () => {
 
         <div className="grid grid-cols-[2fr_1fr_1fr] gap-6">
           {topSellingCategories.length !== 0 &&
-            topSellingCategories.slice(3, 6).map((category) => (
+            topSellingCategories.slice(3, 6).map(category => (
               <Link
                 key={category.idProduct_Category}
                 to={`/AllCategories/${category.idProduct_Category}`}
@@ -399,7 +424,40 @@ const Home = () => {
             ))}
         </div>
       </div>
-
+      {/* Customer Reviews */}
+      <div className="container px-4 py-8 mx-auto">
+        <h2 className="mb-2 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
+          <span className="text-[#1D372E]">CUSTOMER </span>
+          <span className="text-[#5CAF90]">REVIEWS</span>
+        </h2>
+        <p className="text-center text-sm sm:text-base text-[#636363] mb-8">
+          Hear from our happy customers—real stories of trust, satisfaction, and
+          great experiences that reflect our commitment to quality service.
+        </p>
+        {reviews.length > 0 ? (
+          <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 xl:grid-cols-3">
+            {reviews.map(review => {
+              const customer = customers[review.customer_id] || "User"
+              const initials =
+                customer
+                  .split(" ")
+                  .map(name => name[0])
+                  .join("")
+                  .toUpperCase() || "U"
+              return (
+                <ReviewCard
+                  key={review.review_id}
+                  review={review}
+                  customer={customer}
+                  initials={initials}
+                />
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500">No Reviews Yet</p>
+        )}
+      </div>
       {/* How We Are Working */}
       <div className="container px-4 py-8 mx-auto">
         <h2 className="mb-2 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
@@ -474,7 +532,7 @@ const Home = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

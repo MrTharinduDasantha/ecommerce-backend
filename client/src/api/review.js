@@ -112,4 +112,16 @@ export const deleteOrderReview = async (orderId) => {
     console.error("Error deleting order review: ", error);
     throw new Error(error.response?.data?.message || "Failed to delete review");
   }
-};
+}
+
+export const getActiveOrderReviews = async () => {
+  try {
+    const res = await fetch(`${API_URL}/reviews/active`)
+    if (!res.ok) throw new Error(`Error: ${res.status}`)
+    const data = await res.json()
+    return data
+  } catch (error) {
+    console.error("Error getting order reviews: ", error)
+    throw new Error(error.response?.data?.message || "Failed to get reviews")
+  }
+}
