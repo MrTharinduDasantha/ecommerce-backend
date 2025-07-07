@@ -1036,7 +1036,7 @@ useEffect(() => {
 
       // Show success message immediately
       setEmailStatus("success");
-      setEmailMessage("From : Asipiya Team");
+      setEmailMessage("**From : Asipiya Team**");
 
       // Clear success message after 5 seconds
       setTimeout(() => {
@@ -1184,8 +1184,10 @@ useEffect(() => {
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     Invoice Sent Successfully!
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {emailMessage}
+                  <p className="text-sm text-gray-600 mb-4" 
+                     dangerouslySetInnerHTML={{ 
+                       __html: emailMessage.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                     }}>
                   </p>
                 </>
               ) : (
