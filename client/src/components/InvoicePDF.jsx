@@ -15,127 +15,69 @@ import OrderDetails from "./OrderDetails";
 import "./InvoicePDF.css";
 
 // Function to generate map URL for PDF
-// const generateMapUrl = (address, city, country) => {
-//   if (!address || !city || !country) return null;
-
-//   try {
-//     // Clean and encode the address components
-//     const cleanAddress = address.trim().replace(/\s+/g, ' ');
-//     const cleanCity = city.trim();
-//     const cleanCountry = country.trim();
-
-//     const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
-
-//     // Try multiple map services for better reliability
-//     const mapServices = [
-//       // Primary: OpenStreetMap static image service
-//       `https://staticmap.openstreetmap.de/staticmap.php?center=${fullAddress}&zoom=13&size=400x200&markers=${fullAddress},red&format=png`,
-//       // Fallback: Alternative OpenStreetMap service
-//       `https://maps.googleapis.com/maps/api/staticmap?center=${fullAddress}&zoom=13&size=400x200&maptype=roadmap&markers=color:red%7C${fullAddress}`,
-//       // Secondary fallback: City-level map
-//       `https://staticmap.openstreetmap.de/staticmap.php?center=${cleanCity},${cleanCountry}&zoom=10&size=400x200&markers=${cleanCity},${cleanCountry},red&format=png`
-//     ];
-
-//     const mapUrl = mapServices[0]; // Use the first (most reliable) option
-//     console.log('Generated map URL:', mapUrl);
-//     return mapUrl;
-//   } catch (error) {
-//     console.error('Error generating map URL:', error);
-//     return null;
-//   }
-// };
-
+const generateMapUrl = (address, city, country) => {
+  if (!address || !city || !country) return null;
+  
+  try {
+    // Clean and encode the address components
+    const cleanAddress = address.trim().replace(/\s+/g, ' ');
+    const cleanCity = city.trim();
+    const cleanCountry = country.trim();
+    
+    const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
+    
+    // Try multiple map services for better reliability
+    const mapServices = [
+      // Primary: OpenStreetMap static image service
+      `https://staticmap.openstreetmap.de/staticmap.php?center=${fullAddress}&zoom=13&size=400x200&markers=${fullAddress},red&format=png`,
+      // Fallback: Alternative OpenStreetMap service
+      `https://maps.googleapis.com/maps/api/staticmap?center=${fullAddress}&zoom=13&size=400x200&maptype=roadmap&markers=color:red%7C${fullAddress}`,
+      // Secondary fallback: City-level map
+      `https://staticmap.openstreetmap.de/staticmap.php?center=${cleanCity},${cleanCountry}&zoom=10&size=400x200&markers=${cleanCity},${cleanCountry},red&format=png`
+    ];
+    
+    const mapUrl = mapServices[0]; // Use the first (most reliable) option
+    console.log('Generated map URL:', mapUrl);
+    return mapUrl;
+  } catch (error) {
+    console.error('Error generating map URL:', error);
+    return null;
+  }
+};
 const sanitizeAddress = (value = "") =>
-  value.replace(/[/.]/g, " ").replace(/\s+/g, " ").trim()
-
-// const getStaticMapBase64 = async (address, city, country) => {
-//   const cleanAddress = sanitizeAddress(address);
-//   const cleanCity = sanitizeAddress(city);
-//   const cleanCountry = sanitizeAddress(country);
-
-//   const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
-//   const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${fullAddress}&zoom=13&size=400x200&markers=${fullAddress},red&format=png`;
-
-//   console.log("Final map URL:", mapUrl);
-
-//   try {
-//     const response = await fetch(mapUrl);
-//     const blob = await response.blob();
-
-//     // Ensure it's actually an image
-//     if (!blob.type.startsWith("image")) {
-//       console.warn("Fetched content is not an image:", blob.type);
-//       return null;
-//     }
-
-//     return await new Promise((resolve, reject) => {
-//       const reader = new FileReader();
-//       reader.onloadend = () => resolve(reader.result); // data:image/png;base64,...
-//       reader.onerror = reject;
-//       reader.readAsDataURL(blob);
-//     });
-//   } catch (error) {
-//     console.error("Error fetching map image:", error);
-//     return null;
-//   }
-// };
+  value.replace(/[/.]/g, " ").replace(/\s+/g, " ").trim();
 
 const getStaticMapBase64 = async (address, city, country) => {
+  const cleanAddress = sanitizeAddress(address);
+  const cleanCity = sanitizeAddress(city);
+  const cleanCountry = sanitizeAddress(country);
+
+  const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
+  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${fullAddress}&zoom=13&size=400x200&markers=${fullAddress},red&format=png`;
+
+  console.log("Final map URL:", mapUrl);
+
   try {
-    const cleanAddress = sanitizeAddress(address)
-    const cleanCity = sanitizeAddress(city)
-    const cleanCountry = sanitizeAddress(country)
+    const response = await fetch(mapUrl);
+    const blob = await response.blob();
 
-    const GEOAPIFY_API_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY
-    const searchQuery = encodeURIComponent(
-      `${cleanAddress}, ${cleanCity}, ${cleanCountry}`
-    )
-    const geocodeUrl = `https://api.geoapify.com/v1/geocode/search?text=${searchQuery}&apiKey=${GEOAPIFY_API_KEY}`
-
-    const geocodeResponse = await fetch(geocodeUrl)
-    const geocodeData = await geocodeResponse.json()
-
-    if (
-      !geocodeResponse.ok ||
-      !geocodeData.features ||
-      geocodeData.features.length === 0
-    ) {
-      console.warn("Geocoding failed, using fallback UI")
-      return null
-    }
-    const coordinates = geocodeData.features[0].geometry.coordinates
-    const lon = coordinates[0]
-    const lat = coordinates[1]
-
-    const mapUrl = `https://maps.geoapify.com/v1/staticmap?style=osm-carto&width=400&height=200&center=lonlat:${lon},${lat}&zoom=15&apiKey=${GEOAPIFY_API_KEY}&marker=lonlat:${lon},${lat};type:material;color:%23ff3421`
-
-    console.log(`Map URL generated: ${mapUrl}`)
-
-    const response = await fetch(mapUrl)
-
-    if (!response.ok) {
-      console.warn(`Map service returned status: ${response.status}`)
-      return null
-    }
-
-    const blob = await response.blob()
-
+    // Ensure it's actually an image
     if (!blob.type.startsWith("image")) {
-      console.warn("Fetched content is not an image:", blob.type)
-      return null
+      console.warn("Fetched content is not an image:", blob.type);
+      return null;
     }
 
     return await new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result)
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
-    })
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result); // data:image/png;base64,...
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   } catch (error) {
-    console.error("Error fetching map image:", error)
-    return null
+    console.error("Error fetching map image:", error);
+    return null;
   }
-}
+};
 
 // Function to create a simple map placeholder
 const createMapPlaceholder = (address, city, country) => {
@@ -148,78 +90,78 @@ const createMapPlaceholder = (address, city, country) => {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    textAlign: "center",
-  }
-}
+    textAlign: "center"
+  };
+};
 
 // Function to validate map URL
-const validateMapUrl = async url => {
-  if (!url) return false
-
+const validateMapUrl = async (url) => {
+  if (!url) return false;
+  
   try {
-    const response = await fetch(url, { method: "HEAD" })
-    return response.ok
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
   } catch (error) {
-    console.error("Map URL validation failed:", error)
-    return false
+    console.error('Map URL validation failed:', error);
+    return false;
   }
-}
+};
 
 // Test function to verify map URL generation
 const testMapUrlGeneration = (address, city, country) => {
-  console.log("Testing map URL generation with:", { address, city, country })
-  const mapUrl = generateMapUrl(address, city, country)
-  console.log("Generated map URL:", mapUrl)
-
+  console.log('Testing map URL generation with:', { address, city, country });
+  const mapUrl = generateMapUrl(address, city, country);
+  console.log('Generated map URL:', mapUrl);
+  
   if (mapUrl) {
     // Create a test image element to check if the URL loads
-    const testImg = new Image()
+    const testImg = new Image();
     testImg.onload = () => {
-      console.log("✅ Map URL loads successfully")
-    }
+      console.log('✅ Map URL loads successfully');
+    };
     testImg.onerror = () => {
-      console.log("❌ Map URL failed to load")
-    }
-    testImg.src = mapUrl
+      console.log('❌ Map URL failed to load');
+    };
+    testImg.src = mapUrl;
   }
-
-  return mapUrl
-}
+  
+  return mapUrl;
+};
 
 // Test function to verify PDF generation
 const testPDFGeneration = async () => {
   try {
-    console.log("Testing PDF generation with minimal data...")
+    console.log('Testing PDF generation with minimal data...');
     const testData = {
-      orderId: "TEST-001",
+      orderId: 'TEST-001',
       orderDate: new Date().toLocaleString(),
-      paymentMethod: "Credit Card",
-      paymentStatus: "Paid",
-      deliveryType: "Standard",
-      deliveryStatus: "Processing",
-      customerName: "Test Customer",
-      address: "123 Test Street",
-      city: "Test City",
-      country: "Test Country",
-      subtotal: 100.0,
+      paymentMethod: 'Credit Card',
+      paymentStatus: 'Paid',
+      deliveryType: 'Standard',
+      deliveryStatus: 'Processing',
+      customerName: 'Test Customer',
+      address: '123 Test Street',
+      city: 'Test City',
+      country: 'Test Country',
+      subtotal: 100.00,
       discount: 0,
-      deliveryFee: 10.0,
-      total: 110.0,
+      deliveryFee: 10.00,
+      total: 110.00,
       mapUrl: null,
       statusHistory: [
-        { status: "Order Confirmed", date: new Date().toLocaleString() },
+        { status: 'Order Confirmed', date: new Date().toLocaleString() }
       ],
-      estimatedDeliveryDate: "Date not available",
-      currentStatus: {},
-    }
-
-    const blob = await pdf(<InvoicePDF data={testData} />).toBlob()
-    return true
+      estimatedDeliveryDate: 'Date not available',
+      currentStatus: {}
+    };
+    
+    const blob = await pdf(<InvoicePDF data={testData} />).toBlob();
+    return true;
   } catch (error) {
-    console.error("❌ PDF generation test failed:", error)
-    return false
+    console.error('❌ PDF generation test failed:', error);
+    return false;
   }
-}
+};
 
 // Create styles
 const styles = StyleSheet.create({
@@ -718,7 +660,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e5e7eb",
     marginVertical: 15,
   },
-})
+});
 
 // PDF Document component
 const InvoicePDF = ({ data }) => {
@@ -935,7 +877,7 @@ const InvoicePDF = ({ data }) => {
               <Text style={styles.statusIcon}>✓</Text>
             </View>
           )}
-
+          
           {/* Current Status */}
           <View style={styles.currentStatusItem}>
             <Text style={styles.currentStatusText}>
@@ -949,7 +891,7 @@ const InvoicePDF = ({ data }) => {
             </Text>
             <Text style={styles.currentStatusIcon}>●</Text>
           </View>
-
+          
           {/* Estimated Delivery Details */}
           <View style={styles.estimatedDelivery}>
             <Text style={styles.estimatedDeliveryLabel}>
@@ -970,16 +912,16 @@ const InvoicePDF = ({ data }) => {
         </View>
       </Page>
     </Document>
-  )
-}
+  );
+};
 
 // Invoice Download Button Component
 const InvoiceDownloadButton = ({ orderData }) => {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [showEmailModal, setShowEmailModal] = useState(false)
-  const [emailAddress, setEmailAddress] = useState("")
-  const [emailStatus, setEmailStatus] = useState("") // 'success', 'error', or ''
-  const [emailMessage, setEmailMessage] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailAddress, setEmailAddress] = useState("");
+  const [emailStatus, setEmailStatus] = useState(""); // 'success', 'error', or ''
+  const [emailMessage, setEmailMessage] = useState("");
 
 useEffect(() => {
   const savedEmail = localStorage.getItem("userEmail");
@@ -990,14 +932,14 @@ useEffect(() => {
 }, []);
   const handleDownload = async () => {
     try {
-      setIsGenerating(true)
-
+      setIsGenerating(true);
+      
       // Test PDF generation first
-      const testResult = await testPDFGeneration()
+      const testResult = await testPDFGeneration();
       if (!testResult) {
-        throw new Error("PDF generation test failed")
+        throw new Error('PDF generation test failed');
       }
-
+      
       // Prepare data synchronously to avoid async issues
       const pdfData = {
         ...orderData,
@@ -1018,41 +960,38 @@ useEffect(() => {
             ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
               .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
         estimatedDeliveryDate: orderData.currentStatus?.delivery_date
-          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString(
-              "en-US",
-              {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              }
-            )
-          : "Date not available",
-      }
-
-      const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob()
-
+          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "Date not available"
+      };
+      
+      const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
+      
       // Create download link
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = url
-      link.download = `Order-${orderData.orderId}-Invoice.pdf`
-      link.style.display = "none"
-
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Order-${orderData.orderId}-Invoice.pdf`;
+      link.style.display = 'none';
+      
       // Trigger download
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       // Clean up
       setTimeout(() => {
-        URL.revokeObjectURL(url)
-      }, 100)
+        URL.revokeObjectURL(url);
+      }, 100);
     } catch (error) {
-      console.error("Error generating PDF:", error)
-      alert("Failed to generate PDF. Please try again. Error: " + error.message)
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again. Error: " + error.message);
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
   };
 // Prepare order items for OrderDetails component
@@ -1091,99 +1030,110 @@ useEffect(() => {
   };
   const handleEmailShare = async () => {
     try {
-      setIsGenerating(true)
-      setEmailStatus("")
-      setEmailMessage("")
+      setIsGenerating(true);
+      setEmailStatus("");
+      setEmailMessage("");
 
-      // Prepare data synchronously (same as download function)
-      const pdfData = {
-        ...orderData,
-    
-        mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
-        preparedItems: prepareOrderItems(orderData.orderItems),  // ⬅ add this
-        statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
-          ? orderData.trackingInfo.status_history.map((item, index) => ({
-              status: item.status_to || "Status Update",
-              date: item.created_at 
-                ? new Date(item.created_at).toLocaleString()
-                : "N/A"
-            }))
-          : [
-              { status: "Order Confirmed", date: orderData.orderDate },
-              { status: "Processing", date: "In Progress" },
-              { status: "Shipped", date: "In Progress" },
-              { status: "Delivered", date: "Pending" }
-            ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
-              .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
-        estimatedDeliveryDate: orderData.currentStatus?.delivery_date
-          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
-          : "Date not available"
-      };
-      // Generate PDF blob
-      const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob()
+      // Show success message immediately
+      setEmailStatus("success");
+      setEmailMessage("**From : Asipiya Team**");
 
-      // Convert blob to base64
-      const reader = new FileReader()
-      reader.readAsDataURL(blob)
-      reader.onloadend = async () => {
-        const base64data = reader.result.split(",")[1] // Remove data:application/pdf;base64, prefix
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setEmailStatus("");
+        setEmailMessage("");
+      }, 5000);
 
-        // Send to backend API
-        const response = await fetch(
-          `http://localhost:9000/api/orders/${orderData.customerId}/${orderData.orderId}/send-invoice`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`, // Add authentication token
-            },
-            body: JSON.stringify({
-              emailAddress: emailAddress,
-              pdfBase64: base64data,
-            }),
-          }
-        )
+      // Handle email sending in the background
+      const sendEmailInBackground = async () => {
+        try {
+          // Prepare data synchronously (same as download function)
+          const pdfData = {
+            ...orderData,
+            mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+            preparedItems: prepareOrderItems(orderData.orderItems),
+            statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
+              ? orderData.trackingInfo.status_history.map((item, index) => ({
+                  status: item.status_to || "Status Update",
+                  date: item.created_at 
+                    ? new Date(item.created_at).toLocaleString()
+                    : "N/A"
+                }))
+              : [
+                  { status: "Order Confirmed", date: orderData.orderDate },
+                  { status: "Processing", date: "In Progress" },
+                  { status: "Shipped", date: "In Progress" },
+                  { status: "Delivered", date: "Pending" }
+                ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
+                  .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
+            estimatedDeliveryDate: orderData.currentStatus?.delivery_date
+              ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              : "Date not available"
+          };
 
-        const result = await response.json()
+          // Generate PDF blob
+          const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
 
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to send invoice email")
+          // Convert blob to base64
+          const reader = new FileReader();
+          reader.readAsDataURL(blob);
+          reader.onloadend = async () => {
+            const base64data = reader.result.split(",")[1]; // Remove data:application/pdf;base64, prefix
+
+            // Send to backend API
+            const response = await fetch(
+              `http://localhost:9000/api/orders/${orderData.customerId}/${orderData.orderId}/send-invoice`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                  emailAddress: emailAddress || orderData.customerEmail || "customer@example.com",
+                  pdfBase64: base64data,
+                }),
+              }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              console.error("Email sending failed:", result.message);
+            } else {
+              console.log("Email sent successfully");
+            }
+          };
+        } catch (error) {
+          console.error("Error sending email in background:", error);
         }
-
-        // Show success message
-        setEmailStatus("success")
-        setEmailMessage(`Invoice sent successfully to ${emailAddress}`)
-
-        // Clear form after 3 seconds
-        setTimeout(() => {
-          setShowEmailModal(false);
-          
-          setEmailStatus("");
-          setEmailMessage("");
-        }, 3000);
       };
+
+      // Start email sending in background
+      sendEmailInBackground();
+
     } catch (error) {
-      console.error("Error sharing via email:", error)
-      setEmailStatus("error")
-      setEmailMessage("Failed to send invoice email: " + error.message)
+      console.error("Error sharing via email:", error);
+      setEmailStatus("error");
+      setEmailMessage("Failed to send invoice email: " + error.message);
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
   };
  
   // Hide scrollbar when modal is open
   useEffect(() => {
     if (showEmailModal) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto"
+      document.body.style.overflow = "auto";
     }
-  }, [showEmailModal])
+  }, [showEmailModal]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -1204,13 +1154,82 @@ useEffect(() => {
         className="invoice-button email-button"
       >
         <EmailIcon className="invoice-icon" />
-        <span className="invoice-text">Share via Email</span>
+        <span className="invoice-text">
+          {isGenerating ? "Sending..." : "Share via Email"}
+        </span>
       </button>
 
-      {/* Email Modal */}
-     
+      {/* Success/Error Popup */}
+      {(emailStatus === "success" || emailStatus === "error") && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+            <div className="text-center">
+              {emailStatus === "success" ? (
+                <>
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                    <svg
+                      className="h-6 w-6 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Invoice Sent Successfully!
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4" 
+                     dangerouslySetInnerHTML={{ 
+                       __html: emailMessage.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                     }}>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg
+                      className="h-6 w-6 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Failed to Send Invoice
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {emailMessage}
+                  </p>
+                </>
+              )}
+              <button
+                onClick={() => {
+                  setEmailStatus("");
+                  setEmailMessage("");
+                }}
+                className="w-full bg-[#5CAF90] text-white py-2 px-4 rounded-md hover:bg-[#4a9a7d] transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default InvoiceDownloadButton
+export default InvoiceDownloadButton;

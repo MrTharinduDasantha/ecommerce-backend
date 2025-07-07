@@ -382,7 +382,7 @@ const Sidebar = ({ isSidebarOpen }) => {
               onClick={toggleSettingsSubMenu}
               className={`flex items-center justify-between w-full rounded-md px-3 py-2 text-xs md:text-sm transition-colors
               hover:bg-[#5CAF90] hover:text-white cursor-pointer ${
-                isManageDiscountsActive
+                isManageSettingsActive
                   ? "bg-[#5CAF90] text-primary-content font-medium"
                   : "text-base-content/85"
               }`}
