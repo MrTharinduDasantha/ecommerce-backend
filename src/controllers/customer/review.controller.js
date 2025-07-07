@@ -5,6 +5,7 @@ const {
   getByOrderId,
   updateByOrderId,
   deleteByOrderId,
+  getActive,
 } = require("../../models/review.model")
 
 class ReviewController {
@@ -115,6 +116,14 @@ class ReviewController {
         message: "Failed to delete order review",
         error: error.message,
       })
+    }
+  }
+  async getAllActiveOrderReviews(req, res) {
+    try {
+      const reviews = await getActive()
+      res.json(reviews)
+    } catch (error) {
+      res.status(500).json({ error: "Database error" })
     }
   }
 }
