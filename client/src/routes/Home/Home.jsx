@@ -109,7 +109,6 @@ const Home = () => {
       setReviews(data.reverse().slice(0, 6))
       const customerIds = [...new Set(data.map(review => review.customer_id))]
       const customerData = {}
-
       for (const customerId of customerIds) {
         try {
           const customer = await getCustomerById(customerId)
@@ -438,12 +437,13 @@ const Home = () => {
         {reviews.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 xl:grid-cols-3">
             {reviews.map(review => {
-              const customer = customers[review.customer_id] || {}
-              const initials = customer
-                .split(" ")
-                .map(name => name[0])
-                .join("")
-                .toUpperCase()
+              const customer = customers[review.customer_id] || "User"
+              const initials =
+                customer
+                  .split(" ")
+                  .map(name => name[0])
+                  .join("")
+                  .toUpperCase() || "U"
               return (
                 <ReviewCard
                   key={review.review_id}
