@@ -1033,8 +1033,8 @@ const OrderTracking = () => {
                   )}
                   <p className="text-lg font-medium text-gray-800">
                     {showOrderReviewEditSuccessMessage
-                      ? "Review Submitted"
-                      : "Review Submission Failed"}
+                      ? "Review Updated"
+                      : "Review Update Failed"}
                   </p>
                 </div>
               ) : (
