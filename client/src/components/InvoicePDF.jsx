@@ -17,17 +17,15 @@ import "./InvoicePDF.css";
 // Function to generate map URL for PDF
 const generateMapUrl = (address, city, country) => {
   if (!address || !city || !country) return null;
-
+  
   try {
     // Clean and encode the address components
-    const cleanAddress = address.trim().replace(/\s+/g, " ");
+    const cleanAddress = address.trim().replace(/\s+/g, ' ');
     const cleanCity = city.trim();
     const cleanCountry = country.trim();
-
-    const fullAddress = encodeURIComponent(
-      `${cleanAddress}, ${cleanCity}, ${cleanCountry}`
-    );
-
+    
+    const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
+    
     // Try multiple map services for better reliability
     const mapServices = [
       // Primary: OpenStreetMap static image service
@@ -35,14 +33,14 @@ const generateMapUrl = (address, city, country) => {
       // Fallback: Alternative OpenStreetMap service
       `https://maps.googleapis.com/maps/api/staticmap?center=${fullAddress}&zoom=13&size=400x200&maptype=roadmap&markers=color:red%7C${fullAddress}`,
       // Secondary fallback: City-level map
-      `https://staticmap.openstreetmap.de/staticmap.php?center=${cleanCity},${cleanCountry}&zoom=10&size=400x200&markers=${cleanCity},${cleanCountry},red&format=png`,
+      `https://staticmap.openstreetmap.de/staticmap.php?center=${cleanCity},${cleanCountry}&zoom=10&size=400x200&markers=${cleanCity},${cleanCountry},red&format=png`
     ];
-
+    
     const mapUrl = mapServices[0]; // Use the first (most reliable) option
-    console.log("Generated map URL:", mapUrl);
+    console.log('Generated map URL:', mapUrl);
     return mapUrl;
   } catch (error) {
-    console.error("Error generating map URL:", error);
+    console.error('Error generating map URL:', error);
     return null;
   }
 };
@@ -54,9 +52,7 @@ const getStaticMapBase64 = async (address, city, country) => {
   const cleanCity = sanitizeAddress(city);
   const cleanCountry = sanitizeAddress(country);
 
-  const fullAddress = encodeURIComponent(
-    `${cleanAddress}, ${cleanCity}, ${cleanCountry}`
-  );
+  const fullAddress = encodeURIComponent(`${cleanAddress}, ${cleanCity}, ${cleanCountry}`);
   const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${fullAddress}&zoom=13&size=400x200&markers=${fullAddress},red&format=png`;
 
   console.log("Final map URL:", mapUrl);
@@ -94,75 +90,75 @@ const createMapPlaceholder = (address, city, country) => {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    textAlign: "center",
+    textAlign: "center"
   };
 };
 
 // Function to validate map URL
 const validateMapUrl = async (url) => {
   if (!url) return false;
-
+  
   try {
-    const response = await fetch(url, { method: "HEAD" });
+    const response = await fetch(url, { method: 'HEAD' });
     return response.ok;
   } catch (error) {
-    console.error("Map URL validation failed:", error);
+    console.error('Map URL validation failed:', error);
     return false;
   }
 };
 
 // Test function to verify map URL generation
 const testMapUrlGeneration = (address, city, country) => {
-  console.log("Testing map URL generation with:", { address, city, country });
+  console.log('Testing map URL generation with:', { address, city, country });
   const mapUrl = generateMapUrl(address, city, country);
-  console.log("Generated map URL:", mapUrl);
-
+  console.log('Generated map URL:', mapUrl);
+  
   if (mapUrl) {
     // Create a test image element to check if the URL loads
     const testImg = new Image();
     testImg.onload = () => {
-      console.log("✅ Map URL loads successfully");
+      console.log('✅ Map URL loads successfully');
     };
     testImg.onerror = () => {
-      console.log("❌ Map URL failed to load");
+      console.log('❌ Map URL failed to load');
     };
     testImg.src = mapUrl;
   }
-
+  
   return mapUrl;
 };
 
 // Test function to verify PDF generation
 const testPDFGeneration = async () => {
   try {
-    console.log("Testing PDF generation with minimal data...");
+    console.log('Testing PDF generation with minimal data...');
     const testData = {
-      orderId: "TEST-001",
+      orderId: 'TEST-001',
       orderDate: new Date().toLocaleString(),
-      paymentMethod: "Credit Card",
-      paymentStatus: "Paid",
-      deliveryType: "Standard",
-      deliveryStatus: "Processing",
-      customerName: "Test Customer",
-      address: "123 Test Street",
-      city: "Test City",
-      country: "Test Country",
-      subtotal: 100.0,
+      paymentMethod: 'Credit Card',
+      paymentStatus: 'Paid',
+      deliveryType: 'Standard',
+      deliveryStatus: 'Processing',
+      customerName: 'Test Customer',
+      address: '123 Test Street',
+      city: 'Test City',
+      country: 'Test Country',
+      subtotal: 100.00,
       discount: 0,
-      deliveryFee: 10.0,
-      total: 110.0,
+      deliveryFee: 10.00,
+      total: 110.00,
       mapUrl: null,
       statusHistory: [
-        { status: "Order Confirmed", date: new Date().toLocaleString() },
+        { status: 'Order Confirmed', date: new Date().toLocaleString() }
       ],
-      estimatedDeliveryDate: "Date not available",
-      currentStatus: {},
+      estimatedDeliveryDate: 'Date not available',
+      currentStatus: {}
     };
-
+    
     const blob = await pdf(<InvoicePDF data={testData} />).toBlob();
     return true;
   } catch (error) {
-    console.error("❌ PDF generation test failed:", error);
+    console.error('❌ PDF generation test failed:', error);
     return false;
   }
 };
@@ -178,7 +174,7 @@ const styles = StyleSheet.create({
     position: "relative",
     fontFamily: "Helvetica",
   },
-
+  
   // Header Section
   header: {
     flexDirection: "row",
@@ -189,65 +185,65 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: "#5CAF90",
   },
-
+  
   headerLeft: {
     flex: 1,
   },
-
+  
   headerCenter: {
     flex: 1,
     alignItems: "center",
   },
-
+  
   headerRight: {
     flex: 1,
     alignItems: "flex-end",
   },
-
+  
   logo: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#1D372E",
     marginBottom: 8,
   },
-
+  
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
   },
-
+  
   logoAsipiya: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#1D372E",
   },
-
+  
   logoInvoice: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#5CAF90",
   },
-
+  
   tagline: {
     fontSize: 12,
     color: "#666666",
     fontStyle: "italic",
   },
-
+  
   invoiceTitle: {
     fontSize: 32,
     fontWeight: "bold",
     color: "#1D372E",
     marginBottom: 8,
   },
-
+  
   invoiceSubtitle: {
     fontSize: 14,
     color: "#5CAF90",
     fontWeight: "600",
   },
-
+  
   // Order Info Section
   orderInfoSection: {
     flexDirection: "row",
@@ -257,21 +253,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
     borderRadius: 8,
   },
-
+  
   orderInfoLeft: {
     flex: 1,
   },
-
+  
   orderInfoRight: {
     flex: 1,
     alignItems: "flex-end",
   },
-
+  
   infoGroup: {
     marginBottom: 12,
-    width: "100px",
+    width:"100px"
   },
-
+  
   infoLabel: {
     fontSize: 10,
     color: "#666666",
@@ -279,15 +275,15 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    width: "100px",
+    width:"100px"
   },
-
+  
   infoValue: {
     fontSize: 12,
     color: "#1D372E",
     fontWeight: "600",
   },
-
+  
   // Section Titles
   sectionTitle: {
     fontSize: 18,
@@ -298,7 +294,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: "#5CAF90",
   },
-
+  
   sectionTitleContainer: {
     flexDirection: "row",
     marginBottom: 15,
@@ -306,55 +302,55 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: "#5CAF90",
   },
-
+  
   sectionTitleOrder: {
     fontSize: 18,
     color: "#000000",
     fontWeight: "bold",
   },
-
+  
   sectionTitleSummary: {
     fontSize: 18,
     color: "#5CAF90",
     fontWeight: "bold",
   },
-
+  
   sectionTitleDelivery: {
     fontSize: 18,
     color: "#000000",
     fontWeight: "bold",
   },
-
+  
   sectionTitleAddress: {
     fontSize: 18,
     color: "#5CAF90",
     fontWeight: "bold",
   },
-
+  
   sectionTitlePricing: {
     fontSize: 18,
     color: "#000000",
     fontWeight: "bold",
   },
-
+  
   sectionTitleSummaryPricing: {
     fontSize: 18,
     color: "#5CAF90",
     fontWeight: "bold",
   },
-
+  
   sectionTitleOrderStatus: {
     fontSize: 18,
     color: "#000000",
     fontWeight: "bold",
   },
-
+  
   sectionTitleStatus: {
     fontSize: 18,
     color: "#5CAF90",
     fontWeight: "bold",
   },
-
+  
   // Order Number Section
   orderNumberSection: {
     flexDirection: "row",
@@ -366,19 +362,19 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: "#5CAF90",
   },
-
+  
   orderNumberLabel: {
     fontSize: 14,
     color: "#1D372E",
     fontWeight: "600",
   },
-
+  
   orderNumberValue: {
     fontSize: 16,
     color: "#5CAF90",
     fontWeight: "bold",
   },
-
+  
   // Delivery Address Section
   addressSection: {
     marginBottom: 25,
@@ -386,31 +382,31 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
     borderRadius: 8,
   },
-
+  
   addressRow: {
     flexDirection: "row",
     marginBottom: 6,
   },
-
+  
   addressLabel: {
     width: "25%",
     fontSize: 11,
     color: "#666666",
     fontWeight: "600",
   },
-
+  
   addressValue: {
     width: "75%",
     fontSize: 11,
     color: "#000000",
     fontWeight: "bold",
   },
-
+  
   // Order Items Section
   itemsSection: {
     marginBottom: 25,
   },
-
+  
   itemCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -425,14 +421,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
-
+  
   itemImage: {
     width: 50,
     height: 50,
     borderRadius: 6,
     marginRight: 12,
   },
-
+  
   itemImagePlaceholder: {
     width: 50,
     height: 50,
@@ -442,42 +438,42 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
-
+  
   itemDetails: {
     flex: 1,
   },
-
+  
   itemName: {
     fontSize: 11,
     fontWeight: "bold",
     color: "#1D372E",
     marginBottom: 4,
   },
-
+  
   itemAttributes: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
-
+  
   attributeItem: {
     flexDirection: "row",
     alignItems: "center",
     marginRight: 12,
   },
-
+  
   attributeLabel: {
     fontSize: 9,
     color: "#666666",
     marginRight: 4,
   },
-
+  
   attributeValue: {
     fontSize: 9,
     fontWeight: "600",
     color: "#1D372E",
   },
-
+  
   colorSwatch: {
     width: 8,
     height: 8,
@@ -486,14 +482,14 @@ const styles = StyleSheet.create({
     borderColor: "#d1d5db",
     marginLeft: 4,
   },
-
+  
   itemPrice: {
     fontSize: 11,
     fontWeight: "bold",
     color: "#000000",
     textAlign: "right",
   },
-
+  
   // Pricing Summary
   pricingSection: {
     marginBottom: 25,
@@ -501,25 +497,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
     borderRadius: 8,
   },
-
+  
   pricingRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 6,
   },
-
+  
   pricingLabel: {
     fontSize: 11,
     color: "#666666",
     fontWeight: "500",
   },
-
+  
   pricingValue: {
     fontSize: 11,
     color: "#1D372E",
     fontWeight: "600",
   },
-
+  
   totalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -528,24 +524,24 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#5CAF90",
   },
-
+  
   totalLabel: {
     fontSize: 14,
     color: "#1D372E",
     fontWeight: "bold",
   },
-
+  
   totalValue: {
     fontSize: 16,
     color: "#5CAF90",
     fontWeight: "bold",
   },
-
+  
   // Order Status Section
   statusSection: {
     marginBottom: 25,
   },
-
+  
   statusItem: {
     flexDirection: "row",
     marginBottom: 6,
@@ -554,20 +550,20 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: "center",
   },
-
+  
   statusText: {
     fontSize: 10,
     color: "#1D372E",
     flex: 1,
     fontWeight: "500",
   },
-
+  
   statusDate: {
     fontSize: 9,
     color: "#666666",
     width: "25%",
   },
-
+  
   statusIcon: {
     fontSize: 10,
     color: "#5CAF90",
@@ -575,7 +571,7 @@ const styles = StyleSheet.create({
     width: "10%",
     textAlign: "center",
   },
-
+  
   currentStatusItem: {
     flexDirection: "row",
     marginBottom: 6,
@@ -586,21 +582,21 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: "#5CAF90",
   },
-
+  
   currentStatusText: {
     fontSize: 11,
     color: "#1D372E",
     flex: 1,
     fontWeight: "bold",
   },
-
+  
   currentStatusDate: {
     fontSize: 9,
     color: "#5CAF90",
     width: "25%",
     fontWeight: "600",
   },
-
+  
   currentStatusIcon: {
     fontSize: 10,
     color: "#5CAF90",
@@ -608,7 +604,7 @@ const styles = StyleSheet.create({
     width: "10%",
     textAlign: "center",
   },
-
+  
   estimatedDelivery: {
     flexDirection: "row",
     marginTop: 10,
@@ -618,21 +614,21 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: "#ffc107",
   },
-
+  
   estimatedDeliveryLabel: {
     fontSize: 10,
     color: "#856404",
     fontWeight: "bold",
     width: "50%",
   },
-
+  
   estimatedDeliveryValue: {
     fontSize: 10,
     color: "#856404",
     width: "50%",
     fontWeight: "500",
   },
-
+  
   // Footer
   footer: {
     position: "absolute",
@@ -644,7 +640,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderTopColor: "#5CAF90",
   },
-
+  
   thankYouText: {
     fontSize: 14,
     textAlign: "center",
@@ -653,12 +649,12 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginBottom: 8,
   },
-
+  
   // Utility styles
   spacer: {
     height: 20,
   },
-
+  
   divider: {
     height: 1,
     backgroundColor: "#e5e7eb",
@@ -670,25 +666,25 @@ const styles = StyleSheet.create({
 const InvoicePDF = ({ data }) => {
   // Ensure data has required fields with fallbacks
   const safeData = {
-    items: data?.preparedItems || [],
-    orderId: data?.orderId || "N/A",
-    orderDate: data?.orderDate || "N/A",
-    paymentMethod: data?.paymentMethod || "N/A",
-    paymentStatus: data?.paymentStatus || "N/A",
-    deliveryType: data?.deliveryType || "Standard",
-    deliveryStatus: data?.deliveryStatus || "N/A",
-    customerName: data?.customerName || "N/A",
-    address: data?.address || "N/A",
-    city: data?.city || "N/A",
-    country: data?.country || "N/A",
+    items : data?.preparedItems || [],
+    orderId: data?.orderId || 'N/A',
+    orderDate: data?.orderDate || 'N/A',
+    paymentMethod: data?.paymentMethod || 'N/A',
+    paymentStatus: data?.paymentStatus || 'N/A',
+    deliveryType: data?.deliveryType || 'Standard',
+    deliveryStatus: data?.deliveryStatus || 'N/A',
+    customerName: data?.customerName || 'N/A',
+    address: data?.address || 'N/A',
+    city: data?.city || 'N/A',
+    country: data?.country || 'N/A',
     subtotal: data?.subtotal || 0,
     discount: data?.discount || 0,
     deliveryFee: data?.deliveryFee || 0,
     total: data?.total || 0,
     mapUrl: data?.mapUrl || null,
     statusHistory: data?.statusHistory || [],
-    estimatedDeliveryDate: data?.estimatedDeliveryDate || "Date not available",
-    currentStatus: data?.currentStatus || {},
+    estimatedDeliveryDate: data?.estimatedDeliveryDate || 'Date not available',
+    currentStatus: data?.currentStatus || {}
   };
   return (
     <Document>
@@ -708,13 +704,13 @@ const InvoicePDF = ({ data }) => {
           <Text style={styles.sectionTitleOrder}>Order</Text>
           <Text style={styles.sectionTitleSummary}> Summary</Text>
         </View>
-
+        
         {/* Order Number */}
         <View style={styles.orderNumberSection}>
           <Text style={styles.orderNumberLabel}>Order : </Text>
           <Text style={styles.orderNumberValue}>#{safeData.orderId}</Text>
         </View>
-
+        
         {/* Order Information Section */}
         <View style={styles.orderInfoSection}>
           <View style={styles.orderInfoLeft}>
@@ -744,13 +740,7 @@ const InvoicePDF = ({ data }) => {
             </View>
             <View style={styles.infoGroup}>
               <Text style={styles.infoLabel}>Order Total</Text>
-              <Text style={styles.infoValue}>
-                LKR{" "}
-                {safeData.total.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </Text>
+              <Text style={styles.infoValue}>LKR {safeData.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
             </View>
           </View>
         </View>
@@ -784,33 +774,29 @@ const InvoicePDF = ({ data }) => {
           {safeData && safeData.items && safeData.items.length > 0 ? (
             safeData.items.map((item, index) => (
               <View
-                key={`${item.id || index}-${item.color || ""}-${
-                  item.size || ""
-                }`}
+                key={`${item.id || index}-${item.color || ''}-${item.size || ''}`}
                 style={styles.itemCard}
               >
                 {item.image ? (
-                  <Image src={item.image} style={styles.itemImage} />
+                  <Image
+                    src={item.image}
+                    style={styles.itemImage}
+                  />
                 ) : (
                   <View style={styles.itemImagePlaceholder}>
-                    <Text style={{ fontSize: 8, color: "#9ca3af" }}>
-                      No Image
-                    </Text>
+                    <Text style={{ fontSize: 8, color: "#9ca3af" }}>No Image</Text>
                   </View>
                 )}
-
+                
                 <View style={styles.itemDetails}>
                   <Text style={styles.itemName}>{item.name}</Text>
-
+                  
                   <View style={styles.itemAttributes}>
                     {item.color && item.color !== "No color selected" && (
                       <View style={styles.attributeItem}>
                         <Text style={styles.attributeLabel}>Color:</Text>
                         <View
-                          style={[
-                            styles.colorSwatch,
-                            { backgroundColor: item.color },
-                          ]}
+                          style={[styles.colorSwatch, { backgroundColor: item.color }]}
                         />
                       </View>
                     )}
@@ -823,34 +809,21 @@ const InvoicePDF = ({ data }) => {
                     {item.quantity && (
                       <View style={styles.attributeItem}>
                         <Text style={styles.attributeLabel}>Qty:</Text>
-                        <Text style={styles.attributeValue}>
-                          {item.quantity}
-                        </Text>
+                        <Text style={styles.attributeValue}>{item.quantity}</Text>
                       </View>
                     )}
                   </View>
                 </View>
-
+                
                 {item.price && (
                   <Text style={styles.itemPrice}>
-                    LKR{" "}
-                    {item.price.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    LKR {item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </Text>
                 )}
               </View>
             ))
           ) : (
-            <Text
-              style={{
-                fontSize: 10,
-                color: "#6b7280",
-                textAlign: "center",
-                padding: 20,
-              }}
-            >
+            <Text style={{ fontSize: 10, color: "#6b7280", textAlign: "center", padding: 20 }}>
               No item details available for this order.
             </Text>
           )}
@@ -864,47 +837,24 @@ const InvoicePDF = ({ data }) => {
         <View style={styles.pricingSection}>
           <View style={styles.pricingRow}>
             <Text style={styles.pricingLabel}>Subtotal:</Text>
-            <Text style={styles.pricingValue}>
-              LKR{" "}
-              {safeData.subtotal.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </Text>
+            <Text style={styles.pricingValue}>LKR {safeData.subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
           </View>
           {safeData.discount > 0 && (
             <View style={styles.pricingRow}>
               <Text style={styles.pricingLabel}>Discount:</Text>
-              <Text style={styles.pricingValue}>
-                -LKR{" "}
-                {safeData.discount.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </Text>
+              <Text style={styles.pricingValue}>-LKR {safeData.discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
             </View>
           )}
           <View style={styles.pricingRow}>
             <Text style={styles.pricingLabel}>Delivery Fee:</Text>
-            <Text style={styles.pricingValue}>
-              LKR{" "}
-              {safeData.deliveryFee.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </Text>
+            <Text style={styles.pricingValue}>LKR {safeData.deliveryFee.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount:</Text>
-            <Text style={styles.totalValue}>
-              LKR{" "}
-              {safeData.total.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </Text>
+            <Text style={styles.totalValue}>LKR {safeData.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
           </View>
         </View>
+
 
         {/* Order Status Section */}
         <View style={styles.sectionTitleContainer}>
@@ -927,24 +877,21 @@ const InvoicePDF = ({ data }) => {
               <Text style={styles.statusIcon}>✓</Text>
             </View>
           )}
-
+          
           {/* Current Status */}
           <View style={styles.currentStatusItem}>
             <Text style={styles.currentStatusText}>
-              Current Status:{" "}
-              {safeData.currentStatus?.delivery_status ||
-                safeData.deliveryStatus}
+              Current Status: {safeData.currentStatus?.delivery_status || safeData.deliveryStatus}
             </Text>
             <Text style={styles.currentStatusDate}>
-              {safeData.currentStatus?.delivery_date
-                ? new Date(
-                    safeData.currentStatus.delivery_date
-                  ).toLocaleDateString()
-                : "Pending"}
+              {safeData.currentStatus?.delivery_date 
+                ? new Date(safeData.currentStatus.delivery_date).toLocaleDateString()
+                : "Pending"
+              }
             </Text>
             <Text style={styles.currentStatusIcon}>●</Text>
           </View>
-
+          
           {/* Estimated Delivery Details */}
           <View style={styles.estimatedDelivery}>
             <Text style={styles.estimatedDeliveryLabel}>
@@ -960,9 +907,7 @@ const InvoicePDF = ({ data }) => {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.thankYouText}>
-            Thank You For Using Asipiya Services
-          </Text>
+          <Text style={styles.thankYouText}>Thank You For Using Asipiya Services</Text>
           <Text style={styles.tagline}>Your Trusted Shopping Destination</Text>
         </View>
       </Page>
@@ -978,125 +923,107 @@ const InvoiceDownloadButton = ({ orderData }) => {
   const [emailStatus, setEmailStatus] = useState(""); // 'success', 'error', or ''
   const [emailMessage, setEmailMessage] = useState("");
 
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("userEmail");
-    console.log(savedEmail);
-    if (savedEmail) {
-      setEmailAddress(savedEmail);
-    }
-  }, []);
+useEffect(() => {
+  const savedEmail = localStorage.getItem("userEmail");
+  console.log(savedEmail)
+  if (savedEmail) {
+    setEmailAddress(savedEmail);
+  }
+}, []);
   const handleDownload = async () => {
     try {
       setIsGenerating(true);
-
+      
       // Test PDF generation first
       const testResult = await testPDFGeneration();
       if (!testResult) {
-        throw new Error("PDF generation test failed");
+        throw new Error('PDF generation test failed');
       }
-
+      
       // Prepare data synchronously to avoid async issues
       const pdfData = {
         ...orderData,
-        mapUrl: await getStaticMapBase64(
-          orderData.address,
-          orderData.city,
-          orderData.country
-        ),
-        preparedItems: prepareOrderItems(orderData.orderItems), // ⬅ add this
-        statusHistory:
-          orderData.trackingInfo && orderData.trackingInfo.status_history
-            ? orderData.trackingInfo.status_history.map((item, index) => ({
-                status: item.status_to || "Status Update",
-                date: item.created_at
-                  ? new Date(item.created_at).toLocaleString()
-                  : "N/A",
-              }))
-            : [
-                { status: "Order Confirmed", date: orderData.orderDate },
-                { status: "Processing", date: "In Progress" },
-                { status: "Shipped", date: "In Progress" },
-                { status: "Delivered", date: "Pending" },
-              ].slice(
-                0,
-                ["confirmed", "processing", "shipped", "delivered"].indexOf(
-                  orderData.deliveryStatus?.toLowerCase()
-                ) + 1 || 1
-              ),
+        mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
+        preparedItems: prepareOrderItems(orderData.orderItems),  // ⬅ add this
+        statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
+          ? orderData.trackingInfo.status_history.map((item, index) => ({
+              status: item.status_to || "Status Update",
+              date: item.created_at 
+                ? new Date(item.created_at).toLocaleString()
+                : "N/A"
+            }))
+          : [
+              { status: "Order Confirmed", date: orderData.orderDate },
+              { status: "Processing", date: "In Progress" },
+              { status: "Shipped", date: "In Progress" },
+              { status: "Delivered", date: "Pending" }
+            ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
+              .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
         estimatedDeliveryDate: orderData.currentStatus?.delivery_date
-          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString(
-              "en-US",
-              {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              }
-            )
-          : "Date not available",
+          ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "Date not available"
       };
-
+      
       const blob = await pdf(<InvoicePDF data={pdfData} />).toBlob();
-
+      
       // Create download link
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `Order-${orderData.orderId}-Invoice.pdf`;
-      link.style.display = "none";
-
+      link.style.display = 'none';
+      
       // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
+      
       // Clean up
       setTimeout(() => {
         URL.revokeObjectURL(url);
       }, 100);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert(
-        "Failed to generate PDF. Please try again. Error: " + error.message
-      );
+      alert("Failed to generate PDF. Please try again. Error: " + error.message);
     } finally {
       setIsGenerating(false);
     }
   };
-  // Prepare order items for OrderDetails component
+// Prepare order items for OrderDetails component
   const prepareOrderItems = (data) => {
-    console.log(125698, data);
+    console.log(125698,data)
     if (!data) {
       return [];
     }
-
+    
     return data.map((item, index) => {
+      
       // Handle null Rate and Qty by calculating from totals
       let effectiveRate = item.Rate;
       let effectiveQty = item.Qty;
-
+      
       if (!effectiveRate || !effectiveQty) {
         // If Rate or Qty is null, calculate from Total_Amount
         // Assume quantity 1 if not available and use Total_Amount as price
         effectiveQty = item.Qty || 1;
-        effectiveRate = item.Total_Amount
-          ? parseFloat(item.Total_Amount) / effectiveQty
-          : 0;
+        effectiveRate = item.Total_Amount ? parseFloat(item.Total_Amount) / effectiveQty : 0;
       }
-
+      
       return {
         id: item.Product_Variations_idProduct_Variations,
         productId: item.Product_Variations_idProduct_Variations,
-        name: item.product_name || "Unknown Product",
+        name: item.product_name || 'Unknown Product',
         image: item.product_image || null,
         price: effectiveRate,
         quantity: effectiveQty,
         color: item.Colour,
         size: item.Size,
-        marketPrice:
-          item.Total && effectiveQty
-            ? parseFloat(item.Total) / effectiveQty
-            : effectiveRate, // Calculate market price from Total (before discount)
+        marketPrice: item.Total && effectiveQty ? parseFloat(item.Total) / effectiveQty : effectiveRate, // Calculate market price from Total (before discount)
         total: item.Total_Amount || item.Total || 0,
       };
     });
@@ -1123,41 +1050,30 @@ const InvoiceDownloadButton = ({ orderData }) => {
           // Prepare data synchronously (same as download function)
           const pdfData = {
             ...orderData,
-            mapUrl: await getStaticMapBase64(
-              orderData.address,
-              orderData.city,
-              orderData.country
-            ),
+            mapUrl: await getStaticMapBase64(orderData.address, orderData.city, orderData.country),
             preparedItems: prepareOrderItems(orderData.orderItems),
-            statusHistory:
-              orderData.trackingInfo && orderData.trackingInfo.status_history
-                ? orderData.trackingInfo.status_history.map((item, index) => ({
-                    status: item.status_to || "Status Update",
-                    date: item.created_at
-                      ? new Date(item.created_at).toLocaleString()
-                      : "N/A",
-                  }))
-                : [
-                    { status: "Order Confirmed", date: orderData.orderDate },
-                    { status: "Processing", date: "In Progress" },
-                    { status: "Shipped", date: "In Progress" },
-                    { status: "Delivered", date: "Pending" },
-                  ].slice(
-                    0,
-                    ["confirmed", "processing", "shipped", "delivered"].indexOf(
-                      orderData.deliveryStatus?.toLowerCase()
-                    ) + 1 || 1
-                  ),
+            statusHistory: orderData.trackingInfo && orderData.trackingInfo.status_history 
+              ? orderData.trackingInfo.status_history.map((item, index) => ({
+                  status: item.status_to || "Status Update",
+                  date: item.created_at 
+                    ? new Date(item.created_at).toLocaleString()
+                    : "N/A"
+                }))
+              : [
+                  { status: "Order Confirmed", date: orderData.orderDate },
+                  { status: "Processing", date: "In Progress" },
+                  { status: "Shipped", date: "In Progress" },
+                  { status: "Delivered", date: "Pending" }
+                ].slice(0, ["confirmed", "processing", "shipped", "delivered"]
+                  .indexOf(orderData.deliveryStatus?.toLowerCase()) + 1 || 1),
             estimatedDeliveryDate: orderData.currentStatus?.delivery_date
-              ? new Date(
-                  orderData.currentStatus.delivery_date
-                ).toLocaleDateString("en-US", {
+              ? new Date(orderData.currentStatus.delivery_date).toLocaleDateString("en-US", {
                   weekday: "long",
                   year: "numeric",
                   month: "long",
                   day: "numeric",
                 })
-              : "Date not available",
+              : "Date not available"
           };
 
           // Generate PDF blob
@@ -1179,10 +1095,7 @@ const InvoiceDownloadButton = ({ orderData }) => {
                   Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
                 body: JSON.stringify({
-                  emailAddress:
-                    emailAddress ||
-                    orderData.customerEmail ||
-                    "customer@example.com",
+                  emailAddress: emailAddress || orderData.customerEmail || "customer@example.com",
                   pdfBase64: base64data,
                 }),
               }
@@ -1203,6 +1116,7 @@ const InvoiceDownloadButton = ({ orderData }) => {
 
       // Start email sending in background
       sendEmailInBackground();
+
     } catch (error) {
       console.error("Error sharing via email:", error);
       setEmailStatus("error");
@@ -1211,7 +1125,7 @@ const InvoiceDownloadButton = ({ orderData }) => {
       setIsGenerating(false);
     }
   };
-
+ 
   // Hide scrollbar when modal is open
   useEffect(() => {
     if (showEmailModal) {
@@ -1270,15 +1184,11 @@ const InvoiceDownloadButton = ({ orderData }) => {
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     Invoice Sent Successfully!
                   </h3>
-                  <p
-                    className="text-sm text-gray-600 mb-4"
-                    dangerouslySetInnerHTML={{
-                      __html: emailMessage.replace(
-                        /\*\*(.*?)\*\*/g,
-                        "<strong>$1</strong>"
-                      ),
-                    }}
-                  ></p>
+                  <p className="text-sm text-gray-600 mb-4" 
+                     dangerouslySetInnerHTML={{ 
+                       __html: emailMessage.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                     }}>
+                  </p>
                 </>
               ) : (
                 <>
@@ -1300,7 +1210,9 @@ const InvoiceDownloadButton = ({ orderData }) => {
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     Failed to Send Invoice
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">{emailMessage}</p>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {emailMessage}
+                  </p>
                 </>
               )}
               <button
