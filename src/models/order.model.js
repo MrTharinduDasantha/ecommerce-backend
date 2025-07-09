@@ -72,7 +72,7 @@ class Order {
 
     // Get order items with product images
     const [orderItems] = await pool.query(
-      "SELECT oi.*, p.Description as product_name, p.Main_Image_Url as product_image, pv.Colour, pv.Size " +
+      "SELECT oi.*, p.idProduct as product_id, p.Description as product_name, p.Main_Image_Url as product_image, pv.Colour, pv.Size " +
         "FROM Order_has_Product_Variations oi " +
         "JOIN Product_Variations pv ON oi.Product_Variations_idProduct_Variations = pv.idProduct_Variations " +
         "JOIN Product p ON pv.Product_idProduct = p.idProduct " +
