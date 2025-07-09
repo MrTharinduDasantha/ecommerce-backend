@@ -66,8 +66,6 @@ const OrderTracking = () => {
     comment: "",
   })
 
-  console.log("OR:", orderReview)
-
   // Get customer ID from user object
   const customerId = user?.id
 
@@ -495,6 +493,8 @@ const OrderTracking = () => {
       return []
     }
 
+    console.log("OD:",orderDetails)
+
     return orderDetails.items.map(item => {
       // Handle null Rate and Qty by calculating from totals
       let effectiveRate = item.Rate
@@ -511,7 +511,7 @@ const OrderTracking = () => {
 
       return {
         id: item.Product_Variations_idProduct_Variations,
-        productId: item.Product_Variations_idProduct_Variations,
+        productId: item.product_id,
         name: item.product_name || "Unknown Product",
         image: item.product_image || null,
         price: effectiveRate,
