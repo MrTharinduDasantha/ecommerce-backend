@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 // Customer Order Controller
 class OrderController {
   // Get customer orders
-  async getCustomerOrders(req, res) {
+  async getCustomerOrders(req, res) { 
     try {
       console.log("Getting orders for customer ID:", req.params.customer_id)
       const orders = await Order.findByCustomerId(req.params.customer_id)
