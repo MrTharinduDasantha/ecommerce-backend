@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import SearchableSelect from "./SearchableSelect";
 import "react-datepicker/dist/react-datepicker.css";
+import { formatPrice } from "../../../client/src/components/FormatPrice";
 
 const EventForm = () => {
   const { id } = useParams();
@@ -208,6 +209,8 @@ const EventForm = () => {
     setDiscountForm((prev) => ({ ...prev, [field]: date }));
   };
 
+
+
   const toggleDiscountStatus = (Status) => {
     setDiscountForm((prev) => ({ ...prev, Status }));
   };
@@ -392,7 +395,8 @@ const EventForm = () => {
       // Remove decimal places for percentage
       return `${Number.parseInt(value)}%`;
     } else {
-      return `Rs. ${value}`;
+      return formatPrice(value);
+
     }
   };
 
@@ -539,22 +543,22 @@ const EventForm = () => {
                             <span className="text-xs font-medium text-gray-600">
                               Market Price:
                             </span>
-                            <span className="text-sm font-bold text-gray-800">
-                              Rs. {parseFloat(product.Market_Price).toFixed(2)}
+                            <span
+                              className={`text-sm font-bold ${
+                                productDiscount
+                                  ? "line-through text-gray-500"
+                                  : "text-gray-800"
+                              }`}
+                            >
+                              LKR {parseFloat(product.Market_Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-xs font-medium text-gray-600">
                               Selling Price:
                             </span>
-                            <span
-                              className={`text-sm font-bold ${
-                                productDiscount
-                                  ? "line-through text-gray-500"
-                                  : "text-[#5CAF90]"
-                              }`}
-                            >
-                              Rs. {originalPrice.toFixed(2)}
+                            <span className="text-sm font-bold text-[#5CAF90]">
+                              LKR {originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                           </div>
 
@@ -577,7 +581,7 @@ const EventForm = () => {
                                     Final Price:
                                   </span>
                                   <span className="text-lg font-bold text-[#5CAF90]">
-                                    Rs. {discountedPrice.toFixed(2)}
+                                    LKR {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                   </span>
                                 </div>
                               </div>
@@ -971,7 +975,7 @@ const EventForm = () => {
                   >
                     <option value="">Select discount type</option>
                     <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount (Rs.)</option>
+                    <option value="fixed">Fixed Amount (LKR)</option>
                   </select>
                 </div>
 
@@ -981,7 +985,7 @@ const EventForm = () => {
                       Discount Value{" "}
                       {discountForm.Discount_Type === "percentage"
                         ? "(%)"
-                        : "(Rs.)"}
+                        : "(LKR)"}
                     </span>
                   </label>
                   <input
