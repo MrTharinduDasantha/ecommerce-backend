@@ -109,7 +109,7 @@ const DiscountList = () => {
       // Remove decimal places for percentage
       return `${Number.parseInt(value)}%`;
     } else {
-      return `Rs. ${value}`;
+      return `LKR ${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
   };
 

@@ -180,8 +180,8 @@ const ProductForm = () => {
               ? product.Product_Brand_idProduct_Brand
               : "other"
           );
-          setMarketPrice(product.Market_Price);
-          setSellingPrice(product.Selling_Price);
+          setMarketPrice(product.Market_Price ? product.Market_Price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '');
+          setSellingPrice(product.Selling_Price ? product.Selling_Price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '');
           setSubDescription(product.Long_Description);
           setMainImagePreview(product.Main_Image_Url);
           if (product.images) {
@@ -553,8 +553,8 @@ const ProductForm = () => {
       if (selectedBrand !== "other") {
         formData.append("Product_Brand_idProduct_Brand", selectedBrand);
       }
-      formData.append("Market_Price", marketPrice);
-      formData.append("Selling_Price", sellingPrice);
+      formData.append("Market_Price", marketPrice.replace(/,/g, ''));
+      formData.append("Selling_Price", sellingPrice.replace(/,/g, ''));
       formData.append("Long_Description", subDescription);
       formData.append("Seasonal_Offer", seasonalOffer.toString());
       formData.append("Rush_Delivery", rushDelivery.toString());
@@ -733,13 +733,19 @@ const ProductForm = () => {
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
                     <span className="label-text text-sm font-medium">
-                      Market Price
+                      Market Price (LKR)
                     </span>
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={marketPrice}
-                    onChange={(e) => setMarketPrice(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/,/g, '');
+                      if (value === '' || /^\d*$/.test(value)) {
+                        const formattedValue = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        setMarketPrice(formattedValue);
+                      }
+                    }}
                     placeholder="Enter market price"
                     className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />
@@ -749,13 +755,19 @@ const ProductForm = () => {
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
                     <span className="label-text text-sm font-medium">
-                      Selling Price
+                      Selling Price (LKR)
                     </span>
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={sellingPrice}
-                    onChange={(e) => setSellingPrice(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/,/g, '');
+                      if (value === '' || /^\d*$/.test(value)) {
+                        const formattedValue = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        setSellingPrice(formattedValue);
+                      }
+                    }}
                     placeholder="Enter selling price"
                     className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                   />

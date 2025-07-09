@@ -839,6 +839,26 @@ async function getDiscountedProducts() {
 
 // Delete a product and its related records
 async function deleteProduct(productId) {
+  // Check if product exists in cart
+  const [cartItems] = await pool.query(
+    "SELECT COUNT(*) as count FROM Cart_has_Product chp JOIN Product_Variations pv ON chp.Product_Variations_idProduct_Variations = pv.idProduct_Variations WHERE pv.Product_idProduct = ?",
+    [productId]
+  );
+
+  if (cartItems[0].count > 0) {
+    throw new Error("Cannot delete product as it is currently in someone's cart");
+  }
+
+  // Check if product has been ordered
+  const [orderItems] = await pool.query(
+    "SELECT COUNT(*) as count FROM Order_has_Product_Variations ohpv JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations WHERE pv.Product_idProduct = ?",
+    [productId]
+  );
+
+  if (orderItems[0].count > 0) {
+    throw new Error("Cannot delete product as it has already been ordered");
+  }
+
   // Delete from join table
   await pool.query(
     "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ?",

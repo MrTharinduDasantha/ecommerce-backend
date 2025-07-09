@@ -32,7 +32,7 @@ const Footer = () => {
     footerSetting?.Footer_Links && Array.isArray(footerSetting.Footer_Links)
       ? footerSetting.Footer_Links
       : [
-          { text: "Terms and Conditions", url: "/terms-of-service" }, 
+          { text: "Terms and Conditions", url: "/terms-of-service" },
           { text: "Legal Policy", url: "/legal-policy" },
           { text: "Privacy Policy", url: "/privacy-policy" },
           { text: "Security Policy", url: "/security-policy" },
@@ -129,7 +129,7 @@ const Footer = () => {
         )}
       </div>
       {/* Countries Section */}
-      <div className="overflow-x-auto mb-10 px-2 sm:px-4 md:px-0 md:ml-50">
+      <div className="overflow-x-auto mb-10 px-2 sm:px-4 md:px-0 md:ml-16">
         <div className="flex flex-col sm:flex-row md:grid md:grid-cols-4 gap-6 min-w-[350px] md:min-w-0">
           {/* Country Blocks */}
           {countryBlocks.map((loc, idx) => (
@@ -174,7 +174,10 @@ const Footer = () => {
           <button className="bg-white text-black px-4 py-2 rounded font-medium hover:bg-gray-200 text-xs md:text-sm transition w-full md:w-auto shadow-sm">
             Sell with TechWave
           </button>
-          <a href="#" className="hover:underline text-xs md:text-sm text-white w-full md:w-auto font-medium">
+          <a
+            href="#"
+            className="hover:underline text-xs md:text-sm text-white w-full md:w-auto font-medium"
+          >
             Download <span className="font-semibold">TechWave App</span>
           </a>
           <div className="flex gap-2 justify-center w-full md:w-auto">
@@ -182,13 +185,13 @@ const Footer = () => {
               src={googleplay}
               alt="Google Play"
               className="h-9 md:h-10 w-auto object-contain rounded shadow-sm border border-gray-200 bg-white"
-              style={{ background: '#fff' }}
+              style={{ background: "#fff" }}
             />
             <img
               src={appstore}
               alt="App Store"
               className="h-9 md:h-10 w-auto object-contain rounded shadow-sm border border-gray-200 bg-white"
-              style={{ background: '#fff' }}
+              style={{ background: "#fff" }}
             />
           </div>
         </div>
@@ -204,7 +207,11 @@ const Footer = () => {
           {mobileMenuOpen && (
             <div className="flex flex-col items-center gap-2 mt-2">
               {footerLinks.map((link, idx) => (
-                <a key={idx} href={link.url} className="hover:underline text-white text-xs">
+                <a
+                  key={idx}
+                  href={link.url}
+                  className="hover:underline text-white text-xs"
+                >
                   {link.text}
                 </a>
               ))}
