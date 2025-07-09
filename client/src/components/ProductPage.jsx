@@ -328,8 +328,11 @@ const ProductPage = () => {
 
   const indexOfLastReview = currentPage * reviewsPerPage
   const indexOfFirstReview = indexOfLastReview - reviewsPerPage
-  const currentReviews =
-    product?.reviews?.slice(indexOfFirstReview, indexOfLastReview) || []
+  const currentReviews = product?.reviews
+    ? [...product.reviews]
+        .reverse()
+        .slice(indexOfFirstReview, indexOfLastReview)
+    : []
   const totalPages = product?.reviews?.length
     ? Math.ceil(product?.reviews?.length / reviewsPerPage)
     : 0
