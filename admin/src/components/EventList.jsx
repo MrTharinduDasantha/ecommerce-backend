@@ -140,6 +140,16 @@ const EventList = () => {
     );
   };
 
+  // Format discount value for display
+  const formatDiscountValue = (value, type) => {
+    if (type === "percentage") {
+      // Remove decimal places for percentage
+      return `${Number.parseInt(value)}%`;
+    } else {
+      return `Rs. ${value}`;
+    }
+  };
+
   return (
     <div className="card bg-white shadow-md">
       <div className="card-body p-4 md:p-6">
@@ -466,11 +476,10 @@ const EventList = () => {
                                     Discount:
                                   </span>
                                   <span className="text-sm font-bold text-red-600">
-                                    {discount.Discount_Type === "percentage"
-                                      ? `${discount.Discount_Value}% OFF`
-                                      : `Rs. ${parseFloat(
-                                          discount.Discount_Value
-                                        ).toFixed(2)} OFF`}
+                                    {formatDiscountValue(
+                                      discount.Discount_Value,
+                                      discount.Discount_Type
+                                    )}
                                   </span>
                                 </div>
                                 <div className="flex justify-between items-center mt-1 bg-green-100 rounded p-2">

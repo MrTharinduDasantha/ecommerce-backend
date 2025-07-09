@@ -18,13 +18,17 @@ const mapCartItems = (items) => {
     productId: item.Product_idProduct,
     name: item.ProductName || item.Product_Name,
     image: item.ProductImage,
-    price: Number(item.CartRate),
-    mktPrice:item.MarketPrice,
+    price: Number(item.NetAmount) / Number(item.CartQty), // Use final discounted price per item
+    originalPrice: Number(item.CartRate), // Keep original price for reference
+    mktPrice: item.MarketPrice,
     quantity: item.CartQty,
     color: item.Color || item.Colour,
     size: item.Size,
     colorCode: item.Color_Code,
     availableQty: item.SIH,
+    discountAmount: Number(item.Discount_Amount || 0),
+    totalAmount: Number(item.Total_Amount || 0),
+    netAmount: Number(item.NetAmount || 0),
   }));
 };
 

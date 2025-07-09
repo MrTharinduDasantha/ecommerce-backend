@@ -122,7 +122,7 @@ const DashboardPrivate = () => {
           font: {
             size: 12,
           },
-          callback: (value) => `Rs.${value}`,
+          callback: (value) => `LKR ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         },
       },
     },
@@ -411,7 +411,7 @@ const DashboardPrivate = () => {
             ) : errorTotalRevenue ? (
               <p className="text-xl sm:text-2xl text-red-500 font-bold">{errorTotalRevenue}</p>
             ) : (
-              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">Rs.{parseFloat(totalRevenue).toFixed(2)}</p>
+              <p className="text-xl sm:text-2xl text-[#5CAF90] font-bold">LKR {parseFloat(totalRevenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             )}
           </div>
         </div>

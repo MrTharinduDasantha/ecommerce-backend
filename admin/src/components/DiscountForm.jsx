@@ -48,7 +48,7 @@ const DiscountForm = () => {
   // Discount type options
   const discountTypeOptions = [
     { value: "percentage", label: "Percentage (%)" },
-    { value: "fixed", label: "Fixed Amount (Rs.)" },
+    { value: "fixed", label: "Fixed Amount (LKR)" },
   ];
 
   // Calculate discounted price
@@ -262,7 +262,7 @@ const DiscountForm = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Market Price:</span>
                 <span className="font-medium text-gray-800">
-                  Rs. {parseFloat(product.Market_Price).toFixed(2)}
+                  LKR {parseFloat(product.Market_Price).toFixed(2)}
                 </span>
               </div>
 
@@ -275,7 +275,7 @@ const DiscountForm = () => {
                       : "text-[#5CAF90] text-lg font-bold"
                   }`}
                 >
-                  Rs. {originalPrice.toFixed(2)}
+                  LKR {originalPrice.toFixed(2)}
                 </span>
               </div>
 
@@ -286,7 +286,7 @@ const DiscountForm = () => {
                     <span className="text-red-600 font-medium">
                       {formData.discountType === "percentage"
                         ? `${formData.discountValue}%`
-                        : `Rs. ${parseFloat(formData.discountValue).toFixed(
+                        : `LKR ${parseFloat(formData.discountValue).toFixed(
                             2
                           )}`}
                     </span>
@@ -297,12 +297,12 @@ const DiscountForm = () => {
                       Final Selling Price:
                     </span>
                     <span className="text-[#5CAF90] text-lg md:text-xl font-bold">
-                      Rs. {discountedPrice.toFixed(2)}
+                      LKR {discountedPrice.toFixed(2)}
                     </span>
                   </div>
 
                   <div className="text-center text-sm text-gray-500 mt-6">
-                    You save: Rs. {(originalPrice - discountedPrice).toFixed(2)}
+                    You save: LKR {(originalPrice - discountedPrice).toFixed(2)}
                   </div>
                 </>
               )}
@@ -503,7 +503,7 @@ const DiscountForm = () => {
                   <label className="label text-[#1D372E] mb-0.5">
                     <span className="label-text text-sm font-medium">
                       Discount Value{" "}
-                      {formData.discountType === "percentage" ? "(%)" : "(Rs.)"}
+                      {formData.discountType === "percentage" ? "(%)" : "(LKR)"}
                     </span>
                   </label>
                   <input
@@ -514,7 +514,7 @@ const DiscountForm = () => {
                     placeholder={`Enter discount value ${
                       formData.discountType === "percentage"
                         ? "in percentage"
-                        : "in rupees"
+                        : "in LKR"
                     }`}
                     className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                     step={formData.discountType === "percentage" ? "1" : "0.01"}

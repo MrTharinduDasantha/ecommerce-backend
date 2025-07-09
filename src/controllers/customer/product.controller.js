@@ -3,12 +3,26 @@ const pool = require('../../config/database');
 
 // Customer Products Controller
 class ProductController {
-  // Get all products
+  // Get all products with full discount information
   async getAllProducts(req, res) {
     try {
-      const products = await Product.findAllWithoutPagination();
-      res.json(products);
+      const basicProducts = await Product.getAllProducts();
+      
+      // Enhance each product with complete discount information
+      const enhancedProducts = await Promise.all(
+        basicProducts.map(async (product) => {
+          // Get complete product details including discounts
+          const fullProduct = await Product.getProductById(product.idProduct);
+          return fullProduct;
+        })
+      );
+      
+      res.status(200).json({ 
+        message: 'Products fetched successfully', 
+        products: enhancedProducts 
+      });
     } catch (error) {
+      console.error('Error in getAllProducts:', error);
       res.status(500).json({ message: 'Failed to fetch products', error: error.message });
     }
   }
@@ -16,15 +30,41 @@ class ProductController {
   // Get product by ID
   async getProductById(req, res) {
     try {
-      const product = await Product.findById(req.params.id);
+      const product = await Product.getProductById(req.params.id);
       
       if (!product) {
         return res.status(404).json({ message: 'Product not found' });
       }
       
-      res.json(product);
+      // Log discount data for debugging
+      console.log(`Product ${req.params.id} discounts:`, product.discounts);
+      console.log(`Product ${req.params.id} event discounts:`, product.eventDiscounts);
+      
+      res.status(200).json({ 
+        message: 'Product fetched successfully', 
+        product 
+      });
     } catch (error) {
+      console.error('Error in getProductById:', error);
       res.status(500).json({ message: 'Failed to fetch product', error: error.message });
+    }
+  }
+
+  // Test endpoint to check Event_Discounts for a specific product
+  async getProductEventDiscounts(req, res) {
+    try {
+      const productId = req.params.id;
+      const eventDiscounts = await Product.getActiveEventDiscountsByProductId(productId);
+      
+      res.status(200).json({
+        message: 'Event discounts fetched successfully',
+        productId,
+        eventDiscounts,
+        count: eventDiscounts.length
+      });
+    } catch (error) {
+      console.error('Error fetching event discounts:', error);
+      res.status(500).json({ message: 'Failed to fetch event discounts', error: error.message });
     }
   }
 
@@ -45,7 +85,7 @@ class ProductController {
       const productId = req.params.id;
       
       // Verify product exists
-      const product = await Product.findById(productId);
+      const product = await Product.getProductById(productId);
       if (!product) {
         return res.status(404).json({ message: 'Product not found' });
       }
