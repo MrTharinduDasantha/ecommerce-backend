@@ -357,6 +357,17 @@ CREATE TABLE Header_Footer_Setting (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Policy Details Setting Table
+CREATE TABLE IF NOT EXISTS Policy_Details_Setting (
+  idPolicy_Details_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Legal_Policy_Content LONGTEXT,
+  Privacy_Policy_Content LONGTEXT,
+  Security_Policy_Content LONGTEXT,
+  Terms_Of_Service_Content LONGTEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Admin Notifications Setting Table
 CREATE TABLE Admin_Notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,

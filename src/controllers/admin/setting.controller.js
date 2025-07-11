@@ -263,9 +263,57 @@ async function updateAboutUsSetting(req, res) {
   }
 }
 
+// ----------------------------------------
+// Policy Details Setting Related Functions
+// ----------------------------------------
+
+// Fetch policy details setting
+async function getPolicyDetailsSetting(req, res) {
+  try {
+    const policyDetailsSetting = await Setting.getPolicyDetailsSetting();
+
+    res.status(200).json({
+      message: "Policy details settings fetched successfully",
+      policyDetailsSetting,
+    });
+  } catch (error) {
+    console.error("Error fetching policy details settings:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch policy details settings" });
+  }
+}
+
+// Update policy details setting
+async function updatePolicyDetailsSetting(req, res) {
+  try {
+    const newPolicyDetailsSetting = {
+      Legal_Policy_Content: req.body.legalPolicyContent || "",
+      Privacy_Policy_Content: req.body.privacyPolicyContent || "",
+      Security_Policy_Content: req.body.securityPolicyContent || "",
+      Terms_Of_Service_Content: req.body.termsOfServiceContent || "",
+    };
+
+    const updatedPolicyDetailsSetting =
+      await Setting.updatePolicyDetailsSetting(newPolicyDetailsSetting);
+
+    res.status(200).json({
+      message: "Policy details settings updated successfully",
+      updatedPolicyDetailsSetting,
+    });
+  } catch (error) {
+    console.error("Error updating policy details settings:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to update policy details settings" });
+  }
+}
+
 module.exports = {
   getHeaderFooterSetting,
   updateHeaderFooterSetting,
   getAboutUsSetting,
   updateAboutUsSetting,
+  getPolicyDetailsSetting,
+  updatePolicyDetailsSetting,
 };

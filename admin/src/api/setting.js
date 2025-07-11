@@ -71,3 +71,27 @@ export const updateAboutUsSetting = async (formData) => {
     throw error.response.data;
   }
 };
+
+// -----------------------------------------
+// Policy Details Setting Related Api Calls
+// -----------------------------------------
+
+// Fetch policy details setting
+export const fetchPolicyDetailsSetting = async () => {
+  try {
+    const response = await api.get("/api/settings/policy-details");
+    return response.data.policyDetailsSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Update policy details setting
+export const updatePolicyDetailsSetting = async (policyData) => {
+  try {
+    const response = await api.put("/api/settings/policy-details", policyData);
+    return response.data.updatedPolicyDetailsSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

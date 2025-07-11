@@ -22,6 +22,7 @@ import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import AboutUsSettings from "./components/AboutUsSettings";
 import HeaderFooterSettings from "./components/HeaderFooterSettings";
+import PolicyDetailsSettings from "./components/PolicyDetailsSettings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
 import AdminLogs from "./components/AdminLogs";
@@ -29,8 +30,8 @@ import CustomerDetails from "./components/CustomerDetails";
 import LogDetails from "./components/LogDetails";
 import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
 import NotificationPage from "./components/NotificationPage";
-import ReviewList from "./components/ReviewList"
-import ReviewDetails from "./components/ReviewDetails"
+import ReviewList from "./components/ReviewList";
+import ReviewDetails from "./components/ReviewDetails";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -118,6 +119,10 @@ const App = () => {
             <Route
               path="settings/header-footer"
               element={<HeaderFooterSettings />}
+            />
+            <Route
+              path="settings/policy-details"
+              element={<PolicyDetailsSettings />}
             />
             <Route path="orders" element={<OrderList />} />
             <Route path="orders/:orderId" element={<OrderDetails />} />
