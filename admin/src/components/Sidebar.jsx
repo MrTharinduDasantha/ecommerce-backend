@@ -13,7 +13,7 @@ import {
   MdOutlineFestival,
   MdOutlineDiscount,
   MdOutlineReviews,
-} from "react-icons/md"
+} from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 
@@ -39,7 +39,7 @@ const Sidebar = ({ isSidebarOpen }) => {
     location.pathname.includes("admin-logs");
   const isManageSettingsActive = location.pathname.includes("settings/");
   const isManageOrdersActive = location.pathname.includes("orders");
-  const isManageReviewsActive = location.pathname.includes("reviews")
+  const isManageReviewsActive = location.pathname.includes("reviews");
   const isNotificationsActive = location.pathname.includes("notifications");
 
   // Toggle submenu functions
@@ -429,6 +429,21 @@ const Sidebar = ({ isSidebarOpen }) => {
                     Header & Footer
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink
+                    to="settings/policy-details"
+                    className={({ isActive }) =>
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
+                      hover:bg-[#5CAF90] hover:text-white ${
+                        isActive
+                          ? "text-[#5CAF90] font-medium"
+                          : "text-base-content/85"
+                      }`
+                    }
+                  >
+                    Policy Details
+                  </NavLink>
+                </li>
               </ul>
             )}
           </li>
@@ -504,7 +519,7 @@ const Sidebar = ({ isSidebarOpen }) => {
         </ul>
       </div>
     </aside>
-  )
+  );
 };
 
 export default Sidebar;

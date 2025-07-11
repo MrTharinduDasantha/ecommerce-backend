@@ -128,9 +128,65 @@ async function updateAboutUsSetting(AboutUsSettingData) {
   }
 }
 
+// -----------------------------------------
+// Policy Details Setting Related Functions
+// -----------------------------------------
+
+// Fetch policy details setting
+async function getPolicyDetailsSetting() {
+  const [rows] = await pool.query(
+    "SELECT * FROM Policy_Details_Setting LIMIT 1"
+  );
+  return rows[0] || null;
+}
+
+// Update policy details setting
+async function updatePolicyDetailsSetting(PolicyDetailsSettingData) {
+  const currentPolicyDetailsSetting = await getPolicyDetailsSetting();
+
+  if (currentPolicyDetailsSetting) {
+    // Update existing policy details setting
+    await pool.query(
+      "UPDATE Policy_Details_Setting SET Legal_Policy_Content = ?,  Privacy_Policy_Content = ?, Security_Policy_Content = ?, Terms_Of_Service_Content = ?, updated_at = CURRENT_TIMESTAMP WHERE idPolicy_Details_Setting = ?",
+      [
+        PolicyDetailsSettingData.Legal_Policy_Content,
+        PolicyDetailsSettingData.Privacy_Policy_Content,
+        PolicyDetailsSettingData.Security_Policy_Content,
+        PolicyDetailsSettingData.Terms_Of_Service_Content,
+        currentPolicyDetailsSetting.idPolicy_Details_Setting,
+      ]
+    );
+
+    // Return updated policy details setting
+    const updatedPolicyDetailsSetting = await getPolicyDetailsSetting();
+    return updatedPolicyDetailsSetting;
+  } else {
+    // Create new policy details setting
+    const result = await pool.query(
+      "INSERT INTO Policy_Details_Setting (Legal_Policy_Content, Privacy_Policy_Content, Security_Policy_Content, Terms_Of_Service_Content) VALUES (?,?,?,?)",
+      [
+        PolicyDetailsSettingData.Legal_Policy_Content,
+        PolicyDetailsSettingData.Privacy_Policy_Content,
+        PolicyDetailsSettingData.Security_Policy_Content,
+        PolicyDetailsSettingData.Terms_Of_Service_Content,
+      ]
+    );
+
+    // Return newly created policy details setting
+    const [rows] = await pool.query(
+      "SELECT * FROM Policy_Details_Setting WHERE idPolicy_Details_Setting = ?",
+      result[0].insertId
+    );
+
+    return rows[0];
+  }
+}
+
 module.exports = {
   getHeaderFooterSetting,
   updateHeaderFooterSetting,
   getAboutUsSetting,
   updateAboutUsSetting,
+  getPolicyDetailsSetting,
+  updatePolicyDetailsSetting,
 };
