@@ -86,7 +86,16 @@ const AllCategories = () => {
               brand: product.Brand_Name || "",
               historyStatus: product.History_Status || "",
               // Add activeDiscount if available in product data
-              activeDiscount: product.discounts?.find(d => d.Status === "active") || null
+              activeDiscount: product.discounts?.find(d => d.Status === "active") || null,
+              eventDiscounts: product.eventDiscounts || [],
+              // Pass full product object for complete discount calculation
+              product: {
+                idProduct: product.idProduct,
+                Selling_Price: product.Selling_Price,
+                Market_Price: product.Market_Price,
+                discounts: product.discounts || [],
+                eventDiscounts: product.eventDiscounts || []
+              }
             }));
           newProductsBySubCategory[sub.idSub_Category] =
             formattedProducts || [];
@@ -220,7 +229,9 @@ const AllCategories = () => {
                           oldPrice={product.oldPrice}
                           historyStatus={product.historyStatus}
                           activeDiscount={product.activeDiscount}
+                          eventDiscounts={product.eventDiscounts}
                           id={product.id}
+                          product={product.product}
                           className="h-full"
                         />
                       </div>
