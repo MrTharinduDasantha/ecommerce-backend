@@ -667,7 +667,7 @@ async function getProductsBySubCategory(subCategoryId) {
     SELECT P.*, B.Brand_Name
     FROM Product P
     JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct
-    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    LEFT JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
     WHERE PS.Sub_Category_idSub_Category = ?
   `;
   const [products] = await pool.query(query, [subCategoryId]);
