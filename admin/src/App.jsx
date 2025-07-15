@@ -138,6 +138,7 @@ const App = () => {
           <Route path="/newaboutUssetting" element={<NewAboutUsSettings />} />
           <Route path="Timeline" element={<Timeline />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="Timeline" element={<Timeline />} />
         </Routes>
       )}
     </>
