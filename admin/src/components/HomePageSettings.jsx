@@ -132,6 +132,12 @@ const HomePageSettings = () => {
   };
 
   const handleAddWorkingItem = () => {
+    // Enforce max of 4 items
+    if (workingItems.length >= 4) {
+      toast.error("You can add a maximum of 4 working items");
+      return;
+    }
+    
     if (
       !newWorkingItem.title.trim() ||
       !newWorkingItem.description.trim() ||
@@ -202,7 +208,7 @@ const HomePageSettings = () => {
       const workingItemsData = workingItems.map((item) => ({
         title: item.title,
         description: item.description,
-        image: item.image, // This will be updated by the backend
+        image: item.image, 
       }));
       formData.append("workingItems", JSON.stringify(workingItemsData));
 
