@@ -53,4 +53,15 @@ router.put(
   settingController.updatePolicyDetailsSetting
 );
 
+// ------------------------
+// Home Page Setting Routes
+// ------------------------
+router.get("/home-page", settingController.getHomePageSetting);
+router.put(
+  "/home-page",
+  authenticate,
+  uploadFiles,
+  settingController.updateHomePageSetting
+);
+
 module.exports = router;

@@ -122,3 +122,14 @@ CREATE TABLE IF NOT EXISTS Policy_Details_Setting (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Add a new Home Page Settings Table
+CREATE TABLE Home_Page_Setting (
+  idHome_Page_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Hero_Images JSON,
+  Working_Section_Title VARCHAR(255),
+  Working_Section_Description TEXT,
+  Working_Items JSON,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

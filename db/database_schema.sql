@@ -357,6 +357,17 @@ CREATE TABLE Header_Footer_Setting (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Home Page Settings Table
+CREATE TABLE Home_Page_Setting (
+  idHome_Page_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Hero_Images JSON,
+  Working_Section_Title VARCHAR(255),
+  Working_Section_Description TEXT,
+  Working_Items JSON,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Policy Details Setting Table
 CREATE TABLE IF NOT EXISTS Policy_Details_Setting (
   idPolicy_Details_Setting INT AUTO_INCREMENT PRIMARY KEY,

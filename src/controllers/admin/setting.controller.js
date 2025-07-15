@@ -309,6 +309,123 @@ async function updatePolicyDetailsSetting(req, res) {
   }
 }
 
+// -----------------------------------
+// Home Page Setting Related Functions
+// -----------------------------------
+// Fetch home page setting
+async function getHomePageSetting(req, res) {
+  try {
+    const homePageSetting = await Setting.getHomePageSetting();
+    res.status(200).json({
+      message: "Home page settings fetched successfully",
+      homePageSetting,
+    });
+  } catch (error) {
+    console.error("Error fetching home page settings:", error);
+    res.status(500).json({ message: "Failed to fetch home page settings" });
+  }
+}
+
+// Update home page setting
+async function updateHomePageSetting(req, res) {
+  try {
+    const currentHomePageSetting = await Setting.getHomePageSetting();
+
+    // Handle hero images
+    const heroImageFiles = req.files.filter((file) =>
+      file.fieldname.startsWith("heroImage")
+    );
+    let heroImages = currentHomePageSetting
+      ? currentHomePageSetting.Hero_Images || []
+      : [];
+
+    // If new hero images are uploaded, replace all
+    if (heroImageFiles.length > 0) {
+      // Remove old hero images
+      if (currentHomePageSetting && currentHomePageSetting.Hero_Images) {
+        const oldHeroImages = Array.isArray(currentHomePageSetting.Hero_Images)
+          ? currentHomePageSetting.Hero_Images
+          : JSON.parse(currentHomePageSetting.Hero_Images || "[]");
+
+        oldHeroImages.forEach((imageUrl) => {
+          if (imageUrl) {
+            const oldPath = imageUrl.replace(
+              `${req.protocol}://${req.get("host")}/`,
+              ""
+            );
+            fs.unlink(oldPath, (err) => {
+              if (err) console.error("Error removing old hero image:", err);
+            });
+          }
+        });
+      }
+
+      // Add new hero images
+      heroImages = heroImageFiles.map(
+        (file) =>
+          `${req.protocol}://${req.get("host")}/src/uploads/${file.filename}`
+      );
+    }
+
+    // Handle working items images
+    const workingImageFiles = req.files.filter((file) =>
+      file.fieldname.startsWith("workingImage")
+    );
+    const workingItems = req.body.workingItems
+      ? JSON.parse(req.body.workingItems)
+      : [];
+
+    // Update working items with new images
+    workingImageFiles.forEach((file) => {
+      const index = Number.parseInt(file.fieldname.replace("workingImage", ""));
+      if (workingItems[index]) {
+        // Remove old image if exists
+        if (currentHomePageSetting && currentHomePageSetting.Working_Items) {
+          const oldWorkingItems = Array.isArray(
+            currentHomePageSetting.Working_Items
+          )
+            ? currentHomePageSetting.Working_Items
+            : JSON.parse(currentHomePageSetting.Working_Items || "[]");
+
+          if (oldWorkingItems[index] && oldWorkingItems[index].image) {
+            const oldPath = oldWorkingItems[index].image.replace(
+              `${req.protocol}://${req.get("host")}/`,
+              ""
+            );
+            fs.unlink(oldPath, (err) => {
+              if (err)
+                console.error("Error removing old working item image:", err);
+            });
+          }
+        }
+
+        workingItems[index].image = `${req.protocol}://${req.get(
+          "host"
+        )}/src/uploads/${file.filename}`;
+      }
+    });
+
+    const newHomePageSetting = {
+      Hero_Images: JSON.stringify(heroImages),
+      Working_Section_Title: req.body.workingSectionTitle,
+      Working_Section_Description: req.body.workingSectionDescription,
+      Working_Items: JSON.stringify(workingItems),
+    };
+
+    const updatedHomePageSetting = await Setting.updateHomePageSetting(
+      newHomePageSetting
+    );
+
+    res.status(200).json({
+      message: "Home page settings updated successfully",
+      updatedHomePageSetting,
+    });
+  } catch (error) {
+    console.error("Error updating home page settings:", error);
+    res.status(500).json({ message: "Failed to update home page settings" });
+  }
+}
+
 module.exports = {
   getHeaderFooterSetting,
   updateHeaderFooterSetting,
@@ -316,4 +433,6 @@ module.exports = {
   updateAboutUsSetting,
   getPolicyDetailsSetting,
   updatePolicyDetailsSetting,
+  getHomePageSetting,
+  updateHomePageSetting,
 };
