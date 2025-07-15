@@ -23,4 +23,4 @@ Image: secure-payment.png
 4) Fourth Working Item
 Title: Support 24/7
 Description: We're here to help anytime.
-Image: 24-hours-return.png
+Image: support-24-hour.png

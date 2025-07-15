@@ -132,6 +132,12 @@ const HomePageSettings = () => {
   };
 
   const handleAddWorkingItem = () => {
+    // Enforce max of 4 items
+    if (workingItems.length >= 4) {
+      toast.error("You can add a maximum of 4 working items");
+      return;
+    }
+
     if (
       !newWorkingItem.title.trim() ||
       !newWorkingItem.description.trim() ||
