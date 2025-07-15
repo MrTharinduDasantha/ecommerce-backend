@@ -662,9 +662,6 @@ const Home = () => {
                       {item.description}
                     </p>
                   </div>
-                  {index < workingItems.length - 1 && (
-                    <div className="hidden sm:block w-0.5 h-20 bg-[#B4B4B4]"></div>
-                  )}
                 </React.Fragment>
               ))}
             </div>
