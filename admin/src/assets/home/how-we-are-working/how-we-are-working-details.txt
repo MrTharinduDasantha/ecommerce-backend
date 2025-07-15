@@ -1,0 +1,26 @@
+How We Are Working Section Details (Home Page)
+
+Section Title: HOW WE ARE WORKING
+Section Description: We ensure a seamless shopping experience with a well-structured process. Here’s how we make your online shopping effortless and enjoyable.
+
+Working Items Details:
+
+1) First Working Item
+Title: Fast Delivery
+Description: Get your orders quickly.
+Image: fast-delivery.png
+
+2) Second Working Item
+Title: 24 Hours Return
+Description: Hassle-free returns within 24 hours.
+Image: 24-hours-return.png
+
+3) Third Working Item
+Title: Secure Payment
+Description: 100% safe and secure transactions.
+Image: secure-payment.png
+
+4) Fourth Working Item
+Title: Support 24/7
+Description: We're here to help anytime.
+Image: 24-hours-return.png

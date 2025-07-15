@@ -22,6 +22,7 @@ import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import AboutUsSettings from "./components/AboutUsSettings";
 import HeaderFooterSettings from "./components/HeaderFooterSettings";
+import HomePageSettings from "./components/HomePageSettings";
 import PolicyDetailsSettings from "./components/PolicyDetailsSettings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
@@ -120,6 +121,7 @@ const App = () => {
               path="settings/header-footer"
               element={<HeaderFooterSettings />}
             />
+            <Route path="settings/home-page" element={<HomePageSettings />} />
             <Route
               path="settings/policy-details"
               element={<PolicyDetailsSettings />}

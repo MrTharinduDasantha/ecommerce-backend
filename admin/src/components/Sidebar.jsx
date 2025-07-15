@@ -431,6 +431,21 @@ const Sidebar = ({ isSidebarOpen }) => {
                 </li>
                 <li>
                   <NavLink
+                    to="settings/home-page"
+                    className={({ isActive }) =>
+                      `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors
+                      hover:bg-[#5CAF90] hover:text-white ${
+                        isActive
+                          ? "text-[#5CAF90] font-medium"
+                          : "text-base-content/85"
+                      }`
+                    }
+                  >
+                    Home Page
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
                     to="settings/policy-details"
                     className={({ isActive }) =>
                       `block rounded-md px-3 py-1.5 text-xs md:text-sm transition-colors

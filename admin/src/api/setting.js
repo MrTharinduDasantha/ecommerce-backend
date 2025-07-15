@@ -95,3 +95,29 @@ export const updatePolicyDetailsSetting = async (policyData) => {
     throw error.response.data;
   }
 };
+
+// -----------------------------------
+// Home Page Setting Related Api Calls
+// -----------------------------------
+
+// Fetch home page setting
+export const fetchHomePageSetting = async () => {
+  try {
+    const response = await api.get("/api/settings/home-page");
+    return response.data.homePageSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Update home page setting
+export const updateHomePageSetting = async (formData) => {
+  try {
+    const response = await api.put("/api/settings/home-page", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.updatedHomePageSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

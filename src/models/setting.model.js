@@ -182,6 +182,53 @@ async function updatePolicyDetailsSetting(PolicyDetailsSettingData) {
   }
 }
 
+// -----------------------------------
+// Home Page Setting Related Functions
+// -----------------------------------
+// Fetch home page setting
+async function getHomePageSetting() {
+  const [rows] = await pool.query("SELECT * FROM Home_Page_Setting LIMIT 1");
+  return rows[0] || null;
+}
+
+// Update home page setting
+async function updateHomePageSetting(HomePageSettingData) {
+  const currentHomePageSetting = await getHomePageSetting();
+  if (currentHomePageSetting) {
+    // Update existing home page setting
+    await pool.query(
+      "UPDATE Home_Page_Setting SET Hero_Images = ?, Working_Section_Title = ?, Working_Section_Description = ?, Working_Items = ?, updated_at = CURRENT_TIMESTAMP WHERE idHome_Page_Setting = ?",
+      [
+        HomePageSettingData.Hero_Images,
+        HomePageSettingData.Working_Section_Title,
+        HomePageSettingData.Working_Section_Description,
+        HomePageSettingData.Working_Items,
+        currentHomePageSetting.idHome_Page_Setting,
+      ]
+    );
+    // Return updated home page setting
+    const updatedHomePageSetting = await getHomePageSetting();
+    return updatedHomePageSetting;
+  } else {
+    // Create new home page setting
+    const result = await pool.query(
+      "INSERT INTO Home_Page_Setting (Hero_Images, Working_Section_Title, Working_Section_Description, Working_Items) VALUES (?,?,?,?)",
+      [
+        HomePageSettingData.Hero_Images,
+        HomePageSettingData.Working_Section_Title,
+        HomePageSettingData.Working_Section_Description,
+        HomePageSettingData.Working_Items,
+      ]
+    );
+    // Return newly created home page setting
+    const [rows] = await pool.query(
+      "SELECT * FROM Home_Page_Setting WHERE idHome_Page_Setting = ?",
+      result[0].insertId
+    );
+    return rows[0];
+  }
+}
+
 module.exports = {
   getHeaderFooterSetting,
   updateHeaderFooterSetting,
@@ -189,4 +236,6 @@ module.exports = {
   updateAboutUsSetting,
   getPolicyDetailsSetting,
   updatePolicyDetailsSetting,
+  getHomePageSetting,
+  updateHomePageSetting,
 };
