@@ -3,11 +3,13 @@ import { FaCheck } from "react-icons/fa";
 
 function WhyChooseUs({ aboutUsData }) {
   // Parse features from aboutUsData or use fallback
-  const features = aboutUsData?.Features 
-    ? JSON.parse(aboutUsData.Features) 
+  const features = Array.isArray(aboutUsData?.Features)
+    ? aboutUsData.Features
+    : aboutUsData?.Features
+    ? JSON.parse(aboutUsData.Features)
     : [
         "High-quality Products",
-        "Competitive Prices", 
+        "Competitive Prices",
         "Seamless Shopping Experience",
         "Fast & Reliable Delivery",
         "Excellent Customer Support",
@@ -22,7 +24,10 @@ function WhyChooseUs({ aboutUsData }) {
             {/* Left side - Image */}
             <div className="w-full md:w-1/2">
               <img
-                src={aboutUsData?.Why_Choose_Us_Image_Url || "/src/assets/image-4.jpg"}
+                src={
+                  aboutUsData?.Why_Choose_Us_Image_Url ||
+                  "/src/assets/image-4.jpg"
+                }
                 alt="Why Choose Us Illustration"
                 className="w-[590px] h-[462.18px] object-contain rounded-lg mx-auto"
                 onError={(e) => {
@@ -65,10 +70,12 @@ function WhyChooseUs({ aboutUsData }) {
       <div className="w-full h-[347px] bg-gradient-to-b from-[#5CAF90] to-[#E8F5F1] py-16 mt-16 mb-32 mx-auto">
         <div className="max-w-3xl mx-auto text-center px-4">
           <h2 className="text-3xl font-bold text-[#1D372E] mb-4">
-            {aboutUsData?.Shopping_Experience_Title || "Click, buy, and enjoy—it's that simple!"}
+            {aboutUsData?.Shopping_Experience_Title ||
+              "Click, buy, and enjoy—it's that simple!"}
           </h2>
           <p className="text-sm text-[#1D372E] mb-8 max-w-2xl mx-auto">
-            {aboutUsData?.Shopping_Experience_Description || "Shopping has never been easier! With just a few clicks, you can explore a wide range of high-quality products, add your favorites to the cart, and check out seamlessly. Our secure payment system and fast delivery ensure a hassle-free shopping experience. No complications, no delays-just effortless shopping from the comfort of your home. Start browsing now and enjoy a smooth, enjoyable purchase journey!"}
+            {aboutUsData?.Shopping_Experience_Description ||
+              "Shopping has never been easier! With just a few clicks, you can explore a wide range of high-quality products, add your favorites to the cart, and check out seamlessly. Our secure payment system and fast delivery ensure a hassle-free shopping experience. No complications, no delays-just effortless shopping from the comfort of your home. Start browsing now and enjoy a smooth, enjoyable purchase journey!"}
           </p>
           <div className="flex justify-center">
             <button className="bg-[#5CAF90] text-white w-[250px] h-[50px] rounded-full text-sm font-medium hover:bg-[#1D372E] transition-duration-300 shadow-md flex items-center justify-center">

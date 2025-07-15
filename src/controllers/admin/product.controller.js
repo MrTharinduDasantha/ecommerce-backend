@@ -1234,20 +1234,6 @@ async function deleteProduct(req, res) {
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
-    
-    // Handle specific error messages from the model
-    if (error.message.includes("currently in someone's cart")) {
-      return res.status(400).json({ 
-        message: "This product cannot be deleted because it's currently in someone's cart" 
-      });
-    }
-    
-    if (error.message.includes("has already been ordered")) {
-      return res.status(400).json({ 
-        message: "This product cannot be deleted since it has already been ordered" 
-      });
-    }
-    
     res.status(500).json({ message: "Failed to delete product" });
   }
 }

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import denim from "./denims.png";
 import fruits from "./fruits.avif";
-import { Truck, RotateCcw, ShieldCheck, Headphones } from "lucide-react";
 import {
   getCategories,
   getTopSellingCategories,
@@ -9,8 +8,11 @@ import {
   getProducts,
 } from "../../api/product";
 import ProductCard from "../../components/ProductCard";
-import { Link } from "react-router-dom";
-import { calculateDiscountPercentage } from "../../components/CalculateDiscount";
+import { Link, useNavigate } from "react-router-dom";
+import ReviewCard from "../../components/ReviewCard";
+import { getActiveOrderReviews } from "../../api/review";
+import { getCustomerById } from "../../api/customer";
+import { fetchHomePageSettings } from "../../api/setting";
 
 const Home = () => {
   const [categories, setCategories] = useState([]);
@@ -19,10 +21,129 @@ const Home = () => {
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reviews, setReviews] = useState([]);
+  const [customers, setCustomers] = useState({});
+  const [homePageSettings, setHomePageSettings] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const navigate = useNavigate();
 
   const handleProductClick = (productId) => {
     window.scrollTo(0, 0);
     navigate(`/product-page/${productId}`);
+  };
+
+  // Auto-slide functionality
+  useEffect(() => {
+    if (homePageSettings?.Hero_Images) {
+      const heroImages = Array.isArray(homePageSettings.Hero_Images)
+        ? homePageSettings.Hero_Images
+        : JSON.parse(homePageSettings.Hero_Images || "[]");
+
+      if (heroImages.length > 0) {
+        const interval = setInterval(() => {
+          setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+        }, 3000);
+        return () => clearInterval(interval);
+      }
+    }
+  }, [homePageSettings]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch home page settings
+        try {
+          const homePageData = await fetchHomePageSettings();
+          setHomePageSettings(homePageData);
+        } catch (homePageError) {
+          console.error("Failed to load home page settings:", homePageError);
+        }
+
+        const categoryData = await getCategories();
+        let activeCategories = [];
+        if (categoryData && categoryData.categories) {
+          activeCategories = categoryData.categories.filter(
+            (category) => category.Status === "active"
+          );
+          setCategories(activeCategories);
+        } else {
+          setError(
+            "Unexpected category data structure: " +
+              JSON.stringify(categoryData)
+          );
+        }
+
+        const topSellingData = await getTopSellingCategories();
+        if (topSellingData && topSellingData.categories) {
+          const activeTopSellingCategories = topSellingData.categories.filter(
+            (topCategory) => {
+              return activeCategories.some(
+                (activeCategory) =>
+                  activeCategory.idProduct_Category ===
+                  topCategory.idProduct_Category
+              );
+            }
+          );
+          setTopSellingCategories(activeTopSellingCategories);
+        } else {
+          setError(
+            "Unexpected top-selling data structure: " +
+              JSON.stringify(topSellingData)
+          );
+        }
+
+        const topSoldData = await getTopSoldProducts();
+        if (topSoldData && topSoldData.products) {
+          setTopSoldProducts(topSoldData.products);
+        } else {
+          setError(
+            "Unexpected top sold products data structure: " +
+              JSON.stringify(topSoldData)
+          );
+        }
+
+        const productsData = await getProducts();
+        if (productsData && productsData.products) {
+          const activeProducts = productsData.products.filter(
+            (product) => product.Status === "active"
+          );
+          const newArrivalProducts = activeProducts.filter(
+            (product) => product.History_Status === "new arrivals"
+          );
+          setNewArrivals(newArrivalProducts);
+        } else {
+          setError(
+            "Unexpected products data structure: " +
+              JSON.stringify(productsData)
+          );
+        }
+      } catch (error) {
+        console.error("Failed to load data:", error.message);
+        setError(error.message || "Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Function to split title and color the last word
+  const renderTitleWithColoredLastWord = (title) => {
+    const words = title.split(" ");
+    if (words.length <= 1) return title;
+
+    const lastWord = words.pop();
+    const restOfTitle = words.join(" ");
+
+    return (
+      <>
+        <span className="text-[#1D372E]">{restOfTitle} </span>
+        <span className="text-[#5CAF90]">{lastWord}</span>
+      </>
+    );
   };
 
   useEffect(() => {
@@ -97,9 +218,46 @@ const Home = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const data = await getActiveOrderReviews();
+      setReviews(data.reverse().slice(0, 6));
+      const customerIds = [
+        ...new Set(data.map((review) => review.customer_id)),
+      ];
+      const customerData = {};
+      for (const customerId of customerIds) {
+        try {
+          const customer = await getCustomerById(customerId);
+          customerData[customerId] = customer.Full_Name;
+        } catch (error) {
+          console.error(`Error fetching customer ${customerId}: ${error}`);
+        }
+      }
+      setCustomers(customerData);
+    };
+    fetchReviews();
+  }, []);
+
+  console.log(customers);
+
   if (loading) return <div className="py-8 text-center">Loading...</div>;
   if (error)
     return <div className="py-8 text-center text-red-500">Error: {error}</div>;
+
+  // Get hero images
+  const heroImages = homePageSettings?.Hero_Images
+    ? Array.isArray(homePageSettings.Hero_Images)
+      ? homePageSettings.Hero_Images
+      : JSON.parse(homePageSettings.Hero_Images || "[]")
+    : [];
+
+  // Get working items
+  const workingItems = homePageSettings?.Working_Items
+    ? Array.isArray(homePageSettings.Working_Items)
+      ? homePageSettings.Working_Items
+      : JSON.parse(homePageSettings.Working_Items || "[]")
+    : [];
 
   return (
     <div
@@ -108,16 +266,52 @@ const Home = () => {
     >
       {/* Hero Banner */}
       <div className="relative w-full">
-        <img
-          src={denim}
-          alt="Top Jeans"
-          className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[410px] object-cover"
-        />
-        <div className="absolute text-center transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-          <span className="text-2xl font-bold tracking-widest text-gray-800 sm:text-3xl md:text-4xl lg:text-5xl">
-            {/* Add text here if needed */}
-          </span>
-        </div>
+        {heroImages.length > 0 ? (
+          <>
+            <div className="relative w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[490px] overflow-hidden">
+              {heroImages.map((image, index) => (
+                <img
+                  key={index}
+                  src={image || "/placeholder.svg"}
+                  alt={`Hero ${index + 1}`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                    index === currentSlide ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Thumbnail Navigation */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {heroImages.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-12 h-8 rounded-md overflow-hidden border-2 transition-all ${
+                    index === currentSlide
+                      ? "border-[#5CAF90] scale-110"
+                      : "border-white/50 hover:border-[#5CAF90]"
+                  }`}
+                >
+                  <img
+                    src={image || "/placeholder.svg"}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[410px] bg-gray-200 flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <p className="text-lg font-medium">No hero images available</p>
+              <p className="text-sm">
+                Please configure hero images in admin settings
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Categories */}
@@ -311,6 +505,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+
       {/* Popular Categories */}
       <div className="container px-4 py-8 mx-auto">
         <h2 className="mb-2 text-2xl font-semibold text-left sm:text-3xl md:text-4xl">
@@ -400,78 +595,89 @@ const Home = () => {
         </div>
       </div>
 
-      {/* How We Are Working */}
+      {/* Customer Reviews */}
       <div className="container px-4 py-8 mx-auto">
         <h2 className="mb-2 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
-          <span className="text-[#1D372E]">HOW WE ARE </span>
-          <span className="text-[#5CAF90]">WORKING</span>
+          <span className="text-[#1D372E]">CUSTOMER </span>
+          <span className="text-[#5CAF90]">REVIEWS</span>
         </h2>
         <p className="text-center text-sm sm:text-base text-[#636363] mb-8">
-          We ensure a seamless shopping experience with a well-structured
-          process. Here’s how we make your online shopping effortless and
-          enjoyable
+          Hear from our happy customers—real stories of trust, satisfaction, and
+          great experiences that reflect our commitment to quality service.
         </p>
-        <div className="flex flex-col items-center justify-between gap-4 p-4 sm:flex-row">
-          <div className="flex flex-col items-center text-center">
-            <div className="p-3 sm:p-4 rounded-full border border-[#5CAF90] bg-[#5CAF90] text-white">
-              <Truck size={40} color="#FFFFFF" className="sm:w-12 sm:h-12" />
-            </div>
-            <h3 className="mt-3 text-lg font-semibold sm:text-xl">
-              Fast Delivery
-            </h3>
-            <p className="text-[#5E5E5E] text-sm sm:text-base">
-              Get your orders quickly.
-            </p>
+        {reviews.length > 0 ? (
+          <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 xl:grid-cols-3">
+            {reviews.map((review) => {
+              const customer = customers[review.customer_id] || "User";
+              const initials =
+                customer
+                  .split(" ")
+                  .map((name) => name[0])
+                  .join("")
+                  .toUpperCase() || "U";
+              return (
+                <ReviewCard
+                  key={review.review_id}
+                  review={review}
+                  customer={customer}
+                  initials={initials}
+                />
+              );
+            })}
           </div>
-          <div className="hidden sm:block w-0.5 h-20 bg-[#B4B4B4]"></div>
-          <div className="flex flex-col items-center text-center">
-            <div className="p-3 sm:p-4 rounded-full border border-[#5CAF90] bg-[#5CAF90] text-white">
-              <RotateCcw
-                size={40}
-                color="#FFFFFF"
-                className="sm:w-12 sm:h-12"
-              />
-            </div>
-            <h3 className="mt-3 text-lg font-semibold sm:text-xl">
-              24 Hours Return
-            </h3>
-            <p className="text-[#5E5E5E] text-sm sm:text-base">
-              Hassle-free returns within 24 hours.
+        ) : (
+          <p className="text-center text-gray-500">No Reviews Yet</p>
+        )}
+      </div>
+
+      {/* How We Are Working */}
+      <div className="container px-4 py-8 mx-auto">
+        {homePageSettings?.Working_Section_Title &&
+        homePageSettings?.Working_Section_Description &&
+        workingItems.length > 0 ? (
+          <>
+            <h2 className="mb-2 text-2xl font-semibold text-center sm:text-3xl md:text-4xl">
+              <span className="text-[#1D372E]">
+                {renderTitleWithColoredLastWord(
+                  homePageSettings.Working_Section_Title
+                )}
+              </span>
+            </h2>
+            <p className="text-center text-sm sm:text-base text-[#636363] mb-8">
+              {homePageSettings.Working_Section_Description}
             </p>
-          </div>
-          <div className="hidden sm:block w-0.5 h-20 bg-[#B4B4B4]"></div>
-          <div className="flex flex-col items-center text-center">
-            <div className="p-3 sm:p-4 rounded-full border border-[#5CAF90] bg-[#5CAF90] text-white">
-              <ShieldCheck
-                size={40}
-                color="#FFFFFF"
-                className="sm:w-12 sm:h-12"
-              />
+            <div className="flex flex-col items-center justify-between gap-4 p-4 sm:flex-row">
+              {workingItems.map((item, index) => (
+                <React.Fragment key={index}>
+                  <div className="flex flex-col items-center text-center">
+                    <div className="p-3 sm:p-4 rounded-full border border-[#5CAF90] bg-[#5CAF90] text-white w-20 h-20 flex items-center justify-center">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-10 h-10 object-contain"
+                      />
+                    </div>
+                    <h3 className="mt-3 text-lg font-semibold">{item.title}</h3>
+                    <p className="text-[#5E5E5E] text-sm sm:text-base">
+                      {item.description}
+                    </p>
+                  </div>
+                </React.Fragment>
+              ))}
             </div>
-            <h3 className="mt-3 text-lg font-semibold sm:text-xl">
-              Secure Payment
-            </h3>
-            <p className="text-[#5E5E5E] text-sm sm:text-base">
-              100% safe and secure transactions.
-            </p>
-          </div>
-          <div className="hidden sm:block w-0.5 h-20 bg-[#B4B4B4]"></div>
-          <div className="flex flex-col items-center text-center">
-            <div className="p-3 sm:p-4 rounded-full border border-[#5CAF90] bg-[#5CAF90] text-white">
-              <Headphones
-                size={40}
-                color="#FFFFFF"
-                className="sm:w-12 sm:h-12"
-              />
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="text-gray-500">
+              <p className="text-lg font-medium mb-2">
+                Working section not added yet.
+              </p>
+              <p className="text-sm">
+                Please add the working section in admin settings
+              </p>
             </div>
-            <h3 className="mt-3 text-lg font-semibold sm:text-xl">
-              Support 24/7
-            </h3>
-            <p className="text-[#5E5E5E] text-sm sm:text-base">
-              We're here to help anytime.
-            </p>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

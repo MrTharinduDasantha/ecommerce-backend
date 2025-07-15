@@ -1,14 +1,26 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useParams, useLocation } from "react-router-dom"
-import { FaStar, FaStarHalfAlt, FaRegStar, FaTimes } from "react-icons/fa"
+import {
+  FaStar,
+  FaStarHalfAlt,
+  FaRegStar,
+  FaTimes,
+  FaChevronRight,
+  FaChevronLeft,
+} from "react-icons/fa"
 import { useCart } from "../context/CartContext"
 import { getProduct, getProducts } from "../api/product"
 import { formatPrice } from "./FormatPrice"
 import { getReviewsByProductId } from "../api/review"
 import { getCustomerById } from "../api/customer"
-import { calculateDiscountPercentage, calculateTotalDiscount, getBestDiscountLabel, getFinalPrice } from "./CalculateDiscount";
-import ProductCard from "./ProductCard";
-import DiscountSummary from "./DiscountSummary";
+import {
+  calculateDiscountPercentage,
+  calculateTotalDiscount,
+  getBestDiscountLabel,
+  getFinalPrice,
+} from "./CalculateDiscount"
+import ProductCard from "./ProductCard"
+import DiscountSummary from "./DiscountSummary"
 
 const ProductPage = () => {
   const { id } = useParams()
@@ -30,6 +42,8 @@ const ProductPage = () => {
   const popupImageRef = useRef(null)
   const [relatedProducts, setRelatedProducts] = useState([])
   const [customers, setCustomers] = useState({})
+  const [currentPage, setCurrentPage] = useState(1)
+  const [reviewsPerPage] = useState(5)
 
   const handleProductClick = productId => {
     window.scrollTo(0, 0)
@@ -60,24 +74,33 @@ const ProductPage = () => {
           setCustomers(customerData)
 
           const productData = response.product
-          
+
           // Log product data to verify discount structure
-          console.log("=== PRODUCT DISCOUNT DEBUG ===");
-          console.log("Product ID:", productData.idProduct);
-          console.log("Product Name:", productData.Description);
-          console.log("Normal Discounts:", productData.discounts);
-          console.log("Event Discounts:", productData.eventDiscounts);
-          console.log("Event Discounts Count:", productData.eventDiscounts?.length || 0);
-          
+          console.log("=== PRODUCT DISCOUNT DEBUG ===")
+          console.log("Product ID:", productData.idProduct)
+          console.log("Product Name:", productData.Description)
+          console.log("Normal Discounts:", productData.discounts)
+          console.log("Event Discounts:", productData.eventDiscounts)
+          console.log(
+            "Event Discounts Count:",
+            productData.eventDiscounts?.length || 0
+          )
+
           if (productData.eventDiscounts?.length > 0) {
-            console.log("Event Discount Details:");
+            console.log("Event Discount Details:")
             productData.eventDiscounts.forEach((discount, index) => {
-              console.log(`  ${index + 1}. ${discount.description} (${discount.discountType}: ${discount.discountValue})`);
-              console.log(`     Event ID: ${discount.eventId}, Status: ${discount.status}`);
-              console.log(`     Product IDs included:`, discount.productIds);
-            });
+              console.log(
+                `  ${index + 1}. ${discount.description} (${
+                  discount.discountType
+                }: ${discount.discountValue})`
+              )
+              console.log(
+                `     Event ID: ${discount.eventId}, Status: ${discount.status}`
+              )
+              console.log(`     Product IDs included:`, discount.productIds)
+            })
           }
-          console.log("=== END DEBUG ===");
+          console.log("=== END DEBUG ===")
 
           const activeDiscounts = productData.discounts.filter(
             d => d.Status === "active"
@@ -164,16 +187,16 @@ const ProductPage = () => {
                 category: product.subcategories?.[0]?.Description || "",
                 historyStatus: product.History_Status || "",
                 activeDiscount:
-                  product.discounts?.find((d) => d.Status === "active") || null,
+                  product.discounts?.find(d => d.Status === "active") || null,
                 // Full product data for discount calculation
                 product: {
                   idProduct: product.idProduct,
                   Selling_Price: product.Selling_Price,
                   Market_Price: product.Market_Price,
                   discounts: product.discounts || [],
-                  eventDiscounts: product.eventDiscounts || []
-                }
-              }));
+                  eventDiscounts: product.eventDiscounts || [],
+                },
+              }))
 
             setRelatedProducts(filteredRelated)
           }
@@ -201,13 +224,15 @@ const ProductPage = () => {
   const currentVariant = product?.variants[selectedVariant] || {}
 
   // Calculate total discount information
-  const discountInfo = product ? calculateTotalDiscount({
-    idProduct: product.id,
-    Selling_Price: currentVariant.price,
-    Market_Price: product.marketPrice,
-    discounts: product.discounts || [],
-    eventDiscounts: product.eventDiscounts || []
-  }) : null;
+  const discountInfo = product
+    ? calculateTotalDiscount({
+        idProduct: product.id,
+        Selling_Price: currentVariant.price,
+        Market_Price: product.marketPrice,
+        discounts: product.discounts || [],
+        eventDiscounts: product.eventDiscounts || [],
+      })
+    : null
 
   // Check if current variant has size
   const hasSize =
@@ -301,6 +326,19 @@ const ProductPage = () => {
     })
   }
 
+  const indexOfLastReview = currentPage * reviewsPerPage
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage
+  const currentReviews = product?.reviews
+    ? [...product.reviews]
+        .reverse()
+        .slice(indexOfFirstReview, indexOfLastReview)
+    : []
+  const totalPages = product?.reviews?.length
+    ? Math.ceil(product?.reviews?.length / reviewsPerPage)
+    : 0
+
+  const paginate = pageNumber => setCurrentPage(pageNumber)
+
   if (!product) return <div className="text-center py-8">Loading...</div>
 
   return (
@@ -389,13 +427,19 @@ const ProductPage = () => {
           {/* Price and Discount */}
           <div className="space-y-3">
             <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
-              {formatPrice(`LKR ${discountInfo?.finalPrice?.toFixed(2) || currentVariant.price?.toFixed(2)}`)}
-              
-              {discountInfo?.hasDiscounts && discountInfo.marketPrice > discountInfo.originalPrice && (
-                <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
-                  {formatPrice(`LKR ${discountInfo.marketPrice.toFixed(2)}`)}
-                </span>
+              {formatPrice(
+                `LKR ${
+                  discountInfo?.finalPrice?.toFixed(2) ||
+                  currentVariant.price?.toFixed(2)
+                }`
               )}
+
+              {discountInfo?.hasDiscounts &&
+                discountInfo.marketPrice > discountInfo.originalPrice && (
+                  <span className="ml-2 text-gray-500 line-through text-base sm:text-lg">
+                    {formatPrice(`LKR ${discountInfo.marketPrice.toFixed(2)}`)}
+                  </span>
+                )}
 
               {discountInfo?.totalPercentage > 0 && (
                 <span className="ml-3 bg-red-600 text-white px-2 py-1 rounded text-sm">
@@ -405,13 +449,13 @@ const ProductPage = () => {
             </div>
 
             {/* Detailed Discount Information using DiscountSummary component */}
-            <DiscountSummary 
+            <DiscountSummary
               product={{
                 idProduct: product.id,
                 Selling_Price: currentVariant.price,
                 Market_Price: product.marketPrice,
                 discounts: product.discounts || [],
-                eventDiscounts: product.eventDiscounts || []
+                eventDiscounts: product.eventDiscounts || [],
               }}
               showDetails={true}
             />
@@ -575,37 +619,71 @@ const ProductPage = () => {
           )}
           {activeTab === "reviews" ? (
             product.reviews.length > 0 ? (
-              product.reviews.map(review => {
-                const customer = customers[review.Customer_idCustomer] || {}
-                const initials = customer
-                  .split(" ")
-                  .map(name => name[0])
-                  .join("")
-                  .toUpperCase()
-                return (
-                  <div key={review.idReview} className="flex gap-5 mb-4">
-                    <div className="bg-green-500 size-10 shrink-0 p-3 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">{initials}</span>
-                    </div>
-                    <div>
-                      <h3 className="font-bold">
-                        {customer || "Unknown User"}
-                      </h3>
-                      <div className="flex gap-1">
-                        {[...Array(parseInt(review.Rating_5))].map(
-                          (_, index) => (
-                            <FaStar key={index} className="text-yellow-400" />
-                          )
-                        )}
+              <>
+                {currentReviews.map(review => {
+                  const customer = customers[review.Customer_idCustomer] || {}
+                  const initials = customer
+                    .split(" ")
+                    .map(name => name[0])
+                    .join("")
+                    .toUpperCase()
+                  return (
+                    <div key={review.idReview} className="flex gap-5 mb-4">
+                      <div className="bg-green-500 size-10 shrink-0 p-3 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold">{initials}</span>
                       </div>
-                      <p>{review.Comment}</p>
-                      <span className="text-xs text-gray-500">
-                        {review.created_at.split("T")[0]}
-                      </span>
+                      <div>
+                        <h3 className="font-bold">
+                          {customer || "Unknown User"}
+                        </h3>
+                        <div className="flex gap-1">
+                          {[...Array(parseInt(review.Rating_5))].map(
+                            (_, index) => (
+                              <FaStar key={index} className="text-yellow-400" />
+                            )
+                          )}
+                        </div>
+                        <p>{review.Comment}</p>
+                        <span className="text-xs text-gray-500">
+                          {review.created_at.split("T")[0]}
+                        </span>
+                      </div>
                     </div>
+                  )
+                })}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center mt-6 gap-2">
+                    <button
+                      onClick={() => paginate(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className={`p-2 rounded ${
+                        currentPage === 1
+                          ? "bg-gray-200 cursor-not-allowed"
+                          : "bg-[#5CAF90] text-white hover:opacity-90 cursor-pointer"
+                      }`}
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    <span className="text-sm text-gray-500 mx-2">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() =>
+                        paginate(Math.min(totalPages, currentPage + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                      className={`p-2 rounded ${
+                        currentPage === totalPages
+                          ? "bg-gray-200 cursor-not-allowed"
+                          : "bg-[#5CAF90] text-white hover:opacity-90 cursor-pointer"
+                      }`}
+                    >
+                      <FaChevronRight />
+                    </button>
                   </div>
-                )
-              })
+                )}
+              </>
             ) : (
               <p>No Reviews yet.</p>
             )

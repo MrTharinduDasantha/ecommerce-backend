@@ -51,6 +51,15 @@ const getAll = async () => {
   return result
 }
 
+//Get all active order reviews
+const getActive = async () => {
+  const [result] = await pool.query(
+    "SELECT * FROM Order_Review WHERE status=?",
+    ["active"]
+  )
+  return result
+}
+
 //Update order review
 const updateByOrderId = async (order_id, rating, comment) => {
   const fields = []
@@ -101,4 +110,5 @@ module.exports = {
   deleteByOrderId,
   getAll,
   updateStatus,
+  getActive
 }
