@@ -4,6 +4,7 @@ import { FaPlus } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { updateAboutUsSetting } from "../api/setting";
+import TimelineDisplay from "./TimelineDisplay";
 
 const NewAboutUsSettings = () => {
   // Statistics
@@ -153,12 +154,20 @@ const NewAboutUsSettings = () => {
   );
 
   return (
-    <div className="card bg-white shadow-md relative">
-      <div className="card-body">
-        <form onSubmit={handleSave}>
-          {/* Statistics */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-[#1D372E] mb-4">Statistics</h3>
+    <>
+      {/* Timeline at the top */}
+      <div className="w-full" style={{ background: '#1D372E', paddingTop: 24, paddingBottom: 8 }}>
+        <TimelineDisplay currentStep="aboutus" />
+      </div>
+       <div
+        style={{ background: '#1D372E', minHeight: '100vh' }} // <-- add this line
+      >
+      <div className="card bg-white shadow-md relative mx-auto w-[1300px]">
+        <div className="card-body">
+          <form onSubmit={handleSave}>
+            {/* Statistics */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-[#1D372E] mb-4">Statistics</h3>
             {statistics.length > 0 ? (
               <div className="md:hidden space-y-4">
                 {statistics.map((stat, index) => (
@@ -474,9 +483,9 @@ const NewAboutUsSettings = () => {
         </form>
       </div>
     </div>
+    </div>
+    </>
   );
 };
-
-
 
 export default NewAboutUsSettings;
