@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import LoginForm from "../components/LoginForm";
 import logo from "../assets/logo.png";
@@ -7,12 +7,17 @@ import logo from "../assets/logo.png";
 const LoginPage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (user) {
+    // Only auto-redirect if NOT coming from Timeline
+    const params = new URLSearchParams(location.search);
+    if (user && params.get("redirect") !== "timeline") {
       navigate("/dashboard/dashboard-private");
     }
-  }, [user, navigate]);
+    // If from timeline, do NOT auto-redirect, let LoginForm handle it
+  }, [user, navigate, location]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#1D372E] via-[#5CAF90] to-[#1D372E] p-4">
       <div className="w-full max-w-[20rem] md:max-w-[26rem] p-8 space-y-4 md:space-y-6 bg-white rounded-lg shadow-xl">

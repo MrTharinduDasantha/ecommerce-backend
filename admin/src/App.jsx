@@ -21,9 +21,8 @@ import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import AboutUsSettings from "./components/AboutUsSettings";
+import NewAboutUsSettings from "./components/NewAboutUsSettings";
 import HeaderFooterSettings from "./components/HeaderFooterSettings";
-import HomePageSettings from "./components/HomePageSettings";
-import PolicyDetailsSettings from "./components/PolicyDetailsSettings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
 import AdminLogs from "./components/AdminLogs";
@@ -31,8 +30,9 @@ import CustomerDetails from "./components/CustomerDetails";
 import LogDetails from "./components/LogDetails";
 import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
 import NotificationPage from "./components/NotificationPage";
-import ReviewList from "./components/ReviewList";
-import ReviewDetails from "./components/ReviewDetails";
+import ReviewList from "./components/ReviewList"
+import ReviewDetails from "./components/ReviewDetails"
+import Timeline from "./components/Timeline";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -76,10 +76,8 @@ const App = () => {
           <Route path="/" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/verify-otp/:email" element={<VerifyOtpPage />} />
-          <Route
-            path="/reset-password/:email/:otp"
-            element={<ResetPasswordPage />}
-          />
+          <Route path="/reset-password/:email/:otp" element={<ResetPasswordPage />} />
+
           <Route
             path="/dashboard"
             element={
@@ -121,11 +119,6 @@ const App = () => {
               path="settings/header-footer"
               element={<HeaderFooterSettings />}
             />
-            <Route path="settings/home-page" element={<HomePageSettings />} />
-            <Route
-              path="settings/policy-details"
-              element={<PolicyDetailsSettings />}
-            />
             <Route path="orders" element={<OrderList />} />
             <Route path="orders/:orderId" element={<OrderDetails />} />
             <Route
@@ -142,6 +135,8 @@ const App = () => {
             <Route path="reviews" element={<ReviewList />} />
             <Route path="reviews/:reviewId" element={<ReviewDetails />} />
           </Route>
+          <Route path="/newaboutUssetting" element={<NewAboutUsSettings />} />
+          <Route path="Timeline" element={<Timeline />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       )}
