@@ -78,7 +78,8 @@ const SubCategory = () => {
               discountName: product.Discount_Name || "",
               category: product.subcategories?.[0]?.Description || "",
               brand: product.Brand_Name || "",
-              historyStatus: product.History_Status || ""
+              historyStatus: product.History_Status || "",
+              activeDiscount: product.discounts?.find(d => d.Status === "active") || null
             }));
           setProducts(formattedProducts); 
 
@@ -210,15 +211,8 @@ const SubCategory = () => {
                       title={product.name}
                       price={product.price}
                       oldPrice={product.oldPrice}
-                      discountLabel={
-                        product.oldPrice && product.price
-                          ? `${calculateDiscountPercentage(
-                              product.oldPrice,
-                              product.price
-                            )} % OFF`
-                          : null
-                      }
                       historyStatus={product.historyStatus}
+                      activeDiscount={product.activeDiscount}
                       id={product.id}
                       className="h-full"
                     />

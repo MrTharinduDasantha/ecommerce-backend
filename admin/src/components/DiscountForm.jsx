@@ -9,6 +9,7 @@ import {
 import { FaRegCheckSquare, FaCheckSquare } from "react-icons/fa";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
+import SearchableSelect from "./SearchableSelect";
 import "react-datepicker/dist/react-datepicker.css";
 
 const DiscountForm = () => {
@@ -47,7 +48,7 @@ const DiscountForm = () => {
   // Discount type options
   const discountTypeOptions = [
     { value: "percentage", label: "Percentage (%)" },
-    { value: "fixed", label: "Fixed Amount (Rs.)" },
+    { value: "fixed", label: "Fixed Amount (LKR)" },
   ];
 
   // Calculate discounted price
@@ -120,6 +121,24 @@ const DiscountForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle product selection
+  const handleProductChange = (selectedValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      productId: selectedValue,
+    }));
+
+    // Find and set the selected product details
+    if (selectedValue) {
+      const selectedProduct = products.find(
+        (product) => product.idProduct === parseInt(selectedValue)
+      );
+      setSelectedProductDetails(selectedProduct || null);
+    } else {
+      setSelectedProductDetails(null);
+    }
   };
 
   // Handle date changes
@@ -202,7 +221,7 @@ const DiscountForm = () => {
     const discountedPrice = calculateDiscountedPrice();
     const originalPrice = parseFloat(product.Selling_Price);
     const hasDiscount =
-      discountedPrice !== originalPrice && formData.discountValue;
+      discountedPrice !== originalPrice && formData.discountValue && formData.discountType;
 
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -243,7 +262,7 @@ const DiscountForm = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Market Price:</span>
                 <span className="font-medium text-gray-800">
-                  Rs. {parseFloat(product.Market_Price).toFixed(2)}
+                  LKR {parseFloat(product.Market_Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
 
@@ -256,9 +275,18 @@ const DiscountForm = () => {
                       : "text-[#5CAF90] text-lg font-bold"
                   }`}
                 >
-                  Rs. {originalPrice.toFixed(2)}
+                  LKR {originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
+
+              {formData.discountValue && !formData.discountType && (
+                <div className="flex justify-between items-center border-t pt-2">
+                  <span className="text-gray-600">Discount Value:</span>
+                  <span className="text-orange-600 font-medium">
+                    {formData.discountValue} (Select discount type)
+                  </span>
+                </div>
+              )}
 
               {hasDiscount && (
                 <>
@@ -267,9 +295,7 @@ const DiscountForm = () => {
                     <span className="text-red-600 font-medium">
                       {formData.discountType === "percentage"
                         ? `${formData.discountValue}%`
-                        : `Rs. ${parseFloat(formData.discountValue).toFixed(
-                            2
-                          )}`}
+                        : `LKR ${parseFloat(formData.discountValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </span>
                   </div>
 
@@ -278,12 +304,12 @@ const DiscountForm = () => {
                       Final Selling Price:
                     </span>
                     <span className="text-[#5CAF90] text-lg md:text-xl font-bold">
-                      Rs. {discountedPrice.toFixed(2)}
+                      LKR {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
 
                   <div className="text-center text-sm text-gray-500 mt-6">
-                    You save: Rs. {(originalPrice - discountedPrice).toFixed(2)}
+                    You save: LKR {(originalPrice - discountedPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </>
               )}
@@ -415,38 +441,13 @@ const DiscountForm = () => {
                       Product
                     </span>
                   </label>
-                  <select
-                    name="productId"
+                  <SearchableSelect
+                    options={productOptions}
                     value={formData.productId}
-                    onChange={(e) => {
-                      const selectedValue = e.target.value;
-
-                      // Update form data
-                      setFormData((prev) => ({
-                        ...prev,
-                        productId: selectedValue,
-                      }));
-
-                      // Find and set the selected product details
-                      if (selectedValue) {
-                        const selectedProduct = products.find(
-                          (product) =>
-                            product.idProduct === parseInt(selectedValue)
-                        );
-                        setSelectedProductDetails(selectedProduct || null);
-                      } else {
-                        setSelectedProductDetails(null);
-                      }
-                    }}
-                    className="select select-bordered select-sm md:select-md w-full bg-white border-[#1D372E] text-[#1D372E]"
-                  >
-                    <option value="">Select Product</option>
-                    {productOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={handleProductChange}
+                    placeholder="Select Product"
+                    searchPlaceholder="Search by product..."
+                  />
                 </div>
 
                 {/* Mobile Product Details - Show below product selection on mobile */}
@@ -509,7 +510,7 @@ const DiscountForm = () => {
                   <label className="label text-[#1D372E] mb-0.5">
                     <span className="label-text text-sm font-medium">
                       Discount Value{" "}
-                      {formData.discountType === "percentage" ? "(%)" : "(Rs.)"}
+                      {formData.discountType === "percentage" ? "(%)" : "(LKR)"}
                     </span>
                   </label>
                   <input
@@ -520,7 +521,7 @@ const DiscountForm = () => {
                     placeholder={`Enter discount value ${
                       formData.discountType === "percentage"
                         ? "in percentage"
-                        : "in rupees"
+                        : "in LKR"
                     }`}
                     className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
                     step={formData.discountType === "percentage" ? "1" : "0.01"}

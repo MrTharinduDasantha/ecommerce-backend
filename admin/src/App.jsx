@@ -20,7 +20,8 @@ import UsersManagedForm from "./components/UsersManagedForm";
 import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
-import Settings from "./components/Settings";
+import AboutUsSettings from "./components/AboutUsSettings";
+import HeaderFooterSettings from "./components/HeaderFooterSettings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
 import AdminLogs from "./components/AdminLogs";
@@ -28,6 +29,9 @@ import CustomerDetails from "./components/CustomerDetails";
 import LogDetails from "./components/LogDetails";
 import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
 import NotificationPage from "./components/NotificationPage";
+import ReviewList from "./components/ReviewList"
+import ReviewDetails from "./components/ReviewDetails"
+import Timeline from "./components/Timeline";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -111,7 +115,11 @@ const App = () => {
               path="customer-managed-form"
               element={<CustomerManagedForm />}
             />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings/about-us" element={<AboutUsSettings />} />
+            <Route
+              path="settings/header-footer"
+              element={<HeaderFooterSettings />}
+            />
             <Route path="orders" element={<OrderList />} />
             <Route path="orders/:orderId" element={<OrderDetails />} />
             <Route
@@ -125,8 +133,11 @@ const App = () => {
             <Route path="log/view-adminlogs/:id" element={<LogDetails />} />
             <Route path="order/view-adminlogs/:id" element={<LogDetails />} />
             <Route path="notifications" element={<NotificationPage />} />
+            <Route path="reviews" element={<ReviewList />} />
+            <Route path="reviews/:reviewId" element={<ReviewDetails />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="Timeline" element={<Timeline />} />
         </Routes>
       )}
     </>

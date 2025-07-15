@@ -21,10 +21,11 @@ const AllProducts = () => {
     const loadProducts = async () => {
       try {
         const data = await getProducts();
-        // Format products to match the structure expected by ProductCard
+        // Keep original product data and add formatted properties for display
         const formattedProducts = data.products
           .filter((product) => product.Status === "active")
           .map((product) => ({
+            ...product, // Keep all original product data including eventDiscounts
             id: product.idProduct,
             name: product.Description,
             image: product.Main_Image_Url,
@@ -144,6 +145,7 @@ const AllProducts = () => {
                   historyStatus={product.historyStatus}
                   activeDiscount={product.activeDiscount}
                   id={product.id}
+                  product={product}
                   className="h-full"
                 />
               </div>

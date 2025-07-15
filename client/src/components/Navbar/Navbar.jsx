@@ -313,13 +313,20 @@ function Navbar() {
                     <FaChevronDown className="ml-1 text-[12px]" />
                   </button>
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-3 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                    <div className="absolute right-0 mt-4 w-28 bg-white rounded-md shadow-lg py-2 z-50">
                       <Link
                         to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                        className="block mx-auto text-center px-4 py-2 text-sm text-gray-700 hover:text-[#5CAF90] transition"
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         Profile
+                      </Link>
+                      <Link
+                        to="/about"
+                        className="block mx-auto text-center px-4 py-2 text-sm text-gray-700 hover:text-[#5CAF90] transition"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        About Us
                       </Link>
                       <button
                         onClick={() => {
@@ -327,7 +334,7 @@ function Navbar() {
                           navigate("/sign-in");
                           setIsDropdownOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                        className="block mx-auto text-center px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 my-1 rounded cursor-pointer transition"
                       >
                         Logout
                       </button>
@@ -335,15 +342,35 @@ function Navbar() {
                   )}
                 </div>
               ) : (
-                <Link to="/sign-in">
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
-                    className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
+                <div className="relative">
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
                   >
-                    <FaUser className="text-[15px] cursor-pointer" title="Me" />
-                  </motion.div>
-                </Link>
+                    <FaUser className="text-[15px]" />
+                    <FaChevronDown className="ml-1 text-[12px]" />
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-4 w-28 bg-white rounded-md shadow-lg py-2 z-50">
+                      <Link
+                        to="/about"
+                        className="block mx-auto text-center px-4 py-2 text-sm text-gray-700 hover:text-[#5CAF90] transition"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        About Us
+                      </Link>
+                      <button
+                        onClick={() => {
+                          navigate("/sign-in");
+                          setIsDropdownOpen(false);
+                        }}
+                        className="block mx-auto text-center px-4 py-2 text-sm text-white bg-blue-500 hover:bg-blue-600 my-1 rounded cursor-pointer transition"
+                      >
+                        Login
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -528,13 +555,20 @@ function Navbar() {
                     <FaChevronDown className="ml-1 text-[10px]" />
                   </button>
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg py-1 z-50">
+                    <div className="absolute right-0 mt-4 w-28 bg-white rounded-md shadow-lg py-1 z-50">
                       <Link
                         to="/profile"
-                        className="block px-3 py-2 text-xs text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                        className="block mx-auto text-center px-3 py-2 text-xs text-gray-700 hover:text-[#5CAF90] transition"
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         Profile
+                      </Link>
+                      <Link
+                        to="/about"
+                        className="block mx-auto text-center px-3 py-2 text-xs text-gray-700 hover:text-[#5CAF90] transition"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        About Us
                       </Link>
                       <button
                         onClick={() => {
@@ -542,7 +576,7 @@ function Navbar() {
                           navigate("/sign-in");
                           setIsDropdownOpen(false);
                         }}
-                        className="block w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-[#5CAF90] hover:text-white"
+                        className="block mx-auto text-center px-3 py-2 text-xs text-white bg-red-500 hover:bg-red-600 my-1 rounded cursor-pointer"
                       >
                         Logout
                       </button>
@@ -550,14 +584,35 @@ function Navbar() {
                   )}
                 </div>
               ) : (
-                <Link to="/sign-in">
-                  <div className="p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]">
-                    <FaUser
-                      className="text-xs sm:text-sm cursor-pointer"
-                      title="Me"
-                    />
-                  </div>
-                </Link>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]"
+                  >
+                    <FaUser className="text-xs sm:text-sm" />
+                    <FaChevronDown className="ml-1 text-[10px]" />
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-4 w-28 bg-white rounded-md shadow-lg py-1 z-50">
+                      <Link
+                        to="/about"
+                        className="block mx-auto text-center px-3 py-2 text-xs text-gray-700 hover:text-[#5CAF90] transition"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        About Us
+                      </Link>
+                      <button
+                        onClick={() => {
+                          navigate("/sign-in");
+                          setIsDropdownOpen(false);
+                        }}
+                        className="block mx-auto text-center px-3 py-2 text-xs text-white bg-blue-500 hover:bg-blue-600 my-1 rounded cursor-pointer"
+                      >
+                        Login
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>

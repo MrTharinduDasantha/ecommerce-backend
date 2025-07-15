@@ -101,7 +101,7 @@ const OnSale = () => {
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <div className="space-y-4">
-        
+             
               <PriceFilter onFilterChange={handlePriceFilterChange} />
             </div>
           </div>
@@ -159,7 +159,7 @@ const OnSale = () => {
               ) : (
                 <div className="col-span-full py-10 flex items-center justify-center">
                   <p className="text-xl md:text-2xl font-bold text-gray-500">
-                    No products found in this price range.
+                    No products found.
                   </p>
                 </div>
               )}

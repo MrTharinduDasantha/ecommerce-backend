@@ -1,52 +1,48 @@
-import React, { useContext, useEffect, useState } from "react";
-import EditIcon from "@mui/icons-material/Edit";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import PhoneIcon from "@mui/icons-material/Phone";
-import EmailIcon from "@mui/icons-material/Email";
-import CakeIcon from "@mui/icons-material/Cake";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import CloseIcon from "@mui/icons-material/Close";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CurrentOrders from "../CurrentOrders";
-import OrderHistory from "../OrderHistory";
-import { AuthContext } from "../../context/AuthContext";
+import React, { useContext, useEffect, useState } from "react"
+import EditIcon from "@mui/icons-material/Edit"
+import AccountCircleIcon from "@mui/icons-material/AccountCircle"
+import AddIcon from "@mui/icons-material/Add"
+import CloseIcon from "@mui/icons-material/Close"
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import DeleteIcon from "@mui/icons-material/Delete"
+import CurrentOrders from "../CurrentOrders"
+import OrderHistory from "../OrderHistory"
+import { AuthContext } from "../../context/AuthContext"
 import {
   addAddress,
   deleteAddressById,
   getAddressByCustomerId,
   updateAddress,
-} from "../../api/address";
-import { getCustomerById, updateCustomerDetails } from "../../api/customer";
+} from "../../api/address"
+import { getCustomerById, updateCustomerDetails } from "../../api/customer"
 
 const Profile = () => {
-  const { user, setUser } = useContext(AuthContext);
-  const [isEditProfileOpen, setIsEditProfileOpen] = React.useState(false);
+  const { user, setUser } = useContext(AuthContext)
+  const [isEditProfileOpen, setIsEditProfileOpen] = React.useState(false)
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] =
-    React.useState(false);
+    React.useState(false)
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] =
-    React.useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = React.useState(false);
+    React.useState(false)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false)
+  const [showSuccessMessage, setShowSuccessMessage] = React.useState(false)
   const [showAddSuccessMessage, setShowAddSuccessMessage] =
-    React.useState(false);
+    React.useState(false)
   const [showProfileSuccessMessage, setShowProfileSuccessMessage] =
-    React.useState(false);
+    React.useState(false)
 
   const [newAddressDetails, setNewAddressDetails] = React.useState({
     address: "",
     city: "",
     country: "",
     mobile_no: "",
-  });
+  })
 
   const [formErrors, setFormErrors] = React.useState({
     address: "",
     city: "",
     country: "",
     mobile: "",
-  });
+  })
 
   const [editingAddress, setEditingAddress] = React.useState({
     id: null,
@@ -54,11 +50,11 @@ const Profile = () => {
     city: "",
     country: "",
     mobile_no: "",
-  });
+  })
 
-  const [addressToDelete, setAddressToDelete] = React.useState(null);
+  const [addressToDelete, setAddressToDelete] = React.useState(null)
 
-  const [addresses, setAddresses] = React.useState([]);
+  const [addresses, setAddresses] = React.useState([])
 
   const [profileData, setProfileData] = React.useState({
     full_name: "",
@@ -67,7 +63,7 @@ const Profile = () => {
     address: "",
     birthday: "",
     password: "************************",
-  });
+  })
 
   const [updatedProfile, setUpdatedProfile] = useState({
     full_name: "",
@@ -78,42 +74,42 @@ const Profile = () => {
     country: "",
     birthday: "",
     password: "",
-  });
+  })
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const customerData = await getCustomerById(user.id);
+        const customerData = await getCustomerById(user.id)
         // Fix for birthday date shift issue by adding one day
-        let birthdayValue = customerData.Birthday || "";
+        let birthdayValue = customerData.Birthday || ""
         if (birthdayValue) {
-          const dateParts = birthdayValue.split("T")[0].split("-");
-          const year = parseInt(dateParts[0]);
-          const month = parseInt(dateParts[1]) - 1;
-          const day = parseInt(dateParts[2]);
-          const date = new Date(year, month, day);
-          date.setDate(date.getDate() + 1); // Add one day to fix the timezone shift
-          const adjustedYear = date.getFullYear();
+          const dateParts = birthdayValue.split("T")[0].split("-")
+          const year = parseInt(dateParts[0])
+          const month = parseInt(dateParts[1]) - 1
+          const day = parseInt(dateParts[2])
+          const date = new Date(year, month, day)
+          date.setDate(date.getDate() + 1) // Add one day to fix the timezone shift
+          const adjustedYear = date.getFullYear()
           const adjustedMonth = (date.getMonth() + 1)
             .toString()
-            .padStart(2, "0");
-          const adjustedDay = date.getDate().toString().padStart(2, "0");
-          birthdayValue = `${adjustedYear}-${adjustedMonth}-${adjustedDay}`;
+            .padStart(2, "0")
+          const adjustedDay = date.getDate().toString().padStart(2, "0")
+          birthdayValue = `${adjustedYear}-${adjustedMonth}-${adjustedDay}`
         }
-        setProfileData((prev) => ({
+        setProfileData(prev => ({
           ...prev,
           full_name: customerData.Full_Name,
           mobile_no: customerData.Mobile_No,
           email: customerData.Email,
           address: customerData.Address || "",
           birthday: birthdayValue,
-        }));
+        }))
       } catch (error) {
-        console.error("Error fetching customer data:", error);
+        console.error("Error fetching customer data:", error)
       }
-    };
-    fetchUserData();
-  }, [user.id]);
+    }
+    fetchUserData()
+  }, [user.id])
 
   const [profileErrors, setProfileErrors] = React.useState({
     name: "",
@@ -122,12 +118,12 @@ const Profile = () => {
     address: "",
     birthday: "",
     password: "",
-  });
+  })
 
   useEffect(() => {
     const fetchUserAddresses = async () => {
       try {
-        const customerAddresses = await getAddressByCustomerId(user.id);
+        const customerAddresses = await getAddressByCustomerId(user.id)
         const formattedAddresses = customerAddresses.map((address, index) => ({
           id: address.idDelivery_Address,
           address: address.Address,
@@ -135,14 +131,14 @@ const Profile = () => {
           country: address.Country,
           mobile_no: address.Mobile_No,
           isMain: index === 0,
-        }));
-        setAddresses(formattedAddresses);
+        }))
+        setAddresses(formattedAddresses)
       } catch (error) {
-        console.error("Error fetching customer addresses: ", error);
+        console.error("Error fetching customer addresses: ", error)
       }
-    };
-    fetchUserAddresses();
-  }, [user.id]);
+    }
+    fetchUserAddresses()
+  }, [user.id])
 
   useEffect(() => {
     if (
@@ -151,55 +147,55 @@ const Profile = () => {
       isEditAddressModalOpen ||
       isDeleteConfirmOpen
     ) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "hidden"
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto"
     }
     return () => {
-      document.body.style.overflow = "auto";
-    };
+      document.body.style.overflow = "auto"
+    }
   }, [
     isEditProfileOpen,
     isAddAddressModalOpen,
     isEditAddressModalOpen,
     isDeleteConfirmOpen,
-  ]);
+  ])
 
   const validateForm = () => {
-    let isValid = true;
+    let isValid = true
     const errors = {
       address: "",
       city: "",
       country: "",
       mobile: "",
-    };
+    }
 
     if (!newAddressDetails.address.trim()) {
-      errors.address = "Address is required";
-      isValid = false;
+      errors.address = "Address is required"
+      isValid = false
     }
 
     if (!newAddressDetails.city.trim()) {
-      errors.city = "City is required";
-      isValid = false;
+      errors.city = "City is required"
+      isValid = false
     }
 
     if (!newAddressDetails.country.trim()) {
-      errors.country = "Country is required";
-      isValid = false;
+      errors.country = "Country is required"
+      isValid = false
     }
 
     if (!newAddressDetails.mobile_no.trim()) {
-      errors.mobile = "Mobile number is required";
-      isValid = false;
+      errors.mobile = "Mobile number is required"
+      isValid = false
     } else if (!/^\d{10}$/.test(newAddressDetails.mobile_no.trim())) {
-      errors.mobile = "Mobile number must be exactly 10 digits";
-      isValid = false;
+      errors.mobile = "Mobile number must be exactly 10 digits"
+      isValid = false
     }
 
-    setFormErrors(errors);
-    return isValid;
-  };
+    setFormErrors(errors)
+    return isValid
+  }
 
   const handleAddAddress = async () => {
     if (validateForm()) {
@@ -210,10 +206,10 @@ const Profile = () => {
           city: newAddressDetails.city,
           country: newAddressDetails.country,
           mobile_no: newAddressDetails.mobile_no,
-        };
-        const res = await addAddress(user.id, addressData);
-        const newAddressId = res.id || res.idDelivery_Address;
-        const isFirstAddress = addresses.length === 0;
+        }
+        const res = await addAddress(user.id, addressData)
+        const newAddressId = res.id || res.idDelivery_Address
+        const isFirstAddress = addresses.length === 0
         const newAddress = {
           id: newAddressId,
           address: newAddressDetails.address.trim(),
@@ -221,47 +217,57 @@ const Profile = () => {
           country: newAddressDetails.country.trim(),
           mobile_no: newAddressDetails.mobile_no.trim(),
           isMain: isFirstAddress,
-        };
-        setAddresses((prevAddresses) => [...prevAddresses, newAddress]);
+        }
+        setAddresses(prevAddresses => [...prevAddresses, newAddress])
         if (isFirstAddress) {
-          setProfileData((prev) => ({
-            ...prev,
-            address: newAddress,
-          }));
-          setUpdatedProfile((prev) => ({
+          setProfileData(prev => ({
             ...prev,
             address: newAddress.address,
-          }));
+          }))
+          setUpdatedProfile(prev => ({
+            ...prev,
+            address: newAddress.address,
+            city: newAddress.city,
+            country: newAddress.country,
+          }))
+          // eslint-disable-next-line no-unused-vars
+          const { password, ...profileDataWithoutPassword } = profileData
+          updateCustomerDetails(user.id, {
+            ...profileDataWithoutPassword,
+            address: newAddress.address,
+            city: newAddress.city,
+            country: newAddress.country,
+          })
         }
         setNewAddressDetails({
           address: "",
           city: "",
           country: "",
           mobile_no: "",
-        });
+        })
         setFormErrors({
           address: "",
           city: "",
           country: "",
           mobile: "",
-        });
+        })
         // Show success message
-        setShowAddSuccessMessage(true);
+        setShowAddSuccessMessage(true)
 
         // Close the modal after a delay
         setTimeout(() => {
-          setIsAddAddressModalOpen(false);
-          setShowAddSuccessMessage(false);
-        }, 1500);
+          setIsAddAddressModalOpen(false)
+          setShowAddSuccessMessage(false)
+        }, 1500)
       } catch (error) {
-        console.error("Failed to add address:", error);
-        alert("Failed to add address. Please try again.");
+        console.error("Failed to add address:", error)
+        alert("Failed to add address. Please try again.")
       }
     }
-  };
+  }
 
-  const handleEditAddress = (id) => {
-    const addressToEdit = addresses.find((addr) => addr.id === id);
+  const handleEditAddress = id => {
+    const addressToEdit = addresses.find(addr => addr.id === id)
     if (addressToEdit) {
       setEditingAddress({
         id: addressToEdit.id,
@@ -269,59 +275,78 @@ const Profile = () => {
         city: addressToEdit.city,
         country: addressToEdit.country,
         mobile_no: addressToEdit.mobile_no,
-      });
-      setIsEditAddressModalOpen(true);
-      setShowSuccessMessage(false);
+      })
+      setIsEditAddressModalOpen(true)
+      setShowSuccessMessage(false)
     }
-  };
+  }
 
-  const handleDeleteAddress = (id) => {
-    setAddressToDelete(id);
-    setIsDeleteConfirmOpen(true);
-  };
+  const handleDeleteAddress = id => {
+    setAddressToDelete(id)
+    setIsDeleteConfirmOpen(true)
+  }
 
   const confirmDeleteAddress = async () => {
     try {
       const addressToRemove = addresses.find(
-        (addr) => addr.id === addressToDelete
-      );
-      const wasMainAddress = addressToRemove?.isMain;
-      await deleteAddressById(user.id, addressToDelete);
-      setAddresses((prev) => {
-        const filteredAddresses = prev.filter(
-          (address) => address.id !== addressToDelete
-        );
-        if (wasMainAddress && filteredAddresses.length > 0) {
-          const newAddresses = filteredAddresses.map((addr, index) => ({
-            ...addr,
-            isMain: index === 0,
-          }));
-          const newMainAddress = newAddresses[0];
-          setTimeout(() => {
-            setProfileData((prev) => ({
-              ...prev,
-              address: newMainAddress.address,
-            }));
-            setUpdatedProfile((prev) => ({
-              ...prev,
-              address: newMainAddress.address,
-            }));
-          }, 0);
-          return newAddresses;
+        addr => addr.id === addressToDelete
+      )
+      const wasMainAddress = addressToRemove?.isMain
+      await deleteAddressById(user.id, addressToDelete)
+      const filteredAddresses = addresses.filter(
+        address => address.id !== addressToDelete
+      )
+      // eslint-disable-next-line no-unused-vars
+      const { password, ...profileDataWithoutPassword } = profileData
+      if (wasMainAddress && filteredAddresses.length > 0) {
+        const newAddresses = filteredAddresses.map((addr, index) => ({
+          ...addr,
+          isMain: index === 0,
+        }))
+        const newMainAddress = newAddresses[0]
+        setAddresses(newAddresses)
+        setProfileData(prev => ({
+          ...prev,
+          address: newMainAddress.address,
+        }))
+        setUpdatedProfile(prev => ({
+          ...prev,
+          address: newMainAddress.address,
+          city: newMainAddress.city,
+          country: newMainAddress.country,
+        }))
+        updateCustomerDetails(user.id, {
+          ...profileDataWithoutPassword,
+          address: newMainAddress.address,
+          city: newMainAddress.city,
+          country: newMainAddress.country,
+        })
+      } else {
+        setAddresses(filteredAddresses)
+        if (wasMainAddress && filteredAddresses.length === 0) {
+          setProfileData(prev => ({
+            ...prev,
+            address: "",
+          }))
+          updateCustomerDetails(user.id, {
+            ...profileDataWithoutPassword,
+            address: "",
+            city: "",
+            country: "",
+          })
         }
-        return filteredAddresses;
-      });
-      setIsDeleteConfirmOpen(false);
+      }
+      setIsDeleteConfirmOpen(false)
     } catch (error) {
-      console.error("Failed to delete address:", error);
-      alert("Failed to delete address.");
+      console.error("Failed to delete address:", error)
+      alert("Failed to delete address.")
     }
-  };
+  }
 
   const handleUpdateAddress = async () => {
     if (validateEditForm()) {
-      setAddresses((prevAddresses) =>
-        prevAddresses.map((addr) =>
+      setAddresses(prevAddresses =>
+        prevAddresses.map(addr =>
           addr.id === editingAddress.id
             ? {
                 ...addr,
@@ -332,98 +357,108 @@ const Profile = () => {
               }
             : addr
         )
-      );
+      )
 
       // If the edited address is the main address, update the profile data
       const updatedAddress = addresses.find(
-        (addr) => addr.id === editingAddress.id
-      );
+        addr => addr.id === editingAddress.id
+      )
       if (updatedAddress && updatedAddress.isMain) {
-        setProfileData((prev) => ({
+        setProfileData(prev => ({
           ...prev,
           address: editingAddress.address.trim(),
-        }));
+        }))
       }
 
-      await updateAddress(user.id, editingAddress.id, editingAddress);
+      await updateAddress(user.id, editingAddress.id, editingAddress)
 
       // Show success message within the modal
-      setShowSuccessMessage(true);
+      setShowSuccessMessage(true)
 
       // Close the modal after a delay
       setTimeout(() => {
-        setIsEditAddressModalOpen(false);
+        setIsEditAddressModalOpen(false)
         setEditingAddress({
           id: null,
           address: "",
           city: "",
           country: "",
           mobile_no: "",
-        });
-        setShowSuccessMessage(false);
-      }, 1500);
+        })
+        setShowSuccessMessage(false)
+      }, 1500)
     }
-  };
+  }
 
   const validateEditForm = () => {
-    let isValid = true;
+    let isValid = true
     const errors = {
       address: "",
       city: "",
       country: "",
       mobile: "",
-    };
+    }
 
     if (!editingAddress.address.trim()) {
-      errors.address = "Address is required";
-      isValid = false;
+      errors.address = "Address is required"
+      isValid = false
     }
 
     if (!editingAddress.city.trim()) {
-      errors.city = "City is required";
-      isValid = false;
+      errors.city = "City is required"
+      isValid = false
     }
 
     if (!editingAddress.country.trim()) {
-      errors.country = "Country is required";
-      isValid = false;
+      errors.country = "Country is required"
+      isValid = false
     }
 
     if (!editingAddress.mobile_no.trim()) {
-      errors.mobile = "Mobile number is required";
-      isValid = false;
+      errors.mobile = "Mobile number is required"
+      isValid = false
     } else if (!/^\d{10}$/.test(editingAddress.mobile_no.trim())) {
-      errors.mobile = "Mobile number must be exactly 10 digits";
-      isValid = false;
+      errors.mobile = "Mobile number must be exactly 10 digits"
+      isValid = false
     }
 
-    setFormErrors(errors);
-    return isValid;
-  };
+    setFormErrors(errors)
+    return isValid
+  }
 
-  const handleSetMainAddress = (id) => {
-    setAddresses((prevAddresses) =>
-      prevAddresses.map((addr) => ({
+  const handleSetMainAddress = async id => {
+    setAddresses(prevAddresses =>
+      prevAddresses.map(addr => ({
         ...addr,
         isMain: addr.id === id,
       }))
-    );
+    )
     // Update the main profile address
-    const mainAddress = addresses.find((addr) => addr.id === id);
+    const mainAddress = addresses.find(addr => addr.id === id)
     if (mainAddress) {
-      setProfileData((prev) => ({
+      setProfileData(prev => ({
         ...prev,
         address: mainAddress.address,
-      }));
-      setUpdatedProfile((prev) => ({
+      }))
+      setUpdatedProfile(prev => ({
         ...prev,
         address: mainAddress.address,
-      }));
+        city: mainAddress.city,
+        country: mainAddress.country,
+      }))
     }
-  };
+    // eslint-disable-next-line no-unused-vars
+    const { password, ...profileDataWithoutPassword } = profileData
+    await updateCustomerDetails(user.id, {
+      ...profileDataWithoutPassword,
+      address: mainAddress.address,
+      city: mainAddress.city,
+      country: mainAddress.country,
+    })
+  }
 
   const validateProfileForm = () => {
-    let isValid = true;
+    let isValid = true
     const errors = {
       name: "",
       mobile_no: "",
@@ -431,42 +466,42 @@ const Profile = () => {
       address: "",
       birthday: "",
       // password: "",
-    };
+    }
 
     // Name validation
     if (!updatedProfile.full_name.trim()) {
-      errors.name = "Name is required";
-      isValid = false;
+      errors.name = "Name is required"
+      isValid = false
     }
 
     // Contact number validation
     if (!updatedProfile.mobile_no.trim()) {
-      errors.mobile_no = "Contact number is required";
-      isValid = false;
+      errors.mobile_no = "Contact number is required"
+      isValid = false
     } else if (!/^\d{10}$/.test(updatedProfile.mobile_no.trim())) {
-      errors.mobile_no = "Mobile number must be 10 digits";
-      isValid = false;
+      errors.mobile_no = "Mobile number must be 10 digits"
+      isValid = false
     }
 
     // Email validation
     if (!updatedProfile.email.trim()) {
-      errors.email = "Email is required";
-      isValid = false;
+      errors.email = "Email is required"
+      isValid = false
     } else if (!updatedProfile.email.includes("@")) {
-      errors.email = "@ is missing in email";
-      isValid = false;
+      errors.email = "@ is missing in email"
+      isValid = false
     }
 
     // Address validation
     if (!updatedProfile.address.trim()) {
-      errors.address = "Address is required";
-      isValid = false;
+      errors.address = "Address is required"
+      isValid = false
     }
 
     // Date of birth validation
     if (!updatedProfile.birthday.trim()) {
-      errors.birthday = "Date of birth is required";
-      isValid = false;
+      errors.birthday = "Date of birth is required"
+      isValid = false
     }
 
     // Password validation
@@ -475,13 +510,13 @@ const Profile = () => {
       updatedProfile.password.trim().length > 0 &&
       updatedProfile.password.trim().length < 6
     ) {
-      errors.password = "Password must be at least 6 characters";
-      isValid = false;
+      errors.password = "Password must be at least 6 characters"
+      isValid = false
     }
 
-    setProfileErrors(errors);
-    return isValid;
-  };
+    setProfileErrors(errors)
+    return isValid
+  }
 
   const handleEditProfile = () => {
     setUpdatedProfile({
@@ -489,14 +524,14 @@ const Profile = () => {
       mobile_no: profileData.mobile_no,
       email: profileData.email,
       address:
-        addresses.find((addr) => addr.isMain)?.address || profileData.address,
-      city: addresses.find((addr) => addr.isMain)?.city,
-      country: addresses.find((addr) => addr.isMain)?.country,
+        addresses.find(addr => addr.isMain)?.address || profileData.address,
+      city: addresses.find(addr => addr.isMain)?.city,
+      country: addresses.find(addr => addr.isMain)?.country,
       birthday: profileData.birthday,
-    });
-    setIsEditProfileOpen(true);
-    setShowSuccessMessage(false);
-  };
+    })
+    setIsEditProfileOpen(true)
+    setShowSuccessMessage(false)
+  }
 
   const handleProfileUpdate = async () => {
     if (validateProfileForm()) {
@@ -506,21 +541,21 @@ const Profile = () => {
         birthday: updatedProfile.birthday.includes("T")
           ? updatedProfile.birthday
           : updatedProfile.birthday + "T00:00:00",
-      };
+      }
       if (!updatedProfile.password || updatedProfile.password.trim() === "") {
         // Remove password from the object if it's empty
-        delete profileToUpdate.password;
+        delete profileToUpdate.password
       }
       // Update the main address in the addresses list
       if (profileData.address) {
-        setAddresses((prevAddresses) =>
-          prevAddresses.map((addr) =>
+        setAddresses(prevAddresses =>
+          prevAddresses.map(addr =>
             addr.isMain ? { ...addr, address: profileData.address } : addr
           )
-        );
+        )
       }
       try {
-        await updateCustomerDetails(user.id, profileToUpdate);
+        await updateCustomerDetails(user.id, profileToUpdate)
         if (setUser) {
           setUser({
             ...user,
@@ -538,65 +573,67 @@ const Profile = () => {
           email: updatedProfile.email,
           address: updatedProfile.address,
           birthday: profileToUpdate.birthday,
-        });
+        })
         // Show success message
-        setShowProfileSuccessMessage(true);
+        setShowProfileSuccessMessage(true)
 
         // Close the modal after a delay
         setTimeout(() => {
-          setIsEditProfileOpen(false);
-          setShowProfileSuccessMessage(false);
-        }, 1500);
+          setIsEditProfileOpen(false)
+          setShowProfileSuccessMessage(false)
+        }, 1500)
       } catch (error) {
-        console.error("Failed to update profile:", error);
+        console.error("Failed to update profile:", error)
       }
     }
-  };
+  }
 
-  const handleProfileInputChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedProfile((prev) => ({
+  const handleProfileInputChange = e => {
+    const { name, value } = e.target
+    setUpdatedProfile(prev => ({
       ...prev,
       [name]: value,
-    }));
+    }))
     // Clear error when user starts typing
     if (profileErrors[name]) {
-      setProfileErrors((prev) => ({
+      setProfileErrors(prev => ({
         ...prev,
         [name]: "",
-      }));
+      }))
     }
-  };
+  }
 
   const handleInputChange = (field, value) => {
-    setNewAddressDetails((prev) => ({ ...prev, [field]: value }));
+    setNewAddressDetails(prev => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (formErrors[field]) {
-      setFormErrors((prev) => ({ ...prev, [field]: "" }));
+      setFormErrors(prev => ({ ...prev, [field]: "" }))
     }
-  };
+  }
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-50">
       <div className="flex-1 px-4 py-6 mt-[60px]">
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1400px] mx-auto">
+        <div className="flex flex-col gap-8 max-w-[1400px] mx-auto">
           {/* Left Column - Profile */}
-          <div className="space-y-6 lg:w-1/4">
+          <div className="space-y-6">
             {/* Profile Card */}
-            <div className="max-w-sm p-6 mb-6 bg-white rounded-lg shadow-md">
+            <div className="w-full p-6 bg-white rounded-lg shadow-md overflow-hidden">
               <div className="flex items-start mb-6">
-                <div className="flex items-center">
+                <div className="flex sm:items-center">
                   <div className="relative">
                     <AccountCircleIcon
                       className="text-gray-400"
                       style={{ fontSize: "52px" }}
                     />
                   </div>
-                  <div className="ml-4">
-                    <h1 className="text-xl font-medium text-gray-800">
-                      {profileData.full_name}
-                    </h1>
-                    <p className="mb-2 text-sm text-gray-500">#CG1234</p>
+                  <div className="mx-4 flex flex-col sm:flex-row sm:items-center sm:gap-5">
+                    <div>
+                      <h1 className="text-xl font-medium text-gray-800">
+                        {profileData.full_name}
+                      </h1>
+                      <p className="mb-2 text-sm text-gray-500">#CG1234</p>
+                    </div>
                     <button
                       className="flex items-center justify-center bg-[#5CAF90] hover:bg-[#1D372E] hover:opacity-80 hover:scale-105 hover:shadow-lg transform transition-all duration-300 text-white rounded-full w-[94px] h-[35.46px] text-sm"
                       onClick={handleEditProfile}
@@ -610,87 +647,37 @@ const Profile = () => {
 
               {/* Contact Information and Address */}
               <div className="space-y-4">
-                <div className="flex items-center">
-                  <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <PhoneIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="w-24 text-gray-600">Contact No</span>
-                  <span className="text-gray-800">{profileData.mobile_no}</span>
+                <div className="overflow-x-scroll sm:overflow-x-auto">
+                  <table className="min-w-full text-sm sm:text-base text-center">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">
+                          Contact No
+                        </th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">Email</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">Birthday</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3">Address</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-base">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.mobile_no}
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.email}
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.birthday.split("T")[0]}
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        {profileData.address}
+                      </td>
+                    </tbody>
+                  </table>
                 </div>
-                <div className="flex items-center">
-                  <div className="min-w-[40px] min-h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <EmailIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="mr-5 text-gray-600">Email</span>
-                  <span className="overflow-hidden text-gray-800">{profileData.email}</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <CakeIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="w-24 text-gray-600">Birthday</span>
-                  <span className="text-gray-800">
-                    {profileData.birthday
-                      ? profileData.birthday.split("T")[0]
-                      : ""}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-[40px] h-[40px] rounded-full bg-[#D1D1D1] flex items-center justify-center mr-2">
-                    <LocationOnIcon
-                      className="text-gray-500"
-                      style={{ fontSize: "20px" }}
-                    />
-                  </div>
-                  <span className="w-24 text-gray-600">Address</span>
-                  <div className="flex-1">
-                    <span className="text-gray-800 whitespace-pre-line">
-                      {(() => {
-                        const mainAddress =
-                          addresses.find((addr) => addr.isMain)?.address ||
-                          profileData.address;
-                        const parts = mainAddress
-                          .split(/[.,/]/)
-                          .map((part) => part.trim())
-                          .filter((part) => part);
-
-                        // If we have more than 2 parts, combine all but the first into the second line
-                        if (parts.length > 2) {
-                          return (
-                            <>
-                              {parts[0]}
-                              {"\n"}
-                              {parts.slice(1).join(", ")}
-                            </>
-                          );
-                        } else if (parts.length === 2) {
-                          return (
-                            <>
-                              {parts[0]}
-                              {"\n"}
-                              {parts[1]}
-                            </>
-                          );
-                        } else {
-                          // If we only have one part, display it on one line
-                          return parts[0];
-                        }
-                      })()}
-                    </span>
-                  </div>
-                </div>
-                <div className="pt-4">
-                  <button
-                    className="flex items-center group"
+                <div className="pt-4 flex justify-center">
+                  {/* <button
+                    className="flex items-center group transform transition-all duration-300"
                     onClick={() => setIsAddAddressModalOpen(true)}
                   >
                     <AddCircleIcon
@@ -700,28 +687,37 @@ const Profile = () => {
                     <span className="ml-1 text-black group-hover:text-[#1D372E] group-hover:font-medium transition-all duration-300">
                       Add Address
                     </span>
+                  </button> */}
+                  <button
+                    className="flex items-center justify-center bg-[#5CAF90] hover:bg-[#1D372E] hover:opacity-80 hover:scale-105 hover:shadow-lg transform transition-all duration-300 text-white rounded-full px-4 py-2 text-sm"
+                    onClick={() => setIsAddAddressModalOpen(true)}
+                  >
+                    <AddIcon className="w-3 h-3" />
+                    <span className="ml-1">Add Address</span>
                   </button>
                 </div>
-                <div className="mt-4 space-y-2">
-                  {addresses.map((addr) => (
+                <div className="mt-4 flex flex-col items-center gap-2">
+                  {addresses.map(addr => (
                     <div
                       key={addr.id}
-                      className="flex items-start p-3 space-x-2 transition-all duration-300 rounded bg-gray-50 hover:bg-gray-100"
+                      className={`flex items-start p-3 space-x-3 transition-all duration-300 rounded bg-gray-50 hover:bg-gray-100 md:min-w-2xl ${
+                        addr.isMain || addr.address === profileData.address
+                          ? "border border-[#5CAF90]"
+                          : ""
+                      }`}
                     >
                       <input
                         type="radio"
                         name="mainAddress"
-                        checked={addr.isMain}
+                        checked={
+                          addr.isMain || addr.address === profileData.address
+                        }
                         onChange={() => handleSetMainAddress(addr.id)}
                         className="mt-1 text-[#5CAF90] focus:ring-[#5CAF90]"
                       />
                       <div className="flex-grow">
-                        <p className="text-gray-800">{addr.address}</p>
-                        <p className="text-sm text-gray-600">
-                          {addr.city}, {addr.country}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Mobile: {addr.mobile_no}
+                        <p className="text-gray-800 text-sm sm:text-base">
+                          {addr.address}, {addr.city}, {addr.country}
                         </p>
                       </div>
                       <div className="flex space-x-2">
@@ -746,7 +742,7 @@ const Profile = () => {
           </div>
 
           {/* Right Column - Current Orders and Order History */}
-          <div className="space-y-8 lg:w-3/4">
+          <div className="space-y-8">
             <CurrentOrders />
             <OrderHistory />
           </div>
@@ -979,7 +975,7 @@ const Profile = () => {
                     <textarea
                       id="newAddress"
                       value={newAddressDetails.address}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleInputChange("address", e.target.value)
                       }
                       className={`w-full px-3 py-2 border ${
@@ -1007,9 +1003,7 @@ const Profile = () => {
                       type="text"
                       id="newCity"
                       value={newAddressDetails.city}
-                      onChange={(e) =>
-                        handleInputChange("city", e.target.value)
-                      }
+                      onChange={e => handleInputChange("city", e.target.value)}
                       className={`w-full px-3 py-2 border ${
                         formErrors.city ? "border-red-500" : "border-gray-300"
                       } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B2E83] focus:border-transparent`}
@@ -1032,7 +1026,7 @@ const Profile = () => {
                       type="text"
                       id="newCountry"
                       value={newAddressDetails.country}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleInputChange("country", e.target.value)
                       }
                       className={`w-full px-3 py-2 border ${
@@ -1059,7 +1053,7 @@ const Profile = () => {
                       type="tel"
                       id="newMobile"
                       value={newAddressDetails.mobile_no}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleInputChange("mobile_no", e.target.value)
                       }
                       className={`w-full px-3 py-2 border ${
@@ -1134,8 +1128,8 @@ const Profile = () => {
                     <textarea
                       id="editAddress"
                       value={editingAddress.address}
-                      onChange={(e) =>
-                        setEditingAddress((prev) => ({
+                      onChange={e =>
+                        setEditingAddress(prev => ({
                           ...prev,
                           address: e.target.value,
                         }))
@@ -1165,8 +1159,8 @@ const Profile = () => {
                       type="text"
                       id="editCity"
                       value={editingAddress.city}
-                      onChange={(e) =>
-                        setEditingAddress((prev) => ({
+                      onChange={e =>
+                        setEditingAddress(prev => ({
                           ...prev,
                           city: e.target.value,
                         }))
@@ -1193,8 +1187,8 @@ const Profile = () => {
                       type="text"
                       id="editCountry"
                       value={editingAddress.country}
-                      onChange={(e) =>
-                        setEditingAddress((prev) => ({
+                      onChange={e =>
+                        setEditingAddress(prev => ({
                           ...prev,
                           country: e.target.value,
                         }))
@@ -1223,8 +1217,8 @@ const Profile = () => {
                       type="tel"
                       id="editMobile"
                       value={editingAddress.mobile_no}
-                      onChange={(e) =>
-                        setEditingAddress((prev) => ({
+                      onChange={e =>
+                        setEditingAddress(prev => ({
                           ...prev,
                           mobile_no: e.target.value,
                         }))
@@ -1305,7 +1299,7 @@ const Profile = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

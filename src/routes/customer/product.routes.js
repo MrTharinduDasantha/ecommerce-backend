@@ -7,6 +7,9 @@ const router = express.Router();
 router.get('/', productController.getAllProducts);
 router.get('/:id', productController.getProductById);
 
+// Test endpoint for Event Discounts
+router.get('/:id/event-discounts', productController.getProductEventDiscounts);
+
 // Product FAQ Routes
 router.get('/:id/faqs', productController.getProductFaqs);
 router.post('/:id/faqs', productController.addProductFaq);

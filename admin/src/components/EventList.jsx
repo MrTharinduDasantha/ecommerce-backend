@@ -20,6 +20,7 @@ const EventList = () => {
   const [showProductsModal, setShowProductsModal] = useState(false);
   const [modalProducts, setModalProducts] = useState([]);
   const [modalEventName, setModalEventName] = useState("");
+  const [modalEventDiscounts, setModalEventDiscounts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
 
   const navigate = useNavigate();
@@ -98,6 +99,21 @@ const EventList = () => {
     }
   };
 
+  // Calculate discounted price for a product
+  const calculateDiscountedPrice = (product, discount) => {
+    const originalPrice = parseFloat(product.Selling_Price) || 0;
+    if (!discount || !discount.Discount_Type || !discount.Discount_Value) {
+      return originalPrice;
+    }
+    const discountValue = parseFloat(discount.Discount_Value) || 0;
+    if (discount.Discount_Type === "percentage") {
+      return originalPrice - (originalPrice * discountValue) / 100;
+    } else if (discount.Discount_Type === "fixed") {
+      return Math.max(0, originalPrice - discountValue);
+    }
+    return originalPrice;
+  };
+
   // View products for an event
   const viewEventProducts = async (eventId, eventName) => {
     try {
@@ -107,11 +123,30 @@ const EventList = () => {
 
       const data = await getEventProducts(eventId);
       setModalProducts(data.products);
+      setModalEventDiscounts(data.discounts || []);
     } catch (error) {
       toast.error(error.message || "Failed to load event products");
       setShowProductsModal(false);
     } finally {
       setLoadingProducts(false);
+    }
+  };
+
+  // Get discount for a specific product
+  const getProductDiscount = (productId) => {
+    return modalEventDiscounts.find(
+      (discount) =>
+        discount.productIds && discount.productIds.includes(productId)
+    );
+  };
+
+  // Format discount value for display
+  const formatDiscountValue = (value, type) => {
+    if (type === "percentage") {
+      // Remove decimal places for percentage
+      return `${Number.parseInt(value)}%`;
+    } else {
+      return `Rs. ${value}`;
     }
   };
 
@@ -342,16 +377,16 @@ const EventList = () => {
       {/* Products Modal */}
       {showProductsModal && (
         <div className="modal modal-open">
-          <div className="modal-box bg-white text-[#1D372E] max-w-4xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">
+          <div className="modal-box bg-white text-[#1D372E] max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-xl">
                 Products in "{modalEventName}"
               </h3>
               <button
                 onClick={() => setShowProductsModal(false)}
                 className="absolute right-6 top-7 text-[#1D372E]"
               >
-                <IoClose className="w-5 h-5" />
+                <IoClose className="w-6 h-6" />
               </button>
             </div>
 
@@ -359,34 +394,110 @@ const EventList = () => {
               <div className="flex justify-center items-center h-40">
                 <span className="loading loading-spinner loading-lg text-primary"></span>
               </div>
+            ) : modalProducts.length === 0 ? (
+              <p className="text-center text-gray-500 py-16">
+                No products found for this event.
+              </p>
             ) : (
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-h-96 overflow-y-auto">
-                {modalProducts.map((product) => (
-                  <div
-                    key={product.idProduct}
-                    className="card bg-[#F4F4F4] border border-[#1D372E] shadow-sm"
-                  >
-                    <div className="card-body p-4">
-                      <h4 className="text-sm font-semibold text-[#1D372E] mb-2">
-                        {product.Description}
-                      </h4>
-                      {product.Main_Image_Url && (
-                        <img
-                          src={product.Main_Image_Url}
-                          alt={product.Description}
-                          className="w-full h-60 object-cover rounded mb-2"
-                        />
-                      )}
-                      {product.Long_Description && (
-                        <p className="text-xs text-gray-800">
-                          {product.Long_Description.length > 60
-                            ? `${product.Long_Description.substring(0, 60)}...`
-                            : product.Long_Description}
-                        </p>
-                      )}
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {modalProducts.map((product) => {
+                  const discount = getProductDiscount(product.idProduct);
+                  const originalPrice = parseFloat(product.Selling_Price);
+                  const discountedPrice = discount
+                    ? calculateDiscountedPrice(product, discount)
+                    : null;
+
+                  return (
+                    <div
+                      key={product.idProduct}
+                      className="card bg-white border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                    >
+                      <div className="card-body p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h4 className="text-base font-bold text-[#1D372E] mb-1 line-clamp-2">
+                              {product.Description}
+                            </h4>
+                            {discount && (
+                              <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                Discount Applied
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {product.Main_Image_Url && (
+                          <div className="mb-3">
+                            <img
+                              src={product.Main_Image_Url}
+                              alt={product.Description}
+                              className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                            />
+                          </div>
+                        )}
+
+                        {/* Product Description */}
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                            {product.Long_Description || product.Description}
+                          </p>
+                        </div>
+
+                        {/* Price Information */}
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-medium text-gray-600">
+                              Market Price:
+                            </span>
+                            <span className="text-sm font-bold text-gray-800">
+                              Rs. {parseFloat(product.Market_Price).toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-medium text-gray-600">
+                              Selling Price:
+                            </span>
+                            <span
+                              className={`text-sm font-bold ${
+                                discount
+                                  ? "line-through text-gray-500"
+                                  : "text-[#5CAF90]"
+                              }`}
+                            >
+                              Rs. {originalPrice.toFixed(2)}
+                            </span>
+                          </div>
+
+                          {discount && (
+                            <>
+                              <div className="border-t border-gray-200 pt-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs font-medium text-red-600">
+                                    Discount:
+                                  </span>
+                                  <span className="text-sm font-bold text-red-600">
+                                    {formatDiscountValue(
+                                      discount.Discount_Value,
+                                      discount.Discount_Type
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center mt-1 bg-green-100 rounded p-2">
+                                  <span className="text-sm font-bold text-[#1D372E]">
+                                    Final Price:
+                                  </span>
+                                  <span className="text-lg font-bold text-[#5CAF90]">
+                                    Rs. {discountedPrice.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -407,7 +518,7 @@ const EventList = () => {
 
             <p className="mb-6">
               Are you sure you want to delete this event? This action cannot be
-              undone.
+              undone and will also delete any associated discounts.
             </p>
 
             <div className="modal-action">

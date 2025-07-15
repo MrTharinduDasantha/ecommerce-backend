@@ -1,12 +1,14 @@
 import { getToken } from "../utils/auth"
 
+const API_URL = "http://localhost:9000/api"
+
 // Fetch customer by customer id
 export const getCustomerById = async customerId => {
   try {
     const token = getToken()
     if (token) {
       const res = await fetch(
-        `http://localhost:9000/api/customers/${customerId}`,
+        `${API_URL}/customers/${customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -27,7 +29,7 @@ export const updateCustomerDetails = async (customerId, data) => {
     const token = getToken()
     if (token) {
       const res = await fetch(
-        `http://localhost:9000/api/customers/${customerId}`,
+        `${API_URL}/customers/${customerId}`,
         {
           method: "PUT",
           headers: {

@@ -178,6 +178,22 @@ CREATE TABLE Event_has_Product (
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
 );
 
+-- Event_Discounts Table
+CREATE TABLE Event_Discounts (
+    idEvent_Discounts INT AUTO_INCREMENT PRIMARY KEY,
+    Event_idEvent INT NOT NULL,
+    Product_Ids TEXT NOT NULL, 
+    Description VARCHAR(255) NOT NULL,
+    Discount_Type VARCHAR(45) NOT NULL, 
+    Discount_Value DECIMAL(10,2) NOT NULL,
+    Start_Date DATE NOT NULL,
+    End_Date DATE NOT NULL,
+    Status VARCHAR(45) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (Event_idEvent) REFERENCES Event(idEvent) ON DELETE CASCADE
+);
+
 -- Cart Table
 CREATE TABLE Cart (
     idCart INT AUTO_INCREMENT PRIMARY KEY,
@@ -304,6 +320,28 @@ CREATE TABLE FAQ (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Product_idProduct) REFERENCES Product(idProduct)
+);
+
+-- About Us Setting Table
+CREATE TABLE About_Us_Setting (
+  idAbout_Us_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Statistics JSON,
+  Vision_Image_Url TEXT,
+  Vision_Title VARCHAR(255),
+  Vision_Description TEXT,
+  Mission_Image_Url TEXT,
+  Mission_Title VARCHAR(255),
+  Mission_Description TEXT,
+  Values_Image_Url TEXT,
+  Values_Title VARCHAR(255),
+  Values_Description TEXT,
+  Features JSON,
+  Why_Choose_Us_Image_Url TEXT,
+  Shopping_Experience_Title VARCHAR(255),
+  Shopping_Experience_Description TEXT,
+  Shopping_Experience_Button_Text VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Header Footer Setting Table

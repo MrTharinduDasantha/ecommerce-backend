@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { getProducts } from "../../api/product"; // Import the API function
+import Sidebar1 from "../Sidebar1"; // Updated to use Sidebar1
 import RushDeliveryBanner from "../RushDeliveryBanner";
 import ProductCard from "../ProductCard";
 import PriceFilter from "./PriceFilter"; // Import the PriceFilter component
@@ -108,7 +109,7 @@ const RushDelivery = () => {
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <div className="space-y-4">
-        
+            
               <PriceFilter onFilterChange={handlePriceFilterChange} />
             </div>
           </div>

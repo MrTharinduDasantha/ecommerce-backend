@@ -107,7 +107,7 @@ const SeasonalOffers = () => {
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <div className="space-y-4">
-          
+            
               <PriceFilter onFilterChange={handlePriceFilterChange} />
             </div>
           </div>
