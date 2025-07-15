@@ -21,6 +21,7 @@ import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import AboutUsSettings from "./components/AboutUsSettings";
+import NewAboutUsSettings from "./components/NewAboutUsSettings";
 import HeaderFooterSettings from "./components/HeaderFooterSettings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
@@ -75,10 +76,8 @@ const App = () => {
           <Route path="/" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/verify-otp/:email" element={<VerifyOtpPage />} />
-          <Route
-            path="/reset-password/:email/:otp"
-            element={<ResetPasswordPage />}
-          />
+          <Route path="/reset-password/:email/:otp" element={<ResetPasswordPage />} />
+
           <Route
             path="/dashboard"
             element={
@@ -136,6 +135,8 @@ const App = () => {
             <Route path="reviews" element={<ReviewList />} />
             <Route path="reviews/:reviewId" element={<ReviewDetails />} />
           </Route>
+          <Route path="/newaboutUssetting" element={<NewAboutUsSettings />} />
+          <Route path="Timeline" element={<Timeline />} />
           <Route path="*" element={<Navigate to="/" />} />
           <Route path="Timeline" element={<Timeline />} />
         </Routes>

@@ -1,7 +1,7 @@
-const Order = require("../../models/order.model");
-const Cart = require("../../models/cart.model");
-const pool = require("../../config/database");
-const nodemailer = require("nodemailer");
+const Order = require("../../models/order.model")
+const Cart = require("../../models/cart.model")
+const pool = require("../../config/database")
+const nodemailer = require("nodemailer")
 
 // Create transporter for emails
 const transporter = nodemailer.createTransport({
@@ -10,34 +10,34 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-});
+})
 
 // Customer Order Controller
 class OrderController {
   // Get customer orders
-  async getCustomerOrders(req, res) {
+  async getCustomerOrders(req, res) { 
     try {
-      console.log("Getting orders for customer ID:", req.params.customer_id);
-      const orders = await Order.findByCustomerId(req.params.customer_id);
-      res.json(orders);
+      console.log("Getting orders for customer ID:", req.params.customer_id)
+      const orders = await Order.findByCustomerId(req.params.customer_id)
+      res.json(orders)
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("Error fetching orders:", error)
       res
         .status(500)
-        .json({ message: "Failed to fetch orders", error: error.message });
+        .json({ message: "Failed to fetch orders", error: error.message })
     }
   }
 
   // Get order details by ID (for customers)
   async getOrderDetails(req, res) {
     try {
-      const orderId = parseInt(req.params.id, 10);
-      const customerId = parseInt(req.params.customer_id, 10);
+      const orderId = parseInt(req.params.id, 10)
+      const customerId = parseInt(req.params.customer_id, 10)
 
       if (isNaN(orderId) || isNaN(customerId)) {
         return res
           .status(400)
-          .json({ message: "Invalid order ID or customer ID" });
+          .json({ message: "Invalid order ID or customer ID" })
       }
 
       console.log(
@@ -45,7 +45,7 @@ class OrderController {
         orderId,
         "customer ID:",
         customerId
-      );
+      )
 
       // First check if the order belongs to this customer for security
       const [orderCheck] = await pool.query(
@@ -54,41 +54,41 @@ class OrderController {
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
          WHERE o.idOrder = ? AND c.idCustomer = ?`,
         [orderId, customerId]
-      );
+      )
 
       if (orderCheck.length === 0) {
         return res.status(404).json({
           message: "Order not found or not authorized to view this order",
-        });
+        })
       }
 
       // Get full order details including items
-      const orderDetails = await Order.findById(orderId);
+      const orderDetails = await Order.findById(orderId)
 
       if (!orderDetails) {
-        return res.status(404).json({ message: "Order details not found" });
+        return res.status(404).json({ message: "Order details not found" })
       }
 
-      res.json(orderDetails);
+      res.json(orderDetails)
     } catch (error) {
-      console.error("Error fetching order details:", error);
+      console.error("Error fetching order details:", error)
       res.status(500).json({
         message: "Failed to fetch order details",
         error: error.message,
-      });
+      })
     }
   }
 
   // Track order status
   async trackOrderStatus(req, res) {
     try {
-      const orderId = parseInt(req.params.id, 10);
-      const customerId = parseInt(req.params.customer_id, 10);
+      const orderId = parseInt(req.params.id, 10)
+      const customerId = parseInt(req.params.customer_id, 10)
 
       if (isNaN(orderId) || isNaN(customerId)) {
         return res
           .status(400)
-          .json({ message: "Invalid order ID or customer ID" });
+          .json({ message: "Invalid order ID or customer ID" })
       }
 
       console.log(
@@ -96,7 +96,7 @@ class OrderController {
         orderId,
         "customer ID:",
         customerId
-      );
+      )
 
       // First check if the order belongs to this customer
       const [orderCheck] = await pool.query(
@@ -105,12 +105,12 @@ class OrderController {
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
          WHERE o.idOrder = ? AND c.idCustomer = ?`,
         [orderId, customerId]
-      );
+      )
 
       if (orderCheck.length === 0) {
         return res.status(404).json({
           message: "Order not found or not authorized to track this order",
-        });
+        })
       }
 
       // Get the order status history
@@ -126,7 +126,7 @@ class OrderController {
          WHERE oh.order_id = ?
          ORDER BY oh.created_at DESC`,
         [orderId]
-      );
+      )
 
       // Get current order status
       const [currentStatus] = await pool.query(
@@ -139,31 +139,30 @@ class OrderController {
          FROM \`Order\` o
          WHERE o.idOrder = ?`,
         [orderId]
-      );
+      )
 
       res.json({
         order_id: orderId,
         current_status: currentStatus[0] || {},
         status_history: statusHistory,
-      });
+      })
     } catch (error) {
-      res.status(500).json({
-        message: "Failed to track order status",
-        error: error.message,
-      });
+      res
+        .status(500)
+        .json({ message: "Failed to track order status", error: error.message })
     }
   }
 
   // Get order history for a customer
   async getOrderHistory(req, res) {
     try {
-      const customerId = parseInt(req.params.customer_id, 10);
+      const customerId = parseInt(req.params.customer_id, 10)
 
       if (isNaN(customerId)) {
-        return res.status(400).json({ message: "Invalid customer ID" });
+        return res.status(400).json({ message: "Invalid customer ID" })
       }
 
-      console.log("Getting order history for customer ID:", customerId);
+      console.log("Getting order history for customer ID:", customerId)
 
       // Get all orders for this customer with most recent first
       const [orders] = await pool.query(
@@ -184,11 +183,11 @@ class OrderController {
          WHERE c.idCustomer = ?
          ORDER BY o.Date_Time DESC`,
         [customerId]
-      );
+      )
 
       // For each order, get a preview of items (limited to first 3)
       const ordersWithItems = await Promise.all(
-        orders.map(async (order) => {
+        orders.map(async order => {
           const [items] = await pool.query(
             `SELECT 
                ohpv.Product_Variations_idProduct_Variations,
@@ -203,7 +202,7 @@ class OrderController {
              WHERE ohpv.Order_idOrder = ?
              LIMIT 3`,
             [order.idOrder]
-          );
+          )
 
           // Get the total number of items
           const [itemCount] = await pool.query(
@@ -211,22 +210,22 @@ class OrderController {
              FROM Order_has_Product_Variations
              WHERE Order_idOrder = ?`,
             [order.idOrder]
-          );
+          )
 
           return {
             ...order,
             items: items,
             total_items: itemCount[0].total_items,
-          };
+          }
         })
-      );
+      )
 
-      res.json(ordersWithItems);
+      res.json(ordersWithItems)
     } catch (error) {
       res.status(500).json({
         message: "Failed to fetch order history",
         error: error.message,
-      });
+      })
     }
   }
 
@@ -239,56 +238,56 @@ class OrderController {
         cart_id,
         delivery_type,
         payment_type,
-      } = req.body;
-      const authenticatedCustomerId = req.user.customerId; // Assuming JWT middleware sets req.user.customerId
+      } = req.body
+      const authenticatedCustomerId = req.user.customerId // Assuming JWT middleware sets req.user.customerId
 
       // Security check: Ensure the customer_id from the body matches the authenticated user
       if (parseInt(customer_id, 10) !== authenticatedCustomerId) {
         return res.status(403).json({
           message:
             "Unauthorized: customer_id does not match authenticated user.",
-        });
+        })
       }
 
       // Get cart data
-      const cartData = await Cart.getCartByCustomerId(customer_id);
+      const cartData = await Cart.getCartByCustomerId(customer_id)
       if (!cartData || cartData.items.length === 0) {
-        return res.status(404).json({ message: "Cart not found or is empty" });
+        return res.status(404).json({ message: "Cart not found or is empty" })
       }
 
-      let finalDeliveryAddressId = delivery_address_id;
+      let finalDeliveryAddressId = delivery_address_id
 
       // If delivery_address_id is provided, verify it belongs to the customer
       if (delivery_address_id) {
         const [addressCheck] = await pool.query(
           "SELECT idDelivery_Address FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
           [delivery_address_id, customer_id]
-        );
+        )
         if (addressCheck.length === 0) {
           return res.status(400).json({
             message:
               "Provided delivery address does not belong to this customer or does not exist.",
-          });
+          })
         }
       } else {
         // If no delivery_address_id is provided, try to get a default one for the customer
         const [defaultAddresses] = await pool.query(
           "SELECT idDelivery_Address FROM Delivery_Address WHERE Customer_idCustomer = ? ORDER BY idDelivery_Address LIMIT 1",
           [customer_id]
-        );
+        )
         if (defaultAddresses.length > 0) {
-          finalDeliveryAddressId = defaultAddresses[0].idDelivery_Address;
+          finalDeliveryAddressId = defaultAddresses[0].idDelivery_Address
         } else {
           return res.status(400).json({
             message:
               "No delivery address provided and no default delivery address found for this customer.",
-          });
+          })
         }
       }
 
-      const total_amount = cartData.Total_Amount;
-      const delivery_charges = delivery_type === "express" ? 10 : 5; // Example charges
-      const net_amount = parseFloat(total_amount) + delivery_charges;
+      const total_amount = cartData.Total_Amount
+      const delivery_charges = delivery_type === "express" ? 10 : 5 // Example charges
+      const net_amount = parseFloat(total_amount) + delivery_charges
 
       const order_id = await Order.create({
         delivery_address_id: finalDeliveryAddressId, // Use the verified/fetched address ID
@@ -297,7 +296,7 @@ class OrderController {
         delivery_charges,
         net_amount,
         payment_type,
-      });
+      })
 
       for (const item of cartData.items) {
         await Order.addOrderItem({
@@ -309,7 +308,7 @@ class OrderController {
           discount_percentage: item.Discount_Percentage || 0,
           discount_amount: item.Discount_Amount || 0,
           total_amount: item.NetAmount, // Use NetAmount from cart item
-        });
+        })
 
         // Update product SIH, Qty, and sold_qty
         await pool.query(
@@ -321,19 +320,15 @@ class OrderController {
             item.CartQty,
             item.Product_Variations_idProduct_Variations,
           ]
-        );
+        )
         // Update SIH and Qty in the Product_Variations table
         await pool.query(
           `UPDATE Product_Variations SET SIH = SIH - ?, Qty = Qty - ? WHERE idProduct_Variations = ?`,
-          [
-            item.CartQty,
-            item.CartQty,
-            item.Product_Variations_idProduct_Variations,
-          ]
-        );
+          [item.CartQty, item.CartQty, item.Product_Variations_idProduct_Variations]
+        )
       }
 
-      await Cart.clearCart(cart_id);
+      await Cart.clearCart(cart_id)
 
       await pool.query(
         "INSERT INTO Order_History (order_id, status_from, status_to, status_type, notes) VALUES (?, ?, ?, ?, ?)",
@@ -344,28 +339,28 @@ class OrderController {
           "order_status",
           "Order placed by customer",
         ]
-      );
+      )
 
-      res.status(201).json({ order_id, message: "Order created successfully" });
+      res.status(201).json({ order_id, message: "Order created successfully" })
     } catch (error) {
-      console.error("Error creating order:", error);
+      console.error("Error creating order:", error)
       res
         .status(500)
-        .json({ message: "Failed to create order", error: error.message });
+        .json({ message: "Failed to create order", error: error.message })
     }
   }
 
   // Cancel order (customer-initiated)
   async cancelOrder(req, res) {
     try {
-      const orderId = parseInt(req.params.id, 10);
-      const customerId = parseInt(req.params.customer_id, 10);
-      const { reason } = req.body;
+      const orderId = parseInt(req.params.id, 10)
+      const customerId = parseInt(req.params.customer_id, 10)
+      const { reason } = req.body
 
       if (isNaN(orderId) || isNaN(customerId)) {
         return res
           .status(400)
-          .json({ message: "Invalid order ID or customer ID" });
+          .json({ message: "Invalid order ID or customer ID" })
       }
 
       console.log(
@@ -373,7 +368,7 @@ class OrderController {
         orderId,
         "for customer ID:",
         customerId
-      );
+      )
 
       // Check if the order belongs to this customer
       const [orderCheck] = await pool.query(
@@ -382,12 +377,12 @@ class OrderController {
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
          WHERE o.idOrder = ? AND c.idCustomer = ?`,
         [orderId, customerId]
-      );
+      )
 
       if (orderCheck.length === 0) {
         return res.status(404).json({
           message: "Order not found or not authorized to cancel this order",
-        });
+        })
       }
 
       // Check if order is in a state that can be cancelled (not already delivered, cancelled, etc.)
@@ -397,11 +392,11 @@ class OrderController {
       ) {
         return res.status(400).json({
           message: `Cannot cancel order in '${orderCheck[0].Status}' status`,
-        });
+        })
       }
 
       // Update order status to Cancelled
-      await Order.updateStatus(orderId, "Cancelled");
+      await Order.updateStatus(orderId, "Cancelled")
 
       // Add record to Order_History
       await pool.query(
@@ -414,47 +409,47 @@ class OrderController {
           reason || "No reason provided",
           "Cancelled by customer",
         ]
-      );
+      )
 
-      res.json({ message: "Order cancelled successfully" });
+      res.json({ message: "Order cancelled successfully" })
     } catch (error) {
       res
         .status(500)
-        .json({ message: "Failed to cancel order", error: error.message });
+        .json({ message: "Failed to cancel order", error: error.message })
     }
   }
 
   // Send invoice via email
   async sendInvoiceEmail(req, res) {
     try {
-      const orderId = parseInt(req.params.id, 10);
-      const customerId = parseInt(req.params.customer_id, 10);
-      const { emailAddress, pdfBase64 } = req.body;
+      const orderId = parseInt(req.params.id, 10)
+      const customerId = parseInt(req.params.customer_id, 10)
+      const { emailAddress, pdfBase64 } = req.body
 
       // Check if email credentials are configured
       if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
         console.error("Email credentials not configured:", {
           EMAIL_USER: process.env.EMAIL_USER ? "Set" : "Not set",
           EMAIL_PASS: process.env.EMAIL_PASS ? "Set" : "Not set",
-        });
+        })
         return res.status(500).json({
           message:
             "Email service not configured. Please contact administrator.",
-        });
+        })
       }
 
       if (isNaN(orderId) || isNaN(customerId)) {
         return res
           .status(400)
-          .json({ message: "Invalid order ID or customer ID" });
+          .json({ message: "Invalid order ID or customer ID" })
       }
 
       if (!emailAddress) {
-        return res.status(400).json({ message: "Email address is required" });
+        return res.status(400).json({ message: "Email address is required" })
       }
 
       if (!pdfBase64) {
-        return res.status(400).json({ message: "PDF data is required" });
+        return res.status(400).json({ message: "PDF data is required" })
       }
 
       console.log(
@@ -462,7 +457,7 @@ class OrderController {
         orderId,
         "to:",
         emailAddress
-      );
+      )
 
       // Check if the order belongs to this customer
       const [orderCheck] = await pool.query(
@@ -471,20 +466,20 @@ class OrderController {
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
          WHERE o.idOrder = ? AND c.idCustomer = ?`,
         [orderId, customerId]
-      );
+      )
 
       if (orderCheck.length === 0) {
         return res.status(404).json({
           message:
             "Order not found or not authorized to send invoice for this order",
-        });
+        })
       }
 
       // Convert base64 PDF to buffer
-      const pdfBuffer = Buffer.from(pdfBase64, "base64");
+      const pdfBuffer = Buffer.from(pdfBase64, "base64")
 
       // Email content
-      const subject = `Invoice for Order #${orderId} - Asipiya`;
+      const subject = `Invoice for Order #${orderId} - Asipiya`
       const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
           <div style="text-align: center; margin-bottom: 20px;">
@@ -520,7 +515,7 @@ class OrderController {
             <p>© ${new Date().getFullYear()} Asipiya. All rights reserved.</p>
           </div>
         </div>
-      `;
+      `
 
       // Email options
       const mailOptions = {
@@ -535,29 +530,28 @@ class OrderController {
             contentType: "application/pdf",
           },
         ],
-      };
+      }
 
       // Send email
-      await transporter.sendMail(mailOptions);
+      await transporter.sendMail(mailOptions)
 
-      console.log("Invoice email sent successfully to:", emailAddress);
+      console.log("Invoice email sent successfully to:", emailAddress)
       res.json({
         message: "Invoice sent successfully to the provided email address",
-      });
+      })
     } catch (error) {
-      console.error("Error sending invoice email:", error);
+      console.error("Error sending invoice email:", error)
       console.error("Error details:", {
         message: error.message,
         stack: error.stack,
         code: error.code,
         command: error.command,
-      });
-      res.status(500).json({
-        message: "Failed to send invoice email",
-        error: error.message,
-      });
+      })
+      res
+        .status(500)
+        .json({ message: "Failed to send invoice email", error: error.message })
     }
   }
 }
 
-module.exports = new OrderController();
+module.exports = new OrderController()

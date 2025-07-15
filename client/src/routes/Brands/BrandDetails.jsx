@@ -186,7 +186,15 @@ const BrandDetails = () => {
                     oldPrice={product.Market_Price}
                     historyStatus={ product.History_Status}
                     activeDiscount={product.discounts?.find(d => d.Status === "active") || null}
+                    eventDiscounts={product.eventDiscounts || []}
                     id={product.idProduct}
+                    product={{
+                      idProduct: product.idProduct,
+                      Selling_Price: product.Selling_Price,
+                      Market_Price: product.Market_Price,
+                      discounts: product.discounts || [],
+                      eventDiscounts: product.eventDiscounts || []
+                    }}
                   />
                 </div>
               ))

@@ -11,6 +11,7 @@ const ProductCard = ({
   id,
   historyStatus,
   activeDiscount,
+  eventDiscounts = [], // Add default empty array for eventDiscounts
   product // Full product object with discounts and eventDiscounts
 }) => {
   // Create product object for discount calculation
@@ -19,7 +20,7 @@ const ProductCard = ({
     Selling_Price: price,
     Market_Price: oldPrice,
     discounts: activeDiscount ? [activeDiscount] : [],
-    eventDiscounts: []
+    eventDiscounts: eventDiscounts || []
   };
 
   // Calculate total discount information

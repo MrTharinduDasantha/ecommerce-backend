@@ -46,7 +46,20 @@ const SeasonalOffers = () => {
             discountName: product.Discount_Name || "Seasonal Discounts",
             category: product.subcategories?.[0]?.Description || "",
             historyStatus: product.History_Status || "",
+
             subCategoryId: product.subcategories?.[0]?.idSub_Category // Added for subcategory filtering
+
+            activeDiscount: product.discounts?.find(d => d.Status === "active") || null,
+            eventDiscounts: product.eventDiscounts || [],
+            // Pass full product object for complete discount calculation
+            product: {
+              idProduct: product.idProduct,
+              Selling_Price: product.Selling_Price,
+              Market_Price: product.Market_Price,
+              discounts: product.discounts || [],
+              eventDiscounts: product.eventDiscounts || []
+            }
+
           }));
           setProducts(formattedProducts);
           setFilteredProducts(formattedProducts); // Initialize filtered products
@@ -135,6 +148,7 @@ const SeasonalOffers = () => {
 
             {/* Products Grid */}
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <div
@@ -167,6 +181,27 @@ const SeasonalOffers = () => {
                   <p className="text-xl md:text-2xl font-bold text-gray-500">
                     No products found in this price range.
                   </p>
+
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
+                  onClick={() => handleProductClick(product.id)}
+                >
+                  <ProductCard
+                    image={product.image}
+                    category={product.category}
+                    title={product.name}
+                    price={product.price}
+                    oldPrice={product.oldPrice}
+                    historyStatus={product.historyStatus}
+                    activeDiscount={product.activeDiscount}
+                    eventDiscounts={product.eventDiscounts}
+                    id={product.id}
+                    product={product.product}
+                    className="h-full"
+                  />
+
                 </div>
               )}
             </div>

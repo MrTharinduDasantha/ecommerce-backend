@@ -12,6 +12,7 @@ router.get(
   authenticateToken,
   reviewController.getReviewsByOrderId
 )
+router.get("/active", reviewController.getAllActiveOrderReviews)
 router.put("/order/:id", authenticateToken, reviewController.updateOrderReview)
 router.delete(
   "/order/:id",

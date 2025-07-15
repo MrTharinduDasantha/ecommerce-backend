@@ -667,7 +667,7 @@ async function getProductsBySubCategory(subCategoryId) {
     SELECT P.*, B.Brand_Name
     FROM Product P
     JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct
-    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+    LEFT JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
     WHERE PS.Sub_Category_idSub_Category = ?
   `;
   const [products] = await pool.query(query, [subCategoryId]);
@@ -839,24 +839,40 @@ async function getDiscountedProducts() {
 
 // Delete a product and its related records
 async function deleteProduct(productId) {
-  // Check if product exists in cart
-  const [cartItems] = await pool.query(
-    "SELECT COUNT(*) as count FROM Cart_has_Product chp JOIN Product_Variations pv ON chp.Product_Variations_idProduct_Variations = pv.idProduct_Variations WHERE pv.Product_idProduct = ?",
+  // Delete from Cart_has_Product for this product's variations
+  await pool.query(
+    `DELETE FROM Cart_has_Product
+    WHERE Product_Variations_idProduct_Variations IN (
+      SELECT idProduct_Variations FROM Product_Variations WHERE Product_idProduct = ?
+    )`,
     [productId]
   );
 
-  if (cartItems[0].count > 0) {
-    throw new Error("Cannot delete product as it is currently in someone's cart");
-  }
-
-  // Check if product has been ordered
-  const [orderItems] = await pool.query(
-    "SELECT COUNT(*) as count FROM Order_has_Product_Variations ohpv JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations WHERE pv.Product_idProduct = ?",
+  // Get all orders that have this product
+  const [orders] = await pool.query(
+    `SELECT DISTINCT ohpv.Order_idOrder
+    FROM Order_has_Product_Variations ohpv
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    WHERE pv.Product_idProduct = ?`,
     [productId]
   );
 
-  if (orderItems[0].count > 0) {
-    throw new Error("Cannot delete product as it has already been ordered");
+  const orderIds = orders.map((order) => order.Order_idOrder);
+
+  if (orderIds.length > 0) {
+    // Delete from Order_History for these orders
+    await pool.query(`DELETE FROM Order_History WHERE order_id IN (?)`, [
+      [orderIds],
+    ]);
+
+    // Delete from Order_has_Product_Variations for these orders
+    await pool.query(
+      `DELETE FROM Order_has_Product_Variations WHERE Order_idOrder IN (?)`,
+      [orderIds]
+    );
+
+    // Delete from Order
+    await pool.query("DELETE FROM `Order` WHERE idOrder IN (?)", [orderIds]);
   }
 
   // Delete from join table

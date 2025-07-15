@@ -95,7 +95,13 @@ const DiscountForm = () => {
             productId: discount.Product_idProduct,
             description: discount.Description,
             discountType: discount.Discount_Type,
-            discountValue: discount.Discount_Value,
+            discountValue:
+              discount.Discount_Type === "fixed"
+                ? discount.Discount_Value.toString().replace(
+                    /\B(?=(\d{3})+(?!\d))/g,
+                    ","
+                  )
+                : discount.Discount_Value,
             startDate: startDate,
             endDate: endDate,
             status: discount.Status,
@@ -168,8 +174,12 @@ const DiscountForm = () => {
         return;
       }
 
-      // Convert discountValue to a number for validation
-      const value = Number(formData.discountValue);
+      // Convert discountValue to a number for validation (remove commas for fixed amounts)
+      const cleanValue =
+        formData.discountType === "fixed"
+          ? formData.discountValue.replace(/,/g, "")
+          : formData.discountValue;
+      const value = Number(cleanValue);
       if (isNaN(value)) {
         toast.error("Discount value must be a number");
         return;
@@ -194,9 +204,13 @@ const DiscountForm = () => {
         return;
       }
 
-      // Format dates for API
+      // Format dates for API and clean discount value
       const apiData = {
         ...formData,
+        discountValue:
+          formData.discountType === "fixed"
+            ? formData.discountValue.replace(/,/g, "")
+            : formData.discountValue,
         startDate: formData.startDate.toISOString().split("T")[0],
         endDate: formData.endDate.toISOString().split("T")[0],
       };
@@ -221,7 +235,7 @@ const DiscountForm = () => {
     const discountedPrice = calculateDiscountedPrice();
     const originalPrice = parseFloat(product.Selling_Price);
     const hasDiscount =
-      discountedPrice !== originalPrice && formData.discountValue && formData.discountType;
+      discountedPrice !== originalPrice && formData.discountValue;
 
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -262,7 +276,7 @@ const DiscountForm = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Market Price:</span>
                 <span className="font-medium text-gray-800">
-                  LKR {parseFloat(product.Market_Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  LKR {parseFloat(product.Market_Price).toFixed(2)}
                 </span>
               </div>
 
@@ -275,18 +289,9 @@ const DiscountForm = () => {
                       : "text-[#5CAF90] text-lg font-bold"
                   }`}
                 >
-                  LKR {originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  LKR {originalPrice.toFixed(2)}
                 </span>
               </div>
-
-              {formData.discountValue && !formData.discountType && (
-                <div className="flex justify-between items-center border-t pt-2">
-                  <span className="text-gray-600">Discount Value:</span>
-                  <span className="text-orange-600 font-medium">
-                    {formData.discountValue} (Select discount type)
-                  </span>
-                </div>
-              )}
 
               {hasDiscount && (
                 <>
@@ -295,7 +300,13 @@ const DiscountForm = () => {
                     <span className="text-red-600 font-medium">
                       {formData.discountType === "percentage"
                         ? `${formData.discountValue}%`
-                        : `LKR ${parseFloat(formData.discountValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        : `LKR ${parseFloat(
+                            formData.discountValue.replace(/,/g, "")
+                          ).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`}
+                      : `LKR ${parseFloat(formData.discountValue).toFixed(2)}`
                     </span>
                   </div>
 
@@ -304,12 +315,12 @@ const DiscountForm = () => {
                       Final Selling Price:
                     </span>
                     <span className="text-[#5CAF90] text-lg md:text-xl font-bold">
-                      LKR {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      LKR {discountedPrice.toFixed(2)}
                     </span>
                   </div>
 
                   <div className="text-center text-sm text-gray-500 mt-6">
-                    You save: LKR {(originalPrice - discountedPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    You save: LKR {(originalPrice - discountedPrice).toFixed(2)}
                   </div>
                 </>
               )}
@@ -514,17 +525,44 @@ const DiscountForm = () => {
                     </span>
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="discountValue"
                     value={formData.discountValue}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const { name, value } = e.target;
+                      // Only apply comma formatting for fixed amount discounts
+                      if (formData.discountType === "fixed") {
+                        const cleanValue = value.replace(/,/g, "");
+                        if (cleanValue === "" || /^\d*$/.test(cleanValue)) {
+                          const formattedValue = cleanValue.replace(
+                            /\B(?=(\d{3})+(?!\d))/g,
+                            ","
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            [name]: formattedValue,
+                          }));
+                        }
+                      } else {
+                        // For percentage, allow decimal numbers
+                        const cleanValue = value.replace(/,/g, "");
+                        if (
+                          cleanValue === "" ||
+                          /^\d*\.?\d*$/.test(cleanValue)
+                        ) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            [name]: cleanValue,
+                          }));
+                        }
+                      }
+                    }}
                     placeholder={`Enter discount value ${
                       formData.discountType === "percentage"
                         ? "in percentage"
                         : "in LKR"
                     }`}
                     className="input input-bordered input-sm md:input-md w-full bg-white border-[#1D372E] text-[#1D372E]"
-                    step={formData.discountType === "percentage" ? "1" : "0.01"}
                   />
                 </div>
               </div>

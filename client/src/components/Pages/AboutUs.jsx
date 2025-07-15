@@ -26,25 +26,26 @@ const AboutUs = () => {
     loadAboutUsData();
   }, []);
 
-  // Parse JSON fields if they exist
-  const statistics = aboutUsData?.Statistics ? JSON.parse(aboutUsData.Statistics) : [];
+  // Use it directly if it's already an array, otherwise parse the JSON string
+  const statistics = Array.isArray(aboutUsData?.Statistics)
+    ? aboutUsData.Statistics
+    : aboutUsData?.Statistics
+    ? JSON.parse(aboutUsData.Statistics)
+    : [];
 
   // Default fallback data for when no data is available
   const defaultStatistics = [
     { value: "15", label: "Years of Experience", suffix: "+" },
     { value: "99", label: "Satisfied Clients", suffix: "%" },
     { value: "98", label: "Expert Team Member", suffix: "+" },
-    { value: "7k", label: "Projects Completed", suffix: "+" }
+    { value: "7k", label: "Projects Completed", suffix: "+" },
   ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center w-full h-screen bg-white">
-        <img
-          src="/klogo.webp"
-          alt="Loading..."
-          className="w-[200px] h-auto animate-bounce"
-        />
+      <div className="text-center py-56">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5CAF90] mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading about us data...</p>
       </div>
     );
   }
@@ -53,7 +54,8 @@ const AboutUs = () => {
     console.warn("About Us data not available, using default content");
   }
 
-  const displayStatistics = statistics.length > 0 ? statistics : defaultStatistics;
+  const displayStatistics =
+    statistics.length > 0 ? statistics : defaultStatistics;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -85,7 +87,10 @@ const AboutUs = () => {
               <div className="text-center">
                 <div className="mb-6 w-48 h-48 mx-auto">
                   <img
-                    src={aboutUsData?.Vision_Image_Url || "/api/placeholder/300/300"}
+                    src={
+                      aboutUsData?.Vision_Image_Url ||
+                      "/api/placeholder/300/300"
+                    }
                     alt="Vision"
                     className="w-full h-full object-contain border-2 border-[#5CAF90] p-4 rounded-lg"
                     onError={(e) => {
@@ -97,7 +102,8 @@ const AboutUs = () => {
                   {aboutUsData?.Vision_Title || "Our Vision"}
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  {aboutUsData?.Vision_Description || "To be the most customer-centric online marketplace, offering seamless shopping experiences with quality products, innovation, and convenience."}
+                  {aboutUsData?.Vision_Description ||
+                    "To be the most customer-centric online marketplace, offering seamless shopping experiences with quality products, innovation, and convenience."}
                 </p>
               </div>
 
@@ -107,7 +113,10 @@ const AboutUs = () => {
               <div className="text-center">
                 <div className="mb-6 w-48 h-48 mx-auto">
                   <img
-                    src={aboutUsData?.Mission_Image_Url || "/api/placeholder/300/300"}
+                    src={
+                      aboutUsData?.Mission_Image_Url ||
+                      "/api/placeholder/300/300"
+                    }
                     alt="Mission"
                     className="w-full h-full object-contain border-2 border-[#5CAF90] p-4 rounded-lg"
                     onError={(e) => {
@@ -119,7 +128,8 @@ const AboutUs = () => {
                   {aboutUsData?.Mission_Title || "Our Mission"}
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  {aboutUsData?.Mission_Description || "Our mission is to empower customers with a diverse range of high-quality products at competitive prices, ensuring a hassle-free and secure shopping experience through innovation, reliability, and exceptional service."}
+                  {aboutUsData?.Mission_Description ||
+                    "Our mission is to empower customers with a diverse range of high-quality products at competitive prices, ensuring a hassle-free and secure shopping experience through innovation, reliability, and exceptional service."}
                 </p>
               </div>
 
@@ -129,7 +139,10 @@ const AboutUs = () => {
               <div className="text-center">
                 <div className="mb-6 w-48 h-48 mx-auto">
                   <img
-                    src={aboutUsData?.Values_Image_Url || "/api/placeholder/300/300"}
+                    src={
+                      aboutUsData?.Values_Image_Url ||
+                      "/api/placeholder/300/300"
+                    }
                     alt="Values"
                     className="w-full h-full object-contain border-2 border-[#5CAF90] p-4 rounded-lg"
                     onError={(e) => {
@@ -141,7 +154,8 @@ const AboutUs = () => {
                   {aboutUsData?.Values_Title || "Our Values"}
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  {aboutUsData?.Values_Description || "We prioritize customer satisfaction, quality, and trust. Innovation, integrity, and transparency guide us, ensuring fast service and sustainable practices."}
+                  {aboutUsData?.Values_Description ||
+                    "We prioritize customer satisfaction, quality, and trust. Innovation, integrity, and transparency guide us, ensuring fast service and sustainable practices."}
                 </p>
               </div>
             </div>
