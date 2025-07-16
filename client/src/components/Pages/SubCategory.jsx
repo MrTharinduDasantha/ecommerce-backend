@@ -62,6 +62,7 @@ const SubCategory = () => {
       try {
         setLoading(true);
         const data = await getProductsBySubCategoryId(id);
+        console.log(data,'test1')
         if (data && data.products) {
           // Format products to match ProductCard expected structure
           const formattedProducts = data.products
@@ -79,10 +80,18 @@ const SubCategory = () => {
               category: product.subcategories?.[0]?.Description || "",
               brand: product.Brand_Name || "",
               historyStatus: product.History_Status || "",
-              activeDiscount: product.discounts?.find(d => d.Status === "active") || null
+              activeDiscount: product.discounts?.find(d => d.Status === "active") || null,
+              eventDiscounts: product.eventDiscounts || [],
+              // Pass full product object for complete discount calculation
+              product: {
+                idProduct: product.idProduct,
+                Selling_Price: product.Selling_Price,
+                Market_Price: product.Market_Price,
+                discounts: product.discounts || [],
+                eventDiscounts: product.eventDiscounts || []
+              }
             }));
           setProducts(formattedProducts); 
-
           // Set category and subcategory names if not already set
           if (!subcategoryName && data.products[0]?.Subcategory_Name) {
             setSubcategoryName(data.products[0].Subcategory_Name);
@@ -160,7 +169,7 @@ const SubCategory = () => {
   const selectedCategory = categories.find(
     (c) => c.idProduct_Category === selectedCategoryId
   );
-
+console.log(selectedSubCategoryId,selectedCategoryId,products,'waqas sub')
   const selectedSubCategory = selectedCategory?.subcategories?.find(
     (sub) => sub.idSub_Category === selectedSubCategoryId
   );
@@ -213,7 +222,9 @@ const SubCategory = () => {
                       oldPrice={product.oldPrice}
                       historyStatus={product.historyStatus}
                       activeDiscount={product.activeDiscount}
+                      eventDiscounts={product.eventDiscounts}
                       id={product.id}
+                      product={product.product}
                       className="h-full"
                     />
                   </div>

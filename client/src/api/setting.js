@@ -34,6 +34,21 @@ export const fetchAboutUsSettings = async () => {
     return response.data.aboutUsSetting;
   } catch (error) {
     console.error("Error fetching About Us settings:", error);
-    throw new Error(error.response?.data?.message || "Failed to fetch About Us settings");
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch About Us settings"
+    );
+  }
+};
+
+// Fetch Home Page settings (public API - no auth required)
+export const fetchHomePageSettings = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/settings/home-page`);
+    return response.data.homePageSetting;
+  } catch (error) {
+    console.error("Error fetching Home Page settings:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch Home Page settings"
+    );
   }
 };

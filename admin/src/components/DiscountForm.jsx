@@ -95,9 +95,13 @@ const DiscountForm = () => {
             productId: discount.Product_idProduct,
             description: discount.Description,
             discountType: discount.Discount_Type,
-            discountValue: discount.Discount_Type === "fixed" 
-              ? discount.Discount_Value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-              : discount.Discount_Value,
+            discountValue:
+              discount.Discount_Type === "fixed"
+                ? discount.Discount_Value.toString().replace(
+                    /\B(?=(\d{3})+(?!\d))/g,
+                    ","
+                  )
+                : discount.Discount_Value,
             startDate: startDate,
             endDate: endDate,
             status: discount.Status,
@@ -171,9 +175,10 @@ const DiscountForm = () => {
       }
 
       // Convert discountValue to a number for validation (remove commas for fixed amounts)
-      const cleanValue = formData.discountType === "fixed" 
-        ? formData.discountValue.replace(/,/g, '') 
-        : formData.discountValue;
+      const cleanValue =
+        formData.discountType === "fixed"
+          ? formData.discountValue.replace(/,/g, "")
+          : formData.discountValue;
       const value = Number(cleanValue);
       if (isNaN(value)) {
         toast.error("Discount value must be a number");
@@ -202,9 +207,10 @@ const DiscountForm = () => {
       // Format dates for API and clean discount value
       const apiData = {
         ...formData,
-        discountValue: formData.discountType === "fixed" 
-          ? formData.discountValue.replace(/,/g, '') 
-          : formData.discountValue,
+        discountValue:
+          formData.discountType === "fixed"
+            ? formData.discountValue.replace(/,/g, "")
+            : formData.discountValue,
         startDate: formData.startDate.toISOString().split("T")[0],
         endDate: formData.endDate.toISOString().split("T")[0],
       };
@@ -294,13 +300,13 @@ const DiscountForm = () => {
                     <span className="text-red-600 font-medium">
                       {formData.discountType === "percentage"
                         ? `${formData.discountValue}%`
-
-                        : `LKR ${parseFloat(formData.discountValue.replace(/,/g, '')).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-
-                        : `LKR ${parseFloat(formData.discountValue).toFixed(
-                            2
-                          )}`}
-
+                        : `LKR ${parseFloat(
+                            formData.discountValue.replace(/,/g, "")
+                          ).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`}
+                      : `LKR ${parseFloat(formData.discountValue).toFixed(2)}`
                     </span>
                   </div>
 
@@ -526,16 +532,28 @@ const DiscountForm = () => {
                       const { name, value } = e.target;
                       // Only apply comma formatting for fixed amount discounts
                       if (formData.discountType === "fixed") {
-                        const cleanValue = value.replace(/,/g, '');
-                        if (cleanValue === '' || /^\d*$/.test(cleanValue)) {
-                          const formattedValue = cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                          setFormData((prev) => ({ ...prev, [name]: formattedValue }));
+                        const cleanValue = value.replace(/,/g, "");
+                        if (cleanValue === "" || /^\d*$/.test(cleanValue)) {
+                          const formattedValue = cleanValue.replace(
+                            /\B(?=(\d{3})+(?!\d))/g,
+                            ","
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            [name]: formattedValue,
+                          }));
                         }
                       } else {
                         // For percentage, allow decimal numbers
-                        const cleanValue = value.replace(/,/g, '');
-                        if (cleanValue === '' || /^\d*\.?\d*$/.test(cleanValue)) {
-                          setFormData((prev) => ({ ...prev, [name]: cleanValue }));
+                        const cleanValue = value.replace(/,/g, "");
+                        if (
+                          cleanValue === "" ||
+                          /^\d*\.?\d*$/.test(cleanValue)
+                        ) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            [name]: cleanValue,
+                          }));
                         }
                       }
                     }}
