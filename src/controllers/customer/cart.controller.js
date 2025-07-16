@@ -1,5 +1,6 @@
 const Cart = require("../../models/cart.model");
 const pool = require("../../config/database");
+const { getOrgMail } = require('../../utils/organization');
 
 // ------------------------
 // Cart Related Functions
@@ -11,9 +12,10 @@ async function getCart(req, res) {
     const customerId = req.params.customerId || req.user.customerId;
 
     // Check if customer exists
+    const orgMail = getOrgMail();
     const [customer] = await pool.query(
-      "SELECT * FROM Customer WHERE idCustomer = ?",
-      [customerId]
+      "SELECT * FROM Customer WHERE idCustomer = ? AND orgmail = ?",
+      [customerId, orgMail]
     );
 
     if (customer.length === 0) {
@@ -53,9 +55,10 @@ async function addToCart(req, res) {
     }
 
     // Check if customer exists
+    const orgMail = getOrgMail();
     const [customer] = await pool.query(
-      "SELECT * FROM Customer WHERE idCustomer = ?",
-      [customerId]
+      "SELECT * FROM Customer WHERE idCustomer = ? AND orgmail = ?",
+      [customerId, orgMail]
     );
 
     if (customer.length === 0) {
@@ -64,8 +67,8 @@ async function addToCart(req, res) {
 
     // Check if product variation exists
     const [productVariation] = await pool.query(
-      "SELECT * FROM Product_Variations WHERE idProduct_Variations = ?",
-      [productVariationId]
+      "SELECT * FROM Product_Variations WHERE idProduct_Variations = ? AND orgmail = ?",
+      [productVariationId, orgMail]
     );
 
     if (productVariation.length === 0) {
@@ -96,8 +99,8 @@ async function addToCart(req, res) {
 
     // Get product price
     const [product] = await pool.query(
-      "SELECT * FROM Product WHERE idProduct = ?",
-      [productVariation[0].Product_idProduct]
+      "SELECT * FROM Product WHERE idProduct = ? AND orgmail = ?",
+      [productVariation[0].Product_idProduct, orgMail]
     );
 
     console.log("Product found:", product[0]);
@@ -149,9 +152,10 @@ async function updateCartItem(req, res) {
     }
 
     // Get current cart item to check existing quantity
+    const orgMail = getOrgMail();
     const [cartItem] = await pool.query(
-      "SELECT * FROM Cart_has_Product WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?",
-      [cart.idCart, productVariationId]
+      "SELECT * FROM Cart_has_Product WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ? AND orgmail = ?",
+      [cart.idCart, productVariationId, orgMail]
     );
 
     if (cartItem.length === 0) {
@@ -160,8 +164,8 @@ async function updateCartItem(req, res) {
 
     // Check if product variation exists
     const [productVariation] = await pool.query(
-      "SELECT * FROM Product_Variations WHERE idProduct_Variations = ?",
-      [productVariationId]
+      "SELECT * FROM Product_Variations WHERE idProduct_Variations = ? AND orgmail = ?",
+      [productVariationId, orgMail]
     );
 
     if (productVariation.length === 0) {
@@ -314,9 +318,10 @@ async function checkout(req, res) {
     }
 
     // Check if delivery address exists
+    const orgMail = getOrgMail();
     const [deliveryAddress] = await pool.query(
-      "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
-      [deliveryAddressId, customerId]
+      "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ? AND orgmail = ?",
+      [deliveryAddressId, customerId, orgMail]
     );
 
     if (deliveryAddress.length === 0) {

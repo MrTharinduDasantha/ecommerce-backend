@@ -1,4 +1,5 @@
 const pool = require("../../config/database")
+const { getOrgMail } = require('../../utils/organization')
 
 // Customer Address Controller
 class AddressController {
@@ -23,9 +24,10 @@ class AddressController {
 
       console.log("Getting addresses for customer ID:", customerId)
 
+      const orgMail = getOrgMail();
       const [addresses] = await pool.query(
-        "SELECT * FROM Delivery_Address WHERE Customer_idCustomer = ?",
-        [customerId]
+        "SELECT * FROM Delivery_Address WHERE Customer_idCustomer = ? AND orgmail = ?",
+        [customerId, orgMail]
       )
 
       res.json(addresses)
@@ -68,9 +70,10 @@ class AddressController {
 
       console.log("Adding address for customer ID:", customerId)
 
+      const orgMail = getOrgMail();
       const [result] = await pool.query(
-        "INSERT INTO Delivery_Address (Customer_idCustomer, Full_Name, Address, City, Country, Mobile_No) VALUES (?, ?, ?, ?, ?, ?)",
-        [customerId, full_name, address, city, country, mobile_no]
+        "INSERT INTO Delivery_Address (Customer_idCustomer, Full_Name, Address, City, Country, Mobile_No, orgmail) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [customerId, full_name, address, city, country, mobile_no, orgMail]
       )
 
       res.status(201).json({
@@ -125,9 +128,10 @@ class AddressController {
       )
 
       // First check if the address belongs to this customer
+      const orgMail = getOrgMail();
       const [addressCheck] = await pool.query(
-        "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
-        [addressId, customerId]
+        "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ? AND orgmail = ?",
+        [addressId, customerId, orgMail]
       )
 
       if (addressCheck.length === 0) {
@@ -140,8 +144,8 @@ class AddressController {
       }
 
       const [result] = await pool.query(
-        "UPDATE Delivery_Address SET Address = ?, City = ?, Country = ?, Mobile_No = ? WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
-        [address, city, country, mobile_no, addressId, customerId]
+        "UPDATE Delivery_Address SET Address = ?, City = ?, Country = ?, Mobile_No = ? WHERE idDelivery_Address = ? AND Customer_idCustomer = ? AND orgmail = ?",
+        [address, city, country, mobile_no, addressId, customerId, orgMail]
       )
 
       res.json({
@@ -186,9 +190,10 @@ class AddressController {
       )
 
       // First check if the address belongs to this customer
+      const orgMail = getOrgMail();
       const [addressCheck] = await pool.query(
-        "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
-        [addressId, customerId]
+        "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ? AND orgmail = ?",
+        [addressId, customerId, orgMail]
       )
 
       if (addressCheck.length === 0) {
@@ -202,8 +207,8 @@ class AddressController {
 
       // Check if there are any orders using this address
       const [orderCheck] = await pool.query(
-        "SELECT COUNT(*) as count FROM `Order` WHERE Delivery_Address_idDelivery_Address = ?",
-        [addressId]
+        "SELECT COUNT(*) as count FROM `Order` WHERE Delivery_Address_idDelivery_Address = ? AND orgmail = ?",
+        [addressId, orgMail]
       )
 
       if (orderCheck[0].count > 0) {
@@ -216,8 +221,8 @@ class AddressController {
       }
 
       const [result] = await pool.query(
-        "DELETE FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
-        [addressId, customerId]
+        "DELETE FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ? AND orgmail = ?",
+        [addressId, customerId, orgMail]
       )
 
       res.json({ message: "Address deleted successfully" })
@@ -258,9 +263,10 @@ class AddressController {
         customerId
       )
 
+      const orgMail = getOrgMail();
       const [addresses] = await pool.query(
-        "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
-        [addressId, customerId]
+        "SELECT * FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ? AND orgmail = ?",
+        [addressId, customerId, orgMail]
       )
 
       if (addresses.length === 0) {

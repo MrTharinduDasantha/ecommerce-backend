@@ -2,6 +2,7 @@ const Order = require("../../models/order.model")
 const Cart = require("../../models/cart.model")
 const pool = require("../../config/database")
 const nodemailer = require("nodemailer")
+const { getOrgMail } = require('../../utils/organization')
 
 // Create transporter for emails
 const transporter = nodemailer.createTransport({
@@ -48,12 +49,13 @@ class OrderController {
       )
 
       // First check if the order belongs to this customer for security
+      const orgMail = getOrgMail();
       const [orderCheck] = await pool.query(
         `SELECT o.* FROM \`Order\` o 
          JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
-         WHERE o.idOrder = ? AND c.idCustomer = ?`,
-        [orderId, customerId]
+         WHERE o.idOrder = ? AND c.idCustomer = ? AND o.orgmail = ?`,
+        [orderId, customerId, orgMail]
       )
 
       if (orderCheck.length === 0) {
@@ -99,12 +101,13 @@ class OrderController {
       )
 
       // First check if the order belongs to this customer
+      const orgMail = getOrgMail();
       const [orderCheck] = await pool.query(
         `SELECT o.* FROM \`Order\` o 
          JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
-         WHERE o.idOrder = ? AND c.idCustomer = ?`,
-        [orderId, customerId]
+         WHERE o.idOrder = ? AND c.idCustomer = ? AND o.orgmail = ?`,
+        [orderId, customerId, orgMail]
       )
 
       if (orderCheck.length === 0) {
@@ -123,9 +126,9 @@ class OrderController {
            oh.created_at, 
            oh.notes
          FROM Order_History oh
-         WHERE oh.order_id = ?
+         WHERE oh.order_id = ? AND oh.orgmail = ?
          ORDER BY oh.created_at DESC`,
-        [orderId]
+        [orderId, orgMail]
       )
 
       // Get current order status
@@ -137,8 +140,8 @@ class OrderController {
            o.Delivery_Date as delivery_date,
            o.Date_Time as order_date
          FROM \`Order\` o
-         WHERE o.idOrder = ?`,
-        [orderId]
+         WHERE o.idOrder = ? AND o.orgmail = ?`,
+        [orderId, orgMail]
       )
 
       res.json({
@@ -165,6 +168,7 @@ class OrderController {
       console.log("Getting order history for customer ID:", customerId)
 
       // Get all orders for this customer with most recent first
+      const orgMail = getOrgMail();
       const [orders] = await pool.query(
         `SELECT 
            o.idOrder, 
@@ -180,9 +184,9 @@ class OrderController {
          FROM \`Order\` o
          JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
-         WHERE c.idCustomer = ?
+         WHERE c.idCustomer = ? AND o.orgmail = ?
          ORDER BY o.Date_Time DESC`,
-        [customerId]
+        [customerId, orgMail]
       )
 
       // For each order, get a preview of items (limited to first 3)
@@ -199,17 +203,17 @@ class OrderController {
              FROM Order_has_Product_Variations ohpv
              JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
              JOIN Product p ON pv.Product_idProduct = p.idProduct
-             WHERE ohpv.Order_idOrder = ?
+             WHERE ohpv.Order_idOrder = ? AND ohpv.orgmail = ?
              LIMIT 3`,
-            [order.idOrder]
+            [order.idOrder, orgMail]
           )
 
           // Get the total number of items
           const [itemCount] = await pool.query(
             `SELECT COUNT(*) as total_items
              FROM Order_has_Product_Variations
-             WHERE Order_idOrder = ?`,
-            [order.idOrder]
+             WHERE Order_idOrder = ? AND orgmail = ?`,
+            [order.idOrder, orgMail]
           )
 
           return {
@@ -259,9 +263,10 @@ class OrderController {
 
       // If delivery_address_id is provided, verify it belongs to the customer
       if (delivery_address_id) {
+        const orgMail = getOrgMail();
         const [addressCheck] = await pool.query(
-          "SELECT idDelivery_Address FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ?",
-          [delivery_address_id, customer_id]
+          "SELECT idDelivery_Address FROM Delivery_Address WHERE idDelivery_Address = ? AND Customer_idCustomer = ? AND orgmail = ?",
+          [delivery_address_id, customer_id, orgMail]
         )
         if (addressCheck.length === 0) {
           return res.status(400).json({
@@ -272,8 +277,8 @@ class OrderController {
       } else {
         // If no delivery_address_id is provided, try to get a default one for the customer
         const [defaultAddresses] = await pool.query(
-          "SELECT idDelivery_Address FROM Delivery_Address WHERE Customer_idCustomer = ? ORDER BY idDelivery_Address LIMIT 1",
-          [customer_id]
+          "SELECT idDelivery_Address FROM Delivery_Address WHERE Customer_idCustomer = ? AND orgmail = ? ORDER BY idDelivery_Address LIMIT 1",
+          [customer_id, orgMail]
         )
         if (defaultAddresses.length > 0) {
           finalDeliveryAddressId = defaultAddresses[0].idDelivery_Address
@@ -312,30 +317,32 @@ class OrderController {
 
         //update product SIH and sold_qty
         await pool.query(
-          `UPDATE Product p JOIN Product_Variations pv ON p.idProduct = pv.Product_idProduct SET p.SIH = p.SIH - ?, p.Sold_Qty = p.Sold_Qty + ? WHERE pv.idProduct_Variations = ?`,
+          `UPDATE Product p JOIN Product_Variations pv ON p.idProduct = pv.Product_idProduct SET p.SIH = p.SIH - ?, p.Sold_Qty = p.Sold_Qty + ? WHERE pv.idProduct_Variations = ? AND p.orgmail = ?`,
           [
             item.CartQty,
             item.CartQty,
             item.Product_Variations_idProduct_Variations,
+            orgMail
           ]
         )
         //update SIH in the Product_Variations table
         await pool.query(
-          `UPDATE Product_Variations SET SIH = SIH - ? WHERE idProduct_Variations = ?`,
-          [item.CartQty, item.Product_Variations_idProduct_Variations]
+          `UPDATE Product_Variations SET SIH = SIH - ? WHERE idProduct_Variations = ? AND orgmail = ?`,
+          [item.CartQty, item.Product_Variations_idProduct_Variations, orgMail]
         )
       }
 
       await Cart.clearCart(cart_id)
 
       await pool.query(
-        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, notes) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, notes, orgmail) VALUES (?, ?, ?, ?, ?, ?)",
         [
           order_id,
           null,
           "Order Placed",
           "order_status",
           "Order placed by customer",
+          orgMail
         ]
       )
 
@@ -369,12 +376,13 @@ class OrderController {
       )
 
       // Check if the order belongs to this customer
+      const orgMail = getOrgMail();
       const [orderCheck] = await pool.query(
         `SELECT o.* FROM \`Order\` o 
          JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
-         WHERE o.idOrder = ? AND c.idCustomer = ?`,
-        [orderId, customerId]
+         WHERE o.idOrder = ? AND c.idCustomer = ? AND o.orgmail = ?`,
+        [orderId, customerId, orgMail]
       )
 
       if (orderCheck.length === 0) {
@@ -398,7 +406,7 @@ class OrderController {
 
       // Add record to Order_History
       await pool.query(
-        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes, orgmail) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [
           orderId,
           orderCheck[0].Status,
@@ -406,6 +414,7 @@ class OrderController {
           "cancellation",
           reason || "No reason provided",
           "Cancelled by customer",
+          orgMail
         ]
       )
 
@@ -458,12 +467,13 @@ class OrderController {
       )
 
       // Check if the order belongs to this customer
+      const orgMail = getOrgMail();
       const [orderCheck] = await pool.query(
         `SELECT o.* FROM \`Order\` o 
          JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address
          JOIN Customer c ON da.Customer_idCustomer = c.idCustomer
-         WHERE o.idOrder = ? AND c.idCustomer = ?`,
-        [orderId, customerId]
+         WHERE o.idOrder = ? AND c.idCustomer = ? AND o.orgmail = ?`,
+        [orderId, customerId, orgMail]
       )
 
       if (orderCheck.length === 0) {

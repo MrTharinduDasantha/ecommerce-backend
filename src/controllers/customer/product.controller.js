@@ -1,5 +1,6 @@
 const Product = require('../../models/product.model');
 const pool = require('../../config/database');
+const { getOrgMail } = require('../../utils/organization');
 
 // Customer Products Controller
 class ProductController {
@@ -71,7 +72,8 @@ class ProductController {
   // Get product FAQs
   async getProductFaqs(req, res) {
     try {
-      const [rows] = await pool.query('SELECT * FROM FAQ WHERE Product_idProduct = ?', [req.params.id]);
+      const orgMail = getOrgMail();
+      const [rows] = await pool.query('SELECT * FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?', [req.params.id, orgMail]);
       res.json(rows);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch product FAQs', error: error.message });
@@ -90,9 +92,10 @@ class ProductController {
         return res.status(404).json({ message: 'Product not found' });
       }
       
+      const orgMail = getOrgMail();
       const [result] = await pool.query(
-        'INSERT INTO FAQ (Question, Answer, Product_idProduct) VALUES (?, ?, ?)',
-        [question, answer, productId]
+        'INSERT INTO FAQ (Question, Answer, Product_idProduct, orgmail) VALUES (?, ?, ?, ?)',
+        [question, answer, productId, orgMail]
       );
       
       res.status(201).json({ 
@@ -111,9 +114,10 @@ class ProductController {
       const productId = req.params.id;
       const faqId = req.params.faqId;
       
+      const orgMail = getOrgMail();
       const [result] = await pool.query(
-        'UPDATE FAQ SET Question = ?, Answer = ? WHERE idFAQ = ? AND Product_idProduct = ?',
-        [question, answer, faqId, productId]
+        'UPDATE FAQ SET Question = ?, Answer = ? WHERE idFAQ = ? AND Product_idProduct = ? AND orgmail = ?',
+        [question, answer, faqId, productId, orgMail]
       );
       
       if (result.affectedRows === 0) {
@@ -132,9 +136,10 @@ class ProductController {
       const productId = req.params.id;
       const faqId = req.params.faqId;
       
+      const orgMail = getOrgMail();
       const [result] = await pool.query(
-        'DELETE FROM FAQ WHERE idFAQ = ? AND Product_idProduct = ?',
-        [faqId, productId]
+        'DELETE FROM FAQ WHERE idFAQ = ? AND Product_idProduct = ? AND orgmail = ?',
+        [faqId, productId, orgMail]
       );
       
       if (result.affectedRows === 0) {

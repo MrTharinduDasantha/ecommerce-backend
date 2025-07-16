@@ -2,6 +2,7 @@ const Event = require("../../models/event.model");
 const fs = require("fs");
 const path = require("path");
 const pool = require("../../config/database");
+const { getOrgMail } = require('../../utils/organization');
 
 // ------------------------
 // Event Related Functions
@@ -79,8 +80,9 @@ async function createEvent(req, res) {
     const result = await Event.createEvent(eventData);
 
     // Log the admin action
+    const orgMail = getOrgMail();
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Created event",
@@ -91,6 +93,7 @@ async function createEvent(req, res) {
           productCount: eventData.productIds.length,
           discountCount: eventData.discounts.length,
         }),
+        orgMail
       ]
     );
 
@@ -191,13 +194,15 @@ async function updateEvent(req, res) {
     };
 
     // Log the admin action with both original and updated data
+    const orgMail = getOrgMail();
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated event",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail
       ]
     );
 
@@ -232,8 +237,9 @@ async function deleteEvent(req, res) {
     }
 
     // Log the admin action before deletion
+    const orgMail = getOrgMail();
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Deleted event",
@@ -243,6 +249,7 @@ async function deleteEvent(req, res) {
           eventName: event.Event_Name,
           eventDescription: event.Event_Description,
         }),
+        orgMail
       ]
     );
 
