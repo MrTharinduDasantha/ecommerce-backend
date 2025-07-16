@@ -3,11 +3,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import HeaderFooterSettingsCreateOnly from '../components/HeaderFooterSettingsCreateOnly';
 import NewAboutUsSettings from '../components/NewAboutUsSettings';
+import NewHomePageSettings from '../components/NewHomePageSettings';
+import NewPolicyDetailsSettings from '../components/NewPolicyDetailsSettings';
 
 const Timeline = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentStep, setCurrentStep] = useState('login'); // Track current step: 'login', 'settings', 'dashboard'
+  const [currentStep, setCurrentStep] = useState('login'); // Track current step
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -16,6 +18,8 @@ const Timeline = () => {
     { id: 'login', label: 'Login' },
     { id: 'settings', label: 'Header/Footer Settings' },
     { id: 'aboutus', label: 'About Us' },
+    { id: 'home', label: 'Home Page Settings' },
+    { id: 'policy', label: 'Policy Details Settings' },
   ];
 
   // Check for login success via query parameter
@@ -41,8 +45,17 @@ const Timeline = () => {
   const handleNext = () => {
     setIsLoading(true);
     setTimeout(() => {
-      setCurrentStep('dashboard');
-      navigate('/dashboard');
+      const currentIndex = steps.findIndex((step) => step.id === currentStep);
+      if (currentIndex < steps.length - 1) {
+        const nextStep = steps[currentIndex + 1].id;
+        setCurrentStep(nextStep);
+        if (nextStep === 'dashboard') {
+          navigate('/dashboard');
+        }
+      } else {
+        setCurrentStep('dashboard');
+        navigate('/dashboard');
+      }
       setIsLoading(false);
     }, 1000);
   };
@@ -58,7 +71,7 @@ const Timeline = () => {
 
   // Timeline display component
   const TimelineDisplay = () => (
-    <div className="w-full max-w-3xl mx-auto mb-8 relative">
+    <div className="w-full max-w-4xl mx-auto mb-8 relative">
       <div className="flex items-center justify-between relative">
         {/* Connecting Lines (between step numbers at the top) */}
         {steps.map((step, index) => (
@@ -66,7 +79,7 @@ const Timeline = () => {
             <div
               key={`line-${index}`}
               className={`absolute h-1 ${
-                steps.findIndex(s => s.id === currentStep) > index
+                steps.findIndex((s) => s.id === currentStep) > index
                   ? 'bg-[#5CAF90]'
                   : 'bg-gray-400'
               }`}
@@ -84,7 +97,7 @@ const Timeline = () => {
           <div key={step.id} className="flex-1 flex flex-col items-center relative z-10">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold transition-all duration-300 mt-2 ${
-                currentStep === step.id || steps.findIndex(s => s.id === currentStep) > index
+                currentStep === step.id || steps.findIndex((s) => s.id === currentStep) > index
                   ? 'bg-[#5CAF90]'
                   : 'bg-gray-400'
               }`}
@@ -161,14 +174,93 @@ const Timeline = () => {
                 isLoading={isLoading}
               />
               <div className="flex justify-end gap-4 mt-6 px-4">
-                
+                <button
+                  onClick={handleSkip}
+                  className="bg-[#1D372E] text-white py-2 px-4 rounded-lg hover:bg-[#2A4A3B] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="bg-[#5CAF90] text-white py-2 px-4 rounded-lg hover:bg-[#4a9a7d] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Next
+                </button>
               </div>
             </div>
           )}
           {currentStep === 'aboutus' && (
             <div className="w-full max-w-7xl">
-              <NewAboutUsSettings />
-              {/* You can add a Next/Finish button here for the next step */}
+              <NewAboutUsSettings
+                onNext={() => setCurrentStep('home')}
+                isLoading={isLoading}
+              />
+              <div className="flex justify-end gap-4 mt-6 px-4">
+                <button
+                  onClick={handleSkip}
+                  className="bg-[#1D372E] text-white py-2 px-4 rounded-lg hover:bg-[#2A4A3B] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="bg-[#5CAF90] text-white py-2 px-4 rounded-lg hover:bg-[#4a9a7d] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+          {currentStep === 'home' && (
+            <div className="w-full max-w-7xl">
+              <NewHomePageSettings
+                onNext={() => setCurrentStep('policy')}
+                isLoading={isLoading}
+              />
+              <div className="flex justify-end gap-4 mt-6 px-4">
+                <button
+                  onClick={handleSkip}
+                  className="bg-[#1D372E] text-white py-2 px-4 rounded-lg hover:bg-[#2A4A3B] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="bg-[#5CAF90] text-white py-2 px-4 rounded-lg hover:bg-[#4a9a7d] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+          {currentStep === 'policy' && (
+            <div className="w-full max-w-7xl">
+              <NewPolicyDetailsSettings
+                onNext={() => setCurrentStep('dashboard')}
+                isLoading={isLoading}
+              />
+              <div className="flex justify-end gap-4 mt-6 px-4">
+                <button
+                  onClick={handleSkip}
+                  className="bg-[#1D372E] text-white py-2 px-4 rounded-lg hover:bg-[#2A4A3B] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="bg-[#5CAF90] text-white py-2 px-4 rounded-lg hover:bg-[#4a9a7d] transition duration-300 font-semibold"
+                  disabled={isLoading}
+                >
+                  Finish
+                </button>
+              </div>
             </div>
           )}
         </>

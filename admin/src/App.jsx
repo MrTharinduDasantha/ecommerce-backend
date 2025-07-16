@@ -33,6 +33,9 @@ import NotificationPage from "./components/NotificationPage";
 import ReviewList from "./components/ReviewList"
 import ReviewDetails from "./components/ReviewDetails"
 import Timeline from "./components/Timeline";
+import NewHomePageSettings from "./components/NewHomePageSettings";
+import NewPolicyDetailsSettings from "./components/NewPolicyDetailsSettings";
+
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -138,6 +141,8 @@ const App = () => {
           <Route path="/newaboutUssetting" element={<NewAboutUsSettings />} />
           <Route path="Timeline" element={<Timeline />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/NewHomePageSettings" element={<NewHomePageSettings />} />
+          <Route path="/NewPolicyDetailsSettings" element={<NewPolicyDetailsSettings />} />
           <Route path="Timeline" element={<Timeline />} />
         </Routes>
       )}
