@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Importing JWT
 const { sendConfirmationEmail, sendOtpEmail } = require("../../utils/mailer");
 const pool = require("../../config/database");
+const { getOrgMail } = require('../../utils/organization');
 
 // Get all users
 const getUsers = async (req, res) => {
@@ -127,8 +128,9 @@ const updateUserStatus = async (req, res) => {
       return res.status(400).json({ error: "Invalid status" });
     }
 
-    const query = "UPDATE User SET status = ? WHERE idUser = ?";
-    const values = [status, userId];
+    const orgMail = getOrgMail();
+    const query = "UPDATE User SET status = ? WHERE idUser = ? AND orgmail = ?";
+    const values = [status, userId, orgMail];
     const [result] = await pool.query(query, values);
 
     if (result.affectedRows === 0) {
@@ -152,9 +154,11 @@ const updateUserPassword = async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(newPassword, 10); // Hash the new password
-    await pool.query("UPDATE User SET Password = ? WHERE idUser = ?", [
+    const orgMail = getOrgMail();
+    await pool.query("UPDATE User SET Password = ? WHERE idUser = ? AND orgmail = ?", [
       hashedPassword,
       id,
+      orgMail
     ]);
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
@@ -171,20 +175,24 @@ const logAdminAction = async (
   newUserInfo = null
 ) => {
   console.log("Logging action", { adminId, action, deviceInfo, newUserInfo }); // Add this line
+  const orgMail = getOrgMail();
   const query =
-    "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)";
-  await pool.query(query, [adminId, action, deviceInfo, newUserInfo]);
+    "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)";
+  await pool.query(query, [adminId, action, deviceInfo, newUserInfo, orgMail]);
 };
 const getAdminLogs = async (req, res) => {
   try {
+    const orgMail = getOrgMail();
     const [logs] = await pool.query(
       `
           SELECT admin_logs.*, User.Full_Name AS Admin_Name,
           admin_logs.new_user_info AS User_Details
           FROM admin_logs
           JOIN User ON admin_logs.admin_id = User.idUser
+          WHERE admin_logs.orgmail = ?
           ORDER BY timestamp DESC
-          `
+          `,
+      [orgMail]
     );
     console.log("Admin Logs:", logs); // Log what you retrieve from the database
     res.json(logs);
@@ -336,7 +344,8 @@ const logoutAdmin = async (adminId) => {
 const deleteLog = async (req, res) => {
   try {
     const logId = req.params.id;
-    await pool.query('DELETE FROM admin_logs WHERE log_id = ?', [logId]);
+    const orgMail = getOrgMail();
+    await pool.query('DELETE FROM admin_logs WHERE log_id = ? AND orgmail = ?', [logId, orgMail]);
     res.json({ message: 'Log deleted successfully' });
   } catch (error) {
     console.error("Error deleting log:", error);

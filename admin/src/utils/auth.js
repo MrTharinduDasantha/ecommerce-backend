@@ -1,5 +1,5 @@
 // Authentication utilities
-const WORKING_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc0MzY5MjgxMSwiZXhwIjoxNzQzNzc5MjExfQ.gaSYbDyBHq_qz9Dq5m5wPSkeTQMg8cyRPngpmSkACZs';
+const WORKING_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MjYzNTYwMSwiZXhwIjoxNzUzMjQwNDAxfQ.IzqlLmb85HZ8uFplQldiSvVasCoVBPXGDQMaeWj4TCo';
 
 // Get the auth token - falls back to a working test token if needed
 export const getToken = () => {

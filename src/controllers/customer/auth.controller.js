@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs")
 const nodemailer = require("nodemailer")
 
 const otpVerificationStore = new Map()
+const { getOrgMail } = require('../../utils/organization');
 
 // Create transporter for emails
 const transporter = nodemailer.createTransport({
@@ -131,9 +132,10 @@ class CustomerAuthController {
       console.log("Login attempt for:", email)
 
       // Check if the email exists
+    const orgMail = getOrgMail();
       const [rows] = await pool.query(
-        "SELECT * FROM Customer WHERE Email = ?",
-        [email]
+        "SELECT * FROM Customer WHERE Email = ? AND orgmail = ?",
+        [email, orgMail]
       )
 
       if (rows.length === 0) {
@@ -217,9 +219,10 @@ class CustomerAuthController {
       otpExpires.setMinutes(otpExpires.getMinutes() + 10)
 
       // Store OTP in database
+      const orgMail = getOrgMail();
       await pool.query(
-        "UPDATE Customer SET reset_password_otp = ?, reset_password_otp_expires = ? WHERE idCustomer = ?",
-        [otp, otpExpires, customer.idCustomer]
+        "UPDATE Customer SET reset_password_otp = ?, reset_password_otp_expires = ? WHERE idCustomer = ? AND orgmail = ?",
+        [otp, otpExpires, customer.idCustomer, orgMail]
       )
 
       // Send OTP via email
@@ -306,9 +309,10 @@ class CustomerAuthController {
       const hashedPassword = await bcrypt.hash(new_password, 10)
 
       // Update the password and clear OTP fields
+      const orgMail = getOrgMail();
       await pool.query(
-        "UPDATE Customer SET Password = ?, reset_password_otp = NULL, reset_password_otp_expires = NULL WHERE idCustomer = ?",
-        [hashedPassword, customer.idCustomer]
+        "UPDATE Customer SET Password = ?, reset_password_otp = NULL, reset_password_otp_expires = NULL WHERE idCustomer = ? AND orgmail = ?",
+        [hashedPassword, customer.idCustomer, orgMail]
       )
 
       res.json({ message: "Password has been reset successfully" })

@@ -1,4 +1,5 @@
 const pool = require("../config/database");
+const { getOrgMail } = require('../utils/organization');
 
 // ------------------------
 // Cart Related Functions
@@ -6,22 +7,24 @@ const pool = require("../config/database");
 
 // Create a new cart for a customer
 async function createCart(customerId) {
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO Cart (Customer_idCustomer, Total_Items, Total_Amount)
-    VALUES (?, 0, 0.00)
+    INSERT INTO Cart (Customer_idCustomer, Total_Items, Total_Amount, orgmail)
+    VALUES (?, 0, 0.00, ?)
   `;
 
-  const [result] = await pool.query(query, [customerId]);
+  const [result] = await pool.query(query, [customerId, orgMail]);
   return result.insertId;
 }
 
 // Get cart by customer id
 async function getCartByCustomerId(customerId) {
+  const orgMail = getOrgMail();
   const query = `
-    SELECT * FROM Cart WHERE Customer_idCustomer = ?
+    SELECT * FROM Cart WHERE Customer_idCustomer = ? AND orgmail = ?
   `;
 
-  const [rows] = await pool.query(query, [customerId]);
+  const [rows] = await pool.query(query, [customerId, orgMail]);
   if (rows.length === 0) return null;
 
   const cart = rows[0];
@@ -55,9 +58,9 @@ async function getCartByCustomerId(customerId) {
         cp.Product_Variations_idProduct_Variations = pv.idProduct_Variations
       JOIN Product p ON pv.Product_idProduct = p.idProduct
       LEFT JOIN Discounts d ON cp.Discounts_idDiscounts = d.idDiscounts
-      WHERE cp.Cart_idCart = ?
+      WHERE cp.Cart_idCart = ? AND cp.orgmail = ?
     `,
-    [cart.idCart]
+    [cart.idCart, orgMail]
   );
 
   cart.items = cartItems;
@@ -73,21 +76,23 @@ async function addProductToCart(
   rate,
   mktRate
 ) {
+  const orgMail = getOrgMail();
+  
   // Check if product variation exists in cart
   const [existingItem] = await pool.query(
     `
       SELECT * FROM Cart_has_Product
-      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ? AND orgmail = ?
     `,
-    [cartId, productVariationId]
+    [cartId, productVariationId, orgMail]
   );
 
   // Get product variation details to calculate amount
   const [productVariation] = await pool.query(
     `
-      SELECT * FROM Product_Variations WHERE idProduct_Variations = ?
+      SELECT * FROM Product_Variations WHERE idProduct_Variations = ? AND orgmail = ?
     `,
-    [productVariationId]
+    [productVariationId, orgMail]
   );
 
   if (productVariation.length === 0) {
@@ -97,9 +102,9 @@ async function addProductToCart(
   // Get product details to check for discounts
   const [product] = await pool.query(
     `
-      SELECT * FROM Product WHERE idProduct = ?
+      SELECT * FROM Product WHERE idProduct = ? AND orgmail = ?
     `,
-    [productVariation[0].Product_idProduct]
+    [productVariation[0].Product_idProduct, orgMail]
   );
 
   // Check for active normal discounts
@@ -109,8 +114,9 @@ async function addProductToCart(
       WHERE Product_idProduct = ? 
       AND Status = 'active' 
       AND (Start_Date <= CURRENT_DATE() AND End_Date >= CURRENT_DATE())
+      AND orgmail = ?
     `,
-    [product[0].idProduct]
+    [product[0].idProduct, orgMail]
   );
 
   // Check for active event discounts
@@ -122,8 +128,9 @@ async function addProductToCart(
       WHERE ehp.Product_idProduct = ?
         AND ed.Status = 'active'
         AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d')
+        AND ed.orgmail = ? AND ehp.orgmail = ?
     `,
-    [product[0].idProduct]
+    [product[0].idProduct, orgMail, orgMail]
   );
 
   let discountId = null;
@@ -172,7 +179,7 @@ async function addProductToCart(
     const query = `
       UPDATE Cart_has_Product
       SET Qty = ?, Market_Rate = ?, Rate = ?, Total_Amount = ?, Discount_Percentage = ?, Discount_Amount = ?, NetAmount = ?, Discounts_idDiscounts = ?
-      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ? AND orgmail = ?
     `;
     await pool.query(query, [
       qty,
@@ -185,6 +192,7 @@ async function addProductToCart(
       discountId,
       cartId,
       productVariationId,
+      orgMail
     ]);
   } else {
     // Add new cart item
@@ -199,9 +207,10 @@ async function addProductToCart(
         Discount_Percentage, 
         Discount_Amount, 
         NetAmount, 
-        Discounts_idDiscounts
+        Discounts_idDiscounts,
+        orgmail
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     await pool.query(query, [
       cartId,
@@ -214,20 +223,9 @@ async function addProductToCart(
       discountAmount,
       netAmount,
       discountId,
+      orgMail
     ]);
   }
-
-  // Commenting out the problematic UPDATE Product_Variations query
-  /*
-  await pool.query(
-    `
-    UPDATE Product_Variations
-    SET Qty = Qty - ?, SIH = SIH - ?
-    WHERE idProduct_Variations = ?
-  `,
-    [qty, qty, productVariationId]
-  );
-  */
 
   // Update cart totals
   await updateCartTotals(cartId);
@@ -237,13 +235,15 @@ async function addProductToCart(
 
 // Update product quantity in cart
 async function updateCartItemQuantity(cartId, productVariationId, qty) {
+  const orgMail = getOrgMail();
+  
   // Get current cart item
   const [cartItem] = await pool.query(
     `
       SELECT * FROM Cart_has_Product
-      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+      WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ? AND orgmail = ?
     `,
-    [cartId, productVariationId]
+    [cartId, productVariationId, orgMail]
   );
 
   if (cartItem.length === 0) {
@@ -260,8 +260,8 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
 
   // Get product ID for this variation
   const [productVariation] = await pool.query(
-    `SELECT Product_idProduct FROM Product_Variations WHERE idProduct_Variations = ?`,
-    [productVariationId]
+    `SELECT Product_idProduct FROM Product_Variations WHERE idProduct_Variations = ? AND orgmail = ?`,
+    [productVariationId, orgMail]
   );
 
   let totalDiscountAmount = 0;
@@ -269,8 +269,8 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
   // Recalculate normal discount if applicable
   if (cartItem[0].Discounts_idDiscounts) {
     const [discount] = await pool.query(
-      `SELECT * FROM Discounts WHERE idDiscounts = ?`,
-      [cartItem[0].Discounts_idDiscounts]
+      `SELECT * FROM Discounts WHERE idDiscounts = ? AND orgmail = ?`,
+      [cartItem[0].Discounts_idDiscounts, orgMail]
     );
 
     if (discount.length > 0) {
@@ -294,8 +294,9 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
         WHERE ehp.Product_idProduct = ?
           AND ed.Status = 'active'
           AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d')
+          AND ed.orgmail = ? AND ehp.orgmail = ?
       `,
-      [productId]
+      [productId, orgMail, orgMail]
     );
 
     for (const eventDiscount of eventDiscounts) {
@@ -321,7 +322,7 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
   const query = `
     UPDATE Cart_has_Product
     SET Qty = ?, Total_Amount = ?, Discount_Amount = ?, NetAmount = ?
-    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ? AND orgmail = ?
   `;
   await pool.query(query, [
     qty,
@@ -330,6 +331,7 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
     netAmount,
     cartId,
     productVariationId,
+    orgMail
   ]);
 
   // Determine the difference between the new quantity and the old quantity
@@ -340,9 +342,9 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
       `
       UPDATE Product_Variations
       SET Qty = Qty - ?, SIH = SIH - ?
-      WHERE idProduct_Variations = ?
+      WHERE idProduct_Variations = ? AND orgmail = ?
     `,
-      [qtyDifference, qtyDifference, productVariationId]
+      [qtyDifference, qtyDifference, productVariationId, orgMail]
     );
   }
 
@@ -354,11 +356,12 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
 
 // Remove product from cart
 async function removeProductFromCart(cartId, productVariationId) {
+  const orgMail = getOrgMail();
   const query = `
     DELETE FROM Cart_has_Product
-    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ? AND orgmail = ?
   `;
-  await pool.query(query, [cartId, productVariationId]);
+  await pool.query(query, [cartId, productVariationId, orgMail]);
 
   // Update cart totals
   await updateCartTotals(cartId);
@@ -366,13 +369,14 @@ async function removeProductFromCart(cartId, productVariationId) {
   return { success: true };
 }
 
-// Cleart cart
+// Clear cart
 async function clearCart(cartId) {
+  const orgMail = getOrgMail();
   const query = `
     DELETE FROM Cart_has_Product
-    WHERE Cart_idCart = ?
+    WHERE Cart_idCart = ? AND orgmail = ?
   `;
-  await pool.query(query, [cartId]);
+  await pool.query(query, [cartId, orgMail]);
 
   // Update cart totals
   await updateCartTotals(cartId);
@@ -382,14 +386,15 @@ async function clearCart(cartId) {
 
 // Update cart totals
 async function updateCartTotals(cartId) {
+  const orgMail = getOrgMail();
   // Calculate total items and total amount
   const [result] = await pool.query(
     `
       SELECT SUM(Qty) as TotalItems, SUM(NetAmount) as TotalAmount
       FROM Cart_has_Product
-      WHERE Cart_idCart = ?
+      WHERE Cart_idCart = ? AND orgmail = ?
     `,
-    [cartId]
+    [cartId, orgMail]
   );
 
   const totalItems = result[0].TotalItems || 0;
@@ -399,19 +404,20 @@ async function updateCartTotals(cartId) {
   const query = `
     UPDATE Cart
     SET Total_Items = ?, Total_Amount = ?
-    WHERE idCart = ?
+    WHERE idCart = ? AND orgmail = ?
   `;
-  await pool.query(query, [totalItems, totalAmount, cartId]);
+  await pool.query(query, [totalItems, totalAmount, cartId, orgMail]);
 }
 
 // Add note to cart item
 async function addNoteToCartItem(cartId, productVariationId, note) {
+  const orgMail = getOrgMail();
   const query = `
     UPDATE Cart_has_Product
     SET Note = ?
-    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ?
+    WHERE Cart_idCart = ? AND Product_Variations_idProduct_Variations = ? AND orgmail = ?
   `;
-  await pool.query(query, [note, cartId, productVariationId]);
+  await pool.query(query, [note, cartId, productVariationId, orgMail]);
 
   return { success: true };
 }
@@ -423,12 +429,14 @@ async function convertCartToOrder(
   deliveryType,
   paymentType
 ) {
+  const orgMail = getOrgMail();
+  
   // Get cart details
   const [cart] = await pool.query(
     `
-      SELECT * FROM Cart WHERE idCart = ?
+      SELECT * FROM Cart WHERE idCart = ? AND orgmail = ?
     `,
-    [cartId]
+    [cartId, orgMail]
   );
 
   if (cart.length === 0) {
@@ -438,9 +446,9 @@ async function convertCartToOrder(
   // Get cart items
   const [cartItems] = await pool.query(
     `
-      SELECT * FROM Cart_has_Product WHERE Cart_idCart = ?
+      SELECT * FROM Cart_has_Product WHERE Cart_idCart = ? AND orgmail = ?
     `,
-    [cartId]
+    [cartId, orgMail]
   );
 
   if (cartItems.length === 0) {
@@ -455,9 +463,6 @@ async function convertCartToOrder(
     deliveryCharges = 70.0;
   } else if (deliveryType === "standard_delivery") {
     deliveryCharges = 30.0;
-  } else {
-    // Default or error handling for unknown delivery type could be added here
-    // For now, proceeding based on potential earlier structure.
   }
 
   const netAmount = parseFloat(cart[0].Total_Amount) + deliveryCharges;
@@ -474,7 +479,8 @@ async function convertCartToOrder(
       Payment_Type,
       Payment_Stats,
       Delivery_Status,
-      Status
+      Status,
+      orgmail
     )
     VALUES (
       NOW(),
@@ -486,7 +492,8 @@ async function convertCartToOrder(
       ?,
       'pending',
       'processing',
-      'active'
+      'active',
+      ?
     )
   `;
 
@@ -497,6 +504,7 @@ async function convertCartToOrder(
     deliveryCharges,
     netAmount,
     paymentType,
+    orgMail
   ]);
 
   const orderId = orderResult.insertId;
@@ -514,25 +522,27 @@ async function convertCartToOrder(
         Discount_Amount,
         Total_Amount, 
         Note,
-        Discounts_idDiscounts
+        Discounts_idDiscounts,
+        orgmail
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     await pool.query(orderItemInsertQuery, [
       orderId,
       item.Product_Variations_idProduct_Variations,
       item.Rate,
       item.Qty,
-      item.Total_Amount, // Gross total for the item line
+      item.Total_Amount,
       item.Discount_Percentage,
       item.Discount_Amount,
-      item.NetAmount, // Net total for the item line (after discount)
+      item.NetAmount,
       item.Note,
       item.Discounts_idDiscounts,
+      orgMail
     ]);
   }
 
-  // Clear cart (this will also update cart totals implicitly if clearCart calls updateCartTotals)
+  // Clear cart
   await clearCart(cartId);
 
   return { orderId };

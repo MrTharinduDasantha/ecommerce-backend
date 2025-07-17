@@ -1,6 +1,7 @@
 const Customer = require('../../models/customer.model');
 const bcrypt = require('bcryptjs');
 const pool = require('../../config/database');
+const { getOrgMail } = require('../../utils/organization');
 
 // Get all customers
 const getCustomers = async (req, res) => {
@@ -75,16 +76,18 @@ const updateCustomer = async (req, res) => {
       };
 
       // Log the admin action
+      const orgMail = getOrgMail();
       const insertQuery = `
-          INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) 
-          VALUES (?, ?, ?, ?)
+          INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) 
+          VALUES (?, ?, ?, ?, ?)
       `;
 
       await pool.query(insertQuery, [
           req.user.userId,
           'Updated customer',
           req.headers['user-agent'],
-          JSON.stringify(logData)
+          JSON.stringify(logData),
+          orgMail
       ]);
 
       res.json({ message: 'Customer updated successfully' });
@@ -113,16 +116,18 @@ const deleteCustomer = async (req, res) => {
     };
 
     // Log the admin action first
+    const orgMail = getOrgMail();
     const insertQuery = `
-      INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) 
-      VALUES (?, ?, ?, ?)
+      INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) 
+      VALUES (?, ?, ?, ?, ?)
     `;
 
     await pool.query(insertQuery, [
       req.user.userId,
       'Deleted customer',
       req.headers['user-agent'],
-      JSON.stringify(logData)
+      JSON.stringify(logData),
+      orgMail
     ]);
 
     // Then delete the customer
@@ -141,9 +146,10 @@ const getCustomerHistory = async (req, res) => {
     const customerId = req.params.id;
 
     // First get the delivery addresses for this customer
+    const orgMail = getOrgMail();
     const [deliveryAddresses] = await pool.query(
-      'SELECT * FROM Delivery_Address WHERE Customer_idCustomer = ?',
-      [customerId]
+      'SELECT * FROM Delivery_Address WHERE Customer_idCustomer = ? AND orgmail = ?',
+      [customerId, orgMail]
     );
 
     // Then get the orders using the delivery addresses
@@ -151,8 +157,8 @@ const getCustomerHistory = async (req, res) => {
       `SELECT o.* 
        FROM \`Order\` o
        INNER JOIN Delivery_Address da ON o.Delivery_Address_idDelivery_Address = da.idDelivery_Address
-       WHERE da.Customer_idCustomer = ?`,
-      [customerId]
+       WHERE da.Customer_idCustomer = ? AND o.orgmail = ?`,
+      [customerId, orgMail]
     );
 
     res.json({ 
@@ -167,7 +173,8 @@ const getCustomerHistory = async (req, res) => {
 
 const getCustomerCount = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT COUNT(*) as total FROM Customer');
+    const orgMail = getOrgMail();
+    const [rows] = await pool.query('SELECT COUNT(*) as total FROM Customer WHERE orgmail = ?', [orgMail]);
     res.json({ total: rows[0].total }); // Return total count
   } catch (error) {
     console.error('Error fetching customer count:', error);

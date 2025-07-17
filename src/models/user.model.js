@@ -1,89 +1,98 @@
-const pool = require("../config/database"); // Import MySQL connection pool
+const pool = require("../config/database");
+const { getOrgMail } = require('../utils/organization');
 
 // Get all users
 const getAllUsers = async () => {
+  const orgMail = getOrgMail();
   const [rows] = await pool.query(
-    "SELECT idUser, Full_Name, Email, Password, Phone_No, Status, created_at, updated_at FROM User"
+    "SELECT idUser, Full_Name, Email, Password, Phone_No, Status, created_at, updated_at FROM User WHERE orgmail = ?",
+    [orgMail]
   );
   return rows;
 };
 
 // Get user by ID
 const getUserById = async (id) => {
-  console.log("Fetching user with ID:", id); // Log the ID being queried
-  const [rows] = await pool.query("SELECT * FROM User WHERE idUser = ?", [id]);
-  console.log("User found in DB:", rows); // Log the result from the database
-  return rows[0]; // Return the first row if found
+  const orgMail = getOrgMail();
+  const [rows] = await pool.query("SELECT * FROM User WHERE idUser = ? AND orgmail = ?", [id, orgMail]);
+  return rows[0];
 };
 
-// Add user to database
-const addUser = async (full_name, email, password, phone_no, status) => {
+// Create a new user
+const createUser = async (full_name, email, password, phone_no, status) => {
+  const orgMail = getOrgMail();
   const [result] = await pool.query(
-    "INSERT INTO User (Full_Name, Email, Password, Phone_No, Status) VALUES (?, ?, ?, ?, ?)",
-    [full_name, email, password, phone_no, status]
+    "INSERT INTO User (Full_Name, Email, Password, Phone_No, Status, orgmail) VALUES (?, ?, ?, ?, ?, ?)",
+    [full_name, email, password, phone_no, status, orgMail]
   );
   return result.insertId;
 };
 
 // Update user in database
 const updateUser = async (id, full_name, email, phone_no, status) => {
+  const orgMail = getOrgMail();
   await pool.query(
-    "UPDATE User SET Full_Name = ?, Email = ?, Phone_No = ?, Status = ? WHERE idUser = ?",
-    [full_name, email, phone_no, status, id]
+    "UPDATE User SET Full_Name = ?, Email = ?, Phone_No = ?, Status = ? WHERE idUser = ? AND orgmail = ?",
+    [full_name, email, phone_no, status, id, orgMail]
   );
 };
 
 // Get user by email
 const getUserByEmail = async (email) => {
-  console.log("Attempting to fetch user with email:", email); // Log the email being searched
-  const [rows] = await pool.query("SELECT * FROM User WHERE Email = ?", [
-    email,
+  const orgMail = getOrgMail();
+  const [rows] = await pool.query("SELECT * FROM User WHERE Email = ? AND orgmail = ?", [
+    email, orgMail
   ]);
-  console.log("Fetched user from DB:", rows); // Log the result from the query
-  return rows[0]; // Return the user record
+  return rows[0];
 };
 
 // Delete user
 const deleteUser = async (id) => {
-  await pool.query("DELETE FROM User WHERE idUser = ?", [id]);
+  const orgMail = getOrgMail();
+  await pool.query("DELETE FROM User WHERE idUser = ? AND orgmail = ?", [id, orgMail]);
 };
 
-// Save OTP for password reset
-const saveOtp = async (email, otp) => {
-  await pool.query("UPDATE User SET OTP = ? WHERE Email = ?", [otp, email]);
+// Store OTP for user
+const storeOTP = async (email, otp) => {
+  const orgMail = getOrgMail();
+  await pool.query("UPDATE User SET OTP = ? WHERE Email = ? AND orgmail = ?", [otp, email, orgMail]);
 };
 
-// Verify OTP for password reset
-const verifyOtp = async (email, otp) => {
+// Verify OTP
+const verifyOTP = async (email, otp) => {
+  const orgMail = getOrgMail();
   const [rows] = await pool.query(
-    "SELECT * FROM User WHERE Email = ? AND OTP = ?",
-    [email, otp]
+    "SELECT * FROM User WHERE Email = ? AND OTP = ? AND orgmail = ?",
+    [email, otp, orgMail]
   );
   return rows[0];
 };
 
-// Clear OTP after verification
-const clearOtp = async (email) => {
-  await pool.query("UPDATE User SET OTP = NULL WHERE Email = ?", [email]);
+// Clear OTP
+const clearOTP = async (email) => {
+  const orgMail = getOrgMail();
+  await pool.query("UPDATE User SET OTP = NULL WHERE Email = ? AND orgmail = ?", [email, orgMail]);
 };
 
 // Update password
 const updatePassword = async (email, password) => {
-  await pool.query("UPDATE User SET Password = ? WHERE Email = ?", [
+  const orgMail = getOrgMail();
+  await pool.query("UPDATE User SET Password = ? WHERE Email = ? AND orgmail = ?", [
     password,
     email,
+    orgMail
   ]);
 };
 
 module.exports = {
   getAllUsers,
   getUserById,
-  addUser,
+  createUser,
   updateUser,
   getUserByEmail,
   deleteUser,
-  saveOtp,
-  verifyOtp,
-  clearOtp,
+  storeOTP,
+  verifyOTP,
+  clearOTP,
   updatePassword,
 };

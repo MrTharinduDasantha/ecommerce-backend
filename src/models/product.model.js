@@ -1,4 +1,5 @@
 const pool = require("../config/database");
+const { getOrgMail } = require('../utils/organization');
 
 // -------------------------------------------
 // Category and Subcategory Related Functions
@@ -6,14 +7,15 @@ const pool = require("../config/database");
 
 // Fetch all categories with subcategories
 async function getAllCategories() {
-  const [categories] = await pool.query("SELECT * FROM Product_Category");
+  const orgMail = getOrgMail();
+  const [categories] = await pool.query("SELECT * FROM Product_Category WHERE orgmail = ?", [orgMail]);
 
   // Prepare an array with subcategories nested
   const categoryList = await Promise.all(
     categories.map(async (cat) => {
       const [subcategories] = await pool.query(
-        "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
-        [cat.idProduct_Category]
+        "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ? AND orgmail = ?",
+        [cat.idProduct_Category, orgMail]
       );
 
       return {
@@ -28,6 +30,7 @@ async function getAllCategories() {
 
 // Get top 6 selling categories
 async function getTopSellingCategories() {
+  const orgMail = getOrgMail();
   const query = `
     SELECT 
         pc.idProduct_Category,
@@ -38,18 +41,19 @@ async function getTopSellingCategories() {
     FROM 
         Product_Category pc
     LEFT JOIN 
-        Sub_Category sc ON pc.idProduct_Category = sc.Product_Category_idProduct_Category
+        Sub_Category sc ON pc.idProduct_Category = sc.Product_Category_idProduct_Category AND sc.orgmail = ?
     LEFT JOIN 
-        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category
+        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category AND phsc.orgmail = ?
     LEFT JOIN 
-        Product p ON phsc.Product_idProduct = p.idProduct
+        Product p ON phsc.Product_idProduct = p.idProduct AND p.orgmail = ?
+    WHERE pc.orgmail = ?
     GROUP BY 
         pc.idProduct_Category, pc.Description, pc.Image_Icon_Url
     ORDER BY 
         Total_Sold_Qty DESC
     LIMIT 6
   `;
-  const [categories] = await pool.query(query);
+  const [categories] = await pool.query(query, [orgMail, orgMail, orgMail, orgMail]);
   return categories;
 }
 
@@ -58,11 +62,12 @@ async function createCategory(description, imageUrl) {
   if (!description) {
     throw new Error("Category description is required");
   }
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO Product_Category (Description, Image_Icon_Url)
-    VALUES (?, ?)
+    INSERT INTO Product_Category (Description, Image_Icon_Url, orgmail)
+    VALUES (?, ?, ?)
   `;
-  const [result] = await pool.query(query, [description, imageUrl]);
+  const [result] = await pool.query(query, [description, imageUrl, orgMail]);
   return result; // result.insertId will be the new category id
 }
 
@@ -71,20 +76,21 @@ async function updateCategory(categoryId, description, imageUrl) {
   if (!description) {
     throw new Error("Category description is required");
   }
+  const orgMail = getOrgMail();
   if (imageUrl) {
     const query = `
       UPDATE Product_Category
       SET Description = ?, Image_Icon_Url = ?
-      WHERE idProduct_Category = ?
+      WHERE idProduct_Category = ? AND orgmail = ?
     `;
-    await pool.query(query, [description, imageUrl, categoryId]);
+    await pool.query(query, [description, imageUrl, categoryId, orgMail]);
   } else {
     const query = `
       UPDATE Product_Category
       SET Description = ?
-      WHERE idProduct_Category = ?
+      WHERE idProduct_Category = ? AND orgmail = ?
     `;
-    await pool.query(query, [description, categoryId]);
+    await pool.query(query, [description, categoryId, orgMail]);
   }
 }
 
@@ -93,26 +99,28 @@ async function toggleCategoryStatus(categoryId, status) {
   if (!status) {
     throw new Error("Status is required");
   }
+  const orgMail = getOrgMail();
   const query = `
     UPDATE Product_Category
     SET Status = ?
-    WHERE idProduct_Category = ?
+    WHERE idProduct_Category = ? AND orgmail = ?
   `;
-  await pool.query(query, [status, categoryId]);
+  await pool.query(query, [status, categoryId, orgMail]);
 }
 
 // Delete a category and its subcategories
 async function deleteCategory(categoryId) {
+  const orgMail = getOrgMail();
   // First check if any subcategories are used in products
   const [subcategories] = await pool.query(
-    "SELECT idSub_Category FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
-    [categoryId]
+    "SELECT idSub_Category FROM Sub_Category WHERE Product_Category_idProduct_Category = ? AND orgmail = ?",
+    [categoryId, orgMail]
   );
 
   for (const sub of subcategories) {
     const [products] = await pool.query(
-      "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
-      [sub.idSub_Category]
+      "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ? AND orgmail = ?",
+      [sub.idSub_Category, orgMail]
     );
 
     if (products[0].count > 0) {
@@ -124,14 +132,14 @@ async function deleteCategory(categoryId) {
 
   // Delete all subcategories first
   await pool.query(
-    "DELETE FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
-    [categoryId]
+    "DELETE FROM Sub_Category WHERE Product_Category_idProduct_Category = ? AND orgmail = ?",
+    [categoryId, orgMail]
   );
 
   // Then delete the category
   await pool.query(
-    "DELETE FROM Product_Category WHERE idProduct_Category = ?",
-    [categoryId]
+    "DELETE FROM Product_Category WHERE idProduct_Category = ? AND orgmail = ?",
+    [categoryId, orgMail]
   );
 }
 
@@ -140,20 +148,21 @@ async function createSubCategory(categoryId, description) {
   if (!description) {
     throw new Error("Subcategory description is required");
   }
+  const orgMail = getOrgMail();
   // Ensure the category exists
   const [categories] = await pool.query(
-    "SELECT * FROM Product_Category WHERE idProduct_Category = ?",
-    [categoryId]
+    "SELECT * FROM Product_Category WHERE idProduct_Category = ? AND orgmail = ?",
+    [categoryId, orgMail]
   );
   if (categories.length === 0) {
     throw new Error("Category does not exist");
   }
 
   const query = `
-    INSERT INTO Sub_Category (Description, Product_Category_idProduct_Category)
-    VALUES (?, ?)
+    INSERT INTO Sub_Category (Description, Product_Category_idProduct_Category, orgmail)
+    VALUES (?, ?, ?)
   `;
-  const [result] = await pool.query(query, [description, categoryId]);
+  const [result] = await pool.query(query, [description, categoryId, orgMail]);
   return result;
 }
 
@@ -163,10 +172,12 @@ async function updateSubCategory(categoryId, subCategoryId, description) {
     throw new Error("Subcategory description is required");
   }
 
+  const orgMail = getOrgMail();
+
   // Ensure the category exists
   const [categories] = await pool.query(
-    "SELECT * FROM Product_Category WHERE idProduct_Category = ?",
-    [categoryId]
+    "SELECT * FROM Product_Category WHERE idProduct_Category = ? AND orgmail = ?",
+    [categoryId, orgMail]
   );
 
   if (categories.length === 0) {
@@ -175,8 +186,8 @@ async function updateSubCategory(categoryId, subCategoryId, description) {
 
   // Ensure the subcategory exists
   const [subcategories] = await pool.query(
-    "SELECT * FROM Sub_Category WHERE idSub_Category = ? AND Product_Category_idProduct_Category = ?",
-    [subCategoryId, categoryId]
+    "SELECT * FROM Sub_Category WHERE idSub_Category = ? AND Product_Category_idProduct_Category = ? AND orgmail = ?",
+    [subCategoryId, categoryId, orgMail]
   );
 
   if (subcategories.length === 0) {
@@ -186,17 +197,18 @@ async function updateSubCategory(categoryId, subCategoryId, description) {
   const query = `
     UPDATE Sub_Category
     SET Description = ?
-    WHERE idSub_Category = ?
+    WHERE idSub_Category = ? AND orgmail = ?
   `;
 
-  await pool.query(query, [description, subCategoryId]);
+  await pool.query(query, [description, subCategoryId, orgMail]);
 }
 
 // Check if a subcategory is used in any products
 async function checkSubCategoryInUse(subCategoryId) {
+  const orgMail = getOrgMail();
   const [products] = await pool.query(
-    "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
-    [subCategoryId]
+    "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ? AND orgmail = ?",
+    [subCategoryId, orgMail]
   );
 
   return products[0].count > 0;
@@ -204,6 +216,7 @@ async function checkSubCategoryInUse(subCategoryId) {
 
 // Delete a sub category
 async function deleteSubCategory(subCategoryId) {
+  const orgMail = getOrgMail();
   // Check if the subcategory is used in any products
   const inUse = await checkSubCategoryInUse(subCategoryId);
 
@@ -214,13 +227,14 @@ async function deleteSubCategory(subCategoryId) {
   // If there's a linking table to Product (Product_has_Sub_Category),
   // remove references first:
   await pool.query(
-    "DELETE FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
-    [subCategoryId]
+    "DELETE FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ? AND orgmail = ?",
+    [subCategoryId, orgMail]
   );
 
   // Then delete the subcategory
-  await pool.query("DELETE FROM Sub_Category WHERE idSub_Category = ?", [
+  await pool.query("DELETE FROM Sub_Category WHERE idSub_Category = ? AND orgmail = ?", [
     subCategoryId,
+    orgMail,
   ]);
 }
 
@@ -231,9 +245,10 @@ async function deleteSubCategory(subCategoryId) {
 // Insert a new brand into product brand table
 async function createBrand(brandName, brandImageUrl, shortDescription, userId) {
   if (!brandName) throw new Error("Brand name is required");
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO Product_Brand (Brand_Name, Brand_Image_Url, ShortDescription, User_idUser)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO Product_Brand (Brand_Name, Brand_Image_Url, ShortDescription, User_idUser, orgmail)
+    VALUES (?, ?, ?, ?, ?)
   `;
 
   const [result] = await pool.query(query, [
@@ -241,6 +256,7 @@ async function createBrand(brandName, brandImageUrl, shortDescription, userId) {
     brandImageUrl,
     shortDescription,
     userId,
+    orgMail,
   ]);
   return result;
 }
@@ -255,10 +271,12 @@ async function updateBrand(
 ) {
   if (!brandName) throw new Error("Brand name is required");
 
+  const orgMail = getOrgMail();
+
   // Check if brand exists
   const [existingBrand] = await pool.query(
-    "SELECT * FROM Product_Brand WHERE idProduct_Brand = ?",
-    [brandId]
+    "SELECT * FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?",
+    [brandId, orgMail]
   );
   if (existingBrand.length === 0) {
     throw new Error("Brand not found");
@@ -269,30 +287,32 @@ async function updateBrand(
     const query = `
       UPDATE Product_Brand 
       SET Brand_Name = ?, Brand_Image_Url = ?, ShortDescription = ?
-      WHERE idProduct_Brand = ?
+      WHERE idProduct_Brand = ? AND orgmail = ?
     `;
     await pool.query(query, [
       brandName,
       brandImageUrl,
       shortDescription,
       brandId,
+      orgMail,
     ]);
   } else {
     const query = `
       UPDATE Product_Brand 
       SET Brand_Name = ?, ShortDescription = ?
-      WHERE idProduct_Brand = ?
+      WHERE idProduct_Brand = ? AND orgmail = ?
     `;
-    await pool.query(query, [brandName, shortDescription, brandId]);
+    await pool.query(query, [brandName, shortDescription, brandId, orgMail]);
   }
 }
 
 // Delete a brand
 async function deleteBrand(brandId) {
+  const orgMail = getOrgMail();
   // Check if brand exists
   const [existingBrand] = await pool.query(
-    "SELECT * FROM Product_Brand WHERE idProduct_Brand = ?",
-    [brandId]
+    "SELECT * FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?",
+    [brandId, orgMail]
   );
   if (existingBrand.length === 0) {
     throw new Error("Brand not found");
@@ -300,22 +320,24 @@ async function deleteBrand(brandId) {
 
   // Check if brand is used in any products
   const [products] = await pool.query(
-    "SELECT COUNT(*) as count FROM Product WHERE Product_Brand_idProduct_Brand = ?",
-    [brandId]
+    "SELECT COUNT(*) as count FROM Product WHERE Product_Brand_idProduct_Brand = ? AND orgmail = ?",
+    [brandId, orgMail]
   );
   if (products[0].count > 0) {
     throw new Error("Cannot delete brand as it is used in products");
   }
 
   // Delete the brand
-  await pool.query("DELETE FROM Product_Brand WHERE idProduct_Brand = ?", [
+  await pool.query("DELETE FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?", [
     brandId,
+    orgMail,
   ]);
 }
 
 // Get all brands
 async function getBrands() {
-  const [brands] = await pool.query("SELECT * FROM Product_Brand");
+  const orgMail = getOrgMail();
+  const [brands] = await pool.query("SELECT * FROM Product_Brand WHERE orgmail = ?", [orgMail]);
   return brands;
 }
 
@@ -325,10 +347,11 @@ async function getBrands() {
 
 // Insert main product record into product table
 async function createProduct(productData) {
+  const orgMail = getOrgMail();
   const query = `
     INSERT INTO Product 
-      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH, Seasonal_Offer, Rush_Delivery, For_You)
-      VALUES (?,?,?,?,?,?,?,?,?,?)
+      (Description, Product_Brand_idProduct_Brand, Market_Price, Selling_Price, Main_Image_Url, Long_Description, SIH, Seasonal_Offer, Rush_Delivery, For_You, orgmail)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?)
   `;
 
   const [result] = await pool.query(query, [
@@ -342,26 +365,29 @@ async function createProduct(productData) {
     productData.Seasonal_Offer || 0,
     productData.Rush_Delivery || 0,
     productData.For_You || 0,
+    orgMail,
   ]);
   return result;
 }
 
 // Insert each sub image into product images table
 async function createProductImages(productId, imageUrl) {
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO Product_Images (Product_idProduct, Image_Url)
-    VALUES (?, ?)
+    INSERT INTO Product_Images (Product_idProduct, Image_Url, orgmail)
+    VALUES (?, ?, ?)
   `;
 
-  const [result] = await pool.query(query, [productId, imageUrl]);
+  const [result] = await pool.query(query, [productId, imageUrl, orgMail]);
   return result;
 }
 
 // Insert a variant into product variant table
 async function createProductVariant(productId, variation) {
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO Product_Variations (Product_idProduct, Colour, Size, Qty, SIH)
-    VALUES (?,?,?,?,?)
+    INSERT INTO Product_Variations (Product_idProduct, Colour, Size, Qty, SIH, orgmail)
+    VALUES (?,?,?,?,?,?)
   `;
 
   const [result] = await pool.query(query, [
@@ -370,41 +396,46 @@ async function createProductVariant(productId, variation) {
     variation.size,
     variation.quantity,
     variation.quantity,
+    orgMail,
   ]);
   return result;
 }
 
 // Insert an faq record into faq table
 async function createProductFaq(productId, faq) {
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO FAQ (Question, Answer, Product_idProduct)
-    VALUES (?, ?, ?)
+    INSERT INTO FAQ (Question, Answer, Product_idProduct, orgmail)
+    VALUES (?, ?, ?, ?)
   `;
 
   const [result] = await pool.query(query, [
     faq.question,
     faq.answer,
     productId,
+    orgMail,
   ]);
   return result;
 }
 
 // Insert product to subcategory join records in product has sub category table
 async function createProductSubCategory(productId, subCategoryId) {
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO Product_has_Sub_Category (Product_idProduct, Sub_Category_idSub_Category)
-    VALUES (?, ?)
+    INSERT INTO Product_has_Sub_Category (Product_idProduct, Sub_Category_idSub_Category, orgmail)
+    VALUES (?, ?, ?)
   `;
-  await pool.query(query, [productId, subCategoryId]);
+  await pool.query(query, [productId, subCategoryId, orgMail]);
 }
 
 // Update a product
 async function updateProduct(productId, productData, associatedData) {
+  const orgMail = getOrgMail();
   // Update main product details
   const query = `
     UPDATE Product
     SET Description = ?, Product_Brand_idProduct_Brand = ?, Market_Price = ?, Selling_Price = ?, Main_Image_Url = ?, Long_Description = ?, SIH = ?, Seasonal_Offer = ?, Rush_Delivery = ?, For_You = ?
-    WHERE idProduct = ?
+    WHERE idProduct = ? AND orgmail = ?
   `;
 
   await pool.query(query, [
@@ -419,6 +450,7 @@ async function updateProduct(productId, productData, associatedData) {
     productData.Rush_Delivery || 0,
     productData.For_You || 0,
     productId,
+    orgMail,
   ]);
 
   // Update product images: Delete existing images and insert new ones
@@ -426,16 +458,16 @@ async function updateProduct(productId, productData, associatedData) {
     // Delete specified images first
     if (associatedData.deletedImages) {
       await pool.query(
-        "DELETE FROM Product_Images WHERE Product_idProduct = ? AND Image_Url IN (?)",
-        [productId, associatedData.deletedImages]
+        "DELETE FROM Product_Images WHERE Product_idProduct = ? AND Image_Url IN (?) AND orgmail = ?",
+        [productId, associatedData.deletedImages, orgMail]
       );
     }
 
     // Delete all images if new ones are provided
     if (associatedData.images) {
       await pool.query(
-        "DELETE FROM Product_Images WHERE Product_idProduct = ?",
-        [productId]
+        "DELETE FROM Product_Images WHERE Product_idProduct = ? AND orgmail = ?",
+        [productId, orgMail]
       );
       for (const imageUrl of associatedData.images) {
         await createProductImages(productId, imageUrl);
@@ -447,8 +479,8 @@ async function updateProduct(productId, productData, associatedData) {
   if (associatedData.variations) {
     const newVariations = associatedData.variations;
     const [existingVariations] = await pool.query(
-      "SELECT idProduct_Variations FROM Product_Variations WHERE Product_idProduct = ?",
-      [productId]
+      "SELECT idProduct_Variations FROM Product_Variations WHERE Product_idProduct = ? AND orgmail = ?",
+      [productId, orgMail]
     );
     const existingIds = existingVariations.map((v) => v.idProduct_Variations);
     const newIds = newVariations.filter((v) => v.id).map((v) => v.id);
@@ -456,8 +488,8 @@ async function updateProduct(productId, productData, associatedData) {
     const toDelete = existingIds.filter((id) => !newIds.includes(id));
     for (const id of toDelete) {
       const [orders] = await pool.query(
-        "SELECT COUNT(*) as count FROM order_has_product_variations WHERE Product_Variations_idProduct_Variations = ?",
-        [id]
+        "SELECT COUNT(*) as count FROM order_has_product_variations WHERE Product_Variations_idProduct_Variations = ? AND orgmail = ?",
+        [id, orgMail]
       );
       if (orders[0].count > 0) {
         throw new Error("Cannot delete variation as it has been ordered");
@@ -465,21 +497,22 @@ async function updateProduct(productId, productData, associatedData) {
     }
     if (toDelete.length > 0) {
       await pool.query(
-        "DELETE FROM Product_Variations WHERE idProduct_Variations IN (?)",
-        [toDelete]
+        "DELETE FROM Product_Variations WHERE idProduct_Variations IN (?) AND orgmail = ?",
+        [toDelete, orgMail]
       );
     }
 
     for (const variation of newVariations) {
       if (variation.id) {
         await pool.query(
-          "UPDATE Product_Variations SET Colour = ?, Size = ?, Qty = ?, SIH = ? WHERE idProduct_Variations = ?",
+          "UPDATE Product_Variations SET Colour = ?, Size = ?, Qty = ?, SIH = ? WHERE idProduct_Variations = ? AND orgmail = ?",
           [
             variation.colorCode,
             variation.size,
             variation.quantity,
             variation.quantity,
             variation.id,
+            orgMail,
           ]
         );
       } else {
@@ -492,22 +525,22 @@ async function updateProduct(productId, productData, associatedData) {
   if (associatedData.faqs) {
     const newFaqs = associatedData.faqs;
     const [existingFaqs] = await pool.query(
-      "SELECT idFAQ FROM FAQ WHERE Product_idProduct = ?",
-      [productId]
+      "SELECT idFAQ FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?",
+      [productId, orgMail]
     );
     const existingIds = existingFaqs.map((f) => f.idFAQ);
     const newIds = newFaqs.filter((f) => f.id).map((f) => f.id);
 
     const toDelete = existingIds.filter((id) => !newIds.includes(id));
     if (toDelete.length > 0) {
-      await pool.query("DELETE FROM FAQ WHERE idFAQ IN (?)", [toDelete]);
+      await pool.query("DELETE FROM FAQ WHERE idFAQ IN (?) AND orgmail = ?", [toDelete, orgMail]);
     }
 
     for (const faq of newFaqs) {
       if (faq.id) {
         await pool.query(
-          "UPDATE FAQ SET Question = ?, Answer = ? WHERE idFAQ = ?",
-          [faq.question, faq.answer, faq.id]
+          "UPDATE FAQ SET Question = ?, Answer = ? WHERE idFAQ = ? AND orgmail = ?",
+          [faq.question, faq.answer, faq.id, orgMail]
         );
       } else {
         await createProductFaq(productId, faq);
@@ -518,8 +551,8 @@ async function updateProduct(productId, productData, associatedData) {
   // Update subcategories: Delete existing join records and insert new ones
   if (associatedData.subCategoryIds) {
     await pool.query(
-      "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ?",
-      [productId]
+      "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ? AND orgmail = ?",
+      [productId, orgMail]
     );
     for (const subCat of associatedData.subCategoryIds) {
       // If subCat is an object, extract its id; otherwise, use it directly.
@@ -535,13 +568,14 @@ async function toggleProductHistoryStatus(productId, historyStatus) {
     throw new Error("History status is required");
   }
 
+  const orgMail = getOrgMail();
   const query = `
     UPDATE Product
     SET History_Status = ?
-    WHERE idProduct = ?
+    WHERE idProduct = ? AND orgmail = ?
   `;
 
-  await pool.query(query, [historyStatus, productId]);
+  await pool.query(query, [historyStatus, productId, orgMail]);
 }
 
 // Toggle or update the status of a product
@@ -550,17 +584,19 @@ async function toggleProductStatus(productId, status) {
     throw new Error("Status is required");
   }
 
+  const orgMail = getOrgMail();
   const query = `
     UPDATE Product
     SET Status = ?
-    WHERE idProduct = ?
+    WHERE idProduct = ? AND orgmail = ?
   `;
 
-  await pool.query(query, [status, productId]);
+  await pool.query(query, [status, productId, orgMail]);
 }
 
 // Get all products
 async function getAllProducts() {
+  const orgMail = getOrgMail();
   const query = `
     SELECT P.*, 
       B.Brand_Name,
@@ -569,39 +605,40 @@ async function getAllProducts() {
       (SELECT COUNT(*) FROM order_has_product_variations ohpv
         JOIN Product_Variations pv 
           ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
-        WHERE pv.Product_idProduct = P.idProduct
+        WHERE pv.Product_idProduct = P.idProduct AND pv.orgmail = ?
       ) > 0 as hasOrders,
       (SELECT COUNT(*) FROM Cart_has_Product chp
         JOIN Product_Variations pv 
         ON chp.Product_Variations_idProduct_Variations = pv.idProduct_Variations 
-      WHERE pv.Product_idProduct = P.idProduct
+      WHERE pv.Product_idProduct = P.idProduct AND pv.orgmail = ?
       ) > 0 as hasCart
     FROM Product P
     LEFT JOIN Product_Brand B 
-      ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
+      ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand AND B.orgmail = ?
+    WHERE P.orgmail = ?
   `;
-  const [products] = await pool.query(query);
+  const [products] = await pool.query(query, [orgMail, orgMail, orgMail, orgMail]);
 
   // For each product, fetch all images, variations, faqs, and subcategories
   for (const product of products) {
     // Get all sub images
     const [images] = await pool.query(
-      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
-      [product.idProduct]
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ? AND orgmail = ?",
+      [product.idProduct, orgMail]
     );
     product.images = images;
 
     // Get all variations
     const [variations] = await pool.query(
-      "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
-      [product.idProduct]
+      "SELECT * FROM Product_Variations WHERE Product_idProduct = ? AND orgmail = ?",
+      [product.idProduct, orgMail]
     );
     product.variations = variations;
 
     // Get all faqs
     const [faqs] = await pool.query(
-      "SELECT * FROM FAQ WHERE Product_idProduct = ?",
-      [product.idProduct]
+      "SELECT * FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?",
+      [product.idProduct, orgMail]
     );
     product.faqs = faqs;
 
@@ -610,9 +647,9 @@ async function getAllProducts() {
       `SELECT SC.*
        FROM Sub_Category SC
        JOIN Product_has_Sub_Category PS 
-        ON SC.idSub_Category = PS.Sub_Category_idSub_Category
-       WHERE PS.Product_idProduct = ?`,
-      [product.idProduct]
+        ON SC.idSub_Category = PS.Sub_Category_idSub_Category AND PS.orgmail = ?
+       WHERE PS.Product_idProduct = ? AND SC.orgmail = ?`,
+      [orgMail, product.idProduct, orgMail]
     );
     product.subcategories = subCats;
 
@@ -630,53 +667,57 @@ async function getAllProducts() {
 
 // Get the total number of products
 async function getProductCount() {
-  const query = `SELECT COUNT(*) AS totalProducts FROM Product`;
-  const [result] = await pool.query(query);
+  const orgMail = getOrgMail();
+  const query = `SELECT COUNT(*) AS totalProducts FROM Product WHERE orgmail = ?`;
+  const [result] = await pool.query(query, [orgMail]);
   return result[0].totalProducts; // Return the count value
 }
 
 // Get top sold products
 async function getProductsSoldQty() {
+  const orgMail = getOrgMail();
   const query = `
     SELECT idProduct, Description, Sold_Qty, Main_Image_Url,Selling_Price,Market_Price
     FROM Product
-    WHERE Sold_Qty > 0
+    WHERE Sold_Qty > 0 AND orgmail = ?
     ORDER BY Sold_Qty DESC
     LIMIT 5
   `;
   console.log("Executing getProductsSoldQty query");
-  const [products] = await pool.query(query);
+  const [products] = await pool.query(query, [orgMail]);
   console.log("Query result:", products);
   return products;
 }
 
 // Get sold quantity of a product
 async function getProductSoldQty(productId) {
+  const orgMail = getOrgMail();
   const query = `
     SELECT idProduct, Description, Sold_Qty
     FROM Product
-    WHERE idProduct = ?
+    WHERE idProduct = ? AND orgmail = ?
   `;
-  const [rows] = await pool.query(query, [productId]);
+  const [rows] = await pool.query(query, [productId, orgMail]);
   return rows.length > 0 ? rows[0] : null;
 }
 
 // Get all products by subcategory id
 async function getProductsBySubCategory(subCategoryId) {
+  const orgMail = getOrgMail();
   const query = `
     SELECT P.*, B.Brand_Name
     FROM Product P
-    JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct
-    LEFT JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
-    WHERE PS.Sub_Category_idSub_Category = ?
+    JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct AND PS.orgmail = ?
+    LEFT JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand AND B.orgmail = ?
+    WHERE PS.Sub_Category_idSub_Category = ? AND P.orgmail = ?
   `;
-  const [products] = await pool.query(query, [subCategoryId]);
+  const [products] = await pool.query(query, [orgMail, orgMail, subCategoryId, orgMail]);
 
   // Fetch additional data like images for each product
   for (const product of products) {
     const [images] = await pool.query(
-      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
-      [product.idProduct]
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ? AND orgmail = ?",
+      [product.idProduct, orgMail]
     );
     product.images = images;
     product.discounts = await getActiveDiscountsByProductId(product.idProduct);
@@ -687,19 +728,20 @@ async function getProductsBySubCategory(subCategoryId) {
 
 // Get all products by brand id
 async function getProductsByBrand(brandId) {
+  const orgMail = getOrgMail();
   const query = `
     SELECT P.*, B.Brand_Name
     FROM Product P
-    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
-    WHERE P.Product_Brand_idProduct_Brand = ?
+    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand AND B.orgmail = ?
+    WHERE P.Product_Brand_idProduct_Brand = ? AND P.orgmail = ?
   `;
-  const [products] = await pool.query(query, [brandId]);
+  const [products] = await pool.query(query, [orgMail, brandId, orgMail]);
 
   // Fetch additional data like images for each product
   for (const product of products) {
     const [images] = await pool.query(
-      "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
-      [product.idProduct]
+      "SELECT * FROM Product_Images WHERE Product_idProduct = ? AND orgmail = ?",
+      [product.idProduct, orgMail]
     );
     product.images = images;
     product.discounts = await getActiveDiscountsByProductId(product.idProduct);
@@ -710,6 +752,7 @@ async function getProductsByBrand(brandId) {
 
 // Get a single product by id
 async function getProductById(productId) {
+  const orgMail = getOrgMail();
   // Fetch main product record with brand info
   const query = `
     SELECT P.*, 
@@ -718,17 +761,17 @@ async function getProductById(productId) {
       B.ShortDescription
     FROM Product P
     LEFT JOIN Product_Brand B 
-      ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand
-    WHERE P.idProduct = ?
+      ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand AND B.orgmail = ?
+    WHERE P.idProduct = ? AND P.orgmail = ?
   `;
-  const [rows] = await pool.query(query, [productId]);
+  const [rows] = await pool.query(query, [orgMail, productId, orgMail]);
   if (rows.length === 0) return null;
   const product = rows[0];
 
   // Get all sub images
   const [images] = await pool.query(
-    "SELECT * FROM Product_Images WHERE Product_idProduct = ?",
-    [product.idProduct]
+    "SELECT * FROM Product_Images WHERE Product_idProduct = ? AND orgmail = ?",
+    [product.idProduct, orgMail]
   );
   product.images = images;
 
@@ -738,15 +781,15 @@ async function getProductById(productId) {
       (SELECT COUNT(*) FROM order_has_product_variations ohpv 
        WHERE ohpv.Product_Variations_idProduct_Variations = PV.idProduct_Variations) > 0 as hasOrders
      FROM Product_Variations PV
-     WHERE PV.Product_idProduct = ?`,
-    [product.idProduct]
+     WHERE PV.Product_idProduct = ? AND PV.orgmail = ?`,
+    [product.idProduct, orgMail]
   );
   product.variations = variations;
 
   // Get all faqs
   const [faqs] = await pool.query(
-    "SELECT * FROM FAQ WHERE Product_idProduct = ?",
-    [product.idProduct]
+    "SELECT * FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?",
+    [product.idProduct, orgMail]
   );
   product.faqs = faqs;
 
@@ -754,9 +797,9 @@ async function getProductById(productId) {
   const [subCats] = await pool.query(
     `SELECT SC.*
      FROM Sub_Category SC
-     JOIN Product_has_Sub_Category PS ON SC.idSub_Category = PS.Sub_Category_idSub_Category
-     WHERE PS.Product_idProduct = ?`,
-    [product.idProduct]
+     JOIN Product_has_Sub_Category PS ON SC.idSub_Category = PS.Sub_Category_idSub_Category AND PS.orgmail = ?
+     WHERE PS.Product_idProduct = ? AND SC.orgmail = ?`,
+    [orgMail, product.idProduct, orgMail]
   );
   product.subcategories = subCats;
 
@@ -773,30 +816,31 @@ async function getProductById(productId) {
 
 // Get sales information for a product
 async function getProductSalesInfo(productId) {
+  const orgMail = getOrgMail();
   // Get total units sold and revenue in last 30 days
   const [totals] = await pool.query(
     `SELECT SUM(ohpv.Qty) AS totalUnitsSoldLast30Days, SUM(ohpv.Total_Amount) AS totalRevenueLast30Days
     FROM Order_has_Product_Variations ohpv
-    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
-    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder AND o.orgmail = ?
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations AND pv.orgmail = ?
     WHERE pv.Product_idProduct = ?
     AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     AND o.Payment_Stats = 'paid'`,
-    [productId]
+    [orgMail, orgMail, productId]
   );
 
   // Get weekly sales data for the last 30 days
   const [weeklySales] = await pool.query(
     `SELECT DATE_FORMAT(o.Date_Time, '%Y-%u') AS week, SUM(ohpv.Qty) AS unitsSold, SUM(ohpv.Total_Amount) AS revenue
     FROM Order_has_Product_Variations ohpv
-    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder
-    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    JOIN \`Order\` o ON ohpv.Order_idOrder = o.idOrder AND o.orgmail = ?
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations AND pv.orgmail = ?
     WHERE pv.Product_idProduct = ?
     AND o.Date_Time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     AND o.Payment_Stats = 'paid'
     GROUP BY week
     ORDER BY week`,
-    [productId]
+    [orgMail, orgMail, productId]
   );
 
   return {
@@ -808,14 +852,16 @@ async function getProductSalesInfo(productId) {
 
 // Get all products with active discounts
 async function getDiscountedProducts() {
+  const orgMail = getOrgMail();
   const query = `
     SELECT DISTINCT P.*
     FROM Product P
-    JOIN Discounts D ON P.idProduct = D.Product_idProduct
+    JOIN Discounts D ON P.idProduct = D.Product_idProduct AND D.orgmail = ?
     WHERE D.Status = 'active'
     AND CURDATE() BETWEEN STR_TO_DATE(D.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(D.End_Date, '%Y-%m-%d')
+    AND P.orgmail = ?
   `;
-  const [products] = await pool.query(query);
+  const [products] = await pool.query(query, [orgMail, orgMail]);
 
   // Fetch complete details and discounts for each product
   const detailedProducts = [];
@@ -839,6 +885,7 @@ async function getDiscountedProducts() {
 
 // Delete a product and its related records
 async function deleteProduct(productId) {
+  const orgMail = getOrgMail();
   // Delete from Cart_has_Product for this product's variations
   await pool.query(
     `DELETE FROM Cart_has_Product
@@ -877,37 +924,39 @@ async function deleteProduct(productId) {
 
   // Delete from join table
   await pool.query(
-    "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ?",
-    [productId]
+    "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ? AND orgmail = ?",
+    [productId, orgMail]
   );
 
   // Delete product images
-  await pool.query("DELETE FROM Product_Images WHERE Product_idProduct = ?", [
+  await pool.query("DELETE FROM Product_Images WHERE Product_idProduct = ? AND orgmail = ?", [
     productId,
+    orgMail,
   ]);
 
   // Delete product variations
   await pool.query(
-    "DELETE FROM Product_Variations WHERE Product_idProduct = ?",
-    [productId]
+    "DELETE FROM Product_Variations WHERE Product_idProduct = ? AND orgmail = ?",
+    [productId, orgMail]
   );
 
   // Delete faqs
-  await pool.query("DELETE FROM FAQ WHERE Product_idProduct = ?", [productId]);
+  await pool.query("DELETE FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?", [productId, orgMail]);
 
   // Delete discounts
-  await pool.query("DELETE FROM Discounts WHERE Product_idProduct = ?", [
+  await pool.query("DELETE FROM Discounts WHERE Product_idProduct = ? AND orgmail = ?", [
     productId,
+    orgMail,
   ]);
 
   // Delete event's product
   await pool.query(
-    "DELETE FROM Event_has_Product WHERE Product_idProduct = ?",
-    [productId]
+    "DELETE FROM Event_has_Product WHERE Product_idProduct = ? AND orgmail = ?",
+    [productId, orgMail]
   );
 
   // Delete product
-  await pool.query("DELETE FROM Product WHERE idProduct = ?", [productId]);
+  await pool.query("DELETE FROM Product WHERE idProduct = ? AND orgmail = ?", [productId, orgMail]);
 }
 
 // ---------------------------
@@ -916,6 +965,7 @@ async function deleteProduct(productId) {
 
 // Get active event‐discounts for a specific product
 async function getActiveEventDiscountsByProductId(productId) {
+  const orgMail = getOrgMail();
   const query = `
     SELECT
       ed.idEvent_Discounts    AS id,
@@ -929,12 +979,13 @@ async function getActiveEventDiscountsByProductId(productId) {
       ed.Status               AS status
     FROM Event_Discounts ed
     JOIN Event_has_Product ehp
-      ON ed.Event_idEvent = ehp.Event_idEvent
+      ON ed.Event_idEvent = ehp.Event_idEvent AND ehp.orgmail = ?
     WHERE ehp.Product_idProduct = ?
       AND ed.Status = 'active'
+      AND ed.orgmail = ?
       AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d') 
   `;
-  const [rows] = await pool.query(query, [productId]);
+  const [rows] = await pool.query(query, [orgMail, productId, orgMail]);
   return rows.map((r) => ({
     id: r.id,
     eventId: r.eventId,
@@ -950,44 +1001,50 @@ async function getActiveEventDiscountsByProductId(productId) {
 
 // Get active discounts for a specific product
 async function getActiveDiscountsByProductId(productId) {
+  const orgMail = getOrgMail();
   const query = `
     SELECT * FROM Discounts 
     WHERE Product_idProduct = ?
     AND Status = 'active'
+    AND orgmail = ?
     AND CURDATE() BETWEEN STR_TO_DATE(Start_Date, '%Y-%m-%d') AND STR_TO_DATE(End_Date, '%Y-%m-%d')
   `;
-  const [discounts] = await pool.query(query, [productId]);
+  const [discounts] = await pool.query(query, [productId, orgMail]);
   return discounts;
 }
 
 // Get all discounts
 async function getAllDiscounts() {
+  const orgMail = getOrgMail();
   const query = `
     SELECT d.*,
       p.Description as ProductName,
       (SELECT COUNT(*) FROM Order_has_Product_Variations ohpv
       WHERE ohpv.Discounts_idDiscounts = d.idDiscounts) > 0 as hasOrders
     FROM Discounts d
-    JOIN Product p ON d.Product_idProduct = p.idProduct
+    JOIN Product p ON d.Product_idProduct = p.idProduct AND p.orgmail = ?
+    WHERE d.orgmail = ?
     ORDER BY created_at DESC
   `;
-  const [discounts] = await pool.query(query);
+  const [discounts] = await pool.query(query, [orgMail, orgMail]);
   return discounts;
 }
 
 // Get discounts for a specific product
 async function getDiscountsByProductId(productId) {
+  const orgMail = getOrgMail();
   const query = `
     SELECT * FROM Discounts
-    WHERE Product_idProduct = ?
+    WHERE Product_idProduct = ? AND orgmail = ?
     ORDER BY created_at DESC
   `;
-  const [discounts] = await pool.query(query, [productId]);
+  const [discounts] = await pool.query(query, [productId, orgMail]);
   return discounts;
 }
 
 // Create a new discount
 async function createDiscount(discountData) {
+  const orgMail = getOrgMail();
   const query = `
     INSERT INTO Discounts (
       Product_idProduct,
@@ -996,8 +1053,9 @@ async function createDiscount(discountData) {
       Discount_Value,
       Start_Date,
       End_Date,
-      Status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      Status,
+      orgmail
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   const [result] = await pool.query(query, [
@@ -1008,6 +1066,7 @@ async function createDiscount(discountData) {
     discountData.startDate,
     discountData.endDate,
     discountData.status || "active",
+    orgMail,
   ]);
 
   return result;
@@ -1015,6 +1074,7 @@ async function createDiscount(discountData) {
 
 // Update an existing discount
 async function updateDiscount(discountId, discountData) {
+  const orgMail = getOrgMail();
   const query = `
     UPDATE Discounts
     SET
@@ -1025,7 +1085,7 @@ async function updateDiscount(discountId, discountData) {
       Start_Date = ?,
       End_Date = ?,
       Status = ?
-    WHERE idDiscounts = ?
+    WHERE idDiscounts = ? AND orgmail = ?
   `;
 
   const [result] = await pool.query(query, [
@@ -1037,28 +1097,31 @@ async function updateDiscount(discountId, discountData) {
     discountData.endDate,
     discountData.status,
     discountId,
+    orgMail,
   ]);
 }
 
 // Delete a discount
 async function deleteDiscount(discountId) {
+  const orgMail = getOrgMail();
   const query = `
     DELETE FROM Discounts
-    WHERE idDiscounts = ?
+    WHERE idDiscounts = ? AND orgmail = ?
   `;
-  const [result] = await pool.query(query, [discountId]);
+  const [result] = await pool.query(query, [discountId, orgMail]);
   return result;
 }
 
 // Get a single discount by id
 async function getDiscountById(discountId) {
+  const orgMail = getOrgMail();
   const query = `
     SELECT d.*, p.Description as ProductName
     FROM Discounts d
-    JOIN Product p ON d.Product_idProduct = p.idProduct
-    WHERE d.idDiscounts = ?
+    JOIN Product p ON d.Product_idProduct = p.idProduct AND p.orgmail = ?
+    WHERE d.idDiscounts = ? AND d.orgmail = ?
   `;
-  const [rows] = await pool.query(query, [discountId]);
+  const [rows] = await pool.query(query, [orgMail, discountId, orgMail]);
   return rows.length > 0 ? rows[0] : null;
 }
 

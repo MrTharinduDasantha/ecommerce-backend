@@ -46,10 +46,8 @@ const SeasonalOffers = () => {
             discountName: product.Discount_Name || "Seasonal Discounts",
             category: product.subcategories?.[0]?.Description || "",
             historyStatus: product.History_Status || "",
-
-            subCategoryId: product.subcategories?.[0]?.idSub_Category // Added for subcategory filtering
-
-            activeDiscount: product.discounts?.find(d => d.Status === "active") || null,
+            subCategoryId: product.subcategories?.[0]?.idSub_Category, // Added comma here
+            activeDiscount: product.discounts?.find((d) => d.Status === "active") || null,
             eventDiscounts: product.eventDiscounts || [],
             // Pass full product object for complete discount calculation
             product: {
@@ -57,9 +55,8 @@ const SeasonalOffers = () => {
               Selling_Price: product.Selling_Price,
               Market_Price: product.Market_Price,
               discounts: product.discounts || [],
-              eventDiscounts: product.eventDiscounts || []
-            }
-
+              eventDiscounts: product.eventDiscounts || [],
+            },
           }));
           setProducts(formattedProducts);
           setFilteredProducts(formattedProducts); // Initialize filtered products
@@ -72,10 +69,10 @@ const SeasonalOffers = () => {
                 Description: product.subcategories?.[0]?.Category_Description,
                 subcategories: product.subcategories?.map((sub) => ({
                   idSub_Category: sub.idSub_Category,
-                  Description: sub.Description
-                }))
+                  Description: sub.Description,
+                })),
               }))
-            )
+            ),
           ].filter((category) => category.idProduct_Category); // Remove undefined categories
           setCategories(uniqueCategories);
         }
@@ -120,7 +117,6 @@ const SeasonalOffers = () => {
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <div className="space-y-4">
-            
               <PriceFilter onFilterChange={handlePriceFilterChange} />
             </div>
           </div>
@@ -148,7 +144,6 @@ const SeasonalOffers = () => {
 
             {/* Products Grid */}
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <div
@@ -171,7 +166,10 @@ const SeasonalOffers = () => {
                           : null
                       }
                       historyStatus={product.historyStatus}
+                      activeDiscount={product.activeDiscount}
+                      eventDiscounts={product.eventDiscounts}
                       id={product.id}
+                      product={product.product}
                       className="h-full"
                     />
                   </div>
@@ -181,27 +179,6 @@ const SeasonalOffers = () => {
                   <p className="text-xl md:text-2xl font-bold text-gray-500">
                     No products found in this price range.
                   </p>
-
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="hover:scale-[1.02] hover:shadow-md transform transition-all duration-300"
-                  onClick={() => handleProductClick(product.id)}
-                >
-                  <ProductCard
-                    image={product.image}
-                    category={product.category}
-                    title={product.name}
-                    price={product.price}
-                    oldPrice={product.oldPrice}
-                    historyStatus={product.historyStatus}
-                    activeDiscount={product.activeDiscount}
-                    eventDiscounts={product.eventDiscounts}
-                    id={product.id}
-                    product={product.product}
-                    className="h-full"
-                  />
-
                 </div>
               )}
             </div>

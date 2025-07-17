@@ -48,10 +48,8 @@ const RushDelivery = () => {
             discountName: product.Discount_Name || "Rush Discounts",
             category: product.subcategories?.[0]?.Description || "",
             historyStatus: product.History_Status || "",
-            
-            subCategoryId: product.subcategories?.[0]?.idSub_Category // Added for subcategory filtering
-
-            activeDiscount: product.discounts?.find(d => d.Status === "active") || null,
+            subCategoryId: product.subcategories?.[0]?.idSub_Category, // Added comma here
+            activeDiscount: product.discounts?.find((d) => d.Status === "active") || null,
             eventDiscounts: product.eventDiscounts || [],
             // Pass full product object for complete discount calculation
             product: {
@@ -59,9 +57,8 @@ const RushDelivery = () => {
               Selling_Price: product.Selling_Price,
               Market_Price: product.Market_Price,
               discounts: product.discounts || [],
-              eventDiscounts: product.eventDiscounts || []
-            }
-
+              eventDiscounts: product.eventDiscounts || [],
+            },
           }));
           setProducts(formattedProducts);
           setFilteredProducts(formattedProducts); // Initialize filtered products
@@ -74,10 +71,10 @@ const RushDelivery = () => {
                 Description: product.subcategories?.[0]?.Category_Description,
                 subcategories: product.subcategories?.map((sub) => ({
                   idSub_Category: sub.idSub_Category,
-                  Description: sub.Description
-                }))
+                  Description: sub.Description,
+                })),
               }))
-            )
+            ),
           ].filter((category) => category.idProduct_Category); // Remove undefined categories
           setCategories(uniqueCategories);
         }
@@ -122,7 +119,7 @@ const RushDelivery = () => {
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-64 xl:w-72">
             <div className="space-y-4">
-            
+              <Sidebar1 categories={categories} onSubCategorySelect={handleSubCategorySelect} />
               <PriceFilter onFilterChange={handlePriceFilterChange} />
             </div>
           </div>
@@ -173,10 +170,8 @@ const RushDelivery = () => {
                           : null
                       }
                       historyStatus={product.historyStatus}
-
                       activeDiscount={product.activeDiscount}
                       eventDiscounts={product.eventDiscounts}
-
                       id={product.id}
                       product={product.product}
                       className="h-full"
