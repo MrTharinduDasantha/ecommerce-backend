@@ -2,6 +2,7 @@ const Product = require("../../models/product.model");
 const fs = require("fs");
 const path = require("path");
 const pool = require("../../config/database");
+const { getOrgMail } = require('../../utils/organization');
 
 // -------------------------------------------
 // Category and Subcategory Related Functions
@@ -10,16 +11,17 @@ const pool = require("../../config/database");
 // Fetch all categories with subcategories count
 async function getAllCategories(req, res) {
   try {
+    const orgMail = getOrgMail();
     // Fetch all categories along with their respective subcategories
-    const [categories] = await pool.query("SELECT * FROM Product_Category");
+    const [categories] = await pool.query("SELECT * FROM Product_Category WHERE orgmail = ?", [orgMail]);
 
     // Prepare an array to hold the categories with their subcategory counts
     const categoryList = await Promise.all(
       categories.map(async (cat) => {
         // Get subcategories for the current category
         const [subcategories] = await pool.query(
-          "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ?",
-          [cat.idProduct_Category]
+          "SELECT * FROM Sub_Category WHERE Product_Category_idProduct_Category = ? AND orgmail = ?",
+          [cat.idProduct_Category, orgMail]
         );
 
         return {
@@ -62,6 +64,7 @@ async function createCategory(req, res) {
       return res.status(400).json({ message: "Description is required" });
     }
 
+    const orgMail = getOrgMail();
     // Build the full URL for the uploaded image
     let imageUrl = null;
     if (req.file) {
@@ -73,12 +76,13 @@ async function createCategory(req, res) {
 
     // Log the admin action
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Created category",
         req.headers["user-agent"],
         JSON.stringify({ description }),
+        orgMail,
       ]
     );
 
@@ -102,9 +106,10 @@ async function updateCategory(req, res) {
     }
 
     // Get original category data for logging
+    const orgMail = getOrgMail();
     const [originalCategory] = await pool.query(
-      "SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ?",
-      [id]
+      "SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     if (!originalCategory.length) {
@@ -133,12 +138,13 @@ async function updateCategory(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated category",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -159,9 +165,10 @@ async function toggleCategoryStatus(req, res) {
     }
 
     // Get original category data for logging
+    const orgMail = getOrgMail();
     const [originalCategory] = await pool.query(
-      "SELECT Description, Status FROM Product_Category WHERE idProduct_Category = ?",
-      [id]
+      "SELECT Description, Status FROM Product_Category WHERE idProduct_Category = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     if (!originalCategory.length) {
@@ -183,12 +190,13 @@ async function toggleCategoryStatus(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Toggled category status",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -205,9 +213,10 @@ async function deleteCategory(req, res) {
     const { id } = req.params;
 
     // Get category data for logging before deletion
+    const orgMail = getOrgMail();
     const [category] = await pool.query(
-      "SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ?",
-      [id]
+      "SELECT Description, Image_Icon_Url FROM Product_Category WHERE idProduct_Category = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     if (!category.length) {
@@ -225,7 +234,7 @@ async function deleteCategory(req, res) {
 
     // Log the admin action
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Deleted category",
@@ -234,6 +243,7 @@ async function deleteCategory(req, res) {
           categoryId: id,
           description: category[0].Description,
         }),
+        orgMail,
       ]
     );
 
@@ -248,6 +258,7 @@ async function deleteCategory(req, res) {
 async function createSubCategory(req, res) {
   try {
     const { id } = req.params;
+    const orgMail = getOrgMail();
     const { description } = req.body;
     if (!description) {
       return res.status(400).json({ message: "Description is required" });
@@ -257,12 +268,13 @@ async function createSubCategory(req, res) {
 
     // Log the admin action
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Created subcategory",
         req.headers["user-agent"],
         JSON.stringify({ description, categoryId: id }),
+        orgMail,
       ]
     );
 
@@ -287,9 +299,10 @@ async function updateSubCategory(req, res) {
     }
 
     // Get original subcategory data for logging
+    const orgMail = getOrgMail();
     const [originalSubcategory] = await pool.query(
-      "SELECT Description FROM Sub_Category WHERE idSub_Category = ?",
-      [subId]
+      "SELECT Description FROM Sub_Category WHERE idSub_Category = ? AND orgmail = ?",
+      [subId, orgMail]
     );
 
     if (!originalSubcategory.length) {
@@ -309,12 +322,13 @@ async function updateSubCategory(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated subcategory",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -329,6 +343,7 @@ async function updateSubCategory(req, res) {
 async function deleteSubCategory(req, res) {
   try {
     const { subId } = req.params;
+    const orgMail = getOrgMail();
 
     // Check if subcategory is in use before deletion
     try {
@@ -344,12 +359,13 @@ async function deleteSubCategory(req, res) {
 
     // Log the admin action before deletion
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Deleted subcategory",
         req.headers["user-agent"],
         JSON.stringify({ subCategoryId: subId }),
+        orgMail,
       ]
     );
 
@@ -370,6 +386,7 @@ async function deleteSubCategory(req, res) {
 // Create a new brand
 async function createBrand(req, res) {
   try {
+    const orgMail = getOrgMail();
     const { brandName, shortDescription, userId } = req.body;
     if (!brandName) {
       return res.status(400).json({ message: "Brand name is required" });
@@ -391,7 +408,7 @@ async function createBrand(req, res) {
 
     // Log the admin action
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         userId,
         "Created brand",
@@ -400,6 +417,7 @@ async function createBrand(req, res) {
           brandName,
           description: shortDescription,
         }),
+        orgMail,
       ]
     );
 
@@ -424,9 +442,10 @@ async function updateBrand(req, res) {
     }
 
     // Get original brand data for logging
+    const orgMail = getOrgMail();
     const [originalBrand] = await pool.query(
-      "SELECT Brand_Name, Brand_Image_Url, ShortDescription FROM Product_Brand WHERE idProduct_Brand = ?",
-      [id]
+      "SELECT Brand_Name, Brand_Image_Url, ShortDescription FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     if (!originalBrand.length) {
@@ -463,12 +482,13 @@ async function updateBrand(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         userId,
         "Updated brand",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -483,11 +503,12 @@ async function updateBrand(req, res) {
 async function deleteBrand(req, res) {
   try {
     const { id } = req.params;
+    const orgMail = getOrgMail();
 
     // Get brand data for logging before deletion
     const [brand] = await pool.query(
-      "SELECT Brand_Name, Brand_Image_Url, ShortDescription FROM Product_Brand WHERE idProduct_Brand = ?",
-      [id]
+      "SELECT Brand_Name, Brand_Image_Url, ShortDescription FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     if (!brand.length) {
@@ -505,7 +526,7 @@ async function deleteBrand(req, res) {
 
     // Log the admin action
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Deleted brand",
@@ -514,6 +535,7 @@ async function deleteBrand(req, res) {
           brandId: id,
           brandName: brand[0].Brand_Name,
         }),
+        orgMail,
       ]
     );
 
@@ -542,6 +564,7 @@ async function getBrands(req, res) {
 // Create a new product
 async function createProduct(req, res) {
   try {
+    const orgMail = getOrgMail();
     const {
       Description,
       Product_Brand_idProduct_Brand = null,
@@ -635,8 +658,8 @@ async function createProduct(req, res) {
         await Product.createProductSubCategory(productId, subCatId);
         // Fetch subcategory description
         const [subCategory] = await pool.query(
-          "SELECT Description FROM Sub_Category WHERE idSub_Category = ?",
-          [subCatId]
+          "SELECT Description FROM Sub_Category WHERE idSub_Category = ? AND orgmail = ?",
+          [subCatId, orgMail]
         );
         if (subCategory.length) {
           subCategoryDescriptions.push({
@@ -648,8 +671,8 @@ async function createProduct(req, res) {
     }
 
     const [brand] = await pool.query(
-      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
-      [Product_Brand_idProduct_Brand]
+      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?",
+      [Product_Brand_idProduct_Brand, orgMail]
     );
 
     // Enhanced log data
@@ -670,12 +693,13 @@ async function createProduct(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Created product",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -692,6 +716,7 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
+    const orgMail = getOrgMail();
     const {
       Description,
       Product_Brand_idProduct_Brand,
@@ -712,18 +737,18 @@ async function updateProduct(req, res) {
     }
 
     const [originalVariations] = await pool.query(
-      "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
-      [id]
+      "SELECT * FROM Product_Variations WHERE Product_idProduct = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     const [originalFaqs] = await pool.query(
-      "SELECT * FROM FAQ WHERE Product_idProduct = ?",
-      [id]
+      "SELECT * FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     const [originalSubCategories] = await pool.query(
-      "SELECT sc.idSub_Category, sc.Description FROM Sub_Category sc JOIN Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category WHERE phsc.Product_idProduct = ?",
-      [id]
+      "SELECT sc.idSub_Category, sc.Description FROM Sub_Category sc JOIN Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category AND phsc.orgmail = ? WHERE phsc.Product_idProduct = ? AND sc.orgmail = ?",
+      [orgMail, id, orgMail]
     );
 
     let mainImageUrl = null;
@@ -803,8 +828,8 @@ async function updateProduct(req, res) {
             ? subCat.idSub_Category
             : subCat;
           const [subCategory] = await pool.query(
-            "SELECT Description FROM Sub_Category WHERE idSub_Category = ?",
-            [subCatId]
+            "SELECT Description FROM Sub_Category WHERE idSub_Category = ? AND orgmail = ?",
+            [subCatId, orgMail]
           );
           if (subCategory.length) {
             subCategoryDescriptions.push({
@@ -822,13 +847,13 @@ async function updateProduct(req, res) {
     }
 
     const [oldBrand] = await pool.query(
-      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
-      [existingProduct.Product_Brand_idProduct_Brand]
+      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?",
+      [existingProduct.Product_Brand_idProduct_Brand, orgMail]
     );
 
     const [newBrand] = await pool.query(
-      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ?",
-      [Product_Brand_idProduct_Brand]
+      "SELECT Brand_Name FROM Product_Brand WHERE idProduct_Brand = ? AND orgmail = ?",
+      [Product_Brand_idProduct_Brand, orgMail]
     );
 
     // Update call with deleted images
@@ -876,12 +901,13 @@ async function updateProduct(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated product",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -896,6 +922,7 @@ async function updateProduct(req, res) {
 async function toggleProductHistoryStatus(req, res) {
   try {
     const { id } = req.params;
+    const orgMail = getOrgMail();
     const { historyStatus } = req.body;
 
     if (!historyStatus) {
@@ -904,8 +931,8 @@ async function toggleProductHistoryStatus(req, res) {
 
     // Get original product data for logging
     const [originalProduct] = await pool.query(
-      "SELECT Description, History_Status FROM Product WHERE idProduct = ?",
-      [id]
+      "SELECT Description, History_Status FROM Product WHERE idProduct = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     if (!originalProduct.length) {
@@ -927,12 +954,13 @@ async function toggleProductHistoryStatus(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Toggled product history status",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -951,6 +979,7 @@ async function toggleProductHistoryStatus(req, res) {
 async function toggleProductStatus(req, res) {
   try {
     const { id } = req.params;
+    const orgMail = getOrgMail();
     const { status } = req.body;
 
     if (!status) {
@@ -959,8 +988,8 @@ async function toggleProductStatus(req, res) {
 
     // Get original product data for logging
     const [originalProduct] = await pool.query(
-      "SELECT Description, Status FROM Product WHERE idProduct = ?",
-      [id]
+      "SELECT Description, Status FROM Product WHERE idProduct = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     if (!originalProduct.length) {
@@ -982,12 +1011,13 @@ async function toggleProductStatus(req, res) {
     };
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Toggled product status",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -1166,6 +1196,7 @@ async function getDiscountedProducts(req, res) {
 async function deleteProduct(req, res) {
   try {
     const { id } = req.params;
+    const orgMail = getOrgMail();
     const product = await Product.getProductById(id);
 
     if (!product) {
@@ -1174,17 +1205,17 @@ async function deleteProduct(req, res) {
 
     // Log the deletion attempt first
     const [variations] = await pool.query(
-      "SELECT * FROM Product_Variations WHERE Product_idProduct = ?",
-      [id]
+      "SELECT * FROM Product_Variations WHERE Product_idProduct = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     const [faqs] = await pool.query(
-      "SELECT * FROM FAQ WHERE Product_idProduct = ?",
-      [id]
+      "SELECT * FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?",
+      [id, orgMail]
     );
 
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Deleted product",
@@ -1195,6 +1226,7 @@ async function deleteProduct(req, res) {
           variations: variations || [],
           faqs: faqs || [],
         }),
+          orgMail,
       ]
     );
 
@@ -1274,6 +1306,7 @@ async function getDiscountsByProductId(req, res) {
 // Create a new discount
 async function createDiscount(req, res) {
   try {
+    const orgMail = getOrgMail();
     const {
       productId,
       description,
@@ -1315,7 +1348,7 @@ async function createDiscount(req, res) {
 
     // Log the admin action
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Created discount",
@@ -1326,6 +1359,7 @@ async function createDiscount(req, res) {
           discountType,
           discountValue,
         }),
+        orgMail,
       ]
     );
 
@@ -1342,6 +1376,7 @@ async function createDiscount(req, res) {
 // Update an existing discount
 async function updateDiscount(req, res) {
   try {
+    const orgMail = getOrgMail();
     const { id } = req.params;
     const {
       productId,
@@ -1405,12 +1440,13 @@ async function updateDiscount(req, res) {
 
     // Log the admin action with both original and updated data
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Updated discount",
         req.headers["user-agent"],
         JSON.stringify(logData),
+        orgMail,
       ]
     );
 
@@ -1425,6 +1461,7 @@ async function updateDiscount(req, res) {
 async function deleteDiscount(req, res) {
   try {
     const { id } = req.params;
+    const orgMail = getOrgMail();
 
     // Check if discount exists
     const discount = await Product.getDiscountById(id);
@@ -1434,7 +1471,7 @@ async function deleteDiscount(req, res) {
 
     // Log the admin action before deletion
     await pool.query(
-      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
       [
         req.user.userId,
         "Deleted discount",
@@ -1444,6 +1481,7 @@ async function deleteDiscount(req, res) {
           productId: discount.Product_idProduct,
           description: discount.Description,
         }),
+        orgMail,
       ]
     );
 

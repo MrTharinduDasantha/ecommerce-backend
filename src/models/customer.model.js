@@ -1,29 +1,34 @@
 const pool = require('../config/database'); // Import MySQL connection pool
 const bcrypt = require('bcryptjs'); // Import bcrypt for password hashing
+const { getOrgMail } = require('../utils/organization');
 
 // Get all customers
 const getAllCustomers = async () => {
-  const [rows] = await pool.query('SELECT idCustomer, Full_Name, Email, Mobile_No, Address, City, Country, Status, created_at, updated_at FROM Customer');
+  const orgMail = getOrgMail();
+  const [rows] = await pool.query('SELECT idCustomer, Full_Name, Email, Mobile_No, Address, City, Country, Status, created_at, updated_at FROM Customer WHERE orgmail = ?', [orgMail]);
   return rows;
 };
 
 // Get customer by ID
 const getCustomerById = async (id) => {
-  const [rows] = await pool.query('SELECT idCustomer, Full_Name, Birthday, Email, Mobile_No, Address, City, Country, Status FROM Customer WHERE idCustomer = ?', [id]);
+  const orgMail = getOrgMail();
+  const [rows] = await pool.query('SELECT idCustomer, Full_Name, Birthday, Email, Mobile_No, Address, City, Country, Status FROM Customer WHERE idCustomer = ? AND orgmail = ?', [id, orgMail]);
   return rows[0];
 };
 
 // Add a new customer
 const addCustomer = async (first_name, full_name, address, city, country, mobile_no, status, email, password) => {
+  const orgMail = getOrgMail();
   const [result] = await pool.query(
-    'INSERT INTO Customer (First_Name, Full_Name, Address, City, Country, Mobile_No, Status, Email, Password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [first_name, full_name, address, city, country, mobile_no, status, email, password]
+    'INSERT INTO Customer (First_Name, Full_Name, Address, City, Country, Mobile_No, Status, Email, Password, orgmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [first_name, full_name, address, city, country, mobile_no, status, email, password, orgMail]
   );
   return result.insertId; // Returning the ID after inserting
 };
 
 // Update customer
 const updateCustomer = async (id, customerData) => {
+  const orgMail = getOrgMail();
   const updates = [];
   const values = [];
 
@@ -82,19 +87,21 @@ const updateCustomer = async (id, customerData) => {
       return; // If there are no fields to update
   }
 
-  const query = `UPDATE Customer SET ${updates.join(', ')} WHERE idCustomer = ?`;
-  values.push(id);
+  const query = `UPDATE Customer SET ${updates.join(', ')} WHERE idCustomer = ? AND orgmail = ?`;
+  values.push(id, orgMail);
   await pool.query(query, values);
 };
 
 // Delete customer
 const deleteCustomer = async (id) => {
-  await pool.query('DELETE FROM Customer WHERE idCustomer = ?', [id]);
+  const orgMail = getOrgMail();
+  await pool.query('DELETE FROM Customer WHERE idCustomer = ? AND orgmail = ?', [id, orgMail]);
 };
 
 // Get customer by email
 const getCustomerByEmail = async (email) => {
-  const [rows] = await pool.query('SELECT * FROM Customer WHERE Email = ?', [email]);
+  const orgMail = getOrgMail();
+  const [rows] = await pool.query('SELECT * FROM Customer WHERE Email = ? AND orgmail = ?', [email, orgMail]);
   return rows[0]; // Return the customer record
 };
 

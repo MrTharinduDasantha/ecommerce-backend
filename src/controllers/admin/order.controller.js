@@ -1,5 +1,6 @@
 const Order = require("../../models/order.model");
 const pool = require("../../config/database");
+const { getOrgMail } = require('../../utils/organization');
 
 class OrderController {
   // Get all orders with pagination
@@ -85,9 +86,10 @@ class OrderController {
       }
 
       // Get the current order details
+      const orgMail = getOrgMail();
       const [currentOrder] = await pool.query(
-        "SELECT Status, Total_Amount, Date_Time FROM `Order` WHERE idOrder = ?",
-        [orderId]
+        "SELECT Status, Total_Amount, Date_Time FROM `Order` WHERE idOrder = ? AND orgmail = ?",
+        [orderId, orgMail]
       );
 
       if (!currentOrder.length) {
@@ -96,8 +98,8 @@ class OrderController {
 
       // Get admin email
       const [adminData] = await pool.query(
-        "SELECT Email FROM User WHERE idUser = ?",
-        [req.user.userId]
+        "SELECT Email FROM User WHERE idUser = ? AND orgmail = ?",
+        [req.user.userId, orgMail]
       );
 
       const adminEmail = adminData[0]?.Email || "admin";
@@ -126,19 +128,20 @@ class OrderController {
       };
 
       await pool.query(
-        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
         [
           req.user.userId,
           "Updated order status",
           req.headers["user-agent"],
           JSON.stringify(logData),
+          orgMail
         ]
       );
 
       // Add record to Order_History table
       const statusType = status === "Cancelled" ? "cancellation" : "order_status";
       await pool.query(
-        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes, changed_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes, changed_by, orgmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
           orderId,
           currentOrder[0].Status,
@@ -147,6 +150,7 @@ class OrderController {
           reason || null,
           `Updated by ${adminEmail}`,
           req.user.userId,
+          orgMail
         ]
       );
 
@@ -178,9 +182,10 @@ class OrderController {
       }
 
       // Get current payment status and admin email
+      const orgMail = getOrgMail();
       const [currentOrder] = await pool.query(
-        "SELECT Payment_Stats FROM `Order` WHERE idOrder = ?",
-        [orderId]
+        "SELECT Payment_Stats FROM `Order` WHERE idOrder = ? AND orgmail = ?",
+        [orderId, orgMail]
       );
 
       if (!currentOrder.length) {
@@ -189,8 +194,8 @@ class OrderController {
 
       // Get admin email
       const [adminData] = await pool.query(
-        "SELECT Email FROM User WHERE idUser = ?",
-        [req.user.userId]
+        "SELECT Email FROM User WHERE idUser = ? AND orgmail = ?",
+        [req.user.userId, orgMail]
       );
 
       const adminEmail = adminData[0]?.Email || "admin";
@@ -211,18 +216,19 @@ class OrderController {
       };
 
       await pool.query(
-        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
         [
           req.user.userId,
           "Updated payment status",
           req.headers["user-agent"],
           JSON.stringify(logData),
+          orgMail
         ]
       );
 
       // Add record to Order_History table
       await pool.query(
-        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes, changed_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, reason, notes, changed_by, orgmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
           orderId,
           currentOrder[0].Payment_Stats,
@@ -231,6 +237,7 @@ class OrderController {
           reason || null,
           `Updated by ${adminEmail}`,
           req.user.userId,
+          orgMail
         ]
       );
 
@@ -257,17 +264,18 @@ class OrderController {
       }
 
       // Get admin email
+      const orgMail = getOrgMail();
       const [adminData] = await pool.query(
-        "SELECT Email FROM User WHERE idUser = ?",
-        [req.user.userId]
+        "SELECT Email FROM User WHERE idUser = ? AND orgmail = ?",
+        [req.user.userId, orgMail]
       );
 
       const adminEmail = adminData[0]?.Email || "admin";
 
       // Get the current order details
       const [currentOrder] = await pool.query(
-        "SELECT Delivery_Date FROM `Order` WHERE idOrder = ?",
-        [orderId]
+        "SELECT Delivery_Date FROM `Order` WHERE idOrder = ? AND orgmail = ?",
+        [orderId, orgMail]
       );
 
       if (!currentOrder.length) {
@@ -291,18 +299,19 @@ class OrderController {
       };
 
       await pool.query(
-        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info) VALUES (?, ?, ?, ?)",
+        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
         [
           req.user.userId,
           "Updated delivery date",
           req.headers["user-agent"],
           JSON.stringify(logData),
+          orgMail
         ]
       );
 
       // Add record to Order_History table
       await pool.query(
-        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, notes, changed_by) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO Order_History (order_id, status_from, status_to, status_type, notes, changed_by, orgmail) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [
           orderId,
           currentOrder[0].Delivery_Date || "Not set",
@@ -310,6 +319,7 @@ class OrderController {
           "delivery_date",
           `Delivery date updated by ${adminEmail}`,
           req.user.userId,
+          orgMail
         ]
       );
 
@@ -390,13 +400,14 @@ async getOrderHistory(req, res) {
     }
 
     // Get order history from Order_History table
+    const orgMail = getOrgMail();
     const [history] = await pool.query(
       `SELECT oh.*, u.Full_Name as changed_by_name
        FROM Order_History oh
        LEFT JOIN User u ON oh.changed_by = u.idUser
-       WHERE oh.order_id = ?
+       WHERE oh.order_id = ? AND oh.orgmail = ?
        ORDER BY oh.created_at DESC`,
-      [orderId]
+      [orderId, orgMail]
     );
 
     res.json(history);

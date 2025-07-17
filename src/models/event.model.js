@@ -1,4 +1,5 @@
 const pool = require("../config/database");
+const { getOrgMail } = require('../utils/organization');
 
 // ------------------------
 // Event Related Functions
@@ -6,22 +7,25 @@ const pool = require("../config/database");
 
 // Get all events with their products and discounts
 async function getAllEvents() {
+  const orgMail = getOrgMail();
   const query = `
         SELECT e.*,
-            (SELECT COUNT(*) FROM Event_has_Product ehp WHERE ehp.Event_idEvent = e.idEvent) as productCount
+            (SELECT COUNT(*) FROM Event_has_Product ehp WHERE ehp.Event_idEvent = e.idEvent AND ehp.orgmail = ?) as productCount
         FROM Event e
+        WHERE e.orgmail = ?
         ORDER BY e.created_at DESC
     `;
-  const [events] = await pool.query(query);
+  const [events] = await pool.query(query, [orgMail, orgMail]);
   return events;
 }
 
 // Get a single event by ID with its products and discounts
 async function getEventById(eventId) {
+  const orgMail = getOrgMail();
   const eventQuery = `
-        SELECT * FROM Event WHERE idEvent = ?
+        SELECT * FROM Event WHERE idEvent = ? AND orgmail = ?
     `;
-  const [eventRows] = await pool.query(eventQuery, [eventId]);
+  const [eventRows] = await pool.query(eventQuery, [eventId, orgMail]);
 
   if (eventRows.length === 0) {
     return null;
@@ -34,15 +38,15 @@ async function getEventById(eventId) {
         SELECT p.*, ehp.Event_idEvent
         FROM Product p
         INNER JOIN Event_has_Product ehp ON p.idProduct = ehp.Product_idProduct
-        WHERE ehp.Event_idEvent = ?
+        WHERE ehp.Event_idEvent = ? AND ehp.orgmail = ?
   `;
-  const [products] = await pool.query(productsQuery, [eventId]);
+  const [products] = await pool.query(productsQuery, [eventId, orgMail]);
 
   // Get discounts associated with this event
   const discountsQuery = `
-        SELECT * FROM Event_Discounts WHERE Event_idEvent = ?
+        SELECT * FROM Event_Discounts WHERE Event_idEvent = ? AND orgmail = ?
   `;
-  const [discounts] = await pool.query(discountsQuery, [eventId]);
+  const [discounts] = await pool.query(discountsQuery, [eventId, orgMail]);
 
   // Parse productIds from JSON strings
   const parsedDiscounts = discounts.map((discount) => ({
@@ -57,19 +61,20 @@ async function getEventById(eventId) {
 
 // Get products for a specific event with discount information
 async function getEventProducts(eventId) {
+  const orgMail = getOrgMail();
   const query = ` 
         SELECT p.idProduct, p.Description, p.Main_Image_Url, p.Long_Description, p.Selling_Price, p.Market_Price, p.History_Status
         FROM Product p
         INNER JOIN Event_has_Product ehp ON p.idProduct = ehp.Product_idProduct
-        WHERE ehp.Event_idEvent = ?
+        WHERE ehp.Event_idEvent = ? AND ehp.orgmail = ?
     `;
-  const [products] = await pool.query(query, [eventId]);
+  const [products] = await pool.query(query, [eventId, orgMail]);
 
   // Get discounts for this event
   const discountsQuery = `
-        SELECT * FROM Event_Discounts WHERE Event_idEvent = ?
+        SELECT * FROM Event_Discounts WHERE Event_idEvent = ? AND orgmail = ?
   `;
-  const [discounts] = await pool.query(discountsQuery, [eventId]);
+  const [discounts] = await pool.query(discountsQuery, [eventId, orgMail]);
 
   // Parse productIds from JSON strings
   const parsedDiscounts = discounts.map((discount) => ({
@@ -82,6 +87,7 @@ async function getEventProducts(eventId) {
 
 // Create a new event with optional discounts
 async function createEvent(eventData) {
+  const orgMail = getOrgMail();
   const connection = await pool.getConnection();
 
   try {
@@ -93,8 +99,9 @@ async function createEvent(eventData) {
                 Event_Name,
                 Event_Description,
                 Event_Image_Url,
-                Status
-            ) VALUES (?, ?, ?, ?)
+                Status,
+                orgmail
+            ) VALUES (?, ?, ?, ?, ?)
         `;
 
     const [eventResult] = await connection.query(eventQuery, [
@@ -102,6 +109,7 @@ async function createEvent(eventData) {
       eventData.eventDescription,
       eventData.eventImageUrl,
       eventData.status || "active",
+      orgMail
     ]);
 
     const eventId = eventResult.insertId;
@@ -109,12 +117,12 @@ async function createEvent(eventData) {
     // Insert event products if any
     if (eventData.productIds && eventData.productIds.length > 0) {
       const productQuery = `
-            INSERT INTO Event_has_Product (Event_idEvent, Product_idProduct)
-            VALUES (?, ?)
+            INSERT INTO Event_has_Product (Event_idEvent, Product_idProduct, orgmail)
+            VALUES (?, ?, ?)
         `;
 
       for (const productId of eventData.productIds) {
-        await connection.query(productQuery, [eventId, productId]);
+        await connection.query(productQuery, [eventId, productId, orgMail]);
       }
     }
 
@@ -129,8 +137,9 @@ async function createEvent(eventData) {
                 Discount_Value,
                 Start_Date,
                 End_Date,
-                Status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                Status,
+                orgmail
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
       for (const discount of eventData.discounts) {
@@ -143,6 +152,7 @@ async function createEvent(eventData) {
           discount.Start_Date,
           discount.End_Date,
           discount.Status,
+          orgMail
         ]);
       }
     }
@@ -159,6 +169,7 @@ async function createEvent(eventData) {
 
 // Update an existing event with optional discounts
 async function updateEvent(eventId, eventData) {
+  const orgMail = getOrgMail();
   const connection = await pool.getConnection();
 
   try {
@@ -172,7 +183,7 @@ async function updateEvent(eventId, eventData) {
                 Event_Description = ?,
                 Event_Image_Url = ?,
                 Status = ?
-            WHERE idEvent = ?
+            WHERE idEvent = ? AND orgmail = ?
         `;
 
     await connection.query(eventQuery, [
@@ -181,30 +192,31 @@ async function updateEvent(eventId, eventData) {
       eventData.eventImageUrl,
       eventData.status,
       eventId,
+      orgMail
     ]);
 
     // Delete existing event products
     await connection.query(
-      `DELETE FROM Event_has_Product WHERE Event_idEvent = ?`,
-      [eventId]
+      `DELETE FROM Event_has_Product WHERE Event_idEvent = ? AND orgmail = ?`,
+      [eventId, orgMail]
     );
 
     // Insert new event products if any
     if (eventData.productIds && eventData.productIds.length > 0) {
       const productQuery = `
-            INSERT INTO Event_has_Product (Event_idEvent, Product_idProduct)
-            VALUES (?, ?)
+            INSERT INTO Event_has_Product (Event_idEvent, Product_idProduct, orgmail)
+            VALUES (?, ?, ?)
         `;
 
       for (const productId of eventData.productIds) {
-        await connection.query(productQuery, [eventId, productId]);
+        await connection.query(productQuery, [eventId, productId, orgMail]);
       }
     }
 
     // Delete existing event discounts
     await connection.query(
-      `DELETE FROM Event_Discounts WHERE Event_idEvent = ?`,
-      [eventId]
+      `DELETE FROM Event_Discounts WHERE Event_idEvent = ? AND orgmail = ?`,
+      [eventId, orgMail]
     );
 
     // Insert new event discounts if any
@@ -218,8 +230,9 @@ async function updateEvent(eventId, eventData) {
                 Discount_Value,
                 Start_Date,
                 End_Date,
-                Status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                Status,
+                orgmail
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
       for (const discount of eventData.discounts) {
@@ -232,6 +245,7 @@ async function updateEvent(eventId, eventData) {
           discount.Start_Date,
           discount.End_Date,
           discount.Status,
+          orgMail
         ]);
       }
     }
@@ -248,6 +262,7 @@ async function updateEvent(eventId, eventData) {
 
 // Delete an event and its associated discounts
 async function deleteEvent(eventId) {
+  const orgMail = getOrgMail();
   const connection = await pool.getConnection();
 
   try {
@@ -255,21 +270,21 @@ async function deleteEvent(eventId) {
 
     // Delete event products first
     await connection.query(
-      `DELETE FROM Event_has_Product WHERE Event_idEvent = ?`,
-      [eventId]
+      `DELETE FROM Event_has_Product WHERE Event_idEvent = ? AND orgmail = ?`,
+      [eventId, orgMail]
     );
 
     // Delete event discounts
     await connection.query(
-      `DELETE FROM Event_Discounts WHERE Event_idEvent = ?`,
-      [eventId]
+      `DELETE FROM Event_Discounts WHERE Event_idEvent = ? AND orgmail = ?`,
+      [eventId, orgMail]
     );
 
     // Delete event
     const query = `
-        DELETE FROM Event WHERE idEvent = ?
+        DELETE FROM Event WHERE idEvent = ? AND orgmail = ?
       `;
-    const [result] = await connection.query(query, [eventId]);
+    const [result] = await connection.query(query, [eventId, orgMail]);
 
     await connection.commit();
     return result;

@@ -1,24 +1,29 @@
 const pool = require("../config/database");
+const { getOrgMail } = require('../utils/organization');
 
 // -----------------------------------------
 // Header Footers Setting Related Functions
 // -----------------------------------------
 
-// Fetch header footer setting
+// Get header footer setting
 async function getHeaderFooterSetting() {
+  const orgMail = getOrgMail();
   const [rows] = await pool.query(
-    "SELECT * FROM Header_Footer_Setting LIMIT 1"
+    "SELECT * FROM Header_Footer_Setting WHERE orgmail = ? LIMIT 1",
+    [orgMail]
   );
-  return rows[0] || null;
+  return rows[0];
 }
 
 // Update header footer setting
 async function updateHeaderFooterSetting(HeaderFooterSettingData) {
-  const currentHeaderFooterSetting = await getHeaderFooterSetting();
-  if (currentHeaderFooterSetting) {
+  const orgMail = getOrgMail();
+  const existingSetting = await getHeaderFooterSetting();
+  
+  if (existingSetting) {
     // Update existing header footer setting
     await pool.query(
-      "UPDATE Header_Footer_Setting SET Navbar_Logo_Url = ?, Footer_Copyright = ?, Nav_Icons = ?, Country_Blocks = ?, Footer_Links = ?, Social_Icons = ?, updated_at = CURRENT_TIMESTAMP WHERE idHeader_Footer_Setting = ?",
+      "UPDATE Header_Footer_Setting SET Navbar_Logo_Url = ?, Footer_Copyright = ?, Nav_Icons = ?, Country_Blocks = ?, Footer_Links = ?, Social_Icons = ?, updated_at = CURRENT_TIMESTAMP WHERE idHeader_Footer_Setting = ? AND orgmail = ?",
       [
         HeaderFooterSettingData.Navbar_Logo_Url,
         HeaderFooterSettingData.Footer_Copyright,
@@ -26,16 +31,18 @@ async function updateHeaderFooterSetting(HeaderFooterSettingData) {
         HeaderFooterSettingData.Country_Blocks,
         HeaderFooterSettingData.Footer_Links,
         HeaderFooterSettingData.Social_Icons,
-        currentHeaderFooterSetting.idHeader_Footer_Setting,
+        existingSetting.idHeader_Footer_Setting,
+        orgMail
       ]
     );
+
     // Return updated header footer setting
     const updatedHeaderFooterSetting = await getHeaderFooterSetting();
     return updatedHeaderFooterSetting;
   } else {
     // Create new header footer setting
     const result = await pool.query(
-      "INSERT INTO Header_Footer_Setting (Navbar_Logo_Url, Footer_Copyright, Nav_Icons, Country_Blocks, Footer_Links, Social_Icons) VALUES (?,?,?,?,?,?)",
+      "INSERT INTO Header_Footer_Setting (Navbar_Logo_Url, Footer_Copyright, Nav_Icons, Country_Blocks, Footer_Links, Social_Icons, orgmail) VALUES (?,?,?,?,?,?,?)",
       [
         HeaderFooterSettingData.Navbar_Logo_Url,
         HeaderFooterSettingData.Footer_Copyright,
@@ -43,12 +50,14 @@ async function updateHeaderFooterSetting(HeaderFooterSettingData) {
         HeaderFooterSettingData.Country_Blocks,
         HeaderFooterSettingData.Footer_Links,
         HeaderFooterSettingData.Social_Icons,
+        orgMail
       ]
     );
+
     // Return newly created header footer setting
     const [rows] = await pool.query(
-      "SELECT * FROM Header_Footer_Setting WHERE idHeader_Footer_Setting = ?",
-      result[0].insertId
+      "SELECT * FROM Header_Footer_Setting WHERE idHeader_Footer_Setting = ? AND orgmail = ?",
+      [result[0].insertId, orgMail]
     );
     return rows[0];
   }
@@ -58,20 +67,22 @@ async function updateHeaderFooterSetting(HeaderFooterSettingData) {
 // About Us Setting Related Functions
 // -----------------------------------
 
-// Fetch about us setting
+// Get about us setting
 async function getAboutUsSetting() {
-  const [rows] = await pool.query("SELECT * FROM About_Us_Setting LIMIT 1");
-  return rows[0] || null;
+  const orgMail = getOrgMail();
+  const [rows] = await pool.query("SELECT * FROM About_Us_Setting WHERE orgmail = ? LIMIT 1", [orgMail]);
+  return rows[0];
 }
 
 // Update about us setting
 async function updateAboutUsSetting(AboutUsSettingData) {
-  const currentAboutUsSetting = await getAboutUsSetting();
-
-  if (currentAboutUsSetting) {
+  const orgMail = getOrgMail();
+  const existingSetting = await getAboutUsSetting();
+  
+  if (existingSetting) {
     // Update existing about us setting
     await pool.query(
-      "UPDATE About_Us_Setting SET Statistics = ?, Vision_Image_Url = ?, Vision_Title = ?, Vision_Description = ?, Mission_Image_Url = ?, Mission_Title = ?, Mission_Description = ?, Values_Image_Url = ?, Values_Title = ?, Values_Description = ?, Features = ?, Why_Choose_Us_Image_Url = ?, Shopping_Experience_Title = ?, Shopping_Experience_Description = ?, Shopping_Experience_Button_Text = ?, updated_at = CURRENT_TIMESTAMP WHERE idAbout_Us_Setting = ?",
+      "UPDATE About_Us_Setting SET Statistics = ?, Vision_Image_Url = ?, Vision_Title = ?, Vision_Description = ?, Mission_Image_Url = ?, Mission_Title = ?, Mission_Description = ?, Values_Image_Url = ?, Values_Title = ?, Values_Description = ?, Team_Image_Url = ?, Team_Title = ?, Team_Description = ?, Customer_Service_Image_Url = ?, Customer_Service_Title = ?, Customer_Service_Description = ?, Shopping_Experience_Image_Url = ?, Shopping_Experience_Title = ?, Shopping_Experience_Description = ?, Shopping_Experience_Button_Text = ?, updated_at = CURRENT_TIMESTAMP WHERE idAbout_Us_Setting = ? AND orgmail = ?",
       [
         AboutUsSettingData.Statistics,
         AboutUsSettingData.Vision_Image_Url,
@@ -83,12 +94,18 @@ async function updateAboutUsSetting(AboutUsSettingData) {
         AboutUsSettingData.Values_Image_Url,
         AboutUsSettingData.Values_Title,
         AboutUsSettingData.Values_Description,
-        AboutUsSettingData.Features,
-        AboutUsSettingData.Why_Choose_Us_Image_Url,
+        AboutUsSettingData.Team_Image_Url,
+        AboutUsSettingData.Team_Title,
+        AboutUsSettingData.Team_Description,
+        AboutUsSettingData.Customer_Service_Image_Url,
+        AboutUsSettingData.Customer_Service_Title,
+        AboutUsSettingData.Customer_Service_Description,
+        AboutUsSettingData.Shopping_Experience_Image_Url,
         AboutUsSettingData.Shopping_Experience_Title,
         AboutUsSettingData.Shopping_Experience_Description,
         AboutUsSettingData.Shopping_Experience_Button_Text,
-        currentAboutUsSetting.idAbout_Us_Setting,
+        existingSetting.idAbout_Us_Setting,
+        orgMail
       ]
     );
 
@@ -98,7 +115,7 @@ async function updateAboutUsSetting(AboutUsSettingData) {
   } else {
     // Create new about us setting
     const result = await pool.query(
-      "INSERT INTO About_Us_Setting (Statistics, Vision_Image_Url, Vision_Title, Vision_Description, Mission_Image_Url, Mission_Title, Mission_Description, Values_Image_Url, Values_Title, Values_Description, Features, Why_Choose_Us_Image_Url, Shopping_Experience_Title, Shopping_Experience_Description, Shopping_Experience_Button_Text) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO About_Us_Setting (Statistics, Vision_Image_Url, Vision_Title, Vision_Description, Mission_Image_Url, Mission_Title, Mission_Description, Values_Image_Url, Values_Title, Values_Description, Team_Image_Url, Team_Title, Team_Description, Customer_Service_Image_Url, Customer_Service_Title, Customer_Service_Description, Shopping_Experience_Image_Url, Shopping_Experience_Title, Shopping_Experience_Description, Shopping_Experience_Button_Text, orgmail) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       [
         AboutUsSettingData.Statistics,
         AboutUsSettingData.Vision_Image_Url,
@@ -110,20 +127,25 @@ async function updateAboutUsSetting(AboutUsSettingData) {
         AboutUsSettingData.Values_Image_Url,
         AboutUsSettingData.Values_Title,
         AboutUsSettingData.Values_Description,
-        AboutUsSettingData.Features,
-        AboutUsSettingData.Why_Choose_Us_Image_Url,
+        AboutUsSettingData.Team_Image_Url,
+        AboutUsSettingData.Team_Title,
+        AboutUsSettingData.Team_Description,
+        AboutUsSettingData.Customer_Service_Image_Url,
+        AboutUsSettingData.Customer_Service_Title,
+        AboutUsSettingData.Customer_Service_Description,
+        AboutUsSettingData.Shopping_Experience_Image_Url,
         AboutUsSettingData.Shopping_Experience_Title,
         AboutUsSettingData.Shopping_Experience_Description,
         AboutUsSettingData.Shopping_Experience_Button_Text,
+        orgMail
       ]
     );
 
     // Return newly created about us setting
     const [rows] = await pool.query(
-      "SELECT * FROM About_Us_Setting WHERE idAbout_Us_Setting = ?",
-      result[0].insertId
+      "SELECT * FROM About_Us_Setting WHERE idAbout_Us_Setting = ? AND orgmail = ?",
+      [result[0].insertId, orgMail]
     );
-
     return rows[0];
   }
 }
