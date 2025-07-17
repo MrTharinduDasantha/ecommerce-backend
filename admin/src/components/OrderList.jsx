@@ -5,7 +5,7 @@ import {
   updateOrderStatus,
   updatePaymentStatus,
 } from "../api/orders";
-import { FaEye, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import Pagination from "./common/Pagination";
@@ -23,7 +23,6 @@ const OrderList = () => {
   const [orderStatusChangeData, setOrderStatusChangeData] = useState(null);
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(false);
   const [paymentStatusChangeData, setPaymentStatusChangeData] = useState(null);
-  const [orderItemsMap, setOrderItemsMap] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,26 +48,6 @@ const OrderList = () => {
 
       setOrders(data.orders);
       setTotalPages(data.pagination.totalPages);
-      
-      // Fetch order items for discount calculations
-      if (data.orders.length > 0) {
-        const itemsMap = {};
-        await Promise.all(
-          data.orders.map(async (order) => {
-            try {
-              const response = await fetch(`/api/admin/orders/${order.idOrder}`);
-              const orderDetails = await response.json();
-              if (orderDetails && orderDetails.items) {
-                itemsMap[order.idOrder] = orderDetails.items;
-              }
-            } catch (err) {
-              console.error(`Failed to fetch items for order ${order.idOrder}:`, err);
-            }
-          })
-        );
-        setOrderItemsMap(itemsMap);
-      }
-      
       setLoading(false);
     } catch (err) {
       console.error("Error in OrderList.fetchOrders:", err);
@@ -201,10 +180,11 @@ const OrderList = () => {
                     <th className="font-semibold p-3 w-[10%]">Tracking No</th>
                     <th className="font-semibold p-3 w-[10%]">Order Date</th>
                     <th className="font-semibold p-3 w-[15%]">Customer Name</th>
-                    <th className="font-semibold p-3 w-[12%]">Original Amount</th>
-                    <th className="font-semibold p-3 w-[8%]">Discounts</th>
-                    <th className="font-semibold p-3 w-[10%]">Delivery</th>
-                    <th className="font-semibold p-3 w-[10%]">Final Total</th>
+                    <th className="font-semibold p-3 w-[10%]">Order Amount</th>
+                    <th className="font-semibold p-3 w-[10%]">
+                      Delivery Amount
+                    </th>
+                    <th className="font-semibold p-3 w-[10%]">Total Amount</th>
                     <th className="font-semibold p-3 w-[10%]">Delivery Date</th>
                     <th className="font-semibold p-3 w-[10%]">Order Status</th>
                     <th className="font-semibold p-3 w-[10%]">
@@ -213,350 +193,274 @@ const OrderList = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[#1D372E]">
-                  {filteredOrders.map((order) => {
-                    // Calculate discount information using order items
-                    const orderItems = orderItemsMap[order.idOrder] || [];
-                    let originalAmount = 0;
-                    let totalDiscountAmount = 0;
-                    
-                    // Calculate original amount and total discounts from order items
-                    orderItems.forEach(item => {
-                      let itemRate = parseFloat(item.Rate || 0);
-                      const itemQty = parseInt(item.Qty || 1);
-                      const itemDiscountAmount = parseFloat(item.Discount_Amount || 0);
-                      const itemTotalAmount = parseFloat(item.Total_Amount || item.Total || 0);
-                      
-                      // If Rate is null or 0, calculate it from Total_Amount and Discount_Amount
-                      if (!itemRate && itemTotalAmount > 0) {
-                        itemRate = (itemTotalAmount + (itemDiscountAmount * itemQty)) / itemQty;
-                      }
-                      
-                      originalAmount += itemRate * itemQty;
-                      totalDiscountAmount += itemDiscountAmount * itemQty;
-                    });
-                    
-                    // Fallback to order total if no items available
-                    if (orderItems.length === 0) {
-                      originalAmount = parseFloat(order.Total_Amount || 0);
-                      totalDiscountAmount = 0;
-                    }
-                    
-                    const finalAmount = parseFloat(order.Total_Amount || 0);
-                    const discountPercentage = originalAmount > 0 ? (totalDiscountAmount / originalAmount) * 100 : 0;
-                    const hasDiscount = totalDiscountAmount > 0;
-
-                    return (
-                      <tr
-                        key={order.idOrder}
-                        className="border-b border-[#1D372E] cursor-pointer hover:bg-gray-50"
-                        onClick={() => handleViewOrder(order.idOrder)}
-                      >
-                        <td className="p-3">#{order.idOrder}</td>
-                        <td className="p-3">
-                          {new Date(order.Date_Time).toLocaleDateString()}
-                        </td>
-                        <td className="p-3">{order.Full_Name}</td>
-                        <td className="p-3">
-                          <span className={hasDiscount ? "line-through text-gray-500 text-sm" : ""}>
-                            Rs. {originalAmount.toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          {hasDiscount ? (
-                            <div className="text-sm">
-                              <div className="text-red-600 font-medium">
-                                {discountPercentage.toFixed(1)}%
-                              </div>
-                              <div className="text-red-600 text-xs">
-                                -Rs. {totalDiscountAmount.toFixed(2)}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400 text-xs">No discount</span>
-                          )}
-                        </td>
-                        <td className="p-3">Rs. {parseFloat(order.Delivery_Charges || 0).toFixed(2)}</td>
-                        <td className="p-3">
-                          <span className={hasDiscount ? "text-green-600 font-medium" : ""}>
-                            Rs. {parseFloat(order.Net_Amount || 0).toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          {order.Delivery_Date
-                            ? new Date(order.Delivery_Date).toLocaleDateString()
-                            : "Not set"}
-                        </td>
-                        <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                          {updatingStatus === order.idOrder ? (
-                            <div className="flex items-center justify-center">
-                              <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
-                              <span className="text-xs">Updating...</span>
-                            </div>
-                          ) : (
-                            <select
-                              value={order.Status}
-                              onChange={(e) =>
-                                handleStatusChange(order.idOrder, e.target.value)
-                              }
-                              className={`px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(
-                                order.Status
-                              )}`}
+                  {filteredOrders.map((order) => (
+                    <tr
+                      key={order.idOrder}
+                      className="border-b border-[#1D372E] cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleViewOrder(order.idOrder)}
+                    >
+                      <td className="p-3">#{order.idOrder}</td>
+                      <td className="p-3">
+                        {new Date(order.Date_Time).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">{order.Full_Name}</td>
+                      <td className="p-3">
+                        LKR{" "}
+                        {parseFloat(order.Total_Amount).toLocaleString(
+                          "en-US",
+                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                        )}
+                      </td>
+                      <td className="p-3">LKR 500.00</td>
+                      <td className="p-3">
+                        LKR{" "}
+                        {(parseFloat(order.Total_Amount) + 500).toLocaleString(
+                          "en-US",
+                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                        )}
+                      </td>
+                      <td className="p-3">
+                        {order.Delivery_Date
+                          ? new Date(order.Delivery_Date).toLocaleDateString()
+                          : "Not set"}
+                      </td>
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        {updatingStatus === order.idOrder ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
+                            <span className="text-xs">Updating...</span>
+                          </div>
+                        ) : (
+                          <select
+                            value={order.Status}
+                            onChange={(e) =>
+                              handleStatusChange(order.idOrder, e.target.value)
+                            }
+                            className={`px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(
+                              order.Status
+                            )}`}
+                          >
+                            <option
+                              value="Order Confirmed"
+                              className="bg-white text-yellow-800"
                             >
-                              <option
-                                value="Order Confirmed"
-                                className="bg-white text-yellow-800"
-                              >
-                                Order Confirmed
-                              </option>
-                              <option
-                                value="Order Packed"
-                                className="bg-white text-blue-800"
-                              >
-                                Order Packed
-                              </option>
-                              <option
-                                value="Awaiting Delivery"
-                                className="bg-white text-indigo-800"
-                              >
-                                Awaiting Delivery
-                              </option>
-                              <option
-                                value="Out for Delivery"
-                                className="bg-white text-purple-800"
-                              >
-                                Out for Delivery
-                              </option>
-                              <option
-                                value="Delivered"
-                                className="bg-white text-green-800"
-                              >
-                                Delivered
-                              </option>
-                            </select>
-                          )}
-                        </td>
-                        <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                          {updatingPaymentStatus === order.idOrder ? (
-                            <div className="flex items-center justify-center">
-                              <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
-                              <span className="text-xs">Updating...</span>
-                            </div>
-                          ) : (
-                            <select
-                              value={order.Payment_Stats}
-                              onChange={(e) =>
-                                handlePaymentStatusChange(
-                                  order.idOrder,
-                                  e.target.value
-                                )
-                              }
-                              className={`px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getPaymentStatusColor(
-                                order.Payment_Stats
-                              )}`}
+                              Order Confirmed
+                            </option>
+                            <option
+                              value="Order Packed"
+                              className="bg-white text-blue-800"
                             >
-                              <option
-                                value="pending"
-                                className="bg-white text-yellow-800"
-                              >
-                                Pending
-                              </option>
-                              <option
-                                value="paid"
-                                className="bg-white text-green-800"
-                              >
-                                Paid
-                              </option>
-                              <option
-                                value="failed"
-                                className="bg-white text-red-800"
-                              >
-                                Failed
-                              </option>
-                              <option
-                                value="cancelled"
-                                className="bg-white text-gray-800"
-                              >
-                                Cancelled
-                              </option>
-                              <option
-                                value="refunded"
-                                className="bg-white text-purple-800"
-                              >
-                                Refunded
-                              </option>
-                            </select>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              Order Packed
+                            </option>
+                            <option
+                              value="Awaiting Delivery"
+                              className="bg-white text-indigo-800"
+                            >
+                              Awaiting Delivery
+                            </option>
+                            <option
+                              value="Out for Delivery"
+                              className="bg-white text-purple-800"
+                            >
+                              Out for Delivery
+                            </option>
+                            <option
+                              value="Delivered"
+                              className="bg-white text-green-800"
+                            >
+                              Delivered
+                            </option>
+                          </select>
+                        )}
+                      </td>
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        {updatingPaymentStatus === order.idOrder ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-[#5CAF90] rounded-full"></div>
+                            <span className="text-xs">Updating...</span>
+                          </div>
+                        ) : (
+                          <select
+                            value={order.Payment_Stats}
+                            onChange={(e) =>
+                              handlePaymentStatusChange(
+                                order.idOrder,
+                                e.target.value
+                              )
+                            }
+                            className={`px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getPaymentStatusColor(
+                              order.Payment_Stats
+                            )}`}
+                          >
+                            <option
+                              value="pending"
+                              className="bg-white text-yellow-800"
+                            >
+                              Pending
+                            </option>
+                            <option
+                              value="paid"
+                              className="bg-white text-green-800"
+                            >
+                              Paid
+                            </option>
+                            <option
+                              value="failed"
+                              className="bg-white text-red-800"
+                            >
+                              Failed
+                            </option>
+                            <option
+                              value="cancelled"
+                              className="bg-white text-gray-800"
+                            >
+                              Cancelled
+                            </option>
+                            <option
+                              value="refunded"
+                              className="bg-white text-purple-800"
+                            >
+                              Refunded
+                            </option>
+                          </select>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
 
             {/* Mobile view */}
             <div className="sm:hidden">
-              {filteredOrders.map((order) => {
-                // Calculate discount information for mobile view
-                const orderItems = orderItemsMap[order.idOrder] || [];
-                let originalAmount = 0;
-                let totalDiscountAmount = 0;
-                
-                // Calculate original amount and total discounts from order items
-                orderItems.forEach(item => {
-                  let itemRate = parseFloat(item.Rate || 0);
-                  const itemQty = parseInt(item.Qty || 1);
-                  const itemDiscountAmount = parseFloat(item.Discount_Amount || 0);
-                  const itemTotalAmount = parseFloat(item.Total_Amount || item.Total || 0);
-                  
-                  // If Rate is null or 0, calculate it from Total_Amount and Discount_Amount
-                  if (!itemRate && itemTotalAmount > 0) {
-                    itemRate = (itemTotalAmount + (itemDiscountAmount * itemQty)) / itemQty;
-                  }
-                  
-                  originalAmount += itemRate * itemQty;
-                  totalDiscountAmount += itemDiscountAmount * itemQty;
-                });
-                
-                // Fallback to order total if no items available
-                if (orderItems.length === 0) {
-                  originalAmount = parseFloat(order.Total_Amount || 0);
-                  totalDiscountAmount = 0;
-                }
-                
-                const finalAmount = parseFloat(order.Total_Amount || 0);
-                const discountPercentage = originalAmount > 0 ? (totalDiscountAmount / originalAmount) * 100 : 0;
-                const hasDiscount = totalDiscountAmount > 0;
-
-                return (
-                  <div 
-                    key={order.idOrder} 
-                    className="bg-white p-4 border-b cursor-pointer hover:bg-gray-50"
-                    onClick={() => handleViewOrder(order.idOrder)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center">
-                        {order.product_image ? (
-                          <img
-                            src={order.product_image}
-                            alt="Product"
-                            className="w-10 h-10 mr-3 rounded object-cover"
-                            onError={(e) => {
-                              e.target.src =
-                                "https://via.placeholder.com/40?text=No+Image";
-                            }}
-                          />
-                        ) : (
-                          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500 mr-3">
-                            No IMG
-                          </div>
-                        )}
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            #{order.idOrder}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {order.Full_Name}
-                          </div>
+              {filteredOrders.map((order) => (
+                <div
+                  key={order.idOrder}
+                  className="bg-white p-4 border-b cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleViewOrder(order.idOrder)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center">
+                      {order.product_image ? (
+                        <img
+                          src={order.product_image}
+                          alt="Product"
+                          className="w-10 h-10 mr-3 rounded object-cover"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://via.placeholder.com/40?text=No+Image";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500 mr-3">
+                          No IMG
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          #{order.idOrder}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {order.Full_Name}
                         </div>
                       </div>
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                    </div>
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                        order.Status
+                      )}`}
+                    >
+                      {order.Status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Product Amount: LKR{" "}
+                    {parseFloat(order.Total_Amount).toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Delivery: LKR 500.00
+                  </div>
+                  <div className="text-sm text-gray-500 mb-2">
+                    Total Amount: LKR{" "}
+                    {(parseFloat(order.Total_Amount) + 500).toLocaleString(
+                      "en-US",
+                      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-2">
+                    Date: {new Date(order.Date_Time).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-3">
+                    Delivery:{" "}
+                    {order.Delivery_Date
+                      ? new Date(order.Delivery_Date).toLocaleDateString()
+                      : "Not set"}
+                  </div>
+
+                  {/* Payment status and order status controls */}
+                  <div
+                    className="grid grid-cols-2 gap-2 mb-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div>
+                      <div className="text-xs text-gray-700 mb-1">
+                        Order Status:
+                      </div>
+                      <select
+                        value={order.Status}
+                        onChange={(e) =>
+                          handleStatusChange(order.idOrder, e.target.value)
+                        }
+                        className={`w-full px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(
                           order.Status
                         )}`}
                       >
-                        {order.Status}
-                      </span>
+                        <option value="Order Confirmed">Order Confirmed</option>
+                        <option value="Order Packed">Order Packed</option>
+                        <option value="Awaiting Delivery">
+                          Awaiting Delivery
+                        </option>
+                        <option value="Out for Delivery">
+                          Out for Delivery
+                        </option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
                     </div>
-                    <div className="text-sm text-gray-500 mb-1">
-                      Original Amount: 
-                      <span className={hasDiscount ? "line-through ml-1" : " ml-1"}>
-                        Rs. {originalAmount.toFixed(2)}
-                      </span>
-                    </div>
-                    {hasDiscount && (
-                      <div className="text-sm text-red-600 mb-1">
-                        Discount: {discountPercentage.toFixed(1)}% (-Rs. {totalDiscountAmount.toFixed(2)})
+                    <div>
+                      <div className="text-xs text-gray-700 mb-1">
+                        Payment Status:
                       </div>
-                    )}
-                    <div className="text-sm text-gray-500 mb-1">
-                      Delivery: Rs. {parseFloat(order.Delivery_Charges || 0).toFixed(2)}
-                    </div>
-                    <div className="text-sm text-gray-500 mb-2">
-                      Final Total: 
-                      <span className={`ml-1 ${hasDiscount ? "text-green-600 font-medium" : ""}`}>
-                        Rs. {parseFloat(order.Net_Amount || 0).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-500 mb-2">
-                      Date: {new Date(order.Date_Time).toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-500 mb-3">
-                      Delivery:{" "}
-                      {order.Delivery_Date
-                        ? new Date(order.Delivery_Date).toLocaleDateString()
-                        : "Not set"}
-                    </div>
-
-                    {/* Payment status and order status controls */}
-                    <div className="grid grid-cols-2 gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
-                      <div>
-                        <div className="text-xs text-gray-700 mb-1">
-                          Order Status:
-                        </div>
-                        <select
-                          value={order.Status}
-                          onChange={(e) =>
-                            handleStatusChange(order.idOrder, e.target.value)
-                          }
-                          className={`w-full px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getStatusColor(
-                            order.Status
-                          )}`}
-                        >
-                          <option value="Order Confirmed">Order Confirmed</option>
-                          <option value="Order Packed">Order Packed</option>
-                          <option value="Awaiting Delivery">
-                            Awaiting Delivery
-                          </option>
-                          <option value="Out for Delivery">
-                            Out for Delivery
-                          </option>
-                          <option value="Delivered">Delivered</option>
-                        </select>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-700 mb-1">
-                          Payment Status:
-                        </div>
-                        <select
-                          value={order.Payment_Stats}
-                          onChange={(e) =>
-                            handlePaymentStatusChange(
-                              order.idOrder,
-                              e.target.value
-                            )
-                          }
-                          className={`w-full px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getPaymentStatusColor(
-                            order.Payment_Stats
-                          )}`}
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="paid">Paid</option>
-                          <option value="failed">Failed</option>
-                          <option value="cancelled">Cancelled</option>
-                          <option value="refunded">Refunded</option>
-                        </select>
-                      </div>
+                      <select
+                        value={order.Payment_Stats}
+                        onChange={(e) =>
+                          handlePaymentStatusChange(
+                            order.idOrder,
+                            e.target.value
+                          )
+                        }
+                        className={`w-full px-2 py-1 rounded text-xs font-medium bg-white border border-gray-300 cursor-pointer ${getPaymentStatusColor(
+                          order.Payment_Stats
+                        )}`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="failed">Failed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="refunded">Refunded</option>
+                      </select>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         )}
 
         {/* Pagination */}
-        <Pagination 
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}

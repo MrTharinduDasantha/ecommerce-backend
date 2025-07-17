@@ -81,6 +81,21 @@ CREATE TABLE About_Us_Setting (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Add a new Order Review table
+CREATE TABLE order_review (
+    review_id INT(11) NOT NULL AUTO_INCREMENT,
+    customer_id INT(11),
+    order_id INT(11),
+    rating DECIMAL(2,1),
+    comment VARCHAR(1000),
+    status VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (review_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(idCustomer),
+    FOREIGN KEY (order_id) REFERENCES Order(idOrder)
+  );
+  
 -- Add a new Event_Discounts Table
 CREATE TABLE Event_Discounts (
     idEvent_Discounts INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,4 +110,26 @@ CREATE TABLE Event_Discounts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Event_idEvent) REFERENCES Event(idEvent) ON DELETE CASCADE
+);
+
+-- Add a new Policy Details Setting Table
+CREATE TABLE IF NOT EXISTS Policy_Details_Setting (
+  idPolicy_Details_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Legal_Policy_Content LONGTEXT,
+  Privacy_Policy_Content LONGTEXT,
+  Security_Policy_Content LONGTEXT,
+  Terms_Of_Service_Content LONGTEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Add a new Home Page Settings Table
+CREATE TABLE Home_Page_Setting (
+  idHome_Page_Setting INT AUTO_INCREMENT PRIMARY KEY,
+  Hero_Images JSON,
+  Working_Section_Title VARCHAR(255),
+  Working_Section_Description TEXT,
+  Working_Items JSON,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

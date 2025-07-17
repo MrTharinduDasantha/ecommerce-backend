@@ -21,6 +21,7 @@ import CustomerManagedForm from "./components/CustomerManagedForm";
 import ProfilePage from "./components/ProfilePage";
 import DashboardPrivate from "./components/DashboardPrivate";
 import AboutUsSettings from "./components/AboutUsSettings";
+import NewAboutUsSettings from "./components/NewAboutUsSettings";
 import HeaderFooterSettings from "./components/HeaderFooterSettings";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
@@ -29,6 +30,12 @@ import CustomerDetails from "./components/CustomerDetails";
 import LogDetails from "./components/LogDetails";
 import CustomerorderDetailsPage from "./components/CustomerorderDetailsPage";
 import NotificationPage from "./components/NotificationPage";
+import ReviewList from "./components/ReviewList"
+import ReviewDetails from "./components/ReviewDetails"
+import Timeline from "./components/Timeline";
+import NewHomePageSettings from "./components/NewHomePageSettings";
+import NewPolicyDetailsSettings from "./components/NewPolicyDetailsSettings";
+
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -72,10 +79,8 @@ const App = () => {
           <Route path="/" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/verify-otp/:email" element={<VerifyOtpPage />} />
-          <Route
-            path="/reset-password/:email/:otp"
-            element={<ResetPasswordPage />}
-          />
+          <Route path="/reset-password/:email/:otp" element={<ResetPasswordPage />} />
+
           <Route
             path="/dashboard"
             element={
@@ -130,8 +135,15 @@ const App = () => {
             <Route path="log/view-adminlogs/:id" element={<LogDetails />} />
             <Route path="order/view-adminlogs/:id" element={<LogDetails />} />
             <Route path="notifications" element={<NotificationPage />} />
+            <Route path="reviews" element={<ReviewList />} />
+            <Route path="reviews/:reviewId" element={<ReviewDetails />} />
           </Route>
+          <Route path="/newaboutUssetting" element={<NewAboutUsSettings />} />
+          <Route path="Timeline" element={<Timeline />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/NewHomePageSettings" element={<NewHomePageSettings />} />
+          <Route path="/NewPolicyDetailsSettings" element={<NewPolicyDetailsSettings />} />
+          <Route path="Timeline" element={<Timeline />} />
         </Routes>
       )}
     </>
