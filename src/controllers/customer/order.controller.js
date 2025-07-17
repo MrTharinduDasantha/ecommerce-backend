@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 // Customer Order Controller
 class OrderController {
   // Get customer orders
-  async getCustomerOrders(req, res) {
+  async getCustomerOrders(req, res) { 
     try {
       console.log("Getting orders for customer ID:", req.params.customer_id)
       const orders = await Order.findByCustomerId(req.params.customer_id)
@@ -315,9 +315,11 @@ class OrderController {
           total_amount: item.NetAmount, // Use NetAmount from cart item
         })
 
-        //update product SIH and sold_qty
+        // Update product SIH, Qty, and sold_qty
         await pool.query(
-          `UPDATE Product p JOIN Product_Variations pv ON p.idProduct = pv.Product_idProduct SET p.SIH = p.SIH - ?, p.Sold_Qty = p.Sold_Qty + ? WHERE pv.idProduct_Variations = ? AND p.orgmail = ?`,
+          `UPDATE Product p JOIN Product_Variations pv ON p.idProduct = pv.Product_idProduct 
+           SET p.SIH = p.SIH - ?, p.Sold_Qty = p.Sold_Qty + ? 
+           WHERE pv.idProduct_Variations = ? AND p.orgmail = ?`,
           [
             item.CartQty,
             item.CartQty,
@@ -325,10 +327,10 @@ class OrderController {
             orgMail
           ]
         )
-        //update SIH in the Product_Variations table
+        // Update SIH and Qty in the Product_Variations table
         await pool.query(
-          `UPDATE Product_Variations SET SIH = SIH - ? WHERE idProduct_Variations = ? AND orgmail = ?`,
-          [item.CartQty, item.Product_Variations_idProduct_Variations, orgMail]
+          `UPDATE Product_Variations SET SIH = SIH - ?, Qty = Qty - ? WHERE idProduct_Variations = ? AND orgmail = ?`,
+          [item.CartQty, item.CartQty, item.Product_Variations_idProduct_Variations, orgMail]
         )
       }
 

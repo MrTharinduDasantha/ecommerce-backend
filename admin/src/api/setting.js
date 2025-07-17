@@ -71,3 +71,53 @@ export const updateAboutUsSetting = async (formData) => {
     throw error.response.data;
   }
 };
+
+// -----------------------------------------
+// Policy Details Setting Related Api Calls
+// -----------------------------------------
+
+// Fetch policy details setting
+export const fetchPolicyDetailsSetting = async () => {
+  try {
+    const response = await api.get("/api/settings/policy-details");
+    return response.data.policyDetailsSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Update policy details setting
+export const updatePolicyDetailsSetting = async (policyData) => {
+  try {
+    const response = await api.put("/api/settings/policy-details", policyData);
+    return response.data.updatedPolicyDetailsSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// -----------------------------------
+// Home Page Setting Related Api Calls
+// -----------------------------------
+
+// Fetch home page setting
+export const fetchHomePageSetting = async () => {
+  try {
+    const response = await api.get("/api/settings/home-page");
+    return response.data.homePageSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// Update home page setting
+export const updateHomePageSetting = async (formData) => {
+  try {
+    const response = await api.put("/api/settings/home-page", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.updatedHomePageSetting;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

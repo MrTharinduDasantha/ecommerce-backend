@@ -62,6 +62,7 @@ const SubCategory = () => {
       try {
         setLoading(true);
         const data = await getProductsBySubCategoryId(id);
+        console.log(data,'test1')
         if (data && data.products) {
           // Format products to match ProductCard expected structure
           const formattedProducts = data.products
@@ -91,7 +92,6 @@ const SubCategory = () => {
               }
             }));
           setProducts(formattedProducts); 
-
           // Set category and subcategory names if not already set
           if (!subcategoryName && data.products[0]?.Subcategory_Name) {
             setSubcategoryName(data.products[0].Subcategory_Name);
@@ -169,7 +169,7 @@ const SubCategory = () => {
   const selectedCategory = categories.find(
     (c) => c.idProduct_Category === selectedCategoryId
   );
-
+console.log(selectedSubCategoryId,selectedCategoryId,products,'waqas sub')
   const selectedSubCategory = selectedCategory?.subcategories?.find(
     (sub) => sub.idSub_Category === selectedSubCategoryId
   );

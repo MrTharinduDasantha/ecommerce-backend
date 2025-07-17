@@ -217,7 +217,11 @@ const ProductList = () => {
                         {product.Brand_Name || "Other"}
                       </td>
                       <td className="text-xs lg:text-sm">
-                        Rs. {product.Selling_Price}
+                        LKR{" "}
+                        {parseFloat(product.Selling_Price).toLocaleString(
+                          "en-US",
+                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                        )}
                       </td>
                       <td>
                         <div className="flex items-center justify-center gap-2">
@@ -293,19 +297,9 @@ const ProductList = () => {
                             <FaEdit />
                           </button>
                           <button
-                            onClick={() => {
-                              if (product.hasOrders) {
-                                toast.error(
-                                  "This product cannot be deleted since it has already been ordered"
-                                );
-                              } else if (product.hasCart) {
-                                toast.error(
-                                  "This product cannot be deleted because it's currently in someone's cart"
-                                );
-                              } else {
-                                setDeleteProductId(product.idProduct);
-                              }
-                            }}
+                            onClick={() =>
+                              setDeleteProductId(product.idProduct)
+                            }
                             className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                             title="Delete Product"
                           >
@@ -344,7 +338,11 @@ const ProductList = () => {
                         Brand: {product.Brand_Name || "Other"}
                       </p>
                       <p className="text-xs text-[#1D372E]">
-                        Price: Rs. {product.Selling_Price}
+                        Price: LKR{" "}
+                        {parseFloat(product.Selling_Price).toLocaleString(
+                          "en-US",
+                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                        )}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-xs text-[#1D372E]">
@@ -406,19 +404,7 @@ const ProductList = () => {
                       <FaEdit />
                     </button>
                     <button
-                      onClick={() => {
-                        if (product.hasOrders) {
-                          toast.error(
-                            "This product cannot be deleted since it has already been ordered"
-                          );
-                        } else if (product.hasCart) {
-                          toast.error(
-                            "This product cannot be deleted because it's currently in someone's cart"
-                          );
-                        } else {
-                          setDeleteProductId(product.idProduct);
-                        }
-                      }}
+                      onClick={() => setDeleteProductId(product.idProduct)}
                       className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
                       title="Delete Product"
                     >
@@ -453,10 +439,22 @@ const ProductList = () => {
               <IoClose className="w-5 h-5" />
             </button>
 
-            <p className="mb-6">
-              Are you sure you want to delete this product? This action cannot
-              be undone.
-            </p>
+            {(() => {
+              const productToDelete = products.find(
+                (p) => p.idProduct === deleteProductId
+              );
+              let message =
+                "Are you sure you want to delete this product? This action cannot be undone.";
+              if (productToDelete.hasCart) {
+                message +=
+                  " Deleting this product will also remove it from all carts.";
+              }
+              if (productToDelete.hasOrders) {
+                message +=
+                  " Deleting this product will also delete all orders that include this product.";
+              }
+              return <p className="mb-6">{message}</p>;
+            })()}
 
             <div className="modal-action">
               <button

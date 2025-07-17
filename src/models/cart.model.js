@@ -158,7 +158,8 @@ async function addProductToCart(
       if (productIds.includes(product[0].idProduct)) {
         let eventDiscountAmount = 0;
         if (eventDiscount.Discount_Type === "percentage") {
-          eventDiscountAmount = (rate * qty * eventDiscount.Discount_Value) / 100;
+          eventDiscountAmount =
+            (rate * qty * eventDiscount.Discount_Value) / 100;
         } else {
           eventDiscountAmount = eventDiscount.Discount_Value * qty;
         }
@@ -303,7 +304,8 @@ async function updateCartItemQuantity(cartId, productVariationId, qty) {
       if (productIds.includes(productId)) {
         let eventDiscountAmount = 0;
         if (eventDiscount.Discount_Type === "percentage") {
-          eventDiscountAmount = (totalAmount * eventDiscount.Discount_Value) / 100;
+          eventDiscountAmount =
+            (totalAmount * eventDiscount.Discount_Value) / 100;
         } else {
           eventDiscountAmount = eventDiscount.Discount_Value * qty;
         }

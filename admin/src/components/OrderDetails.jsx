@@ -375,30 +375,30 @@ const OrderDetails = () => {
                     <p className="flex justify-between text-[#1D372E]">
                       <span className="font-medium">Original Amount:</span>
                       <span className={hasDiscount ? "line-through text-gray-500" : ""}>
-                        Rs. {originalAmount.toFixed(2)}
+                        LKR {originalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </p>
                     {hasDiscount && (
                       <p className="flex justify-between text-[#1D372E]">
                         <span className="font-medium">Total Discounts:</span>
                         <span className="text-red-600 font-medium">
-                          -Rs. {totalDiscountAmount.toFixed(2)} {discountPercentage > 0 ? `(${discountPercentage.toFixed(1)}%)` : ''}
+                          -LKR {totalDiscountAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {discountPercentage > 0 ? `(${discountPercentage.toFixed(1)}%)` : ''}
                         </span>
                       </p>
                     )}
                     <p className="flex justify-between text-[#1D372E]">
                       <span className="font-medium">Subtotal (After Discounts):</span>
                       <span className={hasDiscount ? "text-green-600 font-medium" : ""}>
-                        Rs. {finalSubtotal.toFixed(2)}
+                        LKR {finalSubtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </p>
                     <p className="flex justify-between text-[#1D372E]">
                       <span className="font-medium">Delivery Charges:</span>
-                      <span>Rs. {parseFloat(order.Delivery_Charges || 0).toFixed(2)}</span>
+                      <span>LKR 500.00</span>
                     </p>
                     <p className="flex justify-between text-[#1D372E] border-t pt-2 mt-2">
                       <span className="font-medium">Final Total:</span>
-                      <span className="font-bold text-lg">Rs. {parseFloat(order.Net_Amount || 0).toFixed(2)}</span>
+                      <span className="font-bold text-lg">LKR {(parseFloat(finalSubtotal || 0) + 500.00).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </p>
                   </>
                 );
@@ -849,10 +849,10 @@ const OrderDetails = () => {
                       <td>
                         {hasDiscount ? (
                           <span className="line-through text-gray-500 text-sm">
-                            Rs. {originalPrice.toFixed(2)}
+                            LKR {originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         ) : (
-                          <span>Rs. {originalPrice.toFixed(2)}</span>
+                          <span>LKR {originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         )}
                       </td>
                       <td>
@@ -865,7 +865,7 @@ const OrderDetails = () => {
                             )}
                             {discountAmount > 0 && (
                               <div className="text-red-600 text-xs">
-                                -Rs. {discountAmount.toFixed(2)}
+                                -LKR {discountAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </div>
                             )}
                           </div>
@@ -875,18 +875,18 @@ const OrderDetails = () => {
                       </td>
                       <td>
                         <span className={hasDiscount ? "text-green-600 font-medium" : ""}>
-                          Rs. {finalPricePerItem.toFixed(2)}
+                          LKR {finalPricePerItem.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </td>
                       <td>{effectiveQty}</td>
                       <td>
                         <div>
                           <span className={hasDiscount ? "text-green-600 font-medium" : ""}>
-                            Rs. {finalTotal.toFixed(2)}
+                            LKR {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           {hasDiscount && (
                             <div className="text-xs text-gray-500">
-                              Saved: Rs. {(originalTotal - finalTotal).toFixed(2)}
+                              Saved: LKR {(originalTotal - finalTotal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                           )}
                         </div>

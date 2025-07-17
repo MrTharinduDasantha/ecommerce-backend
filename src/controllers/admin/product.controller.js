@@ -747,8 +747,8 @@ async function updateProduct(req, res) {
     );
 
     const [originalSubCategories] = await pool.query(
-      "SELECT sc.idSub_Category, sc.Description FROM Sub_Category sc JOIN Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category WHERE phsc.Product_idProduct = ? AND sc.orgmail = ?",
-      [id, orgMail]
+      "SELECT sc.idSub_Category, sc.Description FROM Sub_Category sc JOIN Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category AND phsc.orgmail = ? WHERE phsc.Product_idProduct = ? AND sc.orgmail = ?",
+      [orgMail, id, orgMail]
     );
 
     let mainImageUrl = null;
@@ -1199,63 +1199,68 @@ async function deleteProduct(req, res) {
     const orgMail = getOrgMail();
     const product = await Product.getProductById(id);
 
-    if (product) {
-      const [variations] = await pool.query(
-        "SELECT * FROM Product_Variations WHERE Product_idProduct = ? AND orgmail = ?",
-        [id, orgMail]
-      );
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-      const [faqs] = await pool.query(
-        "SELECT * FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?",
-        [id, orgMail]
-      );
+    // Log the deletion attempt first
+    const [variations] = await pool.query(
+      "SELECT * FROM Product_Variations WHERE Product_idProduct = ? AND orgmail = ?",
+      [id, orgMail]
+    );
 
-      await pool.query(
-        "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
-        [
-          req.user.userId,
-          "Deleted product",
-          req.headers["user-agent"],
-          JSON.stringify({
-            productId: id,
-            description: product.Description,
-            variations: variations || [],
-            faqs: faqs || [],
-          }),
+    const [faqs] = await pool.query(
+      "SELECT * FROM FAQ WHERE Product_idProduct = ? AND orgmail = ?",
+      [id, orgMail]
+    );
+
+    await pool.query(
+      "INSERT INTO admin_logs (admin_id, action, device_info, new_user_info, orgmail) VALUES (?, ?, ?, ?, ?)",
+      [
+        req.user.userId,
+        "Deleted product",
+        req.headers["user-agent"],
+        JSON.stringify({
+          productId: id,
+          description: product.Description,
+          variations: variations || [],
+          faqs: faqs || [],
+        }),
           orgMail,
-        ]
+      ]
+    );
+
+    // Delete the product (this will throw an error if it can't be deleted)
+    await Product.deleteProduct(id);
+
+    // If we reach here, deletion was successful, so delete the images
+    if (product.Main_Image_Url) {
+      const mainImagePath = path.join(
+        __dirname,
+        "../../",
+        product.Main_Image_Url.replace(
+          `${req.protocol}://${req.get("host")}/`,
+          ""
+        )
       );
+      fs.unlink(mainImagePath, (err) => {
+        if (err) console.error("Error deleting main image:", err);
+      });
+    }
 
-      if (product.Main_Image_Url) {
-        const mainImagePath = path.join(
-          __dirname,
-          "../../",
-          product.Main_Image_Url.replace(
-            `${req.protocol}://${req.get("host")}/`,
-            ""
-          )
-        );
-        fs.unlink(mainImagePath, (err) => {
-          if (err) console.error("Error deleting main image:", err);
-        });
-      }
-
-      if (product.images && product.images.length > 0) {
-        product.images.forEach((img) => {
-          if (img.Image_Url) {
-            const subImagePath = path.join(
-              __dirname,
-              "../../",
-              img.Image_Url.replace(`${req.protocol}://${req.get("host")}/`, "")
-            );
-            fs.unlink(subImagePath, (err) => {
-              if (err) console.error("Error deleting sub image:", err);
-            });
-          }
-        });
-      }
-
-      await Product.deleteProduct(id);
+    if (product.images && product.images.length > 0) {
+      product.images.forEach((img) => {
+        if (img.Image_Url) {
+          const subImagePath = path.join(
+            __dirname,
+            "../../",
+            img.Image_Url.replace(`${req.protocol}://${req.get("host")}/`, "")
+          );
+          fs.unlink(subImagePath, (err) => {
+            if (err) console.error("Error deleting sub image:", err);
+          });
+        }
+      });
     }
 
     res.status(200).json({ message: "Product deleted successfully" });

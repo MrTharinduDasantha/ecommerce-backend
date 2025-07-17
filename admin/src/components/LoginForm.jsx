@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { FiMail, FiLock } from "react-icons/fi";
@@ -14,6 +14,7 @@ const LoginForm = () => {
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +39,15 @@ const LoginForm = () => {
         );
         localStorage.setItem("token", data.token);
         toast.success("Login successful");
-        navigate("/dashboard/dashboard-private");
+
+        // --- REDIRECT LOGIC ---
+        const params = new URLSearchParams(location.search);
+        if (params.get("redirect") === "timeline") {
+          navigate("/Timeline?login=success");
+        } else {
+          navigate("/dashboard/dashboard-private");
+        }
+        // --- END REDIRECT LOGIC ---
       } else {
         toast.error("Invalid credentials");
       }

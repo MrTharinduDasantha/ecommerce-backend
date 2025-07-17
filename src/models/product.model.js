@@ -43,7 +43,7 @@ async function getTopSellingCategories() {
     LEFT JOIN 
         Sub_Category sc ON pc.idProduct_Category = sc.Product_Category_idProduct_Category AND sc.orgmail = ?
     LEFT JOIN 
-        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category
+        Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category AND phsc.orgmail = ?
     LEFT JOIN 
         Product p ON phsc.Product_idProduct = p.idProduct AND p.orgmail = ?
     WHERE pc.orgmail = ?
@@ -53,7 +53,7 @@ async function getTopSellingCategories() {
         Total_Sold_Qty DESC
     LIMIT 6
   `;
-  const [categories] = await pool.query(query, [orgMail, orgMail, orgMail]);
+  const [categories] = await pool.query(query, [orgMail, orgMail, orgMail, orgMail]);
   return categories;
 }
 
@@ -119,8 +119,8 @@ async function deleteCategory(categoryId) {
 
   for (const sub of subcategories) {
     const [products] = await pool.query(
-      "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
-      [sub.idSub_Category]
+      "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ? AND orgmail = ?",
+      [sub.idSub_Category, orgMail]
     );
 
     if (products[0].count > 0) {
@@ -205,9 +205,10 @@ async function updateSubCategory(categoryId, subCategoryId, description) {
 
 // Check if a subcategory is used in any products
 async function checkSubCategoryInUse(subCategoryId) {
+  const orgMail = getOrgMail();
   const [products] = await pool.query(
-    "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
-    [subCategoryId]
+    "SELECT COUNT(*) as count FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ? AND orgmail = ?",
+    [subCategoryId, orgMail]
   );
 
   return products[0].count > 0;
@@ -226,8 +227,8 @@ async function deleteSubCategory(subCategoryId) {
   // If there's a linking table to Product (Product_has_Sub_Category),
   // remove references first:
   await pool.query(
-    "DELETE FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ?",
-    [subCategoryId]
+    "DELETE FROM Product_has_Sub_Category WHERE Sub_Category_idSub_Category = ? AND orgmail = ?",
+    [subCategoryId, orgMail]
   );
 
   // Then delete the subcategory
@@ -419,11 +420,12 @@ async function createProductFaq(productId, faq) {
 
 // Insert product to subcategory join records in product has sub category table
 async function createProductSubCategory(productId, subCategoryId) {
+  const orgMail = getOrgMail();
   const query = `
-    INSERT INTO Product_has_Sub_Category (Product_idProduct, Sub_Category_idSub_Category)
-    VALUES (?, ?)
+    INSERT INTO Product_has_Sub_Category (Product_idProduct, Sub_Category_idSub_Category, orgmail)
+    VALUES (?, ?, ?)
   `;
-  await pool.query(query, [productId, subCategoryId]);
+  await pool.query(query, [productId, subCategoryId, orgMail]);
 }
 
 // Update a product
@@ -486,8 +488,8 @@ async function updateProduct(productId, productData, associatedData) {
     const toDelete = existingIds.filter((id) => !newIds.includes(id));
     for (const id of toDelete) {
       const [orders] = await pool.query(
-        "SELECT COUNT(*) as count FROM order_has_product_variations WHERE Product_Variations_idProduct_Variations = ?",
-        [id]
+        "SELECT COUNT(*) as count FROM order_has_product_variations WHERE Product_Variations_idProduct_Variations = ? AND orgmail = ?",
+        [id, orgMail]
       );
       if (orders[0].count > 0) {
         throw new Error("Cannot delete variation as it has been ordered");
@@ -549,8 +551,8 @@ async function updateProduct(productId, productData, associatedData) {
   // Update subcategories: Delete existing join records and insert new ones
   if (associatedData.subCategoryIds) {
     await pool.query(
-      "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ?",
-      [productId]
+      "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ? AND orgmail = ?",
+      [productId, orgMail]
     );
     for (const subCat of associatedData.subCategoryIds) {
       // If subCat is an object, extract its id; otherwise, use it directly.
@@ -645,9 +647,9 @@ async function getAllProducts() {
       `SELECT SC.*
        FROM Sub_Category SC
        JOIN Product_has_Sub_Category PS 
-        ON SC.idSub_Category = PS.Sub_Category_idSub_Category
+        ON SC.idSub_Category = PS.Sub_Category_idSub_Category AND PS.orgmail = ?
        WHERE PS.Product_idProduct = ? AND SC.orgmail = ?`,
-      [product.idProduct, orgMail]
+      [orgMail, product.idProduct, orgMail]
     );
     product.subcategories = subCats;
 
@@ -705,11 +707,11 @@ async function getProductsBySubCategory(subCategoryId) {
   const query = `
     SELECT P.*, B.Brand_Name
     FROM Product P
-    JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct
-    JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand AND B.orgmail = ?
+    JOIN Product_has_Sub_Category PS ON P.idProduct = PS.Product_idProduct AND PS.orgmail = ?
+    LEFT JOIN Product_Brand B ON P.Product_Brand_idProduct_Brand = B.idProduct_Brand AND B.orgmail = ?
     WHERE PS.Sub_Category_idSub_Category = ? AND P.orgmail = ?
   `;
-  const [products] = await pool.query(query, [orgMail, subCategoryId, orgMail]);
+  const [products] = await pool.query(query, [orgMail, orgMail, subCategoryId, orgMail]);
 
   // Fetch additional data like images for each product
   for (const product of products) {
@@ -795,9 +797,9 @@ async function getProductById(productId) {
   const [subCats] = await pool.query(
     `SELECT SC.*
      FROM Sub_Category SC
-     JOIN Product_has_Sub_Category PS ON SC.idSub_Category = PS.Sub_Category_idSub_Category
+     JOIN Product_has_Sub_Category PS ON SC.idSub_Category = PS.Sub_Category_idSub_Category AND PS.orgmail = ?
      WHERE PS.Product_idProduct = ? AND SC.orgmail = ?`,
-    [product.idProduct, orgMail]
+    [orgMail, product.idProduct, orgMail]
   );
   product.subcategories = subCats;
 
@@ -884,10 +886,46 @@ async function getDiscountedProducts() {
 // Delete a product and its related records
 async function deleteProduct(productId) {
   const orgMail = getOrgMail();
+  // Delete from Cart_has_Product for this product's variations
+  await pool.query(
+    `DELETE FROM Cart_has_Product
+    WHERE Product_Variations_idProduct_Variations IN (
+      SELECT idProduct_Variations FROM Product_Variations WHERE Product_idProduct = ?
+    )`,
+    [productId]
+  );
+
+  // Get all orders that have this product
+  const [orders] = await pool.query(
+    `SELECT DISTINCT ohpv.Order_idOrder
+    FROM Order_has_Product_Variations ohpv
+    JOIN Product_Variations pv ON ohpv.Product_Variations_idProduct_Variations = pv.idProduct_Variations
+    WHERE pv.Product_idProduct = ?`,
+    [productId]
+  );
+
+  const orderIds = orders.map((order) => order.Order_idOrder);
+
+  if (orderIds.length > 0) {
+    // Delete from Order_History for these orders
+    await pool.query(`DELETE FROM Order_History WHERE order_id IN (?)`, [
+      [orderIds],
+    ]);
+
+    // Delete from Order_has_Product_Variations for these orders
+    await pool.query(
+      `DELETE FROM Order_has_Product_Variations WHERE Order_idOrder IN (?)`,
+      [orderIds]
+    );
+
+    // Delete from Order
+    await pool.query("DELETE FROM `Order` WHERE idOrder IN (?)", [orderIds]);
+  }
+
   // Delete from join table
   await pool.query(
-    "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ?",
-    [productId]
+    "DELETE FROM Product_has_Sub_Category WHERE Product_idProduct = ? AND orgmail = ?",
+    [productId, orgMail]
   );
 
   // Delete product images
@@ -913,8 +951,8 @@ async function deleteProduct(productId) {
 
   // Delete event's product
   await pool.query(
-    "DELETE FROM Event_has_Product WHERE Product_idProduct = ?",
-    [productId]
+    "DELETE FROM Event_has_Product WHERE Product_idProduct = ? AND orgmail = ?",
+    [productId, orgMail]
   );
 
   // Delete product
@@ -941,13 +979,13 @@ async function getActiveEventDiscountsByProductId(productId) {
       ed.Status               AS status
     FROM Event_Discounts ed
     JOIN Event_has_Product ehp
-      ON ed.Event_idEvent = ehp.Event_idEvent
+      ON ed.Event_idEvent = ehp.Event_idEvent AND ehp.orgmail = ?
     WHERE ehp.Product_idProduct = ?
       AND ed.Status = 'active'
       AND ed.orgmail = ?
       AND CURDATE() BETWEEN STR_TO_DATE(ed.Start_Date, '%Y-%m-%d') AND STR_TO_DATE(ed.End_Date, '%Y-%m-%d') 
   `;
-  const [rows] = await pool.query(query, [productId, orgMail]);
+  const [rows] = await pool.query(query, [orgMail, productId, orgMail]);
   return rows.map((r) => ({
     id: r.id,
     eventId: r.eventId,

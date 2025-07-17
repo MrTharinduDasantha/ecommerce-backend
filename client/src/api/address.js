@@ -1,10 +1,12 @@
 import { getToken } from "../utils/auth"
 
+const API_URL = "http://localhost:9000/api"
+
 export const addAddress = async (customerId, addressData) => {
   try {
     const token = getToken()
     const res = await fetch(
-      `http://localhost:9000/api/customer-addresses/${customerId}/addresses`,
+      `${API_URL}/customer-addresses/${customerId}/addresses`,
       {
         method: "POST",
         headers: {
@@ -27,7 +29,7 @@ export const getAddressByCustomerId = async customerId => {
   try {
     const token = getToken()
     const res = await fetch(
-      `http://localhost:9000/api/customer-addresses/${customerId}/addresses`,
+      `${API_URL}/customer-addresses/${customerId}/addresses`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -47,7 +49,7 @@ export const deleteAddressById = async (customerId, addressId) => {
   try {
     const token = getToken()
     const res = await fetch(
-      `http://localhost:9000/api/customer-addresses/${customerId}/addresses/${addressId}`,
+      `${API_URL}/customer-addresses/${customerId}/addresses/${addressId}`,
       {
         method: "DELETE",
         headers: {
@@ -67,7 +69,7 @@ export const updateAddress = async (customerId, addressId, updatedAddress) => {
   try {
     const token = getToken()
     const res = await fetch(
-      `http://localhost:9000/api/customer-addresses/${customerId}/addresses/${addressId}`,
+      `${API_URL}/customer-addresses/${customerId}/addresses/${addressId}`,
       {
         method: "PUT",
         headers: {
