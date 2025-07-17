@@ -747,8 +747,8 @@ async function updateProduct(req, res) {
     );
 
     const [originalSubCategories] = await pool.query(
-      "SELECT sc.idSub_Category, sc.Description FROM Sub_Category sc JOIN Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category WHERE phsc.Product_idProduct = ? AND sc.orgmail = ?",
-      [id, orgMail]
+      "SELECT sc.idSub_Category, sc.Description FROM Sub_Category sc JOIN Product_has_Sub_Category phsc ON sc.idSub_Category = phsc.Sub_Category_idSub_Category AND phsc.orgmail = ? WHERE phsc.Product_idProduct = ? AND sc.orgmail = ?",
+      [orgMail, id, orgMail]
     );
 
     let mainImageUrl = null;
