@@ -34,6 +34,19 @@ const LoginPage = () => {
         </div>
 
         <LoginForm />
+        
+        {/* Sign Up Section */}
+        <div className="text-center mt-4">
+          <p className="text-xs md:text-sm text-gray-600 mb-3">
+            Don't have an admin account?
+          </p>
+          <button
+            onClick={() => navigate('/signup')}
+            className="btn btn-outline btn-sm md:btn-md w-full border-[#5CAF90] text-[#5CAF90] hover:bg-[#5CAF90] hover:text-white hover:border-[#5CAF90]"
+          >
+            Sign Up
+          </button>
+        </div>
       </div>
     </div>
   );
