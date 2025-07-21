@@ -25,7 +25,6 @@ require("dotenv").config(); // Load environment variables from .env file
 
 const app = express();
 // Middleware
-app.use(bodyParser.json({ limit: '25mb' })); // handle large base64 files
 app.use(cors({
   origin: [
     "http://localhost:3000",
@@ -35,8 +34,8 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 app.use("/src/uploads", express.static("src/uploads"));
 
 // Public routes - no authentication needed

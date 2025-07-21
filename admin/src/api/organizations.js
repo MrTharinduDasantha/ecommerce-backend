@@ -20,9 +20,15 @@ api.interceptors.request.use((config) => {
 });
 
 // Signup User (Send OTP)
-export const signupUser = async (data) => {
+export const signupUser = async (email, name, phone, address, website) => {
   try {
-    const response = await api.post("/api/admin/organizations/signup", data);
+    const response = await api.post("/admin/auth/signup", {
+      email,
+      name,
+      phone,
+      address,
+      website
+    });
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -30,9 +36,16 @@ export const signupUser = async (data) => {
 };
 
 // Verify OTP
-export const verifyOtp = async (data) => {
+export const verifyOtp = async (email, otp, name, phone, address, website) => {
   try {
-    const response = await api.post("/api/admin/organizations/verify-otp", data);
+    const response = await api.post("/admin/auth/verify-otp", {
+      email,
+      otp,
+      name,
+      phone,
+      address,
+      website
+    });
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -40,9 +53,15 @@ export const verifyOtp = async (data) => {
 };
 
 // Save Organization
-export const saveOrganization = async (data) => {
+export const saveOrganization = async (email, name, phone, address, website) => {
   try {
-    const response = await api.post("/api/admin/organizations/save-organization", data);
+    const response = await api.post("/admin/auth/save-organization", {
+      email,
+      name,
+      phone,
+      address,
+      website
+    });
     return response.data;
   } catch (error) {
     throw error.response.data;
