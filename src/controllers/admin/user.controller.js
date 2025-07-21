@@ -1,9 +1,48 @@
 const User = require("../../models/user.model");
+const Organization = require("../../models/organizations.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Importing JWT
 const { sendConfirmationEmail, sendOtpEmail } = require("../../utils/mailer");
 const pool = require("../../config/database");
 const { getOrgMail } = require('../../utils/organization');
+
+// Helper function to create or update organization
+const createOrUpdateOrganization = async (email, name) => {
+  try {
+    const [organization, created] = await Organization.findOrCreate({
+      where: { email: email },
+      defaults: {
+        name: name,
+        email: email,
+        status: 'active'
+      }
+    });
+    
+    if (!created) {
+      // Update existing organization name if needed
+      await organization.update({ name: name });
+    }
+    
+    return organization;
+  } catch (error) {
+    console.error('Error creating/updating organization:', error);
+    throw error;
+  }
+};
+
+// Helper function to create user with custom orgmail
+const createUserWithOrgmail = async (full_name, email, password, phone_no, status, orgmail) => {
+  try {
+    const [result] = await pool.query(
+      "INSERT INTO User (Full_Name, Email, Password, Phone_No, Status, orgmail) VALUES (?, ?, ?, ?, ?, ?)",
+      [full_name, email, password, phone_no, status, orgmail]
+    );
+    return result.insertId;
+  } catch (error) {
+    console.error('Error creating user with custom orgmail:', error);
+    throw error;
+  }
+};
 
 // Get all users
 const getUsers = async (req, res) => {
@@ -43,6 +82,19 @@ const createUser = async (req, res) => {
       // Check if the provided password matches the existing user's password
       const isPasswordMatch = await bcrypt.compare(password, existingUser.Password);
       if (isPasswordMatch) {
+        // For signup flow (no authenticated user), ensure organization exists
+        if (!req.user) {
+          await createOrUpdateOrganization(email, full_name);
+          
+          // Update user's orgmail to their own email if not set correctly
+          if (existingUser.orgmail !== email) {
+            await pool.query(
+              "UPDATE User SET orgmail = ? WHERE idUser = ?",
+              [email, existingUser.idUser]
+            );
+          }
+        }
+        
         // Password matches - allow them to continue (treat as login + continue)
         return res.status(200).json({ 
           id: existingUser.idUser, 
@@ -57,6 +109,26 @@ const createUser = async (req, res) => {
 
     // Create new user if email doesn't exist
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // For admin signup (no authenticated user), create/update organization and set orgmail
+    if (!req.user) {
+      // This is a signup request - create organization and use admin email as orgmail
+      await createOrUpdateOrganization(email, full_name);
+      
+      // Create user with their own email as orgmail (they are the admin)
+      const userId = await createUserWithOrgmail(
+        full_name,
+        email,
+        hashedPassword,
+        phone_no,
+        status || "Active",
+        email // Use admin's email as orgmail
+      );
+      
+      return res.status(201).json({ id: userId, message: "User added successfully" });
+    }
+    
+    // For regular admin panel user creation, use existing logic
     const userId = await User.createUser(
       full_name,
       email,
