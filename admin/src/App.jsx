@@ -35,7 +35,8 @@ import ReviewDetails from "./components/ReviewDetails"
 import Timeline from "./components/Timeline";
 import NewHomePageSettings from "./components/NewHomePageSettings";
 import NewPolicyDetailsSettings from "./components/NewPolicyDetailsSettings";
-
+import SignUpPage from "./components/SignUpPage";
+import HeaderFooterSettingsCreateOnly from "./components/HeaderFooterSettingsCreateOnly";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -144,6 +145,11 @@ const App = () => {
           <Route path="/NewHomePageSettings" element={<NewHomePageSettings />} />
           <Route path="/NewPolicyDetailsSettings" element={<NewPolicyDetailsSettings />} />
           <Route path="Timeline" element={<Timeline />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route
+            path="/header-footer-create-only"
+            element={<HeaderFooterSettingsCreateOnly />}
+          />
         </Routes>
       )}
     </>

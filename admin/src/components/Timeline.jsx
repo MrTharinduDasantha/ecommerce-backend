@@ -13,14 +13,7 @@ const Timeline = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Timeline steps definition
-  const steps = [
-    { id: 'login', label: 'Login' },
-    { id: 'settings', label: 'Header/Footer Settings' },
-    { id: 'aboutus', label: 'About Us' },
-    { id: 'home', label: 'Home Page Settings' },
-    { id: 'policy', label: 'Policy Details Settings' },
-  ];
+  // Timeline steps definition (kept for logic but not rendered)
 
   // Check for login success via query parameter
   useEffect(() => {
@@ -69,50 +62,6 @@ const Timeline = () => {
     }, 1000);
   };
 
-  // Timeline display component
-  const TimelineDisplay = () => (
-    <div className="w-full max-w-4xl mx-auto mb-8 relative">
-      <div className="flex items-center justify-between relative">
-        {/* Connecting Lines (between step numbers at the top) */}
-        {steps.map((step, index) => (
-          index < steps.length - 1 && (
-            <div
-              key={`line-${index}`}
-              className={`absolute h-1 ${
-                steps.findIndex((s) => s.id === currentStep) > index
-                  ? 'bg-[#5CAF90]'
-                  : 'bg-gray-400'
-              }`}
-              style={{
-                top: '0',
-                left: `${(index + 0.5) * (100 / (steps.length - 1))}%`,
-                width: `${100 / (steps.length - 1)}%`,
-                transform: 'translateX(-50%)',
-              }}
-            />
-          )
-        ))}
-        {/* Step Circles and Labels */}
-        {steps.map((step, index) => (
-          <div key={step.id} className="flex-1 flex flex-col items-center relative z-10">
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold transition-all duration-300 mt-2 ${
-                currentStep === step.id || steps.findIndex((s) => s.id === currentStep) > index
-                  ? 'bg-[#5CAF90]'
-                  : 'bg-gray-400'
-              }`}
-            >
-              {index + 1}
-            </div>
-            <span className="mt-2 text-sm text-white font-medium text-center">
-              {step.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-[#1D372E] flex flex-col items-center justify-center px-4 relative">
       <Toaster position="top-center" />
@@ -140,10 +89,7 @@ const Timeline = () => {
           animation: spin-sand-reverse 1.5s linear infinite;
         }
       `}</style>
-      {/* Timeline displayed at the top */}
-      <div className="w-full">
-        <TimelineDisplay />
-      </div>
+      {/* TimelineDisplay component removed to hide timeline steps */}
       {!isLoggedIn ? (
         <div className="bg-white bg-opacity-95 p-10 rounded-xl shadow-2xl max-w-lg w-full text-center transform transition-all duration-300 hover:scale-105">
           <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Welcome to Your Ecommerce Admin Timeline</h1>
@@ -157,7 +103,7 @@ const Timeline = () => {
               Sign Up
             </button>
             <button
-              onClick={() => handleNavigation('/?redirect=timeline')}
+              onClick={() => handleNavigation('/')} // Navigate to login without redirect parameter
               className="bg-[#5CAF90] text-white py-3 px-6 rounded-lg hover:bg-[#4a9a7d] transition duration-300 font-semibold text-lg shadow-md"
               disabled={isLoading}
             >

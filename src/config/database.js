@@ -1,16 +1,22 @@
 // src/config/database.js
-const mysql = require("mysql2/promise");
-require("dotenv").config();
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-// MySQL Connection Pool
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "medusa_ecommerce",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'medusa_ecommerce',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || 'root',
+  {
+    host: process.env.DB_HOST || 'localhost',
+    dialect: 'mysql',
+    pool: {
+      max: 10,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+    logging: console.log, // Enable logging for debugging
+  }
+);
 
-module.exports = pool;
+module.exports = sequelize;
