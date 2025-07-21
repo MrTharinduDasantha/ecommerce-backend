@@ -40,11 +40,24 @@ const createUser = async (req, res) => {
     // Check if email already exists
     const existingUser = await User.getUserByEmail(email);
     if (existingUser) {
-      return res.status(409).json({ error: "Email already exists" });
+      // Check if the provided password matches the existing user's password
+      const isPasswordMatch = await bcrypt.compare(password, existingUser.Password);
+      if (isPasswordMatch) {
+        // Password matches - allow them to continue (treat as login + continue)
+        return res.status(200).json({ 
+          id: existingUser.idUser, 
+          message: "User verified successfully. Continue to next step.",
+          isExistingUser: true 
+        });
+      } else {
+        // Password doesn't match - block with authentication error
+        return res.status(401).json({ error: "Email already exists with different password" });
+      }
     }
 
+    // Create new user if email doesn't exist
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userId = await User.addUser(
+    const userId = await User.createUser(
       full_name,
       email,
       hashedPassword,
@@ -52,14 +65,16 @@ const createUser = async (req, res) => {
       status || "Active"
     );
 
-    // Log admin action
-    const newUserInfo = { full_name, email, phone_no };
-    await logAdminAction(
-      req.user.userId,
-      "Added new user",
-      req.headers["user-agent"],
-      JSON.stringify(newUserInfo)
-    );
+    // Log admin action (only if user is authenticated)
+    if (req.user && req.user.userId) {
+      const newUserInfo = { full_name, email, phone_no };
+      await logAdminAction(
+        req.user.userId,
+        "Added new user",
+        req.headers["user-agent"],
+        JSON.stringify(newUserInfo)
+      );
+    }
 
     res.status(201).json({ id: userId, message: "User added successfully" });
   } catch (error) {
