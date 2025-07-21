@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken"); // Importing JWT
 const { sendConfirmationEmail, sendOtpEmail } = require("../../utils/mailer");
 const pool = require("../../config/database");
 const { getOrgMail } = require('../../utils/organization');
+const fs = require('fs');
+const path = require('path');
 
 // Helper function to create or update organization
 const createOrUpdateOrganization = async (email, name) => {
@@ -41,6 +43,47 @@ const createUserWithOrgmail = async (full_name, email, password, phone_no, statu
   } catch (error) {
     console.error('Error creating user with custom orgmail:', error);
     throw error;
+  }
+};
+
+// Helper function to update .env file with new ORGMAIL
+const updateEnvFile = async (email) => {
+  try {
+    const envPath = path.join(process.cwd(), '.env');
+    let envContent = '';
+    
+    // Read existing .env file if it exists
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf-8');
+    }
+    
+    // Check if ORGMAIL already exists in the file
+    const lines = envContent.split('\n');
+    let orgmailExists = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('ORGMAIL=') || lines[i].startsWith('ORG_MAIL=')) {
+        lines[i] = `ORGMAIL=${email}`;
+        orgmailExists = true;
+        break;
+      }
+    }
+    
+    // If ORGMAIL doesn't exist, add it
+    if (!orgmailExists) {
+      lines.push(`ORGMAIL=${email}`);
+    }
+    
+    // Write back to .env file
+    fs.writeFileSync(envPath, lines.join('\n'));
+    console.log(`Updated .env file with ORGMAIL=${email}`);
+    
+    // Update process.env for immediate effect
+    process.env.ORGMAIL = email;
+    
+  } catch (error) {
+    console.error('Error updating .env file:', error);
+    // Don't throw error - this shouldn't break the signup process
   }
 };
 
@@ -82,18 +125,21 @@ const createUser = async (req, res) => {
       // Check if the provided password matches the existing user's password
       const isPasswordMatch = await bcrypt.compare(password, existingUser.Password);
       if (isPasswordMatch) {
-        // For signup flow (no authenticated user), ensure organization exists
-        if (!req.user) {
-          await createOrUpdateOrganization(email, full_name);
-          
-          // Update user's orgmail to their own email if not set correctly
-          if (existingUser.orgmail !== email) {
-            await pool.query(
-              "UPDATE User SET orgmail = ? WHERE idUser = ?",
-              [email, existingUser.idUser]
-            );
-          }
+              // For signup flow (no authenticated user), ensure organization exists
+      if (!req.user) {
+        await createOrUpdateOrganization(email, full_name);
+        
+        // Update user's orgmail to their own email if not set correctly
+        if (existingUser.orgmail !== email) {
+          await pool.query(
+            "UPDATE User SET orgmail = ? WHERE idUser = ?",
+            [email, existingUser.idUser]
+          );
         }
+        
+        // Update .env file with new ORGMAIL
+        await updateEnvFile(email);
+      }
         
         // Password matches - allow them to continue (treat as login + continue)
         return res.status(200).json({ 
@@ -114,6 +160,9 @@ const createUser = async (req, res) => {
     if (!req.user) {
       // This is a signup request - create organization and use admin email as orgmail
       await createOrUpdateOrganization(email, full_name);
+      
+      // Update .env file with new ORGMAIL
+      await updateEnvFile(email);
       
       // Create user with their own email as orgmail (they are the admin)
       const userId = await createUserWithOrgmail(

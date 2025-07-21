@@ -156,26 +156,30 @@ async function updateAboutUsSetting(AboutUsSettingData) {
 
 // Fetch policy details setting
 async function getPolicyDetailsSetting() {
+  const orgMail = getOrgMail();
   const [rows] = await pool.query(
-    "SELECT * FROM Policy_Details_Setting LIMIT 1"
+    "SELECT * FROM Policy_Details_Setting WHERE orgmail = ? LIMIT 1",
+    [orgMail]
   );
   return rows[0] || null;
 }
 
 // Update policy details setting
 async function updatePolicyDetailsSetting(PolicyDetailsSettingData) {
+  const orgMail = getOrgMail();
   const currentPolicyDetailsSetting = await getPolicyDetailsSetting();
 
   if (currentPolicyDetailsSetting) {
     // Update existing policy details setting
     await pool.query(
-      "UPDATE Policy_Details_Setting SET Legal_Policy_Content = ?,  Privacy_Policy_Content = ?, Security_Policy_Content = ?, Terms_Of_Service_Content = ?, updated_at = CURRENT_TIMESTAMP WHERE idPolicy_Details_Setting = ?",
+      "UPDATE Policy_Details_Setting SET Legal_Policy_Content = ?,  Privacy_Policy_Content = ?, Security_Policy_Content = ?, Terms_Of_Service_Content = ?, updated_at = CURRENT_TIMESTAMP WHERE idPolicy_Details_Setting = ? AND orgmail = ?",
       [
         PolicyDetailsSettingData.Legal_Policy_Content,
         PolicyDetailsSettingData.Privacy_Policy_Content,
         PolicyDetailsSettingData.Security_Policy_Content,
         PolicyDetailsSettingData.Terms_Of_Service_Content,
         currentPolicyDetailsSetting.idPolicy_Details_Setting,
+        orgMail
       ]
     );
 
@@ -185,19 +189,20 @@ async function updatePolicyDetailsSetting(PolicyDetailsSettingData) {
   } else {
     // Create new policy details setting
     const result = await pool.query(
-      "INSERT INTO Policy_Details_Setting (Legal_Policy_Content, Privacy_Policy_Content, Security_Policy_Content, Terms_Of_Service_Content) VALUES (?,?,?,?)",
+      "INSERT INTO Policy_Details_Setting (Legal_Policy_Content, Privacy_Policy_Content, Security_Policy_Content, Terms_Of_Service_Content, orgmail) VALUES (?,?,?,?,?)",
       [
         PolicyDetailsSettingData.Legal_Policy_Content,
         PolicyDetailsSettingData.Privacy_Policy_Content,
         PolicyDetailsSettingData.Security_Policy_Content,
         PolicyDetailsSettingData.Terms_Of_Service_Content,
+        orgMail
       ]
     );
 
     // Return newly created policy details setting
     const [rows] = await pool.query(
-      "SELECT * FROM Policy_Details_Setting WHERE idPolicy_Details_Setting = ?",
-      result[0].insertId
+      "SELECT * FROM Policy_Details_Setting WHERE idPolicy_Details_Setting = ? AND orgmail = ?",
+      [result[0].insertId, orgMail]
     );
 
     return rows[0];
@@ -209,23 +214,26 @@ async function updatePolicyDetailsSetting(PolicyDetailsSettingData) {
 // -----------------------------------
 // Fetch home page setting
 async function getHomePageSetting() {
-  const [rows] = await pool.query("SELECT * FROM Home_Page_Setting LIMIT 1");
+  const orgMail = getOrgMail();
+  const [rows] = await pool.query("SELECT * FROM Home_Page_Setting WHERE orgmail = ? LIMIT 1", [orgMail]);
   return rows[0] || null;
 }
 
 // Update home page setting
 async function updateHomePageSetting(HomePageSettingData) {
+  const orgMail = getOrgMail();
   const currentHomePageSetting = await getHomePageSetting();
   if (currentHomePageSetting) {
     // Update existing home page setting
     await pool.query(
-      "UPDATE Home_Page_Setting SET Hero_Images = ?, Working_Section_Title = ?, Working_Section_Description = ?, Working_Items = ?, updated_at = CURRENT_TIMESTAMP WHERE idHome_Page_Setting = ?",
+      "UPDATE Home_Page_Setting SET Hero_Images = ?, Working_Section_Title = ?, Working_Section_Description = ?, Working_Items = ?, updated_at = CURRENT_TIMESTAMP WHERE idHome_Page_Setting = ? AND orgmail = ?",
       [
         HomePageSettingData.Hero_Images,
         HomePageSettingData.Working_Section_Title,
         HomePageSettingData.Working_Section_Description,
         HomePageSettingData.Working_Items,
         currentHomePageSetting.idHome_Page_Setting,
+        orgMail
       ]
     );
     // Return updated home page setting
@@ -234,18 +242,19 @@ async function updateHomePageSetting(HomePageSettingData) {
   } else {
     // Create new home page setting
     const result = await pool.query(
-      "INSERT INTO Home_Page_Setting (Hero_Images, Working_Section_Title, Working_Section_Description, Working_Items) VALUES (?,?,?,?)",
+      "INSERT INTO Home_Page_Setting (Hero_Images, Working_Section_Title, Working_Section_Description, Working_Items, orgmail) VALUES (?,?,?,?,?)",
       [
         HomePageSettingData.Hero_Images,
         HomePageSettingData.Working_Section_Title,
         HomePageSettingData.Working_Section_Description,
         HomePageSettingData.Working_Items,
+        orgMail
       ]
     );
     // Return newly created home page setting
     const [rows] = await pool.query(
-      "SELECT * FROM Home_Page_Setting WHERE idHome_Page_Setting = ?",
-      result[0].insertId
+      "SELECT * FROM Home_Page_Setting WHERE idHome_Page_Setting = ? AND orgmail = ?",
+      [result[0].insertId, orgMail]
     );
     return rows[0];
   }
