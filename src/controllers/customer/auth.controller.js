@@ -4,7 +4,12 @@ const pool = require("../../config/database")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs")
 const nodemailer = require("nodemailer")
+const admin = require('firebase-admin')
+const serviceAccount = require("../../config/firebase-service-account.json")
 
+admin.initializeApp({
+  creadential: admin.credential.cert(serviceAccount)
+});
 const otpVerificationStore = new Map()
 
 // Create transporter for emails
@@ -192,6 +197,37 @@ class CustomerAuthController {
     } catch (error) {
       console.error("Login error:", error)
       res.status(500).json({ message: "Login failed", error: error.message })
+    }
+  }
+  async googleLogin(req,res){
+    try{
+      const {token:firebaseIdToken } = req.body;
+      if(!firebaseIdToken){
+        return res.status(400).json({
+          message:"Firebase Token is required"
+        });
+      }
+      const decode = await admin.auth().verifyIdToken(firebaseIdToken);
+      const email = decode.email;
+      const fullName = decode.name || "No Name";
+      console.log("Google Login for: ",email)
+      
+      return res.json({
+        token:firebaseIdToken,
+        user:{
+          id: decode.uid,
+          email: email,
+          name:fullName
+        },
+        message:"Google Login Successfully"
+      });
+    }
+    catch(error){
+      console.error("google login error:",error);
+      return res.status(500).json({
+        message:"Google login failed",
+        error: error.message,
+      })
     }
   }
   // Request password reset

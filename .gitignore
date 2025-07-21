@@ -63,3 +63,6 @@ test_medusa_api.py
 src/uploads
 
 .lhignore
+
+# .gitignore
+src/config/firebase-service-account.json

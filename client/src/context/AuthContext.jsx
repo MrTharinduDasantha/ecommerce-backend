@@ -73,7 +73,18 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
+const googleLogin = async(idToken) => {
+  const response = await axios.post("http://localhost:9000/api/auth/customers/google-login",
+    {
+      token:idToken,
+    }
+  );
+  const {token,user:userData} = response.data;
+  localStorage.setItem("token",token);
+  axios.defaults.headers.common["Authorization"] `Bearer ${token}`;
+  setUser(userdata);
+  setError(null);
+}
   const logout = () => {
     localStorage.removeItem("token");
     delete axios.defaults.headers.common["Authorization"];
@@ -113,6 +124,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    googleLogin,
     logout,
     register,
     setUser

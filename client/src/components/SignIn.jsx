@@ -2,6 +2,9 @@ import { useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import {auth, provider} from "../utils/firebase"
+import {signInWithPopup} from "firebase/auth"
+
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -11,7 +14,7 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useContext(AuthContext);
+  const { login,googleLogin } = useContext(AuthContext);
 
   const from = location.state?.from?.pathname || "/";
 
@@ -61,13 +64,28 @@ const SignIn = () => {
       }
     }
   };
-
+const handleGoogleSignIn = async() =>{
+  try{
+const result = await signInWithPopup(auth,provider);
+const user=result.user
+const idToken = await user.getIdToken();
+await googleLogin(idToken)
+console.log("google sign in sucess",user,result)
+localStorage.setItem('userEmail', user.email);
+        // Navigate to home or dashboard
+        navigate(from);
+  }
+  catch(error){
+    console.error("google sign in error",error)
+  }
+}
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold mb-6 text-center text-[#1D372E]">
           Sign In
         </h2>
+        
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="form-control">
             <label className="label">
@@ -139,7 +157,12 @@ const SignIn = () => {
             Sign In
           </button>
         </form>
-
+<button type="button" onClick={handleGoogleSignIn}
+        className="mt-4 w-full bg-white text-[#1D372E] border border-[#5CAF90] py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-[#f1f1f1] transition-colors"
+        > 
+<img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="w-5 h-5" />
+Sign in With Google
+        </button>
         <div className="mt-4 text-center">
           <button
             type="button"
