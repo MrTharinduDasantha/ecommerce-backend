@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaEye, FaTimes } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { updateAboutUsSetting, fetchAboutUsSetting } from "../api/setting";
@@ -48,6 +48,7 @@ const NewAboutUsSettings = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
   const navigate = useNavigate();
 
   // Load existing data when component mounts
@@ -225,6 +226,147 @@ const NewAboutUsSettings = () => {
     </div>
   );
 
+  // About Us Preview Modal Component
+  const PreviewModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          {/* Modal Header */}
+          <div className="flex justify-between items-center p-4 border-b">
+            <h3 className="text-lg font-semibold text-[#1D372E]">About Us Page Preview</h3>
+            <button
+              onClick={() => setShowPreview(false)}
+              className="btn btn-sm btn-circle bg-gray-200 hover:bg-gray-300 border-none"
+            >
+              <FaTimes className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Preview Content */}
+          <div className="p-6">
+            {/* Statistics Section */}
+            <div className="mb-8">
+              <h4 className="text-md font-medium text-[#1D372E] mb-4">Statistics Section</h4>
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h2 className="text-2xl font-bold text-[#1D372E] text-center mb-6">Our Achievements</h2>
+                {statistics.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {statistics.map((stat, index) => (
+                      <div key={index} className="text-center">
+                        <div className="text-3xl font-bold text-[#5CAF90] mb-2">
+                          {stat.value}{stat.suffix}
+                        </div>
+                        <div className="text-sm text-gray-600">{stat.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-400 text-center">No statistics added yet</div>
+                )}
+              </div>
+            </div>
+
+            {/* Vision, Mission, Values Section */}
+            <div className="mb-8">
+              <h4 className="text-md font-medium text-[#1D372E] mb-4">Vision, Mission & Values</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Vision */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
+                  {visionImagePreview && (
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden bg-gray-100">
+                      <img src={visionImagePreview} alt="Vision" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <h3 className="font-bold text-[#1D372E] mb-2">
+                    {visionTitle || "Our Vision"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {visionDescription || "Vision description will appear here"}
+                  </p>
+                </div>
+
+                {/* Mission */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
+                  {missionImagePreview && (
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden bg-gray-100">
+                      <img src={missionImagePreview} alt="Mission" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <h3 className="font-bold text-[#1D372E] mb-2">
+                    {missionTitle || "Our Mission"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {missionDescription || "Mission description will appear here"}
+                  </p>
+                </div>
+
+                {/* Values */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
+                  {valuesImagePreview && (
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden bg-gray-100">
+                      <img src={valuesImagePreview} alt="Values" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <h3 className="font-bold text-[#1D372E] mb-2">
+                    {valuesTitle || "Our Values"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {valuesDescription || "Values description will appear here"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Why Choose Us Section */}
+            <div className="mb-8">
+              <h4 className="text-md font-medium text-[#1D372E] mb-4">Why Choose Us Section</h4>
+              <div className="bg-[#1D372E] text-white p-6 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Why Choose Us?</h2>
+                    {features.length > 0 ? (
+                      <ul className="space-y-2">
+                        {features.map((feature, index) => (
+                          <li key={index} className="flex items-center">
+                            <span className="w-2 h-2 bg-[#5CAF90] rounded-full mr-3"></span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="text-gray-400">No features added yet</div>
+                    )}
+                  </div>
+                  {whyChooseUsImagePreview && (
+                    <div className="flex items-center justify-center">
+                      <img src={whyChooseUsImagePreview} alt="Why Choose Us" className="max-w-full h-48 object-cover rounded-lg" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Shopping Experience Section */}
+            <div>
+              <h4 className="text-md font-medium text-[#1D372E] mb-4">Shopping Experience Section</h4>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg text-center">
+                <h2 className="text-2xl font-bold text-[#1D372E] mb-4">
+                  {shoppingExperienceTitle || "Your Shopping Experience"}
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  {shoppingExperienceDescription || "Shopping experience description will appear here"}
+                </p>
+                <button className="btn bg-[#5CAF90] border-[#5CAF90] text-white hover:bg-[#4a9a7d]">
+                  {shoppingExperienceButtonText || "Get Started"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       {/* Timeline at the top */}
@@ -252,6 +394,13 @@ const NewAboutUsSettings = () => {
                 )}
               </div>
             </div>
+            <button
+              onClick={() => setShowPreview(true)}
+              className="btn gap-2 btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] text-white"
+              disabled={isLoading}
+            >
+              <FaEye className="w-4 h-4" /> Preview
+            </button>
           </div>
 
           {isLoadingData ? (
@@ -647,6 +796,9 @@ const NewAboutUsSettings = () => {
       </div>
     </div>
     </div>
+
+      {/* Preview Modal */}
+      {showPreview && <PreviewModal />}
     </>
   );
 };

@@ -1,12 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaWhatsapp } from "react-icons/fa";
+import { FaPlus, FaEye, FaTimes, FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { updateHeaderFooterSetting, fetchHeaderFooterSetting } from "../api/setting";
 import TimelineDisplay from "../components/TimelineDisplay";
 
 const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
+  // Header States
+  const [navbarLogo, setNavbarLogo] = useState(null);
+  const [navbarLogoPreview, setNavbarLogoPreview] = useState(null);
+  const [navItems, setNavItems] = useState([]);
+  const [newNavItem, setNewNavItem] = useState({ name: "", url: "" });
+  const navbarLogoRef = useRef(null);
+
+  // Footer States
   const [countryBlocks, setCountryBlocks] = useState([]);
   const [newCountryBlock, setNewCountryBlock] = useState({
     title: "",
@@ -20,8 +28,11 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
     platform: "",
     url: "",
   });
+  const [footerCopyright, setFooterCopyright] = useState("");
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
 
   const navigate = useNavigate();
 
@@ -33,6 +44,22 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
         const existingData = await fetchHeaderFooterSetting();
         
         if (existingData) {
+          // Load Header Data
+          if (existingData.Navbar_Logo_Url) {
+            setNavbarLogoPreview(existingData.Navbar_Logo_Url);
+          }
+          
+          if (existingData.Nav_Icons) {
+            const parsedNavItems = typeof existingData.Nav_Icons === 'string' 
+              ? JSON.parse(existingData.Nav_Icons) 
+              : existingData.Nav_Icons;
+            setNavItems(Array.isArray(parsedNavItems) ? parsedNavItems : []);
+          }
+
+          if (existingData.Footer_Copyright) {
+            setFooterCopyright(existingData.Footer_Copyright);
+          }
+
           // Parse and set existing Country Blocks
           let parsedCountryBlocks = [];
           if (existingData.Country_Blocks) {
@@ -52,9 +79,9 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
           }
           
           // Show success message only if data was actually loaded
-          const totalItems = (parsedCountryBlocks?.length || 0) + (parsedSocialIcons?.length || 0);
-          if (totalItems > 0) {
-            toast.success(`Loaded ${parsedCountryBlocks?.length || 0} country blocks and ${parsedSocialIcons?.length || 0} social icons from your settings!`);
+          const totalItems = (parsedCountryBlocks?.length || 0) + (parsedSocialIcons?.length || 0) + (parsedNavItems?.length || 0);
+          if (totalItems > 0 || existingData.Navbar_Logo_Url || existingData.Footer_Copyright) {
+            toast.success(`Loaded header/footer settings from database!`);
           }
         }
       } catch (error) {
@@ -67,6 +94,44 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
 
     loadExistingData();
   }, []);
+
+  // Header handlers
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNavbarLogo(file);
+      setNavbarLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeLogo = () => {
+    setNavbarLogo(null);
+    setNavbarLogoPreview(null);
+    if (navbarLogoRef.current) navbarLogoRef.current.value = "";
+  };
+
+  const handleAddNavItem = () => {
+    if (!newNavItem.name || !newNavItem.url) {
+      toast.error("Navigation name and URL are required");
+      return;
+    }
+    setNavItems([...navItems, { ...newNavItem }]);
+    toast.success(`Navigation "${newNavItem.name}" added successfully!`);
+    setNewNavItem({ name: "", url: "" });
+  };
+
+  const handleRemoveNavItem = (index) => {
+    try {
+      const navName = navItems[index].name;
+      const updatedNavItems = [...navItems];
+      updatedNavItems.splice(index, 1);
+      setNavItems(updatedNavItems);
+      toast.success(`Navigation "${navName}" removed successfully!`);
+    } catch (error) {
+      console.error("Error removing nav item:", error);
+      toast.error("Failed to remove navigation item");
+    }
+  };
 
   // Country Blocks
   const handleAddCountryBlock = () => {
@@ -137,8 +202,16 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
+      
+      // Header data
+      if (navbarLogo) formData.append("navbarLogo", navbarLogo);
+      formData.append("navIcons", JSON.stringify(navItems));
+      formData.append("footerCopyright", footerCopyright);
+      
+      // Footer data
       formData.append("countryBlocks", JSON.stringify(countryBlocks));
       formData.append("socialIcons", JSON.stringify(socialIcons));
+      
       await updateHeaderFooterSetting(formData);
       toast.success("Header/Footer settings saved successfully!");
       
@@ -231,6 +304,129 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
     </div>
   );
 
+  // Simple Preview Modal Component
+  const PreviewModal = () => {
+    const getSocialIcon = (platform) => {
+      const icons = {
+        Facebook: FaFacebookF,
+        Twitter: FaTwitter,
+        Instagram: FaInstagram,
+        LinkedIn: FaLinkedinIn,
+        YouTube: FaYoutube,
+        WhatsApp: FaWhatsapp,
+      };
+      return icons[platform] || FaFacebookF;
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          {/* Modal Header */}
+          <div className="flex justify-between items-center p-4 border-b">
+            <h3 className="text-lg font-semibold text-[#1D372E]">Header & Footer Preview</h3>
+            <button
+              onClick={() => setShowPreview(false)}
+              className="btn btn-sm btn-circle bg-gray-200 hover:bg-gray-300 border-none"
+            >
+              <FaTimes className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Preview Content */}
+          <div className="p-4">
+            {/* Header Preview */}
+            <div className="mb-8">
+              <h4 className="text-md font-medium text-[#1D372E] mb-4">Header Preview</h4>
+              <div className="bg-[#1D372E] text-white p-4 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    {navbarLogoPreview ? (
+                      <img src={navbarLogoPreview} alt="Logo" className="h-8 w-auto mr-4" />
+                    ) : (
+                      <div className="text-xl font-bold">Your Logo</div>
+                    )}
+                  </div>
+                  <nav className="hidden md:flex space-x-6">
+                    {navItems.length > 0 ? (
+                      navItems.map((item, index) => (
+                        <a key={index} href={item.url} className="hover:text-[#5CAF90]">
+                          {item.name}
+                        </a>
+                      ))
+                    ) : (
+                      <>
+                        <a href="#" className="hover:text-[#5CAF90]">Home</a>
+                        <a href="#" className="hover:text-[#5CAF90]">Products</a>
+                        <a href="#" className="hover:text-[#5CAF90]">About</a>
+                        <a href="#" className="hover:text-[#5CAF90]">Contact</a>
+                      </>
+                    )}
+                  </nav>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Preview */}
+            <div>
+              <h4 className="text-md font-medium text-[#1D372E] mb-4">Footer Preview</h4>
+              <div className="bg-[#1D372E] text-white p-6 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Country Blocks */}
+                  <div className="md:col-span-2">
+                    <h5 className="font-semibold mb-3">Our Locations</h5>
+                    {countryBlocks.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {countryBlocks.map((block, index) => (
+                          <div key={index} className="space-y-1">
+                            <div className="font-medium text-[#5CAF90]">{block.title}</div>
+                            <div className="text-sm">{block.address}</div>
+                            {block.hotline && <div className="text-sm">📞 {block.hotline}</div>}
+                            {block.email && <div className="text-sm">✉️ {block.email}</div>}
+                            {block.whatsapp && <div className="text-sm">💬 {block.whatsapp}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-gray-400 text-sm">No country blocks added yet</div>
+                    )}
+                  </div>
+
+                  {/* Social Icons */}
+                  <div>
+                    <h5 className="font-semibold mb-3">Follow Us</h5>
+                    {socialIcons.length > 0 ? (
+                      <div className="flex flex-wrap gap-3">
+                        {socialIcons.map((icon, index) => {
+                          const IconComponent = getSocialIcon(icon.platform);
+                          return (
+                            <div
+                              key={index}
+                              className="bg-[#5CAF90] p-2 rounded-full hover:bg-[#4a9a7d] transition-colors cursor-pointer"
+                              title={icon.platform}
+                            >
+                              <IconComponent className="w-4 h-4" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-gray-400 text-sm">No social icons added yet</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer Bottom */}
+                <div className="border-t border-gray-600 mt-6 pt-4 text-center text-sm text-gray-400">
+                  {footerCopyright || "© 2025 Your Company Name. All rights reserved."}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       {/* Timeline at the top */}
@@ -247,13 +443,20 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                   <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
                     Manage Header and Footer (Create Only)
                   </h2>
-                  {!isLoadingData && (countryBlocks.length > 0 || socialIcons.length > 0) && (
+                  {!isLoadingData && (countryBlocks.length > 0 || socialIcons.length > 0 || navItems.length > 0 || navbarLogoPreview || footerCopyright) && (
                     <p className="text-sm text-[#5CAF90] mt-1">
                       ✓ Existing settings loaded from database
                     </p>
                   )}
                 </div>
               </div>
+              <button
+                onClick={() => setShowPreview(true)}
+                className="btn gap-2 btn-sm md:btn-md bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] text-white"
+                disabled={isLoading}
+              >
+                <FaEye className="w-4 h-4" /> Preview
+              </button>
             </div>
 
             {isLoadingData ? (
@@ -263,6 +466,127 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
               </div>
             ) : (
               <form onSubmit={handleSave}>
+              {/* Header Section */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-[#1D372E] mb-4">Header Configuration</h3>
+                
+                {/* Logo Upload */}
+                <div className="mb-6 p-4 border border-[#1D372E] rounded-lg">
+                  <h4 className="font-medium text-[#1D372E] mb-3">Navbar Logo</h4>
+                  <input
+                    type="file"
+                    onChange={handleLogoChange}
+                    ref={navbarLogoRef}
+                    accept="image/*"
+                    className="file-input file-input-bordered file-input-sm w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  />
+                  {navbarLogoPreview && (
+                    <div className="relative mt-4 w-32 h-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <img src={navbarLogoPreview} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
+                      <button
+                        type="button"
+                        onClick={removeLogo}
+                        className="btn btn-xs bg-red-500 hover:bg-red-600 border-red-500 btn-square absolute -top-2 -right-2 text-white"
+                      >
+                        <RiDeleteBin5Fill className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Navigation Items */}
+                <div className="mb-6 p-4 border border-[#1D372E] rounded-lg">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-medium text-[#1D372E]">Navigation Menu</h4>
+                    <div className="text-sm text-gray-500">
+                      {navItems.length} items added
+                    </div>
+                  </div>
+                  
+                  {navItems.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                      {navItems.map((item, index) => (
+                        <div key={index} className="border border-[#1D372E] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-[#1D372E] text-sm mb-1">{item.name}</div>
+                              <div className="text-xs text-gray-600 truncate" title={item.url}>{item.url}</div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveNavItem(index)}
+                              className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white ml-2"
+                              disabled={isLoading}
+                              title="Remove Navigation Item"
+                            >
+                              <RiDeleteBin5Fill className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-[#1D372E] p-6 rounded-lg text-center border-2 border-dashed border-[#5CAF90] my-4">
+                      <p className="text-sm font-medium">No navigation items added yet. Add your first menu item below.</p>
+                      <p className="text-xs text-gray-500 mt-1">Use the form below to get started</p>
+                    </div>
+                  )}
+
+                  {/* Add New Navigation Item */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text text-[#1D372E]">Menu Name</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={newNavItem.name}
+                        onChange={(e) => setNewNavItem({ ...newNavItem, name: e.target.value })}
+                        placeholder="Enter menu name (e.g. Home)"
+                        className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E]"
+                      />
+                    </div>
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text text-[#1D372E]">URL</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={newNavItem.url}
+                        onChange={(e) => setNewNavItem({ ...newNavItem, url: e.target.value })}
+                        placeholder="Enter URL (e.g. /home)"
+                        className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E]"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddNavItem}
+                    className="btn btn-sm btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] text-white mt-4"
+                    disabled={isLoading}
+                  >
+                    <FaPlus className="w-3 h-3 mr-1" /> Add Navigation Item
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer Section */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-[#1D372E] mb-4">Footer Configuration</h3>
+                
+                {/* Footer Copyright */}
+                <div className="mb-6 p-4 border border-[#1D372E] rounded-lg">
+                  <h4 className="font-medium text-[#1D372E] mb-3">Footer Copyright Text</h4>
+                  <input
+                    type="text"
+                    value={footerCopyright}
+                    onChange={(e) => setFooterCopyright(e.target.value)}
+                    placeholder="Enter copyright text (e.g. © 2025 Your Company Name. All rights reserved.)"
+                    className="input input-bordered input-sm w-full bg-white border-[#1D372E] text-[#1D372E]"
+                  />
+                </div>
+              </div>
+
               {/* Country Blocks */}
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-4">
@@ -664,6 +988,9 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
           </div>
         </div>
       </div>
+
+      {/* Preview Modal */}
+      {showPreview && <PreviewModal />}
     </>
   );
 };
