@@ -1,13 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { updateHomePageSetting } from "../api/setting";
+import { updateHomePageSetting, fetchHomePageSetting } from "../api/setting";
 import TimelineDisplay from "./TimelineDisplay";
 
 const NewHomePageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Hero Images State
   const [heroImageFiles, setHeroImageFiles] = useState([]);
@@ -29,6 +30,56 @@ const NewHomePageSettings = () => {
   const workingImageRef = useRef(null);
 
   const navigate = useNavigate();
+
+  // Load existing data when component mounts
+  useEffect(() => {
+    const loadExistingData = async () => {
+      try {
+        setIsLoadingData(true);
+        const existingData = await fetchHomePageSetting();
+        
+        if (existingData) {
+          // Load Hero Images
+          if (existingData.Hero_Images) {
+            const parsedHeroImages = typeof existingData.Hero_Images === 'string' 
+              ? JSON.parse(existingData.Hero_Images) 
+              : existingData.Hero_Images;
+            if (Array.isArray(parsedHeroImages) && parsedHeroImages.length > 0) {
+              // Set existing image URLs as previews
+              setHeroImagePreviews(parsedHeroImages);
+            }
+          }
+
+          // Load Working Section data
+          if (existingData.Working_Section_Title) setWorkingSectionTitle(existingData.Working_Section_Title);
+          if (existingData.Working_Section_Description) setWorkingSectionDescription(existingData.Working_Section_Description);
+
+          // Load Working Items
+          if (existingData.Working_Items) {
+            const parsedWorkingItems = typeof existingData.Working_Items === 'string' 
+              ? JSON.parse(existingData.Working_Items) 
+              : existingData.Working_Items;
+            setWorkingItems(Array.isArray(parsedWorkingItems) ? parsedWorkingItems : []);
+          }
+
+          // Show success message if data was loaded
+          const hasData = existingData.Working_Section_Title || 
+                          (parsedHeroImages?.length > 0) || 
+                          (parsedWorkingItems?.length > 0);
+          if (hasData) {
+            toast.success("Loaded your existing Home Page settings from database!");
+          }
+        }
+      } catch (error) {
+        // If no existing data or error, start fresh (this is fine for first-time setup)
+        console.log("No existing Home Page data found, starting fresh");
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadExistingData();
+  }, []);
 
   // Hero images handlers
   const handleHeroImagesChange = (e) => {
@@ -157,7 +208,31 @@ const NewHomePageSettings = () => {
       <div style={{ background: "#1D372E", minHeight: "100vh" }}>
         <div className="card bg-white shadow-md relative mx-auto w-[90vw] sm:w-[600px] md:w-[900px] lg:w-[1100px]">
           <div className="card-body">
-            <form onSubmit={handleSave}>
+            <div className="mb-6 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-[#5CAF90]"></div>
+                <div>
+                  <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+                    Home Page Settings (Create Only)
+                  </h2>
+                  {!isLoadingData && (
+                    heroImagePreviews.length > 0 || workingItems.length > 0 || workingSectionTitle
+                  ) && (
+                    <p className="text-sm text-[#5CAF90] mt-1">
+                      ✓ Existing settings loaded from database
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {isLoadingData ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="loading loading-spinner loading-lg text-[#5CAF90]"></div>
+                <span className="ml-3 text-[#1D372E]">Loading your existing Home Page settings...</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSave}>
               <div className="mb-8">
                 <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
                   Hero Banner Images
@@ -238,21 +313,27 @@ const NewHomePageSettings = () => {
                     />
                   </div>
                 </div>
-                <h4 className="font-medium text-[#1D372E] mb-3">Working Items</h4>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="font-medium text-[#1D372E]">Working Items</h4>
+                  <div className="text-sm text-gray-500">
+                    {workingItems.length}/4 items added
+                  </div>
+                </div>
                 {workingItems.length > 0 ? (
                   <>
-                    <div className="md:hidden space-y-4">
+                    {/* Mobile View */}
+                    <div className="md:hidden space-y-3 mb-4">
                       {workingItems.map((item, index) => (
                         <div
                           key={index}
-                          className="border border-[#1D372E] rounded-lg p-4 bg-white"
+                          className="border border-[#1D372E] rounded-lg p-4 bg-white shadow-sm"
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-[#1D372E] mb-2">
                                 {item.title}
                               </div>
-                              <div className="text-sm text-[#1D372E] mb-2">
+                              <div className="text-sm text-gray-600 mb-2">
                                 {item.description}
                               </div>
                               <div className="w-16 h-16 rounded overflow-hidden">
@@ -266,7 +347,7 @@ const NewHomePageSettings = () => {
                             <button
                               type="button"
                               onClick={() => handleRemoveWorkingItem(index)}
-                              className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] ml-2"
+                              className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white ml-2"
                             >
                               <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                             </button>
@@ -274,9 +355,48 @@ const NewHomePageSettings = () => {
                         </div>
                       ))}
                     </div>
+                    
+                    {/* Desktop/Tablet View */}
+                    <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
+                      {workingItems.map((item, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#1D372E] rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-[#1D372E] mb-2">
+                                {item.title}
+                              </div>
+                              <div className="text-sm text-gray-600 mb-3">
+                                {item.description}
+                              </div>
+                              <div className="w-20 h-16 rounded overflow-hidden">
+                                <img
+                                  src={item.image}
+                                  alt={item.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveWorkingItem(index)}
+                              className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                              title="Remove Working Item"
+                            >
+                              <RiDeleteBin5Fill className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </>
                 ) : (
-                  <EmptyStateMessage message="No working items found." />
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-[#1D372E] p-6 rounded-lg text-center border-2 border-dashed border-[#5CAF90] my-4">
+                    <p className="text-sm font-medium">No working items found in your settings. Add your first working item below.</p>
+                    <p className="text-xs text-gray-500 mt-1">Use the form below to get started</p>
+                  </div>
                 )}
                 <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
                   <h4 className="font-medium text-[#1D372E] mb-3">
@@ -383,6 +503,7 @@ const NewHomePageSettings = () => {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       </div>
