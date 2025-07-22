@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlus, FaEye, FaEyeSlash, FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import toast from "react-hot-toast";
-import { updateHeaderFooterSetting } from "../api/setting";
+import { updateHeaderFooterSetting, fetchHeaderFooterSetting } from "../api/setting";
 import TimelineDisplay from "../components/TimelineDisplay";
 
 const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
@@ -22,8 +22,52 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   const navigate = useNavigate();
+
+  // Load existing data when component mounts
+  useEffect(() => {
+    const loadExistingData = async () => {
+      try {
+        setIsLoadingData(true);
+        const existingData = await fetchHeaderFooterSetting();
+        
+        if (existingData) {
+          // Parse and set existing Country Blocks
+          let parsedCountryBlocks = [];
+          if (existingData.Country_Blocks) {
+            parsedCountryBlocks = typeof existingData.Country_Blocks === 'string' 
+              ? JSON.parse(existingData.Country_Blocks) 
+              : existingData.Country_Blocks;
+            setCountryBlocks(Array.isArray(parsedCountryBlocks) ? parsedCountryBlocks : []);
+          }
+          
+          // Parse and set existing Social Icons
+          let parsedSocialIcons = [];
+          if (existingData.Social_Icons) {
+            parsedSocialIcons = typeof existingData.Social_Icons === 'string' 
+              ? JSON.parse(existingData.Social_Icons) 
+              : existingData.Social_Icons;
+            setSocialIcons(Array.isArray(parsedSocialIcons) ? parsedSocialIcons : []);
+          }
+          
+          // Show success message only if data was actually loaded
+          const totalItems = (parsedCountryBlocks?.length || 0) + (parsedSocialIcons?.length || 0);
+          if (totalItems > 0) {
+            toast.success(`Loaded ${parsedCountryBlocks?.length || 0} country blocks and ${parsedSocialIcons?.length || 0} social icons from your settings!`);
+          }
+        }
+      } catch (error) {
+        // If no existing data or error, start fresh (this is fine for first-time setup)
+        console.log("No existing data found, starting fresh");
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadExistingData();
+  }, []);
 
   // Country Blocks
   const handleAddCountryBlock = () => {
@@ -43,11 +87,14 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
       email: "",
       whatsapp: "",
     });
+    toast.success(`Country block "${newCountryBlock.title}" added successfully!`);
   };
   const handleRemoveCountryBlock = (index) => {
+    const blockTitle = countryBlocks[index].title;
     const updatedCountryBlocks = [...countryBlocks];
     updatedCountryBlocks.splice(index, 1);
     setCountryBlocks(updatedCountryBlocks);
+    toast.success(`Country block "${blockTitle}" removed successfully!`);
   };
 
   // Social Icons
@@ -61,15 +108,18 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
       return;
     }
     setSocialIcons([...socialIcons, { ...newSocialIcon }]);
+    toast.success(`${newSocialIcon.platform} social icon added successfully!`);
     setNewSocialIcon({
       platform: "",
       url: "",
     });
   };
   const handleRemoveSocialIcon = (index) => {
+    const iconPlatform = socialIcons[index].platform;
     const updatedSocialIcons = [...socialIcons];
     updatedSocialIcons.splice(index, 1);
     setSocialIcons(updatedSocialIcons);
+    toast.success(`${iconPlatform} social icon removed successfully!`);
   };
 
   // Submit handler (POST only)
@@ -90,10 +140,12 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
     }
   };
 
-  // Empty state message
-  const EmptyStateMessage = ({ message }) => (
-    <div className="bg-gray-50 text-[#1D372E] p-4 rounded-md text-center border border-dashed border-[#5CAF90] my-3">
-      <p>{message}</p>
+  // Empty state message with better UX
+  const EmptyStateMessage = ({ message, icon }) => (
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-[#1D372E] p-6 rounded-lg text-center border-2 border-dashed border-[#5CAF90] my-4">
+      {icon && <div className="mb-2 text-[#5CAF90]">{icon}</div>}
+      <p className="text-sm font-medium">{message}</p>
+      <p className="text-xs text-gray-500 mt-1">Use the form below to get started</p>
     </div>
   );
 
@@ -175,9 +227,16 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
             <div className="mb-6 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-1 h-6 bg-[#5CAF90]"></div>
-                <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
-                  Manage Header and Footer (Create Only)
-                </h2>
+                <div>
+                  <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+                    Manage Header and Footer (Create Only)
+                  </h2>
+                  {!isLoadingData && (countryBlocks.length > 0 || socialIcons.length > 0) && (
+                    <p className="text-sm text-[#5CAF90] mt-1">
+                      ✓ Existing settings loaded from database
+                    </p>
+                  )}
+                </div>
               </div>
               <button
                 onClick={() => setShowPreview(!showPreview)}
@@ -190,64 +249,136 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
 
             {showPreview && <Preview />}
 
-            <form onSubmit={handleSave}>
+            {isLoadingData ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="loading loading-spinner loading-lg text-[#5CAF90]"></div>
+                <span className="ml-3 text-[#1D372E]">Loading your existing settings...</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSave}>
               {/* Country Blocks */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
-                  Country Blocks
-                </h3>
-                {countryBlocks.length > 0 ? (
-                  <div className="md:hidden space-y-4">
-                    {countryBlocks.map((block, index) => (
-                      <div
-                        key={index}
-                        className="border border-[#1D372E] rounded-lg p-4 bg-white"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-semibold text-[#1D372E] text-lg">
-                            {block.title}
-                          </h4>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCountryBlock(index)}
-                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                          >
-                            <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="font-medium text-[#1D372E]">
-                              Address:{" "}
-                            </span>
-                            <span className="text-gray-600">{block.address}</span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-[#1D372E]">
-                              Hotline:{" "}
-                            </span>
-                            <span className="text-gray-600">{block.hotline}</span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-[#1D372E]">
-                              Email:{" "}
-                            </span>
-                            <span className="text-gray-600 break-all">
-                              {block.email}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-[#1D372E]">
-                              WhatsApp:{" "}
-                            </span>
-                            <span className="text-gray-600">{block.whatsapp}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-[#1D372E]">
+                    Country Blocks
+                  </h3>
+                  <div className="text-sm text-gray-500">
+                    {countryBlocks.length}/4 blocks added
                   </div>
+                </div>
+                {countryBlocks.length > 0 ? (
+                  <>
+                    {/* Always show added blocks - Mobile View */}
+                    <div className="md:hidden space-y-4 mb-4">
+                      {countryBlocks.map((block, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#1D372E] rounded-lg p-4 bg-white shadow-sm"
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <h4 className="font-semibold text-[#1D372E] text-lg">
+                              {block.title}
+                            </h4>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCountryBlock(index)}
+                              className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                            >
+                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div>
+                              <span className="font-medium text-[#1D372E]">
+                                Address:{" "}
+                              </span>
+                              <span className="text-gray-600">{block.address}</span>
+                            </div>
+                            {block.hotline && (
+                              <div>
+                                <span className="font-medium text-[#1D372E]">
+                                  Hotline:{" "}
+                                </span>
+                                <span className="text-gray-600">{block.hotline}</span>
+                              </div>
+                            )}
+                            {block.email && (
+                              <div>
+                                <span className="font-medium text-[#1D372E]">
+                                  Email:{" "}
+                                </span>
+                                <span className="text-gray-600 break-all">
+                                  {block.email}
+                                </span>
+                              </div>
+                            )}
+                            {block.whatsapp && (
+                              <div>
+                                <span className="font-medium text-[#1D372E]">
+                                  WhatsApp:{" "}
+                                </span>
+                                <span className="text-gray-600">{block.whatsapp}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Desktop/Tablet View - Grid Layout */}
+                    <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                      {countryBlocks.map((block, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#1D372E] rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <h4 className="font-semibold text-[#1D372E] text-base">
+                              {block.title}
+                            </h4>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCountryBlock(index)}
+                              className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                              title="Remove Country Block"
+                            >
+                              <RiDeleteBin5Fill className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="space-y-2 text-xs">
+                            <div className="truncate">
+                              <span className="font-medium text-[#1D372E]">Address: </span>
+                              <span className="text-gray-600" title={block.address}>
+                                {block.address}
+                              </span>
+                            </div>
+                            {block.hotline && (
+                              <div className="truncate">
+                                <span className="font-medium text-[#1D372E]">Hotline: </span>
+                                <span className="text-gray-600">{block.hotline}</span>
+                              </div>
+                            )}
+                            {block.email && (
+                              <div className="truncate">
+                                <span className="font-medium text-[#1D372E]">Email: </span>
+                                <span className="text-gray-600" title={block.email}>
+                                  {block.email}
+                                </span>
+                              </div>
+                            )}
+                            {block.whatsapp && (
+                              <div className="truncate">
+                                <span className="font-medium text-[#1D372E]">WhatsApp: </span>
+                                <span className="text-gray-600">{block.whatsapp}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
-                  <EmptyStateMessage message="No country blocks found." />
+                  <EmptyStateMessage message="No country blocks found in your settings. Add your first country block below." />
                 )}
                 {/* Add New Country Block */}
                 <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
@@ -359,38 +490,75 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
 
               {/* Social Icons */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
-                  Social Icons
-                </h3>
-                {socialIcons.length > 0 ? (
-                  <div className="md:hidden space-y-4">
-                    {socialIcons.map((icon, index) => (
-                      <div
-                        key={index}
-                        className="border border-[#1D372E] rounded-lg p-4 bg-white"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-[#1D372E] mb-1">
-                              {icon.platform}
-                            </div>
-                            <div className="text-sm text-gray-600 break-all">
-                              {icon.url}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSocialIcon(index)}
-                            className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d] ml-2"
-                          >
-                            <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-[#1D372E]">
+                    Social Icons
+                  </h3>
+                  <div className="text-sm text-gray-500">
+                    {socialIcons.length} platforms added
                   </div>
+                </div>
+                {socialIcons.length > 0 ? (
+                  <>
+                    {/* Mobile View */}
+                    <div className="md:hidden space-y-3 mb-4">
+                      {socialIcons.map((icon, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#1D372E] rounded-lg p-4 bg-white shadow-sm"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-[#1D372E] mb-1">
+                                {icon.platform}
+                              </div>
+                              <div className="text-sm text-gray-600 break-all">
+                                {icon.url}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSocialIcon(index)}
+                              className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white ml-2"
+                            >
+                              <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Desktop/Tablet View */}
+                    <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                      {socialIcons.map((icon, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#1D372E] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-[#1D372E] text-sm mb-1">
+                                {icon.platform}
+                              </div>
+                              <div className="text-xs text-gray-600 truncate" title={icon.url}>
+                                {icon.url}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSocialIcon(index)}
+                              className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white ml-2"
+                              title="Remove Social Icon"
+                            >
+                              <RiDeleteBin5Fill className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
-                  <EmptyStateMessage message="No social icons found." />
+                  <EmptyStateMessage message="No social icons found in your settings. Add your first social icon below." />
                 )}
                 {/* Add New Social Icon */}
                 <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
@@ -489,6 +657,7 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       </div>
