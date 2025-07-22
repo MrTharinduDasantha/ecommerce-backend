@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaEye, FaEyeSlash, FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaWhatsapp } from "react-icons/fa";
+import { FaPlus, FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { updateHeaderFooterSetting, fetchHeaderFooterSetting } from "../api/setting";
@@ -21,7 +21,6 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
     url: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   const navigate = useNavigate();
@@ -90,11 +89,16 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
     toast.success(`Country block "${newCountryBlock.title}" added successfully!`);
   };
   const handleRemoveCountryBlock = (index) => {
-    const blockTitle = countryBlocks[index].title;
-    const updatedCountryBlocks = [...countryBlocks];
-    updatedCountryBlocks.splice(index, 1);
-    setCountryBlocks(updatedCountryBlocks);
-    toast.success(`Country block "${blockTitle}" removed successfully!`);
+    try {
+      const blockTitle = countryBlocks[index].title;
+      const updatedCountryBlocks = [...countryBlocks];
+      updatedCountryBlocks.splice(index, 1);
+      setCountryBlocks(updatedCountryBlocks);
+      toast.success(`Country block "${blockTitle}" removed successfully!`);
+    } catch (error) {
+      console.error("Error removing country block:", error);
+      toast.error("Failed to remove country block");
+    }
   };
 
   // Social Icons
@@ -115,11 +119,16 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
     });
   };
   const handleRemoveSocialIcon = (index) => {
-    const iconPlatform = socialIcons[index].platform;
-    const updatedSocialIcons = [...socialIcons];
-    updatedSocialIcons.splice(index, 1);
-    setSocialIcons(updatedSocialIcons);
-    toast.success(`${iconPlatform} social icon removed successfully!`);
+    try {
+      const iconPlatform = socialIcons[index].platform;
+      const updatedSocialIcons = [...socialIcons];
+      updatedSocialIcons.splice(index, 1);
+      setSocialIcons(updatedSocialIcons);
+      toast.success(`${iconPlatform} social icon removed successfully!`);
+    } catch (error) {
+      console.error("Error removing social icon:", error);
+      toast.error("Failed to remove social icon");
+    }
   };
 
   // Submit handler (POST only)
@@ -130,11 +139,18 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
       const formData = new FormData();
       formData.append("countryBlocks", JSON.stringify(countryBlocks));
       formData.append("socialIcons", JSON.stringify(socialIcons));
-      await updateHeaderFooterSetting(formData); // POST only
-      toast.success("Settings posted successfully");
-      // Optionally clear form here
+      await updateHeaderFooterSetting(formData);
+      toast.success("Header/Footer settings saved successfully!");
+      
+      // Navigate to next step
+      if (onNext) {
+        onNext();
+      } else {
+        navigate("/newaboutUssetting");
+      }
     } catch (error) {
-      toast.error(error.message || "Failed to post settings");
+      console.error("Save error:", error);
+      toast.error(error.message || "Failed to save header/footer settings");
     } finally {
       setIsLoading(false);
     }
@@ -238,16 +254,7 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => setShowPreview(!showPreview)}
-                className={`btn gap-2 btn-sm md:btn-md ${showPreview ? 'bg-[#1D372E] border-[#1D372E] hover:bg-[#162a23]' : 'bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d]'}`}
-                disabled={isLoading}
-              >
-                {showPreview ? <><FaEyeSlash className="w-4 h-4" /> Hide Preview</> : <><FaEye className="w-4 h-4" /> Show Preview</>}
-              </button>
             </div>
-
-            {showPreview && <Preview />}
 
             {isLoadingData ? (
               <div className="flex justify-center items-center py-12">
@@ -283,6 +290,8 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                               type="button"
                               onClick={() => handleRemoveCountryBlock(index)}
                               className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                              disabled={isLoading}
+                              title="Remove Country Block"
                             >
                               <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                             </button>
@@ -340,6 +349,7 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                               type="button"
                               onClick={() => handleRemoveCountryBlock(index)}
                               className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                              disabled={isLoading}
                               title="Remove Country Block"
                             >
                               <RiDeleteBin5Fill className="w-3 h-3" />
@@ -482,6 +492,7 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                     type="button"
                     onClick={handleAddCountryBlock}
                     className="btn btn-sm btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] text-white mt-4"
+                    disabled={isLoading}
                   >
                     <FaPlus className="w-3 h-3 mr-1" /> Add Country Block
                   </button>
@@ -520,6 +531,8 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                               type="button"
                               onClick={() => handleRemoveSocialIcon(index)}
                               className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white ml-2"
+                              disabled={isLoading}
+                              title="Remove Social Icon"
                             >
                               <RiDeleteBin5Fill className="w-3.5 h-3.5" />
                             </button>
@@ -548,6 +561,7 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                               type="button"
                               onClick={() => handleRemoveSocialIcon(index)}
                               className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white ml-2"
+                              disabled={isLoading}
                               title="Remove Social Icon"
                             >
                               <RiDeleteBin5Fill className="w-3 h-3" />
@@ -613,6 +627,7 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                     type="button"
                     onClick={handleAddSocialIcon}
                     className="btn btn-sm btn-primary bg-[#5CAF90] border-[#5CAF90] hover:bg-[#4a9a7d] text-white mt-4"
+                    disabled={isLoading}
                   >
                     <FaPlus className="w-3 h-3 mr-1" /> Add Social Icon
                   </button>
@@ -630,30 +645,18 @@ const HeaderFooterSettingsCreateOnly = ({ onNext }) => {
                   Back
                 </button>
                 <button
-                  type="button"
+                  type="submit"
                   className="btn btn-primary bg-[#5CAF90] border-none text-white btn-sm md:btn-md"
                   disabled={isLoading}
-                  onClick={async () => {
-                    try {
-                      setIsLoading(true);
-                      const formData = new FormData();
-                      formData.append("countryBlocks", JSON.stringify(countryBlocks));
-                      formData.append("socialIcons", JSON.stringify(socialIcons));
-                      await updateHeaderFooterSetting(formData);
-                      toast.success("Header/Footer settings saved!");
-                      if (onNext) {
-                        onNext();
-                      } else {
-                        navigate("/newaboutUssetting");
-                      }
-                    } catch (error) {
-                      toast.error(error.message || "Failed to save settings");
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
                 >
-                  Next
+                  {isLoading ? (
+                    <>
+                      <div className="loading loading-spinner loading-sm"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Next"
+                  )}
                 </button>
               </div>
             </form>
