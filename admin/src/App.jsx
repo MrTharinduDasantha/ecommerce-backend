@@ -38,6 +38,10 @@ import NewPolicyDetailsSettings from "./components/NewPolicyDetailsSettings";
 import SignUpPage from "./components/SignUpPage";
 import HeaderFooterSettingsCreateOnly from "./components/HeaderFooterSettingsCreateOnly";
 
+import HomePageSettings from "./components/HomePageSettings"; //added import for HomePageSettings
+import PolicyDetailsSettings from "./components/PolicyDetailsSettings"; //added import for PolicyDetailsSettings
+
+
 const App = () => {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
@@ -119,6 +123,13 @@ const App = () => {
               element={<CustomerManagedForm />}
             />
             <Route path="settings/about-us" element={<AboutUsSettings />} />
+
+            <Route path="settings/home-page" element={<HomePageSettings />} />
+
+            <Route
+              path="settings/policy-details"
+              element={<PolicyDetailsSettings />}
+            />
             <Route
               path="settings/header-footer"
               element={<HeaderFooterSettings />}
