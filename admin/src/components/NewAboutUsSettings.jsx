@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import toast from "react-hot-toast";
-import { updateAboutUsSetting } from "../api/setting";
+import { updateAboutUsSetting, fetchAboutUsSetting } from "../api/setting";
 import TimelineDisplay from "./TimelineDisplay";
 
 const NewAboutUsSettings = () => {
@@ -47,7 +47,73 @@ const NewAboutUsSettings = () => {
   const [shoppingExperienceButtonText, setShoppingExperienceButtonText] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const navigate = useNavigate();
+
+  // Load existing data when component mounts
+  useEffect(() => {
+    const loadExistingData = async () => {
+      try {
+        setIsLoadingData(true);
+        const existingData = await fetchAboutUsSetting();
+        
+        if (existingData) {
+          // Load Statistics
+          if (existingData.Statistics) {
+            const parsedStatistics = typeof existingData.Statistics === 'string' 
+              ? JSON.parse(existingData.Statistics) 
+              : existingData.Statistics;
+            setStatistics(Array.isArray(parsedStatistics) ? parsedStatistics : []);
+          }
+
+          // Load Vision data
+          if (existingData.Vision_Title) setVisionTitle(existingData.Vision_Title);
+          if (existingData.Vision_Description) setVisionDescription(existingData.Vision_Description);
+          if (existingData.Vision_Image_Url) setVisionImagePreview(existingData.Vision_Image_Url);
+
+          // Load Mission data
+          if (existingData.Mission_Title) setMissionTitle(existingData.Mission_Title);
+          if (existingData.Mission_Description) setMissionDescription(existingData.Mission_Description);
+          if (existingData.Mission_Image_Url) setMissionImagePreview(existingData.Mission_Image_Url);
+
+          // Load Values data
+          if (existingData.Values_Title) setValuesTitle(existingData.Values_Title);
+          if (existingData.Values_Description) setValuesDescription(existingData.Values_Description);
+          if (existingData.Values_Image_Url) setValuesImagePreview(existingData.Values_Image_Url);
+
+          // Load Features
+          if (existingData.Features) {
+            const parsedFeatures = typeof existingData.Features === 'string' 
+              ? JSON.parse(existingData.Features) 
+              : existingData.Features;
+            setFeatures(Array.isArray(parsedFeatures) ? parsedFeatures : []);
+          }
+
+          // Load Why Choose Us image
+          if (existingData.Why_Choose_Us_Image_Url) setWhyChooseUsImagePreview(existingData.Why_Choose_Us_Image_Url);
+
+          // Load Shopping Experience data
+          if (existingData.Shopping_Experience_Title) setShoppingExperienceTitle(existingData.Shopping_Experience_Title);
+          if (existingData.Shopping_Experience_Description) setShoppingExperienceDescription(existingData.Shopping_Experience_Description);
+          if (existingData.Shopping_Experience_Button_Text) setShoppingExperienceButtonText(existingData.Shopping_Experience_Button_Text);
+
+          // Show success message if data was loaded
+          const hasData = existingData.Vision_Title || existingData.Mission_Title || existingData.Values_Title || 
+                          (parsedStatistics?.length > 0) || (parsedFeatures?.length > 0);
+          if (hasData) {
+            toast.success("Loaded your existing About Us settings from database!");
+          }
+        }
+      } catch (error) {
+        // If no existing data or error, start fresh (this is fine for first-time setup)
+        console.log("No existing About Us data found, starting fresh");
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadExistingData();
+  }, []);
 
   // Handlers for images
   const handleImageChange = (e, setImage, setPreview) => {
@@ -70,12 +136,15 @@ const NewAboutUsSettings = () => {
       return;
     }
     setStatistics([...statistics, { ...newStatistic }]);
+    toast.success(`Statistic "${newStatistic.label}" added successfully!`);
     setNewStatistic({ value: "", label: "", suffix: "" });
   };
   const handleRemoveStatistic = (index) => {
+    const statLabel = statistics[index].label;
     const updated = [...statistics];
     updated.splice(index, 1);
     setStatistics(updated);
+    toast.success(`Statistic "${statLabel}" removed successfully!`);
   };
 
   // Features handlers
@@ -85,12 +154,15 @@ const NewAboutUsSettings = () => {
       return;
     }
     setFeatures([...features, newFeature.trim()]);
+    toast.success(`Feature "${newFeature.trim()}" added successfully!`);
     setNewFeature("");
   };
   const handleRemoveFeature = (index) => {
+    const featureText = features[index];
     const updated = [...features];
     updated.splice(index, 1);
     setFeatures(updated);
+    toast.success(`Feature "${featureText}" removed successfully!`);
   };
 
   // Submit handler (POST only)
@@ -164,29 +236,87 @@ const NewAboutUsSettings = () => {
       >
       <div className="card bg-white shadow-md relative mx-auto w-[1300px]">
         <div className="card-body">
-          <form onSubmit={handleSave}>
+          <div className="mb-6 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-6 bg-[#5CAF90]"></div>
+              <div>
+                <h2 className="text-lg md:text-xl font-bold text-[#1D372E]">
+                  About Us Settings (Create Only)
+                </h2>
+                {!isLoadingData && (
+                  statistics.length > 0 || features.length > 0 || visionTitle || missionTitle || valuesTitle
+                ) && (
+                  <p className="text-sm text-[#5CAF90] mt-1">
+                    ✓ Existing settings loaded from database
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {isLoadingData ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="loading loading-spinner loading-lg text-[#5CAF90]"></div>
+              <span className="ml-3 text-[#1D372E]">Loading your existing About Us settings...</span>
+            </div>
+          ) : (
+            <form onSubmit={handleSave}>
             {/* Statistics */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-[#1D372E] mb-4">Statistics</h3>
-            {statistics.length > 0 ? (
-              <div className="md:hidden space-y-4">
-                {statistics.map((stat, index) => (
-                  <div key={index} className="border border-[#1D372E] rounded-lg p-4 bg-white flex justify-between items-center">
-                    <span>
-                      {stat.value}{stat.suffix} - {stat.label}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveStatistic(index)}
-                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                    >
-                      <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-[#1D372E]">Statistics</h3>
+                <div className="text-sm text-gray-500">
+                  {statistics.length} statistics added
+                </div>
               </div>
+            {statistics.length > 0 ? (
+              <>
+                {/* Mobile View */}
+                <div className="md:hidden space-y-3 mb-4">
+                  {statistics.map((stat, index) => (
+                    <div key={index} className="border border-[#1D372E] rounded-lg p-4 bg-white shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#1D372E] font-medium">
+                          {stat.value}{stat.suffix} - {stat.label}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveStatistic(index)}
+                          className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                        >
+                          <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Desktop/Tablet View */}
+                <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                  {statistics.map((stat, index) => (
+                    <div key={index} className="border border-[#1D372E] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#1D372E] font-medium text-sm">
+                          {stat.value}{stat.suffix} - {stat.label}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveStatistic(index)}
+                          className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                          title="Remove Statistic"
+                        >
+                          <RiDeleteBin5Fill className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <EmptyStateMessage message="No statistics found." />
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-[#1D372E] p-6 rounded-lg text-center border-2 border-dashed border-[#5CAF90] my-4">
+                <p className="text-sm font-medium">No statistics found in your settings. Add your first statistic below.</p>
+                <p className="text-xs text-gray-500 mt-1">Use the form below to get started</p>
+              </div>
             )}
             {/* Add New Statistic */}
             <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
@@ -341,24 +471,56 @@ const NewAboutUsSettings = () => {
 
           {/* Features */}
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-[#1D372E] mb-4">Why Choose Us Features</h3>
-            {features.length > 0 ? (
-              <div className="md:hidden space-y-4">
-                {features.map((feature, index) => (
-                  <div key={index} className="border border-[#1D372E] rounded-lg p-4 bg-white flex justify-between items-center">
-                    <span>{feature}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFeature(index)}
-                      className="btn bg-[#5CAF90] border-[#5CAF90] btn-xs btn-square hover:bg-[#4a9a7d]"
-                    >
-                      <RiDeleteBin5Fill className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-[#1D372E]">Why Choose Us Features</h3>
+              <div className="text-sm text-gray-500">
+                {features.length} features added
               </div>
+            </div>
+            {features.length > 0 ? (
+              <>
+                {/* Mobile View */}
+                <div className="md:hidden space-y-3 mb-4">
+                  {features.map((feature, index) => (
+                    <div key={index} className="border border-[#1D372E] rounded-lg p-4 bg-white shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#1D372E] font-medium">{feature}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFeature(index)}
+                          className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                        >
+                          <RiDeleteBin5Fill className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Desktop/Tablet View */}
+                <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                  {features.map((feature, index) => (
+                    <div key={index} className="border border-[#1D372E] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#1D372E] font-medium text-sm">{feature}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFeature(index)}
+                          className="btn bg-red-500 border-red-500 btn-xs btn-square hover:bg-red-600 text-white"
+                          title="Remove Feature"
+                        >
+                          <RiDeleteBin5Fill className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <EmptyStateMessage message="No features found." />
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-[#1D372E] p-6 rounded-lg text-center border-2 border-dashed border-[#5CAF90] my-4">
+                <p className="text-sm font-medium">No features found in your settings. Add your first feature below.</p>
+                <p className="text-xs text-gray-500 mt-1">Use the form below to get started</p>
+              </div>
             )}
             {/* Add New Feature */}
             <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
@@ -481,6 +643,7 @@ const NewAboutUsSettings = () => {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
     </div>
