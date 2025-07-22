@@ -468,8 +468,8 @@ const NewAboutUsSettings = () => {
 
                   await updateAboutUsSetting(formData);
                   toast.success("About Us settings saved!");
-                  // navigate to next step or dashboard
-                  navigate("/dashboard");
+                  // navigate to next step
+                  navigate("/NewHomePageSettings"); // <-- change here
                 } catch (error) {
                   toast.error(error.message || "Failed to save About Us settings");
                 } finally {

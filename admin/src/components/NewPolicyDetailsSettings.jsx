@@ -3,15 +3,15 @@ import { FaEdit, FaEye, FaEyeSlash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { updatePolicyDetailsSetting } from "../api/setting";
 
-// Dynamically import react-quill for client-side rendering
+// Dynamically import react-quill-new for client-side rendering
 const ReactQuill = lazy(() =>
-  import("react-quill").then((mod) => {
-    import("react-quill/dist/quill.snow.css").catch((err) => {
-      console.error("Failed to load react-quill styles:", err);
+  import("react-quill-new").then((mod) => {
+    import("react-quill-new/dist/quill.snow.css").catch((err) => {
+      console.error("Failed to load react-quill-new styles:", err);
     });
     return mod;
   }).catch((err) => {
-    console.error("Failed to load react-quill:", err);
+    console.error("Failed to load react-quill-new:", err);
     throw err;
   })
 );

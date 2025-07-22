@@ -79,21 +79,11 @@ const HeaderFooterSettings = () => {
 
   // Check if all required fields are filled
   const canShowPreview = () => {
-    // Check if logo and copyright are provided
     if (!logoPreview || !copyrightText.trim()) return false;
-
-    // Check if at least one navigation icon is added
     if (navIcons.length === 0) return false;
-
-    // Check if at least one country block is added
     if (countryBlocks.length === 0) return false;
-
-    // Check if at least one footer link is added
     if (footerLinks.length === 0) return false;
-
-    // Check if at least one social icon is added
     if (socialIcons.length === 0) return false;
-
     return true;
   };
 
@@ -123,7 +113,6 @@ const HeaderFooterSettings = () => {
           setLogoPreview(data.Navbar_Logo_Url);
           setCopyrightText(data.Footer_Copyright);
 
-          // Set navigation icons if available
           if (data.Nav_Icons && Array.isArray(data.Nav_Icons)) {
             setNavIcons(
               data.Nav_Icons.map(({ icon, label, link, iconImageUrl }) => ({
@@ -135,17 +124,14 @@ const HeaderFooterSettings = () => {
             );
           }
 
-          // Set country blocks if available
           if (data.Country_Blocks && Array.isArray(data.Country_Blocks)) {
             setCountryBlocks(data.Country_Blocks);
           }
 
-          // Set footer links if available
           if (data.Footer_Links && Array.isArray(data.Footer_Links)) {
             setFooterLinks(data.Footer_Links);
           }
 
-          // Set social icons if available
           if (data.Social_Icons && Array.isArray(data.Social_Icons)) {
             setSocialIcons(data.Social_Icons);
           }
@@ -175,7 +161,6 @@ const HeaderFooterSettings = () => {
     if (logoInputRef.current) logoInputRef.current.value = "";
   };
 
-  // When edit is clicked, load the stored settings into the input fields
   const handleEdit = () => {
     setIsEditing(true);
     setShowPreview(false);
@@ -194,15 +179,12 @@ const HeaderFooterSettings = () => {
 
     try {
       setIsLoading(true);
-      // Build form data
       const formData = new FormData();
-      // Append the file only if a new one is provided
       if (logo) {
         formData.append("navbarLogo", logo);
       }
       formData.append("footerCopyright", copyrightText);
 
-      // Prepare navIcons for backend
       const navIconsForBackend = navIcons.map(
         ({ icon, label, link, iconImageUrl }) => ({
           icon,
@@ -213,16 +195,10 @@ const HeaderFooterSettings = () => {
       );
       formData.append("navIcons", JSON.stringify(navIconsForBackend));
 
-      // Add country blocks
       formData.append("countryBlocks", JSON.stringify(countryBlocks));
-
-      // Add footer links
       formData.append("footerLinks", JSON.stringify(footerLinks));
-
-      // Add social icons
       formData.append("socialIcons", JSON.stringify(socialIcons));
 
-      // Upload nav icon images if any
       navIcons.forEach((icon, index) => {
         if (icon.iconImage && icon.iconImage instanceof File) {
           formData.append(`navIconImage_${index}`, icon.iconImage);
@@ -234,7 +210,6 @@ const HeaderFooterSettings = () => {
       setHeaderFooterSetting(updatedSetting);
       setIsEditing(false);
 
-      // Reset the form
       setLogo(null);
       if (logoInputRef.current) logoInputRef.current.value = "";
     } catch (error) {
@@ -255,7 +230,6 @@ const HeaderFooterSettings = () => {
       setFooterLinks(headerFooterSetting.Footer_Links || []);
       setSocialIcons(headerFooterSetting.Social_Icons || []);
     } else {
-      // Fallback if headerFooterSetting is not available
       setLogoPreview(null);
       setCopyrightText("");
       setNavIcons([]);
@@ -341,6 +315,10 @@ const HeaderFooterSettings = () => {
       toast.error("Title and address are required for country blocks");
       return;
     }
+    if (countryBlocks.length >= 4) {
+      toast.error("Maximum 4 country blocks allowed");
+      return;
+    }
 
     setCountryBlocks([...countryBlocks, { ...newCountryBlock }]);
     setNewCountryBlock({
@@ -364,6 +342,10 @@ const HeaderFooterSettings = () => {
       toast.error("Text and URL are required");
       return;
     }
+    if (footerLinks.length >= 4) {
+      toast.error("Maximum 4 footer links allowed");
+      return;
+    }
 
     setFooterLinks([...footerLinks, { ...newFooterLink }]);
     setNewFooterLink({
@@ -384,6 +366,10 @@ const HeaderFooterSettings = () => {
       toast.error("Platform and URL are required");
       return;
     }
+    if (socialIcons.some((icon) => icon.platform === newSocialIcon.platform)) {
+      toast.error("This platform is already added");
+      return;
+    }
 
     setSocialIcons([...socialIcons, { ...newSocialIcon }]);
     setNewSocialIcon({
@@ -398,14 +384,12 @@ const HeaderFooterSettings = () => {
     setSocialIcons(updatedSocialIcons);
   };
 
-  // Empty state message component
   const EmptyStateMessage = ({ message }) => (
     <div className="bg-gray-50 text-[#1D372E] p-4 rounded-md text-center border border-dashed border-[#5CAF90] my-3">
       <p>{message}</p>
     </div>
   );
 
-  // Header Preview Component
   const HeaderPreview = () => {
     return (
       <div className="mb-8">
@@ -413,14 +397,12 @@ const HeaderFooterSettings = () => {
           Header Preview
         </h3>
         <div className="rounded-lg overflow-hidden">
-          {/* Desktop Header */}
           <div className="hidden md:block">
             <div
               className="bg-[#1D372E] text-white shadow-md font-poppins"
               style={{ height: "65px" }}
             >
               <div className="flex items-center justify-between px-6 h-full">
-                {/* Logo */}
                 <div className="flex items-center ml-6">
                   <img
                     src={logoPreview}
@@ -428,8 +410,6 @@ const HeaderFooterSettings = () => {
                     className="h-[65px] w-auto cursor-pointer"
                   />
                 </div>
-
-                {/* Search bar */}
                 <div className="flex flex-1 max-w-2xl mx-30 font-poppins relative">
                   <input
                     type="text"
@@ -441,10 +421,7 @@ const HeaderFooterSettings = () => {
                     <FaSearch className="text-[#FFFFFF]" />
                   </button>
                 </div>
-
-                {/* Icons */}
                 <div className="flex space-x-2">
-                  {/* Cart Icon */}
                   <div className="relative">
                     <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
                       <FaShoppingCart
@@ -453,8 +430,6 @@ const HeaderFooterSettings = () => {
                       />
                     </div>
                   </div>
-
-                  {/* Track Order */}
                   <div>
                     <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E] mr-2">
                       <FaClipboardList
@@ -463,8 +438,6 @@ const HeaderFooterSettings = () => {
                       />
                     </div>
                   </div>
-
-                  {/* User */}
                   <div>
                     <div className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]">
                       <FaUser
@@ -476,15 +449,11 @@ const HeaderFooterSettings = () => {
                 </div>
               </div>
             </div>
-
-            {/* Bottom menu - Desktop */}
             <div className="bg-[#F4F4F4] text-[#000000] px-15 py-1 flex items-center space-x-2 sm:space-x-17 text-[13.33px] overflow-x-auto font-poppins">
               <div className="flex items-center space-x-1 px-3 py-1 bg-[#5CAF90] text-white rounded-sm">
                 <span className="whitespace-nowrap">All Categories</span>
                 <MdArrowDropDown className="text-3xl" />
               </div>
-
-              {/* Navigation Icons */}
               {navIcons.map((icon, index) => (
                 <div
                   key={index}
@@ -501,13 +470,9 @@ const HeaderFooterSettings = () => {
               ))}
             </div>
           </div>
-
-          {/* Mobile/Tablet Header */}
           <div className="md:hidden">
-            {/* Logo and Menu Toggle */}
             <div className="bg-[#1D372E] text-white shadow-md font-poppins px-4 py-2">
               <div className="flex items-center justify-between">
-                {/* Logo */}
                 <div className="flex items-center">
                   <img
                     src={logoPreview}
@@ -515,8 +480,6 @@ const HeaderFooterSettings = () => {
                     className="h-14 sm:h-16 w-auto cursor-pointer"
                   />
                 </div>
-
-                {/* Menu Toggle */}
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   className="p-2 border-2 border-white rounded-full bg-white text-[#1D372E]"
@@ -529,11 +492,8 @@ const HeaderFooterSettings = () => {
                 </button>
               </div>
             </div>
-
-            {/* Search and Icons */}
             <div className="bg-[#1D372E] text-white px-4 pb-3">
               <div className="flex items-center justify-between space-x-3">
-                {/* Search bar */}
                 <div className="flex flex-1 max-w-sm">
                   <input
                     type="text"
@@ -545,26 +505,19 @@ const HeaderFooterSettings = () => {
                     <FaSearch className="text-[#FFFFFF] text-xs" />
                   </button>
                 </div>
-
-                {/* Icons */}
                 <div className="flex space-x-2">
-                  {/* Cart Icon */}
                   <div className="p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]">
                     <FaShoppingCart
                       className="text-xs sm:text-sm cursor-pointer"
                       title="Cart"
                     />
                   </div>
-
-                  {/* Track Order */}
                   <div className="p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]">
                     <FaClipboardList
                       className="text-xs sm:text-sm cursor-pointer"
                       title="Track Orders"
                     />
                   </div>
-
-                  {/* User */}
                   <div className="p-1.5 sm:p-2 border border-white rounded-full bg-white text-[#1D372E]">
                     <FaUser
                       className="text-xs sm:text-sm cursor-pointer"
@@ -574,17 +527,12 @@ const HeaderFooterSettings = () => {
                 </div>
               </div>
             </div>
-
-            {/* Mobile Menu */}
             {mobileMenuOpen && (
               <div className="bg-[#F4F4F4] text-[#000000] px-4 py-2 font-poppins">
-                {/* All Categories */}
                 <div className="flex items-center justify-center space-x-1 px-3 py-2 bg-[#5CAF90] text-white rounded-sm mb-3">
                   <span className="text-sm">All Categories</span>
                   <MdArrowDropDown className="text-xl" />
                 </div>
-
-                {/* Navigation Icons - Column Layout */}
                 <div className="space-y-2">
                   {navIcons.map((icon, index) => (
                     <div
@@ -611,7 +559,6 @@ const HeaderFooterSettings = () => {
     );
   };
 
-  // Footer Preview Component
   const FooterPreview = () => {
     return (
       <div>
@@ -626,7 +573,6 @@ const HeaderFooterSettings = () => {
               backgroundColor: "#1D372E",
             }}
           >
-            {/* Middle Section */}
             <div className="text-center mb-6 md:mb-10 px-2 md:px-4">
               <h2 className="text-base sm:text-lg md:text-xl text-white mb-2 md:mb-3">
                 JOIN THE HAPPY CROWD
@@ -642,11 +588,8 @@ const HeaderFooterSettings = () => {
                 <span className="sm:hidden">Join WhatsApp</span>
               </button>
             </div>
-
-            {/* Countries Section */}
             <div className="mb-6 md:mb-10">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                {/* Country Blocks */}
                 {countryBlocks.map((loc, idx) => (
                   <div key={idx} className="text-center sm:text-left">
                     <h3 className="font-bold text-sm md:text-base lg:text-lg text-white mb-2">
@@ -681,20 +624,14 @@ const HeaderFooterSettings = () => {
                 ))}
               </div>
             </div>
-
-            {/* Bottom Section */}
             <div className="max-w-7xl mx-auto flex flex-col justify-center items-center gap-4 md:gap-6 text-center px-2 md:px-4">
-              {/* Links & Actions */}
               <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 text-xs md:text-sm">
                 <button className="bg-white text-black px-3 py-2 rounded font-medium hover:bg-gray-300 text-xs transition">
                   Sell with TechWave
                 </button>
-
                 <a href="#" className="hover:underline text-xs text-white">
                   Download <span className="font-semibold">TechWave App</span>
                 </a>
-
-                {/* App Store and Google Play Logos */}
                 <div className="flex gap-2 justify-center">
                   <img
                     src={googleplay}
@@ -708,8 +645,6 @@ const HeaderFooterSettings = () => {
                   />
                 </div>
               </div>
-
-              {/* Footer Links */}
               <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-2 sm:gap-4 text-xs text-gray-400 font-light">
                 {footerLinks.map((link, index) => (
                   <React.Fragment key={index}>
@@ -723,13 +658,9 @@ const HeaderFooterSettings = () => {
                 ))}
               </div>
             </div>
-
-            {/* Copyright */}
             <div className="text-center text-xs mt-3 md:mt-4 text-white font-light">
               {copyrightText}
             </div>
-
-            {/* Social Icons */}
             <div className="border-t border-white pt-4 md:pt-6 mt-4 md:mt-6 flex justify-center gap-3 md:gap-4 text-xs md:text-sm">
               {socialIcons.map((icon, index) => {
                 let IconComponent;
@@ -755,7 +686,6 @@ const HeaderFooterSettings = () => {
                   default:
                     IconComponent = FaFacebookF;
                 }
-
                 return (
                   <a
                     key={index}
@@ -791,7 +721,6 @@ const HeaderFooterSettings = () => {
   return (
     <div className="card bg-white shadow-md relative">
       <div className="card-body">
-        {/* Header Section */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-1 h-6 bg-[#5CAF90]"></div>
@@ -799,8 +728,6 @@ const HeaderFooterSettings = () => {
               Manage Header and Footer
             </h2>
           </div>
-
-          {/* Action Buttons - Mobile: Below header, Desktop: Top right */}
           <div className="flex gap-2 md:absolute md:top-6 md:right-6">
             {!isEditing && !showPreview && (
               <button
@@ -840,13 +767,11 @@ const HeaderFooterSettings = () => {
           </div>
         ) : (
           <form onSubmit={handleSave}>
-            {/* General Settings */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
                 General Settings
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Navbar Logo Input */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
                     <span className="label-text text-sm md:text-base font-medium">
@@ -879,8 +804,6 @@ const HeaderFooterSettings = () => {
                     </div>
                   )}
                 </div>
-
-                {/* Copyright Input */}
                 <div className="form-control">
                   <label className="label text-[#1D372E] mb-0.5">
                     <span className="label-text text-sm md:text-base font-medium">
@@ -910,16 +833,12 @@ const HeaderFooterSettings = () => {
               </div>
             </div>
 
-            {/* Navigation Icons Settings */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
                 Navigation Icons
               </h3>
-
-              {/* Existing Navigation Icons */}
               {navIcons.length > 0 ? (
                 <>
-                  {/* Desktop Table View */}
                   <div className="hidden md:block overflow-x-auto">
                     <table className="table table-fixed min-w-[500px] text-center border border-[#1D372E] text-[#1D372E] w-full">
                       <thead className="bg-[#EAFFF7] text-[#1D372E]">
@@ -968,8 +887,6 @@ const HeaderFooterSettings = () => {
                       </tbody>
                     </table>
                   </div>
-
-                  {/* Mobile Card View */}
                   <div className="md:hidden space-y-4">
                     {navIcons.map((icon, index) => (
                       <div
@@ -1015,8 +932,6 @@ const HeaderFooterSettings = () => {
               ) : (
                 <EmptyStateMessage message="No navigation icons found." />
               )}
-
-              {/* Add New Navigation Icon */}
               {isEditing && (
                 <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
                   <h4 className="font-medium text-[#1D372E] mb-3">
@@ -1111,16 +1026,12 @@ const HeaderFooterSettings = () => {
               )}
             </div>
 
-            {/* Country Blocks Settings */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
                 Country Blocks
               </h3>
-
-              {/* Existing Country Blocks */}
               {countryBlocks.length > 0 ? (
                 <>
-                  {/* Desktop Table View */}
                   <div className="hidden md:block overflow-x-auto">
                     <table className="table table-fixed min-w-[950px] text-center border border-[#1D372E] text-[#1D372E] w-full">
                       <thead className="bg-[#EAFFF7] text-[#1D372E]">
@@ -1163,8 +1074,6 @@ const HeaderFooterSettings = () => {
                       </tbody>
                     </table>
                   </div>
-
-                  {/* Mobile Card View */}
                   <div className="md:hidden space-y-4">
                     {countryBlocks.map((block, index) => (
                       <div
@@ -1226,8 +1135,6 @@ const HeaderFooterSettings = () => {
               ) : (
                 <EmptyStateMessage message="No country blocks found." />
               )}
-
-              {/* Add New Country Block */}
               {isEditing && (
                 <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
                   <h4 className="font-medium text-[#1D372E] mb-3">
@@ -1337,22 +1244,16 @@ const HeaderFooterSettings = () => {
               )}
             </div>
 
-            {/* Footer Links & Social Icons Settings */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-[#1D372E] mb-4">
                 Footer Links & Social
               </h3>
-
-              {/* Footer Links */}
               <div className="mb-6">
                 <h4 className="font-medium text-[#1D372E] mb-3">
                   Footer Links
                 </h4>
-
-                {/* Existing Footer Links */}
                 {footerLinks.length > 0 ? (
                   <>
-                    {/* Desktop Table View */}
                     <div className="hidden md:block overflow-x-auto">
                       <table className="table table-fixed min-w-[500px] text-center border border-[#1D372E] text-[#1D372E] w-full">
                         <thead className="bg-[#EAFFF7] text-[#1D372E]">
@@ -1390,8 +1291,6 @@ const HeaderFooterSettings = () => {
                         </tbody>
                       </table>
                     </div>
-
-                    {/* Mobile Card View */}
                     <div className="md:hidden space-y-4">
                       {footerLinks.map((link, index) => (
                         <div
@@ -1424,8 +1323,6 @@ const HeaderFooterSettings = () => {
                 ) : (
                   <EmptyStateMessage message="No footer links found." />
                 )}
-
-                {/* Add New Footer Link */}
                 {isEditing && (
                   <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
                     <h4 className="font-medium text-[#1D372E] mb-3">
@@ -1479,17 +1376,12 @@ const HeaderFooterSettings = () => {
                   </div>
                 )}
               </div>
-
-              {/* Social Icons */}
               <div>
                 <h4 className="font-medium text-[#1D372E] mb-3">
                   Social Icons
                 </h4>
-
-                {/* Existing Social Icons */}
                 {socialIcons.length > 0 ? (
                   <>
-                    {/* Desktop Table View */}
                     <div className="hidden md:block overflow-x-auto">
                       <table className="table table-fixed min-w-[550px] text-center border border-[#1D372E] text-[#1D372E] w-full">
                         <thead className="bg-[#EAFFF7] text-[#1D372E]">
@@ -1527,8 +1419,6 @@ const HeaderFooterSettings = () => {
                         </tbody>
                       </table>
                     </div>
-
-                    {/* Mobile Card View */}
                     <div className="md:hidden space-y-4">
                       {socialIcons.map((icon, index) => (
                         <div
@@ -1561,8 +1451,6 @@ const HeaderFooterSettings = () => {
                 ) : (
                   <EmptyStateMessage message="No social icons found." />
                 )}
-
-                {/* Add New Social Icon */}
                 {isEditing && (
                   <div className="p-4 border border-[#1D372E] rounded-lg mt-4">
                     <h4 className="font-medium text-[#1D372E] mb-3">
@@ -1623,8 +1511,6 @@ const HeaderFooterSettings = () => {
                 )}
               </div>
             </div>
-
-            {/* Action Buttons */}
             {isEditing && (
               <div className="flex justify-end gap-2 mt-6">
                 <button

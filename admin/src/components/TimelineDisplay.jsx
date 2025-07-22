@@ -1,13 +1,14 @@
 import React from 'react';
 
 const steps = [
-  { id: 'login', label: 'Login' },
+  { id: 'signup', label: 'Sign Up' }, // Changed from 'Sign Up' to 'signup' for consistency
   { id: 'settings', label: 'Header/Footer Settings' },
   { id: 'aboutus', label: 'About Us' },
+  { id: 'home', label: 'Home Page Settings' },
 ];
 
 const TimelineDisplay = ({ currentStep = 'login' }) => (
-  <div className="w-full max-w-3xl mx-auto mb-8 relative">
+  <div className="w-full max-w-4xl mx-auto mb-8 relative">
     <div className="flex items-center justify-between relative">
       {/* Connecting Lines */}
       {steps.map((step, index) => (

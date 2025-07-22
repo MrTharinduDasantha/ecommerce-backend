@@ -1,3 +1,4 @@
+// src/server.js
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -14,18 +15,50 @@ const adminRoutes = require("./routes/admin/user.routes");
 const notificationRoutes = require("./routes/admin/notification.routes");
 const customerAuthRoutes = require("./routes/customer/auth.routes");
 const customerAddressRoutes = require("./routes/customer/address.routes");
-const customerReviewRoutes = require("./routes/customer/review.routes")
-const adminReviewRoutes = require('./routes/admin/review.routes')
+const customerReviewRoutes = require("./routes/customer/review.routes");
+const adminReviewRoutes = require('./routes/admin/review.routes');
+const adminAuthRoutes = require("./routes/admin/organizations.routes"); // Updated path
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
-
 
 require("dotenv").config(); // Load environment variables from .env file
 
 const app = express();
 // Middleware
-app.use(bodyParser.json({ limit: '25mb' })); // handle large base64 files
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:5173",
+  ],
+  credentials: true,
+}));
+
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
+app.use("/src/uploads", express.static("src/uploads"));
+
+// Public routes - no authentication needed
+app.use("/api/auth/customers", customerAuthRoutes);
+
+// Protected routes
+app.use("/api/admin/customers", adminCustomerRoutes);
+app.use("/api/admin/users", adminRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/settings", settingRoutes);
+app.use("/api/carts", cartRoutes);
+app.use("/api/orders", customerOrderRoutes);
+app.use("/api/customer-addresses", customerAddressRoutes);
+app.use("/api/customers", adminCustomerRoutes);
+app.use("/admin/orders", orderRoutes);
+app.use("/admin/notifications", notificationRoutes);
+app.use("/api/reviews", customerReviewRoutes);
+app.use("/api/admin/reviews", adminReviewRoutes);
+app.use("/admin/auth", adminAuthRoutes);
+
+// Socket.io connection
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -39,41 +72,6 @@ const io = socketIo(server, {
   },
 });
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:5173",
-    ],
-    credentials: true,
-  })
-);
-
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
-app.use("/src/uploads", express.static("src/uploads"));
-
-// Public routes - no authentication needed
-app.use("/api/auth/customers", customerAuthRoutes);
-
-// Protected routes
-app.use("/api/admin/customers", adminCustomerRoutes); // Use the admin customer routes
-app.use("/api/admin/users", adminRoutes); // Use the admin user routes
-app.use("/api/users", userRoutes); // Use the user routes
-app.use("/api/products", productRoutes); // Use the product routes
-app.use("/api/events", eventRoutes); // Use the event routes
-app.use("/api/settings", settingRoutes); // Use the setting routes
-app.use("/api/carts", cartRoutes); // Use the cart routes
-app.use("/api/orders", customerOrderRoutes); // Use the customer order routes
-app.use("/api/customer-addresses", customerAddressRoutes); // Provide a dedicated route for customer addresses
-app.use("/api/customers", adminCustomerRoutes); // Restoring previous functionality for /api/customers
-app.use("/admin/orders", orderRoutes); // Use the admin order routes
-app.use("/admin/notifications", notificationRoutes) // Use the notification routes
-app.use("/api/reviews", customerReviewRoutes) // Use the customer review routes
-app.use("/api/admin/reviews", adminReviewRoutes) // Use the customer review routes
-
-// Socket.io connection
 io.on("connection", (socket) => {
   console.log("A user connected");
 
@@ -83,14 +81,16 @@ io.on("connection", (socket) => {
 });
 
 app.set("io", io);
+
 // Email configuration
 const transporter = nodemailer.createTransport({
-  service: "gmail", // Replace with your email provider
+  service: "gmail",
   auth: {
-    user: "rashelgunarathne63@gmail.com", // Replace with your email
-    pass: "gkhq qmhz wgyf fdgc", // Replace with your app-specific password
+    user: process.env.EMAIL_USER || "rashelgunarathne63@gmail.com",
+    pass: process.env.EMAIL_PASS || "gkhq qmhz wgyf fdgc",
   },
 });
+
 // Email route
 app.post("/api/orders/:customerId/:orderId/send-invoice", async (req, res) => {
   const { emailAddress, pdfBase64 } = req.body;
@@ -102,7 +102,7 @@ app.post("/api/orders/:customerId/:orderId/send-invoice", async (req, res) => {
 
   try {
     const mailOptions = {
-      from: "rashelgunarathne63@gmail.com",
+      from: process.env.EMAIL_USER || "rashelgunarathne63@gmail.com",
       to: emailAddress,
       subject: `Invoice for Order #${orderId}`,
       text: `Hi,\n\nPlease find attached the invoice for Order #${orderId}.\n\nRegards,\nAsipiya Team`,
@@ -121,8 +121,15 @@ const PORT = process.env.PORT || 9000;
 // Function to start the server
 const startServer = (port) => {
   server
-    .listen(port, () => {
+    .listen(port, async () => {
       console.log(`Server running on port ${port}`);
+      // Sync all models
+      try {
+        await require('./models/organizations.model').sequelize.sync({ alter: true });
+        console.log('Database synchronized');
+      } catch (error) {
+        console.error('Database synchronization error:', error);
+      }
     })
     .on("error", (err) => {
       if (err.code === "EADDRINUSE") {

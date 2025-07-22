@@ -1,5 +1,6 @@
 const Setting = require("../../models/setting.model");
 const fs = require("fs");
+const { getOrgMail } = require('../../utils/organization');
 
 // -----------------------------------------
 // Header Footers Setting Related Functions
