@@ -83,7 +83,7 @@ const SignUpPage = () => {
       if (response) {
         if (response.isExistingUser) {
           toast.success('Welcome back! Continuing to next step...');
-        } else {
+      } else {
           toast.success('Admin account created successfully!');
         }
         setTimeout(() => {
@@ -150,12 +150,12 @@ const SignUpPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Full Name Field */}
-          <div className="form-control">
-            <label className="label">
+            <div className="form-control">
+              <label className="label">
               <span className="label-text text-[#1D372E] text-sm font-medium">
                 Full Name
               </span>
-            </label>
+              </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
                 <FiUser className="text-[#5CAF90] w-4 h-4" />
@@ -173,35 +173,35 @@ const SignUpPage = () => {
           </div>
 
           {/* Email Field */}
-          <div className="form-control">
-            <label className="label">
+            <div className="form-control">
+              <label className="label">
               <span className="label-text text-[#1D372E] text-sm font-medium">
                 Email
               </span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
-                <FiMail className="text-[#5CAF90] w-4 h-4" />
-              </div>
-              <input
-                type="email"
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                  <FiMail className="text-[#5CAF90] w-4 h-4" />
+                </div>
+                <input
+                  type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="input input-bordered input-md w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
-                placeholder="Enter your email"
+                  className="input input-bordered input-md w-full pl-10 bg-white border-[#1D372E] text-[#1D372E]"
+                  placeholder="Enter your email"
                 required
-              />
+                />
+              </div>
             </div>
-          </div>
 
           {/* Phone Field */}
-          <div className="form-control">
-            <label className="label">
+            <div className="form-control">
+              <label className="label">
               <span className="label-text text-[#1D372E] text-sm font-medium">
                 Phone Number
               </span>
-            </label>
+              </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
                 <FiPhone className="text-[#5CAF90] w-4 h-4" />
@@ -219,16 +219,16 @@ const SignUpPage = () => {
           </div>
 
           {/* Password Field */}
-          <div className="form-control">
-            <label className="label">
+            <div className="form-control">
+              <label className="label">
               <span className="label-text text-[#1D372E] text-sm font-medium">
                 Password
               </span>
-            </label>
+              </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
                 <FiLock className="text-[#5CAF90] w-4 h-4" />
-              </div>
+            </div>
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -238,27 +238,27 @@ const SignUpPage = () => {
                 placeholder="Enter your password"
                 required
               />
-              <button
+            <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 z-10 flex items-center pr-3"
               >
                 {showPassword ? (
                   <IoMdEyeOff className="text-[#5CAF90] w-4 h-4" />
-                ) : (
+              ) : (
                   <IoMdEye className="text-[#5CAF90] w-4 h-4" />
-                )}
-              </button>
+              )}
+            </button>
             </div>
           </div>
 
           {/* Confirm Password Field */}
-          <div className="form-control">
-            <label className="label">
+            <div className="form-control">
+              <label className="label">
               <span className="label-text text-[#1D372E] text-sm font-medium">
                 Confirm Password
               </span>
-            </label>
+              </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
                 <FiLock className="text-[#5CAF90] w-4 h-4" />
@@ -287,23 +287,23 @@ const SignUpPage = () => {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-md w-full ${
+            <button
+              type="submit"
+              className={`btn btn-primary bg-[#5CAF90] border-none text-white btn-md w-full ${
               isLoading ? "cursor-not-allowed" : "hover:bg-[#4a9a7d]"
-            }`}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <span className="loading loading-spinner loading-xs"></span>
+              }`}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <span className="loading loading-spinner loading-xs"></span>
                 Creating Account...
-              </>
-            ) : (
+                </>
+              ) : (
               "Continue to Next Step"
-            )}
-          </button>
-        </form>
+              )}
+            </button>
+          </form>
 
         {/* Login Link */}
         <div className="text-center mt-4">

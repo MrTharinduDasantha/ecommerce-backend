@@ -150,7 +150,7 @@ const createUser = async (req, res) => {
       } else {
         // Password doesn't match - block with authentication error
         return res.status(401).json({ error: "Email already exists with different password" });
-      }
+    }
     }
 
     // Create new user if email doesn't exist
@@ -188,13 +188,13 @@ const createUser = async (req, res) => {
 
     // Log admin action (only if user is authenticated)
     if (req.user && req.user.userId) {
-      const newUserInfo = { full_name, email, phone_no };
-      await logAdminAction(
-        req.user.userId,
-        "Added new user",
-        req.headers["user-agent"],
-        JSON.stringify(newUserInfo)
-      );
+    const newUserInfo = { full_name, email, phone_no };
+    await logAdminAction(
+      req.user.userId,
+      "Added new user",
+      req.headers["user-agent"],
+      JSON.stringify(newUserInfo)
+    );
     }
 
     res.status(201).json({ id: userId, message: "User added successfully" });
