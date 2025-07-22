@@ -623,65 +623,39 @@ const NewHomePageSettings = () => {
                 <h4 className="text-md font-medium text-[#1D372E] mb-4">Hero Banner Section</h4>
                 <div className="bg-gray-100 rounded-lg overflow-hidden">
                   {heroImagePreviews.length > 0 ? (
-                    <div className="relative h-64 bg-gray-800 rounded-lg overflow-hidden">
-                      {/* 
-                        Simplified and robust image rendering.
-                        - A key is added to force re-render when the image source changes.
-                        - z-index is explicitly set to ensure it's above the background but below the content.
-                        - The fallback div has been removed to prevent conflicts.
-                      */}
-                      <img 
-                        key={heroImagePreviews[0]} // Force re-render on URL change
-                        src={heroImagePreviews[0]} 
-                        alt="Hero Banner" 
+                    <div className="relative h-64 w-full rounded-lg overflow-hidden bg-gray-900">
+                      {/* Layer 1: The Image (Bottom) - Using a standard img tag like in the working section */}
+                      <img
+                        key={heroImagePreviews[0]}
+                        src={heroImagePreviews[0]}
+                        alt="Hero Banner"
                         className="absolute inset-0 w-full h-full object-cover"
-                        style={{ zIndex: 5 }} // Position image above background
-                        onLoad={() => console.log('✅ Hero image displayed successfully:', heroImagePreviews[0])}
-                        onError={(e) => {
-                          console.error('❌ Hero image display failed:', heroImagePreviews[0]);
-                          e.target.style.display = 'none'; // Hide broken image icon
-                        }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
                       />
-                      
-                      {/* Overlay with content */}
-                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center" style={{ zIndex: 10 }}>
-                        <div className="text-white text-center p-4">
-                          <h1 className="text-4xl font-bold mb-4">Welcome to Our Store</h1>
-                          <p className="text-lg mb-6">Discover amazing products at great prices</p>
-                          <button className="btn bg-[#5CAF90] border-[#5CAF90] text-white hover:bg-[#4a9a7d]">
-                            Shop Now
-                          </button>
-                        </div>
+                  
+                      {/* Layer 2: Dark Overlay (Middle) */}
+                      <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                  
+                      {/* Layer 3: Content (Top) */}
+                      <div className="relative w-full h-full flex flex-col items-center justify-center text-center text-white p-4">
+                        <h1 className="text-4xl font-bold mb-4">Welcome to Our Store</h1>
+                        <p className="text-lg mb-6">Discover amazing products at great prices</p>
+                        <button className="btn bg-[#5CAF90] border-[#5CAF90] text-white hover:bg-[#4a9a7d]">
+                          Shop Now
+                        </button>
                       </div>
-                      
-                      {/* Image indicators */}
+                  
+                      {/* Other UI elements */}
+                      <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                        {heroImageFiles.length > 0 ? 'New Images' : 'Existing Images'}
+                      </div>
                       {heroImagePreviews.length > 1 && (
-                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2" style={{ zIndex: 15 }}>
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                           {heroImagePreviews.map((_, index) => (
                             <div key={index} className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-white' : 'bg-white/50'}`}></div>
                           ))}
                         </div>
                       )}
-                      
-                      {/* Show indicator for image source */}
-                      <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded" style={{ zIndex: 15 }}>
-                        {heroImageFiles.length > 0 ? 'New Images' : 'Existing Images'}
-                      </div>
-                      
-                      {/* Simplified debug info */}
-                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-80 text-white text-xs px-3 py-2 rounded max-w-xs space-y-1" style={{ zIndex: 15 }}>
-                        <div className="text-green-300 font-medium">✅ Image Loading</div>
-                        <div className="text-yellow-300">Count: {heroImagePreviews.length}</div>
-                        <a 
-                          href={heroImagePreviews[0]} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-green-400 hover:text-green-300 underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Test URL →
-                        </a>
-                      </div>
                     </div>
                   ) : (
                     <div className="h-64 bg-gray-300 flex items-center justify-center rounded-lg">
